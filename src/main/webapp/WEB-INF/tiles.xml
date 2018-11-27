@@ -1,0 +1,818 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE tiles-definitions PUBLIC
+       "-//Apache Software Foundation//DTD Tiles Configuration 2.0//EN"
+       "http://tiles.apache.org/dtds/tiles-config_2_0.dtd">
+<tiles-definitions>
+    
+    <!-- Admin Definitions -->
+    <definition name="base.definition.admin" template="/WEB-INF/tiles/layout.jsp">
+        <put-attribute name="title" value="" />
+        <put-attribute name="header" value="" />
+        <put-attribute name="actions" value="" />
+        <put-attribute name="menu" value="" />
+        <put-attribute name="body" value="" />
+        <put-attribute name="footer" value="/WEB-INF/jsp/common/adminFooter.jsp" />
+    </definition>
+
+    <!-- Login -->
+    <definition name="/login" extends="base.definition.admin">
+        <put-attribute name="page-id" value="login" />
+        <put-attribute name="page-section" value="section-login" />
+        <put-attribute name="title" value="Health-e-Link Account Login" />
+        <put-attribute name="body" value="/WEB-INF/jsp/login.jsp" />
+        <put-attribute name="jscript" value="/dspResources/js/admin/login.js" />
+    </definition>
+
+    <definition name="/loginfailed" extends="base.definition.admin">
+        <put-attribute name="page-id" value="login" />
+        <put-attribute name="page-section" value="section-login" />
+        <put-attribute name="title" value="Health-e-Link Account Login" />
+        <put-attribute name="body" value="/WEB-INF/jsp/login.jsp" />
+    </definition>
+    
+    <definition name="/forgotPassword" extends="base.definition.admin">
+        <put-attribute name="page-id" value="login" />
+        <put-attribute name="page-section" value="section-login" />
+        <put-attribute name="title" value="Health-e-Link Forgot Password" />
+        <put-attribute name="body" value="/WEB-INF/jsp/forgotPassword.jsp" />
+        <put-attribute name="jscript" value="/dspResources/js/admin/forgotPassword.js" />
+    </definition>
+    
+    <definition name="/resetPassword" extends="base.definition.admin">
+        <put-attribute name="page-id" value="login" />
+        <put-attribute name="page-section" value="section-login" />
+        <put-attribute name="title" value="Health-e-Link Reset Password" />
+        <put-attribute name="body" value="/WEB-INF/jsp/resetPassword.jsp" />
+        <put-attribute name="jscript" value="/dspResources/js/admin/resetPassword.js" />
+    </definition>
+
+    <!-- Admin Dashboard -->
+    <definition name="/administrator/dashboard" extends="base.definition.admin">
+        <put-attribute name="page-id" value="dashboard-details" />
+        <put-attribute name="page-section" value="section-dashboard" />
+        <put-attribute name="title" value="Administrator" />
+        <put-attribute name="header" value="/WEB-INF/jsp/common/adminHeader.jsp?sect=dash" />
+        <put-attribute name="body" value="/WEB-INF/jsp/administrator/index.jsp" />
+    </definition>
+    
+    <!-- Admin Dashboard -->
+    <definition name="/administrator/himdashboard" extends="base.definition.admin">
+        <put-attribute name="page-id" value="dashboard-details" />
+        <put-attribute name="page-section" value="section-dashboard" />
+        <put-attribute name="title" value="Administrator" />
+        <put-attribute name="header" value="/WEB-INF/jsp/common/adminHeader.jsp?sect=dash" />
+        <put-attribute name="body" value="/WEB-INF/jsp/administrator/dashboard.jsp" />
+	<put-attribute name="jscript" value="/dspResources/js/admin/dashboard.js" />
+    </definition>
+
+    <!-- Admin Configuration Definitions -->
+    <definition name="/administrator/configurations/list" extends="base.definition.admin">
+        <put-attribute name="page-id" value="configuration-list" />
+        <put-attribute name="page-section" value="section-configurations" />
+        <put-attribute name="title" value="Administrator - Manage Configurations" />
+        <put-attribute name="header" value="/WEB-INF/jsp/common/adminHeader.jsp?sect=config" />
+        <put-attribute name="actions" value="/WEB-INF/jsp/administrator/configurations/actionBar.jsp?page=listConfigs" />
+        <put-attribute name="body" value="/WEB-INF/jsp/administrator/configurations/list.jsp" />
+        <put-attribute name="jscript" value="/dspResources/js/admin/configuration/list.js" />
+    </definition>
+
+    <definition name="/administrator/configurations/details" extends="base.definition.admin">
+        <put-attribute name="page-id" value="configuration-details" />
+        <put-attribute name="page-section" value="section-configurations" />
+        <put-attribute name="title" value="Administrator - Manage Configurations" />
+        <put-attribute name="header" value="/WEB-INF/jsp/common/adminHeader.jsp?sect=config" />
+        <put-attribute name="actions" value="/WEB-INF/jsp/administrator/configurations/actionBar.jsp?page=configDetails" />
+        <put-attribute name="menu" value="/WEB-INF/jsp/administrator/configurations/menu.jsp?page=details" />
+        <put-attribute name="body" value="/WEB-INF/jsp/administrator/configurations/details.jsp" />
+        <put-attribute name="jscript" value="/dspResources/js/admin/configuration/details.js" />
+    </definition>
+
+    <definition name="/administrator/configurations/transport" extends="base.definition.admin">
+        <put-attribute name="page-id" value="configuration-transport" />
+        <put-attribute name="page-section" value="section-configurations" />
+        <put-attribute name="title" value="Administrator - Manage Configurations" />
+        <put-attribute name="header" value="/WEB-INF/jsp/common/adminHeader.jsp?sect=config" />
+        <put-attribute name="actions" value="/WEB-INF/jsp/administrator/configurations/actionBar.jsp?page=transport" />
+        <put-attribute name="menu" value="/WEB-INF/jsp/administrator/configurations/menu.jsp?page=transport" />
+        <put-attribute name="body" value="/WEB-INF/jsp/administrator/configurations/transport.jsp" />
+        <put-attribute name="jscript" value="/dspResources/js/admin/configuration/transport.js" />
+    </definition>
+    
+    <definition name="/administrator/configurations/messagespecs" extends="base.definition.admin">
+        <put-attribute name="page-id" value="configuration-messagespecs" />
+        <put-attribute name="page-section" value="section-configurations" />
+        <put-attribute name="title" value="Administrator - Manage Configurations" />
+        <put-attribute name="header" value="/WEB-INF/jsp/common/adminHeader.jsp?sect=config" />
+        <put-attribute name="actions" value="/WEB-INF/jsp/administrator/configurations/actionBar.jsp?page=specs" />
+        <put-attribute name="menu" value="/WEB-INF/jsp/administrator/configurations/menu.jsp?page=specs" />
+        <put-attribute name="body" value="/WEB-INF/jsp/administrator/configurations/messagespecs.jsp" />
+        <put-attribute name="jscript" value="/dspResources/js/admin/configuration/messagespecs.js" />
+    </definition>
+
+    <definition name="/administrator/configurations/ERGCustomize" extends="base.definition.admin">
+        <put-attribute name="page-id" value="configuration-ERGCustomize" />
+        <put-attribute name="page-section" value="section-configurations" />
+        <put-attribute name="title" value="Administrator - Manage Configurations" />
+        <put-attribute name="header" value="/WEB-INF/jsp/common/adminHeader.jsp?sect=config" />
+        <put-attribute name="actions" value="/WEB-INF/jsp/administrator/configurations/actionBar.jsp?page=ERGCustomize" />
+        <put-attribute name="menu" value="/WEB-INF/jsp/administrator/configurations/menu.jsp?page=ERGCustomize" />
+        <put-attribute name="body" value="/WEB-INF/jsp/administrator/configurations/ERGCustomize.jsp" />
+        <put-attribute name="jscript" value="/dspResources/js/admin/configuration/ERGCustomize.js" />
+    </definition>
+
+    <definition name="/administrator/configurations/mappings" extends="base.definition.admin">
+        <put-attribute name="page-id" value="configuration-mappings" />
+        <put-attribute name="page-section" value="section-configurations" />
+        <put-attribute name="title" value="Administrator - Manage Configurations" />
+        <put-attribute name="header" value="/WEB-INF/jsp/common/adminHeader.jsp?sect=config" />
+        <put-attribute name="actions" value="/WEB-INF/jsp/administrator/configurations/actionBar.jsp?page=mappings" />
+        <put-attribute name="menu" value="/WEB-INF/jsp/administrator/configurations/menu.jsp?page=mappings" />
+        <put-attribute name="body" value="/WEB-INF/jsp/administrator/configurations/fieldMappings.jsp" />
+        <put-attribute name="jscript" value="/dspResources/js/admin/configuration/fieldMappings.js" />
+    </definition>
+
+    <definition name="/administrator/configurations/translations" extends="base.definition.admin">
+        <put-attribute name="page-id" value="configuration-translations" />
+        <put-attribute name="page-section" value="section-configurations" />
+        <put-attribute name="title" value="Administrator - Manage Configurations" />
+        <put-attribute name="header" value="/WEB-INF/jsp/common/adminHeader.jsp?sect=config" />
+        <put-attribute name="actions" value="/WEB-INF/jsp/administrator/configurations/actionBar.jsp?page=translations" />
+        <put-attribute name="menu" value="/WEB-INF/jsp/administrator/configurations/menu.jsp?page=translations" />
+        <put-attribute name="body" value="/WEB-INF/jsp/administrator/configurations/dataTranslations.jsp" />
+        <put-attribute name="jscript" value="/dspResources/js/admin/configuration/dataTranslations.js" />
+    </definition>
+    
+    <definition name="/administrator/configurations/connections" extends="base.definition.admin">
+        <put-attribute name="page-id" value="configuration-connections" />
+        <put-attribute name="page-section" value="section-configurations" />
+        <put-attribute name="title" value="Administrator - Manage Configuration Connections" />
+        <put-attribute name="header" value="/WEB-INF/jsp/common/adminHeader.jsp?sect=connect" />
+        <put-attribute name="actions" value="/WEB-INF/jsp/administrator/configurations/actionBar.jsp?page=connections" />
+        <put-attribute name="body" value="/WEB-INF/jsp/administrator/configurations/connections.jsp" />
+        <put-attribute name="jscript" value="/dspResources/js/admin/configuration/connections.js" />
+    </definition>
+    
+    <definition name="/administrator/configurations/schedule" extends="base.definition.admin">
+        <put-attribute name="page-id" value="configuration-schedule" />
+        <put-attribute name="page-section" value="section-configurations" />
+        <put-attribute name="title" value="Administrator - Manage Configurations" />
+        <put-attribute name="header" value="/WEB-INF/jsp/common/adminHeader.jsp?sect=config" />
+        <put-attribute name="actions" value="/WEB-INF/jsp/administrator/configurations/actionBar.jsp?page=schedule" />
+        <put-attribute name="menu" value="/WEB-INF/jsp/administrator/configurations/menu.jsp?page=schedule" />
+        <put-attribute name="body" value="/WEB-INF/jsp/administrator/configurations/schedule.jsp" />
+        <put-attribute name="jscript" value="/dspResources/js/admin/configuration/schedule.js" />
+    </definition>
+    
+    <definition name="/administrator/configurations/HL7" extends="base.definition.admin">
+        <put-attribute name="page-id" value="configuration-hl7" />
+        <put-attribute name="page-section" value="section-configurations" />
+        <put-attribute name="title" value="Administrator - HL7 Configuration" />
+        <put-attribute name="header" value="/WEB-INF/jsp/common/adminHeader.jsp?sect=config" />
+        <put-attribute name="actions" value="/WEB-INF/jsp/administrator/configurations/actionBar.jsp?page=HL7" />
+        <put-attribute name="menu" value="/WEB-INF/jsp/administrator/configurations/menu.jsp?page=HL7" />
+        <put-attribute name="body" value="/WEB-INF/jsp/administrator/configurations/HL7.jsp" />
+        <put-attribute name="jscript" value="/dspResources/js/admin/configuration/HL7.js" />
+    </definition>
+    
+    <definition name="/administrator/configurations/CCD" extends="base.definition.admin">
+        <put-attribute name="page-id" value="configuration-ccd" />
+        <put-attribute name="page-section" value="section-configurations" />
+        <put-attribute name="title" value="Administrator - CCD Configuration" />
+        <put-attribute name="header" value="/WEB-INF/jsp/common/adminHeader.jsp?sect=config" />
+        <put-attribute name="actions" value="/WEB-INF/jsp/administrator/configurations/actionBar.jsp?page=CCD" />
+        <put-attribute name="menu" value="/WEB-INF/jsp/administrator/configurations/menu.jsp?page=CCD" />
+        <put-attribute name="body" value="/WEB-INF/jsp/administrator/configurations/CCD.jsp" />
+        <put-attribute name="jscript" value="/dspResources/js/admin/configuration/CCD.js" />
+    </definition>
+    
+    <definition name="/administrator/configurations/preprocessing" extends="base.definition.admin">
+        <put-attribute name="page-id" value="configuration-Preprocessing" />
+        <put-attribute name="page-section" value="section-preprocessing" />
+        <put-attribute name="title" value="Administrator - Configuration Pre-Processing Macros" />
+        <put-attribute name="header" value="/WEB-INF/jsp/common/adminHeader.jsp?sect=config" />
+        <put-attribute name="actions" value="/WEB-INF/jsp/administrator/configurations/actionBar.jsp?page=preprocessing" />
+        <put-attribute name="menu" value="/WEB-INF/jsp/administrator/configurations/menu.jsp?page=preprocessing" />
+        <put-attribute name="body" value="/WEB-INF/jsp/administrator/configurations/preprocessing.jsp" />
+        <put-attribute name="jscript" value="/dspResources/js/admin/configuration/preprocessing.js" />
+    </definition>
+    
+    <definition name="/administrator/configurations/postprocessing" extends="base.definition.admin">
+        <put-attribute name="page-id" value="configuration-postprocessing" />
+        <put-attribute name="page-section" value="section-postprocessing" />
+        <put-attribute name="title" value="Administrator - Configuration Post-Processing Macros" />
+        <put-attribute name="header" value="/WEB-INF/jsp/common/adminHeader.jsp?sect=config" />
+        <put-attribute name="actions" value="/WEB-INF/jsp/administrator/configurations/actionBar.jsp?page=postprocessing" />
+        <put-attribute name="menu" value="/WEB-INF/jsp/administrator/configurations/menu.jsp?page=postprocessing" />
+        <put-attribute name="body" value="/WEB-INF/jsp/administrator/configurations/postprocessing.jsp" />
+        <put-attribute name="jscript" value="/dspResources/js/admin/configuration/postprocessing.js" />
+    </definition>
+    
+    <definition name="/administrator/configurations/domainSenders" extends="base.definition.admin">
+        <put-attribute name="body" value="/WEB-INF/jsp/administrator/configurations/domainSenders.jsp" />
+        <put-attribute name="jscript" value="/dspResources/js/admin/configuration/domainSenders.js" />
+    </definition>
+
+    <!-- Admin Organization Definitions -->
+    <definition name="/administrator/organizations/listOrganizations" extends="base.definition.admin">
+        <put-attribute name="page-id" value="organization-list" />
+        <put-attribute name="page-section" value="section-organizations" />
+        <put-attribute name="title" value="Administrator - Manage Organizations" />
+        <put-attribute name="header" value="/WEB-INF/jsp/common/adminHeader.jsp?sect=org" />
+        <put-attribute name="actions" value="/WEB-INF/jsp/administrator/organizations/actionBar.jsp?page=listOrgs" />
+        <put-attribute name="body" value="/WEB-INF/jsp/administrator/organizations/listOrganizations.jsp" />
+        <put-attribute name="jscript" value="/dspResources/js/admin/organization/list.js" />
+    </definition>
+
+    <definition name="/administrator/organizations/organizationDetails" extends="base.definition.admin">
+        <put-attribute name="page-id" value="organization-details" />
+        <put-attribute name="page-section" value="section-organizations" />
+        <put-attribute name="title" value="Administrator - Manage Organizations" />
+        <put-attribute name="header" value="/WEB-INF/jsp/common/adminHeader.jsp?sect=org" />
+        <put-attribute name="actions" value="/WEB-INF/jsp/administrator/organizations/actionBar.jsp?page=orgDetails" />
+        <put-attribute name="menu" value="/WEB-INF/jsp/administrator/organizations/menu.jsp?page=details" />
+        <put-attribute name="body" value="/WEB-INF/jsp/administrator/organizations/organizationDetails.jsp" />
+        <put-attribute name="jscript" value="/dspResources/js/admin/organization/orgDetails.js" />
+    </definition>
+
+    <definition name="/administrator/organizations/configurations" extends="base.definition.admin">
+        <put-attribute name="page-id" value="organization-configs" />
+        <put-attribute name="page-section" value="section-organizations" />
+        <put-attribute name="title" value="Administrator - Manage Organizations" />
+        <put-attribute name="header" value="/WEB-INF/jsp/common/adminHeader.jsp?sect=org" />
+        <put-attribute name="actions" value="/WEB-INF/jsp/administrator/organizations/actionBar.jsp?page=orgConfigs" />
+        <put-attribute name="menu" value="/WEB-INF/jsp/administrator/organizations/menu.jsp?page=config" />
+        <put-attribute name="body" value="/WEB-INF/jsp/administrator/organizations/configurations/list.jsp" />
+        <put-attribute name="jscript" value="/dspResources/js/admin/organization/configs.js" />
+    </definition>
+
+    <definition name="/administrator/organizations/users" extends="base.definition.admin">
+        <put-attribute name="page-id" value="organization-users" />
+        <put-attribute name="page-section" value="section-organizations" />
+        <put-attribute name="title" value="Administrator - Manage Organizations" />
+        <put-attribute name="header" value="/WEB-INF/jsp/common/adminHeader.jsp?sect=org" />
+        <put-attribute name="actions" value="/WEB-INF/jsp/administrator/organizations/actionBar.jsp?page=orgUsers" />
+        <put-attribute name="menu" value="/WEB-INF/jsp/administrator/organizations/menu.jsp?page=users" />
+        <put-attribute name="body" value="/WEB-INF/jsp/administrator/organizations/users/list.jsp" />
+        <put-attribute name="jscript" value="/dspResources/js/admin/organization/users.js" />
+    </definition>
+
+    <definition name="/administrator/organizations/providers/list" extends="base.definition.admin">
+        <put-attribute name="page-id" value="organization-providerlist" />
+        <put-attribute name="page-section" value="section-organizations" />
+        <put-attribute name="title" value="Administrator - Manage Organizations" />
+        <put-attribute name="header" value="/WEB-INF/jsp/common/adminHeader.jsp?sect=org" />
+        <put-attribute name="actions" value="/WEB-INF/jsp/administrator/organizations/actionBar.jsp?page=orgProviders" />
+        <put-attribute name="menu" value="/WEB-INF/jsp/administrator/organizations/menu.jsp?page=providers" />
+        <put-attribute name="body" value="/WEB-INF/jsp/administrator/organizations/providers/list.jsp" />
+        <put-attribute name="jscript" value="/dspResources/js/admin/organization/providers.js" />
+    </definition>
+
+    <definition name="/administrator/organizations/providers/details" extends="base.definition.admin">
+        <put-attribute name="page-id" value="organization-providerdetails" />
+        <put-attribute name="page-section" value="section-organizations" />
+        <put-attribute name="title" value="Administrator - Manage Organizations" />
+        <put-attribute name="header" value="/WEB-INF/jsp/common/adminHeader.jsp?sect=org" />
+        <put-attribute name="actions" value="/WEB-INF/jsp/administrator/organizations/actionBar.jsp?page=providerDetails" />
+        <put-attribute name="menu" value="/WEB-INF/jsp/administrator/organizations/menu.jsp?page=providers" />
+        <put-attribute name="body" value="/WEB-INF/jsp/administrator/organizations/providers/details.jsp" />
+        <put-attribute name="jscript" value="/dspResources/js/admin/organization/providerDetails.js" />
+    </definition>
+
+    <definition name="/administrator/organizations/brochures" extends="base.definition.admin">
+        <put-attribute name="page-id" value="organization-brochurelist" />
+        <put-attribute name="page-section" value="section-organizations" />
+        <put-attribute name="title" value="Administrator - Manage Organizations" />
+        <put-attribute name="header" value="/WEB-INF/jsp/common/adminHeader.jsp?sect=org" />
+        <put-attribute name="actions" value="/WEB-INF/jsp/administrator/organizations/actionBar.jsp?page=orgBrochures" />
+        <put-attribute name="menu" value="/WEB-INF/jsp/administrator/organizations/menu.jsp?page=brochures" />
+        <put-attribute name="body" value="/WEB-INF/jsp/administrator/organizations/brochures/list.jsp" />
+        <put-attribute name="jscript" value="/dspResources/js/admin/organization/brochures.js" />
+    </definition>
+    
+    <definition name="/administrator/organizations/resources" extends="base.definition.admin">
+        <put-attribute name="page-id" value="organization-resourcelist" />
+        <put-attribute name="page-section" value="section-organizations" />
+        <put-attribute name="title" value="Administrator - Manage Organization Resources" />
+        <put-attribute name="header" value="/WEB-INF/jsp/common/adminHeader.jsp?sect=org" />
+        <put-attribute name="actions" value="/WEB-INF/jsp/administrator/organizations/actionBar.jsp?page=orgResources" />
+        <put-attribute name="menu" value="/WEB-INF/jsp/administrator/organizations/menu.jsp?page=resources" />
+        <put-attribute name="body" value="/WEB-INF/jsp/administrator/organizations/resources/details.jsp" />
+        <put-attribute name="jscript" value="/dspResources/js/admin/organization/resources.js" />
+    </definition>
+    
+    <!--  login as -->
+    <definition name="/administrator/organizations/users/login" extends="base.definition.admin">
+        <put-attribute name="body" value="/WEB-INF/jsp/administrator/organizations/users/loginAs.jsp" />
+        <put-attribute name="jscript" value="/dspResources/js/admin/organization/loginAs.js" />
+    </definition>
+
+    <!-- Admin Message Type Library Definitions -->
+    <definition name="/administrator/messageTypeLibrary/list" extends="base.definition.admin">
+        <put-attribute name="page-id" value="library-list" />
+        <put-attribute name="page-section" value="section-library" />
+        <put-attribute name="title" value="Administrator - Manage Message Type Library" />
+        <put-attribute name="header" value="/WEB-INF/jsp/common/adminHeader.jsp?sect=lib" />
+        <put-attribute name="actions" value="/WEB-INF/jsp/administrator/messageTypeLibrary/actionBar.jsp?page=list" />
+        <put-attribute name="body" value="/WEB-INF/jsp/administrator/messageTypeLibrary/list.jsp" />
+        <put-attribute name="jscript" value="/dspResources/js/admin/library/list.js" />
+    </definition>
+
+    <definition name="/administrator/messageTypeLibrary/details" extends="base.definition.admin">
+        <put-attribute name="page-id" value="library-details" />
+        <put-attribute name="page-section" value="section-library" />
+        <put-attribute name="title" value="Administrator - Manage Message Type Library" />
+        <put-attribute name="header" value="/WEB-INF/jsp/common/adminHeader.jsp?sect=lib" />
+        <put-attribute name="actions" value="/WEB-INF/jsp/administrator/messageTypeLibrary/actionBar.jsp?page=details" />
+        <put-attribute name="menu" value="/WEB-INF/jsp/administrator/messageTypeLibrary/menu.jsp?page=details" />
+        <put-attribute name="body" value="/WEB-INF/jsp/administrator/messageTypeLibrary/details.jsp" />
+        <put-attribute name="jscript" value="/dspResources/js/admin/library/details.js" />
+    </definition>
+
+    <definition name="/administrator/messageTypeLibrary/mappings" extends="base.definition.admin">
+        <put-attribute name="page-id" value="library-mappings" />
+        <put-attribute name="page-section" value="section-library" />
+        <put-attribute name="title" value="Administrator - Manage Message Type Library" />
+        <put-attribute name="header" value="/WEB-INF/jsp/common/adminHeader.jsp?sect=lib" />
+        <put-attribute name="actions" value="/WEB-INF/jsp/administrator/messageTypeLibrary/actionBar.jsp?page=mappings" />
+        <put-attribute name="menu" value="/WEB-INF/jsp/administrator/messageTypeLibrary/menu.jsp?page=mappings" />
+        <put-attribute name="body" value="/WEB-INF/jsp/administrator/messageTypeLibrary/fieldMappings.jsp" />
+        <put-attribute name="jscript" value="/dspResources/js/admin/library/mappings.js" />
+    </definition>
+
+    <definition name="/administrator/messageTypeLibrary/translations" extends="base.definition.admin">
+        <put-attribute name="page-id" value="library-translations" />
+        <put-attribute name="page-section" value="section-library" />
+        <put-attribute name="title" value="Administrator - Manage Message Type Library" />
+        <put-attribute name="header" value="/WEB-INF/jsp/common/adminHeader.jsp?sect=lib" />
+        <put-attribute name="actions" value="/WEB-INF/jsp/administrator/messageTypeLibrary/actionBar.jsp?page=translations" />
+        <put-attribute name="menu" value="/WEB-INF/jsp/administrator/messageTypeLibrary/menu.jsp?page=translations" />
+        <put-attribute name="body" value="/WEB-INF/jsp/administrator/messageTypeLibrary/dataTranslations.jsp" />
+        <put-attribute name="jscript" value="/dspResources/js/admin/library/translations.js" />
+    </definition>
+
+    <!--  End Admin Definitions -->
+
+    <!-- start sysadmin definitions -->
+    <definition name="/administrator/sysadmin/dashboard" extends="base.definition.admin">
+        <put-attribute name="page-id" value="dashboard-details" />
+        <put-attribute name="page-section" value="section-dashboard" />
+        <put-attribute name="title" value="Administrator" />
+        <put-attribute name="header" value="/WEB-INF/jsp/common/adminHeader.jsp?sect=sysadmin" />
+        <put-attribute name="jscript" value="/dspResources/js/admin/sysadmin/index.js" />
+        <put-attribute name="body" value="/WEB-INF/jsp/administrator/sysadmin/index.jsp" />
+    </definition>
+    
+    <definition name="/administrator/sysadmin/data/tableList" extends="base.definition.admin">
+        <put-attribute name="page-id" value="sysadmin-tablelist" />
+        <put-attribute name="page-section" value="section-sysadmin" />
+        <put-attribute name="title" value="Administrator - Manage Look Up Tables" />
+        <put-attribute name="header" value="/WEB-INF/jsp/common/adminHeader.jsp?sect=sysadmin" />
+        <put-attribute name="actions" value="/WEB-INF/jsp/administrator/sysadmin/actionBar.jsp?page=list" />
+        <put-attribute name="menu" value="/WEB-INF/jsp/administrator/sysadmin/menu.jsp?page=table" />
+        <put-attribute name="body" value="/WEB-INF/jsp/administrator/sysadmin/data/tableList.jsp" />
+        <put-attribute name="jscript" value="/dspResources/js/admin/sysadmin/data/tableList.js" />
+    </definition>
+
+    <!--  this lists data rows for look up tables -->    
+    <definition name="/administrator/sysadmin/data/std" extends="base.definition.admin">
+        <put-attribute name="page-id" value="sysadmin-stddata" />
+        <put-attribute name="page-section" value="section-sysadmin" />
+        <put-attribute name="title" value="Administrator - Manage Look Up Table Data" />
+        <put-attribute name="header" value="/WEB-INF/jsp/common/adminHeader.jsp?sect=sysadmin" />
+        <put-attribute name="actions" value="/WEB-INF/jsp/administrator/sysadmin/actionBar.jsp?page=data" />
+        <put-attribute name="menu" value="/WEB-INF/jsp/administrator/sysadmin/menu.jsp?page=table" />
+        <put-attribute name="body" value="/WEB-INF/jsp/administrator/sysadmin/data/std/list.jsp" />
+        <put-attribute name="jscript" value="/dspResources/js/admin/sysadmin/data/list.js" />
+    </definition>
+
+    <!--  this lists data rows for macros -->    
+    <definition name="/administrator/sysadmin/macros" extends="base.definition.admin">
+        <put-attribute name="page-id" value="sysadmin-macros" />
+        <put-attribute name="page-section" value="section-sysadmin" />
+        <put-attribute name="title" value="Administrator - Manage Macros" />
+        <put-attribute name="header" value="/WEB-INF/jsp/common/adminHeader.jsp?sect=sysadmin" />
+        <put-attribute name="actions" value="/WEB-INF/jsp/administrator/sysadmin/actionBar.jsp?page=macros" />
+        <put-attribute name="menu" value="/WEB-INF/jsp/administrator/sysadmin/menu.jsp?page=macroList" />
+        <put-attribute name="body" value="/WEB-INF/jsp/administrator/sysadmin/macro/list.jsp" />
+        <put-attribute name="jscript" value="/dspResources/js/admin/sysadmin/macro/list.js" />
+    </definition>
+    
+    <!--  this page let user modify front end and admin logos -->    
+    <definition name="/administrator/sysadmin/logos" extends="base.definition.admin">
+        <put-attribute name="page-id" value="sysadmin-logos" />
+        <put-attribute name="page-section" value="section-sysadmin" />
+        <put-attribute name="title" value="Administrator - Manage Logos" />
+        <put-attribute name="header" value="/WEB-INF/jsp/common/adminHeader.jsp?sect=sysadmin" />
+        <put-attribute name="actions" value="/WEB-INF/jsp/administrator/sysadmin/actionBar.jsp?page=logos" />
+        <put-attribute name="menu" value="/WEB-INF/jsp/administrator/sysadmin/menu.jsp?page=logos" />
+        <put-attribute name="body" value="/WEB-INF/jsp/administrator/sysadmin/logos/details.jsp" />
+        <put-attribute name="jscript" value="/dspResources/js/admin/sysadmin/logos/details.js" />
+    </definition>
+    
+    <!--  this page let user modify front end admin HL7 Specs -->    
+    <definition name="/administrator/sysadmin/hl7" extends="base.definition.admin">
+        <put-attribute name="page-id" value="sysadmin-hl7" />
+        <put-attribute name="page-section" value="section-sysadmin" />
+        <put-attribute name="title" value="Administrator - Manage HL7 Version" />
+        <put-attribute name="header" value="/WEB-INF/jsp/common/adminHeader.jsp?sect=sysadmin" />
+        <put-attribute name="actions" value="/WEB-INF/jsp/administrator/sysadmin/actionBar.jsp?page=hl7List" />
+        <put-attribute name="menu" value="/WEB-INF/jsp/administrator/sysadmin/menu.jsp?page=hl7List" />
+        <put-attribute name="body" value="/WEB-INF/jsp/administrator/sysadmin/hl7/list.jsp" />
+        <put-attribute name="jscript" value="/dspResources/js/admin/sysadmin/hl7/list.js" />
+    </definition>
+    
+    <!--  this page let user create new HL7 Version -->    
+    <definition name="/administrator/sysadmin/hl7/create" extends="base.definition.admin">
+        <put-attribute name="page-id" value="sysadmin-hl7" />
+        <put-attribute name="page-section" value="section-sysadmin" />
+        <put-attribute name="title" value="Administrator - Create New HL7 Version" />
+        <put-attribute name="header" value="/WEB-INF/jsp/common/adminHeader.jsp?sect=sysadmin" />
+        <put-attribute name="actions" value="/WEB-INF/jsp/administrator/sysadmin/actionBar.jsp?page=hl7Details" />
+        <put-attribute name="menu" value="/WEB-INF/jsp/administrator/sysadmin/menu.jsp?page=hl7List" />
+        <put-attribute name="body" value="/WEB-INF/jsp/administrator/sysadmin/hl7/details.jsp" />
+        <put-attribute name="jscript" value="/dspResources/js/admin/sysadmin/hl7/details.js" />
+    </definition>
+    
+    <!--  this page let user create new HL7 Version -->    
+    <definition name="/administrator/sysadmin/hl7/details" extends="base.definition.admin">
+        <put-attribute name="page-id" value="sysadmin-hl7" />
+        <put-attribute name="page-section" value="section-sysadmin" />
+        <put-attribute name="title" value="Administrator - Create HL7 Details" />
+        <put-attribute name="header" value="/WEB-INF/jsp/common/adminHeader.jsp?sect=sysadmin" />
+        <put-attribute name="actions" value="/WEB-INF/jsp/administrator/sysadmin/actionBar.jsp?page=hl7Details" />
+        <put-attribute name="menu" value="/WEB-INF/jsp/administrator/sysadmin/menu.jsp?page=hl7List" />
+        <put-attribute name="body" value="/WEB-INF/jsp/administrator/sysadmin/hl7/details.jsp" />
+        <put-attribute name="jscript" value="/dspResources/js/admin/sysadmin/hl7/details.js" />
+    </definition>
+    
+    <!--  this displays the login as form -->
+    <definition name="/administrator/sysadmin/loginAs" extends="base.definition.admin">
+        <put-attribute name="page-id" value="sysadmin-loginAs" />
+        <put-attribute name="page-section" value="section-sysadmin" />
+        <put-attribute name="title" value="Administrator - Login As" />
+        <put-attribute name="header" value="/WEB-INF/jsp/common/adminHeader.jsp?sect=sysadmin" />
+        <put-attribute name="actions" value="/WEB-INF/jsp/administrator/sysadmin/actionBar.jsp?page=loginAs" />
+        <put-attribute name="menu" value="/WEB-INF/jsp/administrator/sysadmin/menu.jsp?page=loginAs" />
+        <put-attribute name="body" value="/WEB-INF/jsp/administrator/sysadmin/loginAs/loginForm.jsp" />
+        <put-attribute name="jscript" value="/dspResources/js/admin/sysadmin/loginAs/loginForm.js" />
+    </definition>
+    
+     <definition name="/administrator/sysadmin/moveFilePaths" extends="base.definition.admin">
+        <put-attribute name="page-id" value="sysadmin-moveFilePaths" />
+        <put-attribute name="page-section" value="section-sysadmin" />
+        <put-attribute name="title" value="Administrator - moveFilePaths" />
+        <put-attribute name="header" value="/WEB-INF/jsp/common/adminHeader.jsp?sect=sysadmin" />
+        <put-attribute name="actions" value="/WEB-INF/jsp/administrator/sysadmin/actionBar.jsp?page=moveFilePaths" />
+        <put-attribute name="menu" value="/WEB-INF/jsp/administrator/sysadmin/menu.jsp?page=moveFilePaths" />
+        <put-attribute name="body" value="/WEB-INF/jsp/administrator/sysadmin/moveFilePaths/moveFilePaths.jsp" />
+        <put-attribute name="jscript" value="/dspResources/js/admin/sysadmin/moveFilePaths/moveFilePaths.js" />
+    </definition>
+    
+    <definition name="/administrator/processing-activity/activityReport" extends="base.definition.admin">
+        <put-attribute name="page-id" value="processing-activityReport" />
+        <put-attribute name="page-section" value="section-processing" />
+        <put-attribute name="title" value="Administrator - Processing Activities" />
+        <put-attribute name="header" value="/WEB-INF/jsp/common/adminHeader.jsp?sect=activity" />
+        <put-attribute name="actions" value="/WEB-INF/jsp/administrator/processing-activities/actionBar.jsp?page=report" />
+        <put-attribute name="menu" value="/WEB-INF/jsp/administrator/processing-activities/menu.jsp?page=report" />
+        <put-attribute name="body" value="/WEB-INF/jsp/administrator/processing-activities/activityReport.jsp" />
+        <put-attribute name="jscript" value="/dspResources/js/admin/processing-activities/activityReport.js" />
+    </definition>
+    
+    <!--  this lists all news articles -->    
+    <definition name="/administrator/sysadmin/news" extends="base.definition.admin">
+        <put-attribute name="page-id" value="sysadmin-news" />
+        <put-attribute name="page-section" value="section-sysadmin" />
+        <put-attribute name="title" value="Administrator - Manage News Articles" />
+        <put-attribute name="header" value="/WEB-INF/jsp/common/adminHeader.jsp?sect=sysadmin" />
+        <put-attribute name="actions" value="/WEB-INF/jsp/administrator/sysadmin/actionBar.jsp?page=news" />
+        <put-attribute name="menu" value="/WEB-INF/jsp/administrator/sysadmin/menu.jsp?page=news" />
+        <put-attribute name="body" value="/WEB-INF/jsp/administrator/sysadmin/news/list.jsp" />
+        <put-attribute name="jscript" value="/dspResources/js/admin/sysadmin/news/list.js" />
+    </definition>
+    
+    <!--  this lists all news articles -->    
+    <definition name="/administrator/sysadmin/news/details" extends="base.definition.admin">
+        <put-attribute name="page-id" value="sysadmin-news" />
+        <put-attribute name="page-section" value="section-sysadmin" />
+        <put-attribute name="title" value="Administrator - Manage News Articles" />
+        <put-attribute name="header" value="/WEB-INF/jsp/common/adminHeader.jsp?sect=sysadmin" />
+        <put-attribute name="actions" value="/WEB-INF/jsp/administrator/sysadmin/actionBar.jsp?page=articleDetails" />
+        <put-attribute name="menu" value="/WEB-INF/jsp/administrator/sysadmin/menu.jsp?page=news" />
+        <put-attribute name="body" value="/WEB-INF/jsp/administrator/sysadmin/news/details.jsp" />
+        <put-attribute name="jscript" value="/dspResources/js/admin/sysadmin/news/details.js" />
+    </definition>
+
+    
+    
+    <definition name="/administrator/processing-activity/inbound" extends="base.definition.admin">
+        <put-attribute name="page-id" value="processing-inbound" />
+        <put-attribute name="page-section" value="section-processing" />
+        <put-attribute name="title" value="Administrator - Processing Activities" />
+        <put-attribute name="header" value="/WEB-INF/jsp/common/adminHeader.jsp?sect=activity" />
+        <put-attribute name="actions" value="/WEB-INF/jsp/administrator/processing-activities/actionBar.jsp?page=inbound" />
+        <put-attribute name="menu" value="/WEB-INF/jsp/administrator/processing-activities/menu.jsp?page=inbound" />
+        <put-attribute name="body" value="/WEB-INF/jsp/administrator/processing-activities/inbound.jsp" />
+        <put-attribute name="jscript" value="/dspResources/js/admin/processing-activities/inbound.js" />
+    </definition>
+    
+    <definition name="/administrator/processing-activity/outbound" extends="base.definition.admin">
+        <put-attribute name="page-id" value="processing-outbound" />
+        <put-attribute name="page-section" value="section-processing" />
+        <put-attribute name="title" value="Administrator - Processing Activities" />
+        <put-attribute name="header" value="/WEB-INF/jsp/common/adminHeader.jsp?sect=activity" />
+        <put-attribute name="actions" value="/WEB-INF/jsp/administrator/processing-activities/actionBar.jsp?page=outbound" />
+        <put-attribute name="menu" value="/WEB-INF/jsp/administrator/processing-activities/menu.jsp?page=outbound" />
+        <put-attribute name="body" value="/WEB-INF/jsp/administrator/processing-activities/outbound.jsp" />
+        <put-attribute name="jscript" value="/dspResources/js/admin/processing-activities/outbound.js" />
+    </definition>
+    
+    <definition name="/administrator/processing-activity/rejected" extends="base.definition.admin">
+        <put-attribute name="page-id" value="processing-rejected" />
+        <put-attribute name="page-section" value="section-processing" />
+        <put-attribute name="title" value="Administrator - Processing Activities" />
+        <put-attribute name="header" value="/WEB-INF/jsp/common/adminHeader.jsp?sect=activity" />
+        <put-attribute name="actions" value="/WEB-INF/jsp/administrator/processing-activities/actionBar.jsp?page=rejected" />
+        <put-attribute name="menu" value="/WEB-INF/jsp/administrator/processing-activities/menu.jsp?page=rejected" />
+        <put-attribute name="body" value="/WEB-INF/jsp/administrator/processing-activities/rejected.jsp" />
+        <put-attribute name="jscript" value="/dspResources/js/admin/processing-activities/rejected.js" />
+    </definition>
+    
+    <definition name="/administrator/processing-activity/wsmessage" extends="base.definition.admin">
+        <put-attribute name="page-id" value="processing-wsmessage" />
+        <put-attribute name="page-section" value="section-processing" />
+        <put-attribute name="title" value="Administrator - Processing Activities" />
+        <put-attribute name="header" value="/WEB-INF/jsp/common/adminHeader.jsp?sect=activity" />
+        <put-attribute name="actions" value="/WEB-INF/jsp/administrator/processing-activities/actionBar.jsp?page=wsmessage" />
+        <put-attribute name="menu" value="/WEB-INF/jsp/administrator/processing-activities/menu.jsp?page=wsmessage" />
+        <put-attribute name="body" value="/WEB-INF/jsp/administrator/processing-activities/wsmessage.jsp" />
+        <put-attribute name="jscript" value="/dspResources/js/admin/processing-activities/wsmessage.js" />
+    </definition>
+    
+    <definition name="/administrator/processing-activity/wsmessageOut" extends="base.definition.admin">
+        <put-attribute name="page-id" value="processing-wsmessage" />
+        <put-attribute name="page-section" value="section-processing" />
+        <put-attribute name="title" value="Administrator - Processing Activities" />
+        <put-attribute name="header" value="/WEB-INF/jsp/common/adminHeader.jsp?sect=activity" />
+        <put-attribute name="actions" value="/WEB-INF/jsp/administrator/processing-activities/actionBar.jsp?page=wsmessage" />
+        <put-attribute name="menu" value="/WEB-INF/jsp/administrator/processing-activities/menu.jsp?page=wsmessage" />
+        <put-attribute name="body" value="/WEB-INF/jsp/administrator/processing-activities/wsmessageOut.jsp" />
+        <put-attribute name="jscript" value="/dspResources/js/admin/processing-activities/wsmessageOut.js" />
+    </definition>
+
+    <definition name="/administrator/processing-activity/transactions" extends="base.definition.admin">
+        <put-attribute name="page-id" value="processing-inbound" />
+        <put-attribute name="page-section" value="section-processing" />
+        <put-attribute name="title" value="Administrator - Processing Activities" />
+        <put-attribute name="header" value="/WEB-INF/jsp/common/adminHeader.jsp?sect=activity" />
+        <put-attribute name="actions" value="/WEB-INF/jsp/administrator/processing-activities/actionBar.jsp" />
+        <put-attribute name="menu" value="/WEB-INF/jsp/administrator/processing-activities/menu.jsp" />
+        <put-attribute name="body" value="/WEB-INF/jsp/administrator/processing-activities/transactions.jsp" />
+        <put-attribute name="jscript" value="/dspResources/js/admin/processing-activities/transactions.js" />
+    </definition>
+    
+    <definition name="/administrator/processing-activity/outboundtransactions" extends="base.definition.admin">
+        <put-attribute name="page-id" value="processing-inbound" />
+        <put-attribute name="page-section" value="section-processing" />
+        <put-attribute name="title" value="Administrator - Processing Activities" />
+        <put-attribute name="header" value="/WEB-INF/jsp/common/adminHeader.jsp?sect=activity" />
+        <put-attribute name="actions" value="/WEB-INF/jsp/administrator/processing-activities/actionBar.jsp?page=outbound" />
+        <put-attribute name="menu" value="/WEB-INF/jsp/administrator/processing-activities/menu.jsp?page=outbound" />
+        <put-attribute name="body" value="/WEB-INF/jsp/administrator/processing-activities/outboundtransactions.jsp" />
+        <put-attribute name="jscript" value="/dspResources/js/admin/processing-activities/outboundtransactions.js" />
+    </definition>
+    
+    <definition name="/administrator/processing-activity/pending" extends="base.definition.admin">
+        <put-attribute name="page-id" value="processing-waiting" />
+        <put-attribute name="page-section" value="section-processing" />
+        <put-attribute name="title" value="Administrator - Processing Activities" />
+        <put-attribute name="header" value="/WEB-INF/jsp/common/adminHeader.jsp?sect=activity" />
+        <put-attribute name="actions" value="/WEB-INF/jsp/administrator/processing-activities/actionBar.jsp?page=waiting" />
+        <put-attribute name="menu" value="/WEB-INF/jsp/administrator/processing-activities/menu.jsp?page=waiting" />
+        <put-attribute name="body" value="/WEB-INF/jsp/administrator/processing-activities/pending.jsp" />
+        <put-attribute name="jscript" value="/dspResources/js/admin/processing-activities/pending.js" />
+    </definition>
+    
+    <definition name="/administrator/processing-activity/pendingByMessageType" extends="base.definition.admin">
+        <put-attribute name="page-id" value="processing-waiting" />
+        <put-attribute name="page-section" value="section-processing" />
+        <put-attribute name="title" value="Administrator - Processing Activities" />
+        <put-attribute name="header" value="/WEB-INF/jsp/common/adminHeader.jsp?sect=activity" />
+        <put-attribute name="actions" value="/WEB-INF/jsp/administrator/processing-activities/actionBar.jsp?page=waiting" />
+        <put-attribute name="menu" value="/WEB-INF/jsp/administrator/processing-activities/menu.jsp?page=waiting" />
+        <put-attribute name="body" value="/WEB-INF/jsp/administrator/processing-activities/pendingByMessageType.jsp" />
+        <put-attribute name="jscript" value="/dspResources/js/admin/processing-activities/pendingByMessageType.js" />
+    </definition>
+    
+    <definition name="/administrator/processing-activity/pendingTransactions" extends="base.definition.admin">
+        <put-attribute name="page-id" value="processing-waiting" />
+        <put-attribute name="page-section" value="section-processing" />
+        <put-attribute name="title" value="Administrator - Processing Activities" />
+        <put-attribute name="header" value="/WEB-INF/jsp/common/adminHeader.jsp?sect=activity" />
+        <put-attribute name="actions" value="/WEB-INF/jsp/administrator/processing-activities/actionBar.jsp?page=waiting" />
+        <put-attribute name="menu" value="/WEB-INF/jsp/administrator/processing-activities/menu.jsp?page=waiting" />
+        <put-attribute name="body" value="/WEB-INF/jsp/administrator/processing-activities/pendingTransactions.jsp" />
+        <put-attribute name="jscript" value="/dspResources/js/admin/processing-activities/pendingTransactions.js" />
+    </definition>
+    
+    <definition name="/administrator/processing-activity/batchActivities" extends="base.definition.admin">
+        <put-attribute name="page-id" value="processing-inbound" />
+        <put-attribute name="page-section" value="section-processing" />
+        <put-attribute name="title" value="Administrator - Processing Activities" />
+        <put-attribute name="header" value="/WEB-INF/jsp/common/adminHeader.jsp?sect=activity" />
+        <put-attribute name="actions" value="/WEB-INF/jsp/administrator/processing-activities/actionBar.jsp" />
+        <put-attribute name="menu" value="/WEB-INF/jsp/administrator/processing-activities/menu.jsp" />
+        <put-attribute name="body" value="/WEB-INF/jsp/administrator/processing-activities/batchActivities.jsp" />
+        <put-attribute name="jscript" value="/dspResources/js/admin/processing-activities/batchActivities.js" />
+    </definition>
+    
+    <definition name="/administrator/processing-activity/auditReport" extends="base.definition.admin">
+        <put-attribute name="page-id" value="processing-inbound" />
+        <put-attribute name="page-section" value="section-processing" />
+        <put-attribute name="title" value="Administrator - Processing Activities" />
+        <put-attribute name="header" value="/WEB-INF/jsp/common/adminHeader.jsp?sect=activity" />
+        <put-attribute name="actions" value="/WEB-INF/jsp/administrator/processing-activities/actionBar.jsp?page=auditReport" />
+        <put-attribute name="menu" value="/WEB-INF/jsp/administrator/processing-activities/menu.jsp" />
+        <put-attribute name="body" value="/WEB-INF/jsp/administrator/processing-activities/auditReport.jsp" />
+        <put-attribute name="jscript" value="/dspResources/js/admin/processing-activities/auditReport.js" />
+    </definition>
+    
+    <definition name="/administrator/processing-activity/ERG" extends="base.definition.admin">
+        <put-attribute name="page-id" value="processing-inbound" />
+        <put-attribute name="page-section" value="section-processing" />
+        <put-attribute name="title" value="Administrator - Processing Activities" />
+        <put-attribute name="header" value="/WEB-INF/jsp/common/adminHeader.jsp?sect=activity" />
+        <put-attribute name="actions" value="/WEB-INF/jsp/administrator/processing-activities/actionBar.jsp?page=edit" />
+        <put-attribute name="menu" value="/WEB-INF/jsp/administrator/processing-activities/menu.jsp?page=inbound" />
+        <put-attribute name="body" value="/WEB-INF/jsp/administrator/processing-activities/ERG.jsp" />
+        <put-attribute name="jscript" value="/dspResources/js/admin/processing-activities/ERG.js" />
+    </definition>
+    
+    <definition name="/administrator/processing-activity/referralActivityExport" extends="base.definition.admin">
+        <put-attribute name="page-id" value="processing-inbound" />
+        <put-attribute name="page-section" value="section-processing" />
+        <put-attribute name="title" value="Administrator - Processing Activities" />
+        <put-attribute name="header" value="/WEB-INF/jsp/common/adminHeader.jsp?sect=activity" />
+        <put-attribute name="actions" value="/WEB-INF/jsp/administrator/processing-activities/actionBar.jsp?page=refActivityExport" />
+        <put-attribute name="menu" value="/WEB-INF/jsp/administrator/processing-activities/menu.jsp?page=refActivityExport" />
+        <put-attribute name="body" value="/WEB-INF/jsp/administrator/processing-activities/referralActivityExport.jsp" />
+        <put-attribute name="jscript" value="/dspResources/js/admin/processing-activities/referralActivityExport.js" />
+    </definition>
+    
+    <!-- Admin Watch List -->
+    <definition name="/administrator/watchlist" extends="base.definition.admin">
+        <put-attribute name="page-id" value="dashboard-details" />
+        <put-attribute name="page-section" value="section-dashboard" />
+        <put-attribute name="title" value="Administrator" />
+        <put-attribute name="header" value="/WEB-INF/jsp/common/adminHeader.jsp?sect=dash" />
+	<put-attribute name="actions" value="/WEB-INF/jsp/administrator/watchlist/actionBar.jsp" />
+        <put-attribute name="body" value="/WEB-INF/jsp/administrator/watchlist/list.jsp" />
+	<put-attribute name="jscript" value="/dspResources/js/admin/watchlist/list.js" />
+    </definition>
+   
+    <!--  end sysadmin definitions -->
+    
+    <!-- Front End Definitions -->
+    <definition name="base.definition.frontEnd" template="/WEB-INF/tiles/frontEndLayout.jsp">
+        <put-attribute name="title" value="Universal Translator" />
+        <put-attribute name="header" value="/WEB-INF/jsp/common/header.jsp" />
+        <put-attribute name="body" value="" />
+        <put-attribute name="footer" value="/WEB-INF/jsp/common/footer.jsp" />
+    </definition>
+    
+     <!-- Home Page -->
+    <definition name="/home" extends="base.definition.frontEnd">
+        <put-attribute name="page-id" value="home" />
+        <put-attribute name="page-section" value="home" />
+        <put-attribute name="header" value="/WEB-INF/jsp/common/header.jsp?page=home" />
+        <put-attribute name="body" value="/WEB-INF/jsp/home.jsp" />
+    </definition>
+    
+     <!-- Profile (Account) Pages -->
+    <definition name="/profile/index" extends="base.definition.frontEnd">
+        <put-attribute name="header" value="/WEB-INF/jsp/common/header.jsp?page-id=profile&amp;page-section=home&amp;page=profile" />
+        <put-attribute name="body" value="/WEB-INF/jsp/profile/index.jsp" />
+    </definition>
+    <!-- Profile (settings) Pages -->
+    <definition name="/profile/details" extends="base.definition.frontEnd">
+        <put-attribute name="header" value="/WEB-INF/jsp/common/header.jsp?page-id=profile&amp;page-section=home&amp;page=profile" />
+        <put-attribute name="body" value="/WEB-INF/jsp/profile/settings.jsp" />
+        <put-attribute name="jscript" value="/dspResources/js/front-end/profile/settings.js" />
+    </definition>
+    
+    <definition name="/frontend/upload" extends="base.definition.frontEnd">
+        <put-attribute name="header" value="/WEB-INF/jsp/common/header.jsp?page-id=profile&amp;page-section=frontend&amp;page=upload" />
+        <put-attribute name="body" value="/WEB-INF/jsp/frontend/upload.jsp" />
+        <put-attribute name="jscript" value="/dspResources/js/front-end/frontend/upload.js" />
+    </definition>
+    
+    <!-- Download -->
+    <definition name="/frontend/download" extends="base.definition.frontEnd">
+        <put-attribute name="header" value="/WEB-INF/jsp/common/header.jsp?page-id=profile&amp;page-section=frontend&amp;page=download" />
+        <put-attribute name="body" value="/WEB-INF/jsp/frontend/download.jsp" />
+        <put-attribute name="jscript" value="/dspResources/js/front-end/frontend/download.js" />
+    </definition>
+    
+    <!-- Audit Reports -->
+    <definition name="/frontend/auditReports" extends="base.definition.frontEnd">
+        <put-attribute name="header" value="/WEB-INF/jsp/common/header.jsp?page-id=profile&amp;page-section=frontend&amp;page=audit" />
+        <put-attribute name="body" value="/WEB-INF/jsp/frontend/auditReports.jsp" />
+        <put-attribute name="jscript" value="/dspResources/js/front-end/frontend/auditReports.js" />
+    </definition>
+    
+    <definition name="/frontend/auditReport" extends="base.definition.frontEnd">
+        <put-attribute name="header" value="/WEB-INF/jsp/common/header.jsp?page-id=profile&amp;page-section=frontend&amp;page=audit" />
+        <put-attribute name="body" value="/WEB-INF/jsp/frontend/auditReport.jsp" />
+        <put-attribute name="jscript" value="/dspResources/js/front-end/frontend/auditReport.js" />
+    </definition>
+    
+    <definition name="/frontend/activityReport" extends="base.definition.frontEnd">
+        <put-attribute name="header" value="/WEB-INF/jsp/common/header.jsp?page-id=profile&amp;page-section=frontend&amp;page=activityReport" />
+        <put-attribute name="body" value="/WEB-INF/jsp/frontend/activityReport.jsp" />
+        <put-attribute name="jscript" value="/dspResources/js/front-end/frontend/activityReport.js" />
+    </definition>
+    
+    <definition name="/frontend/activityReport/sent" extends="base.definition.frontEnd">
+        <put-attribute name="header" value="/WEB-INF/jsp/common/header.jsp?page-id=profile&amp;page-section=frontend&amp;page=activityReport" />
+        <put-attribute name="body" value="/WEB-INF/jsp/frontend/activityReportSent.jsp" />
+        <put-attribute name="jscript" value="/dspResources/js/front-end/frontend/activityReportSent.js" />
+    </definition>
+    
+    <definition name="/frontend/activityReport/received" extends="base.definition.frontEnd">
+        <put-attribute name="header" value="/WEB-INF/jsp/common/header.jsp?page-id=profile&amp;page-section=frontend&amp;page=activityReport" />
+        <put-attribute name="body" value="/WEB-INF/jsp/frontend/activityReportReceived.jsp" />
+        <put-attribute name="jscript" value="/dspResources/js/front-end/frontend/activityReportReceived.js" />
+    </definition>
+    
+     <definition name="/frontend/activityReport/rejected" extends="base.definition.frontEnd">
+        <put-attribute name="header" value="/WEB-INF/jsp/common/header.jsp?page-id=profile&amp;page-section=frontend&amp;page=activityReport" />
+        <put-attribute name="body" value="/WEB-INF/jsp/frontend/activityReportRejected.jsp" />
+        <put-attribute name="jscript" value="/dspResources/js/front-end/frontend/activityReportRejected.js" />
+    </definition>
+
+    
+    <!-- Exception handling -->
+    <definition name="/exception" extends="base.definition.admin">
+        <put-attribute name="description" value="" />
+        <put-attribute name="header" value="/WEB-INF/jsp/common/adminHeader.jsp" />
+        <put-attribute name="body" value="/WEB-INF/jsp/exception.jsp" />
+    </definition>
+    
+    <!-- invalid batches -->
+    <definition name="/administrator/processing-activity/invalidIn" extends="base.definition.admin">
+        <put-attribute name="page-id" value="processing-invalid" />
+        <put-attribute name="page-section" value="section-processing" />
+        <put-attribute name="title" value="Administrator - Processing Activities" />
+        <put-attribute name="header" value="/WEB-INF/jsp/common/adminHeader.jsp?sect=activity" />
+        <put-attribute name="actions" value="/WEB-INF/jsp/administrator/processing-activities/actionBar.jsp?page=invalid" />
+        <put-attribute name="menu" value="/WEB-INF/jsp/administrator/processing-activities/menu.jsp?page=invalid" />
+        <put-attribute name="body" value="/WEB-INF/jsp/administrator/processing-activities/invalidIn.jsp" />
+        <put-attribute name="jscript" value="/dspResources/js/admin/processing-activities/invalidIn.js" />
+    </definition>
+    
+    <definition name="/administrator/processing-activity/invalidOut" extends="base.definition.admin">
+        <put-attribute name="page-id" value="processing-invalid" />
+        <put-attribute name="page-section" value="section-processing" />
+        <put-attribute name="title" value="Administrator - Processing Activities" />
+        <put-attribute name="header" value="/WEB-INF/jsp/common/adminHeader.jsp?sect=activity" />
+        <put-attribute name="actions" value="/WEB-INF/jsp/administrator/processing-activities/actionBar.jsp?page=invalid" />
+        <put-attribute name="menu" value="/WEB-INF/jsp/administrator/processing-activities/menu.jsp?page=invalid" />
+        <put-attribute name="body" value="/WEB-INF/jsp/administrator/processing-activities/invalidOut.jsp" />
+        <put-attribute name="jscript" value="/dspResources/js/admin/processing-activities/invalidOut.js" />
+    </definition>
+    
+    <!--  this lists data rows for systema dmins -->    
+    <definition name="/administrator/sysadmin/systemadmins" extends="base.definition.admin">
+        <put-attribute name="page-id" value="sysadmin-systemadmins" />
+        <put-attribute name="page-section" value="section-sysadmin" />
+        <put-attribute name="title" value="Administrator - Manage System Admins" />
+        <put-attribute name="header" value="/WEB-INF/jsp/common/adminHeader.jsp?sect=sysadmin" />
+        <put-attribute name="actions" value="/WEB-INF/jsp/administrator/sysadmin/actionBar.jsp?page=systemadmins" />
+        <put-attribute name="menu" value="/WEB-INF/jsp/administrator/sysadmin/menu.jsp?page=systemadmins" />
+        <put-attribute name="body" value="/WEB-INF/jsp/administrator/sysadmin/adminInfo/list.jsp" />
+        <put-attribute name="jscript" value="/dspResources/js/admin/sysadmin/adminInfo/list.js" />
+    </definition>
+    
+    <definition name="/administrator/processing-activity/apimessages" extends="base.definition.admin">
+        <put-attribute name="page-id" value="processing-wsmessage" />
+        <put-attribute name="page-section" value="section-processing" />
+        <put-attribute name="title" value="Administrator - Processing Activities" />
+        <put-attribute name="header" value="/WEB-INF/jsp/common/adminHeader.jsp?sect=activity" />
+        <put-attribute name="actions" value="/WEB-INF/jsp/administrator/processing-activities/actionBar.jsp?page=apimessages" />
+        <put-attribute name="menu" value="/WEB-INF/jsp/administrator/processing-activities/menu.jsp?page=apimessages" />
+        <put-attribute name="body" value="/WEB-INF/jsp/administrator/processing-activities/apimessages.jsp" />
+        <put-attribute name="jscript" value="/dspResources/js/admin/processing-activities/apimessages.js" />
+    </definition>
+    
+    <definition name="/administrator/processing-activity/apimessagesOut" extends="base.definition.admin">
+        <put-attribute name="page-id" value="processing-wsmessage" />
+        <put-attribute name="page-section" value="section-processing" />
+        <put-attribute name="title" value="Administrator - Processing Activities" />
+        <put-attribute name="header" value="/WEB-INF/jsp/common/adminHeader.jsp?sect=activity" />
+        <put-attribute name="actions" value="/WEB-INF/jsp/administrator/processing-activities/actionBar.jsp?page=apimessages" />
+        <put-attribute name="menu" value="/WEB-INF/jsp/administrator/processing-activities/menu.jsp?page=apimessages" />
+        <put-attribute name="body" value="/WEB-INF/jsp/administrator/processing-activities/apimessagesOut.jsp" />
+        <put-attribute name="jscript" value="/dspResources/js/admin/processing-activities/apimessagesOut.js" />
+    </definition>
+
+</tiles-definitions>

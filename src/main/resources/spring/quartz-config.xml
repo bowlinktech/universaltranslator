@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<job-scheduling-data
+    xmlns="http://www.quartz-scheduler.org/xml/JobSchedulingData"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.quartz-scheduler.org/xml/JobSchedulingData 
+        http://www.quartz-scheduler.org/xml/job_scheduling_data_1_8.xsd"
+    version="1.8">
+    
+    <schedule>
+        <job>
+            <name>CheckDashboardWatchList</name>
+            <group>processGroup</group>
+            <description>This process will run every 5 minutes to check if any entry needs to be made from the watch list.</description>
+            <job-class>com.hel.iltz.jobs.CheckDashboardWatchList</job-class>
+        </job>
+ 
+        <trigger>
+            <cron>
+                <name>CheckDashboardWatchListTrigger</name>
+                <job-name>CheckDashboardWatchList</job-name>
+                <job-group>processGroup</job-group>
+                <cron-expression>0 0/5 * * * ?</cron-expression>
+            </cron>
+        </trigger>
+    </schedule> 
+    
+     <!--<schedule>
+        <job>
+            <name>BatchUploadTableCleanUp</name>
+            <group>processGroup</group>
+            <description>
+		This process will run every morning and check for fully completed inbound batches and delete the
+		transactiontranslatedin_*batchId* table. A fully completed inbound batch means all associated 
+		batchDownload entries are at a status of 28.
+	    </description>
+            <job-class>com.hel.iltz.jobs.BatchUploadTableCleanUp</job-class>
+        </job>
+ 
+        <trigger>
+            <cron>
+                <name>BatchUploadTableCleanUpTrigger</name>
+                <job-name>BatchUploadTableCleanUp</job-name>
+                <job-group>processGroup</job-group>
+                <cron-expression>0 0 7 1/1 * ? *</cron-expression>
+            </cron>
+        </trigger>
+    </schedule>-->
+    
+    <schedule>
+        <job>
+            <name>LoadMassBatches</name>
+            <group>processGroup</group>
+            <description>This process will run every 2 minutes to look for large files</description>
+            <job-class>com.hel.iltz.jobs.loadMassBatches</job-class>
+        </job>
+ 
+        <trigger>
+            <cron>
+                <name>LoadMassBatchesTrigger</name>
+                <job-name>LoadMassBatches</job-name>
+                <job-group>processGroup</job-group>
+                <cron-expression>0 0/1 * 1/1 * ? *</cron-expression>
+            </cron>
+        </trigger>
+    </schedule>
+    <schedule>
+        <job>
+            <name>MoveRRFiles</name>
+            <group>processGroup</group>
+            <description>This process will run every minute starting at 8 mins of the hour to check if any Rhapsody file will need to be moved and logged</description>
+            <job-class>com.hel.iltz.jobs.MoveRRFiles</job-class>
+        </job>
+ 
+        <trigger>
+            <cron>
+                <name>moveRRTrigger</name>
+                <job-name>MoveRRFiles</job-name>
+                <job-group>processGroup</job-group>
+                <cron-expression>0 0/1 * 1/1 * ? *</cron-expression>
+            </cron>
+        </trigger>
+    </schedule>
+    
+    
+     <schedule>
+        <job>
+            <name>MoveSFTPFiles</name>
+            <group>processGroup</group>
+            <description>This process will run every 2 mins starting at 0 seconds of the minute to check if any SFTP files will need to be moved and logged</description>
+            <job-class>com.hel.iltz.jobs.MoveSFTPFiles</job-class>
+        </job>
+ 
+        <trigger>
+            <cron>
+                <name>moveSFTPTrigger</name>
+                <job-name>MoveSFTPFiles</job-name>
+                <job-group>processGroup</job-group>
+                <cron-expression>0 0/1 * 1/1 * ? *</cron-expression>
+            </cron>
+        </trigger>
+    </schedule>
+    
+    <schedule>
+        <job>
+            <name>ProcessMassInBoundBatches</name>
+            <group>processGroup</group>
+            <description>This process will run every 3 mins </description>
+            <job-class>com.hel.iltz.jobs.processMassBatches</job-class>
+        </job>
+ 
+        <trigger>
+            <cron>
+                <name>ProcessMassInBoundBatchesTrigger</name>
+                <job-name>ProcessMassInBoundBatches</job-name>
+                 <job-group>processGroup</job-group>
+                 <cron-expression>0 0/1 * 1/1 * ? *</cron-expression>
+            </cron>
+        </trigger>
+    </schedule>
+    
+    <schedule>
+        <job>
+            <name>ProcessMassOutputBatches</name>
+            <group>processGroup</group>
+            <description>This process will run every 30 seconds on the 5 second of the minute  to check if any loaded files will need to be process</description>
+            <job-class>com.hel.iltz.jobs.processMassOutputRecords</job-class>
+        </job>
+        <trigger>
+            <cron>
+                <name>ProcessMassOutputBatchesTrigger</name>
+                <job-name>ProcessMassOutputBatches</job-name>
+                <job-group>processGroup</job-group>
+                <cron-expression>0 0/1 * 1/1 * ? *</cron-expression>
+            </cron>
+        </trigger>
+    </schedule>
+    
+    <schedule>
+        <job>
+            <name>ProcessRestAPIMessages</name>
+            <group>processGroup</group>
+            <description>This process will run every 2 minutes starting at 8 mins of the hour to check if any RestAPIMessage need to be written to file</description>
+            <job-class>com.hel.iltz.jobs.ProcessRestAPIMessages</job-class>
+        </job>
+ 
+	<trigger>
+	    <cron>
+		<name>ProcessRestAPIMessagesTrigger</name>
+		<job-name>ProcessRestAPIMessages</job-name>
+		<job-group>processGroup</job-group>
+		<cron-expression>0 0/1 * 1/1 * ? *</cron-expression>
+	    </cron>
+	</trigger>
+    </schedule>
+    
+    <schedule>
+        <job>
+            <name>processWebServiceMessages</name>
+            <group>processGroup</group>
+            <description>This process will run every 5 minutes starting at 8 mins of the hour to check if any WSMessage need to be written to file</description>
+            <job-class>com.hel.iltz.jobs.ProcessWebServiceMessages</job-class>
+        </job>
+ 
+	<trigger>
+	    <cron>
+		<name>processWebServiceMessagesTrigger</name>
+		<job-name>processWebServiceMessages</job-name>
+		<job-group>processGroup</job-group>
+		<cron-expression>0 0/1 * 1/1 * ? *</cron-expression>
+	    </cron>
+	</trigger>
+    </schedule>
+    
+</job-scheduling-data>

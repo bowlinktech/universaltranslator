@@ -1,0 +1,20 @@
+header, aside{
+    display:block;
+}
+
+.wrap, body{
+    height:auto;
+}
+
+.header {
+
+}
+
+.actions-nav {
+}
+
+.wrap {
+    overflow: hidden;
+    height: 1%;
+    zoom:1;
+}

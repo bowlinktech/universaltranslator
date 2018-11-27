@@ -1,0 +1,20 @@
+header, aside{
+    display:block;
+}
+
+.wrap, body{
+    height: 100%;
+}
+
+.footer {
+}
+
+.actions-nav {
+}
+
+.wrap {
+    position:relative;
+    overflow: auto;
+    height: auto;
+    min-height: 100%;
+}

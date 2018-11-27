@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:util="http://www.springframework.org/schema/util"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:task="http://www.springframework.org/schema/task"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+                           http://www.springframework.org/schema/beans/spring-beans.xsd
+                           http://www.springframework.org/schema/mvc
+                           http://www.springframework.org/schema/mvc/spring-mvc.xsd
+                           http://www.springframework.org/schema/context
+                           http://www.springframework.org/schema/context/spring-context.xsd
+                           http://www.springframework.org/schema/util                            
+                           http://www.springframework.org/schema/util/spring-util-3.0.xsd
+                           http://www.springframework.org/schema/task  
+                           http://www.springframework.org/schema/task/spring-task-3.0.xsd">
+
+    <context:component-scan base-package="com.hel.iltz, com.hel.hmiskit, com.hel.rrKit"/>
+    
+    <bean id="viewResolver" class="org.springframework.web.servlet.view.UrlBasedViewResolver">
+        <property name="viewClass">
+            <value>
+                org.springframework.web.servlet.view.tiles2.TilesView
+            </value>
+        </property>
+    </bean>
+    
+    <bean id="tilesConfigurer"
+          class="org.springframework.web.servlet.view.tiles2.TilesConfigurer">
+        <property name="definitions">
+            <list>
+                <value>/WEB-INF/tiles.xml</value>
+            </list>
+        </property>
+    </bean>
+
+    <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+        <property name="prefix" value="/WEB-INF/jsp/" />
+        <property name="suffix" value=".jsp" />
+    </bean>
+   
+    
+    <!-- bind your messages.properties -->
+    <bean class="org.springframework.context.support.ResourceBundleMessageSource" id="messageSource">
+        <property name="basename" value="messages" />
+    </bean>
+	
+    <bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+        <!-- one of the properties available; the maximum file size in bytes -->
+        <!--<property name="maxUploadSize" value="200000"/>-->
+    </bean>
+    
+    <bean id="mailSender" class="org.springframework.mail.javamail.JavaMailSenderImpl">
+        <property name="host" value="${mailserver.host}" />
+        <property name="port" value="${mailserver.port}" />
+        <property name="username" value="${mailserver.username}" />
+        <property name="password" value="${mailserver.password}" />
+        <property name="javaMailProperties">
+            <props>
+                <prop key="mail.smtp.auth">true</prop>
+                <prop key="mail.smtp.starttls.enable">true</prop>
+            </props>
+        </property>
+    </bean>
+    
+    <bean id="emailMessageManagerImpl" class="com.hel.iltz.service.impl.emailMessageManagerImpl">
+        <property name="mailSender" ref="mailSender" />
+    </bean>
+    
+    <context:property-placeholder location="file:${catalina.home}/properties/tanzania.properties"/>
+    
+    <bean id="myProps" class="org.springframework.beans.factory.config.PropertiesFactoryBean">
+        <property name="location" value="file:${catalina.home}/properties/tanzania.properties"/>
+    </bean>
+    
+    <!-- adds system properties -->
+    <bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+        <property name="targetObject">
+            <bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+                <property name="targetClass" value="java.lang.System" />
+                <property name="targetMethod" value="getProperties" />
+            </bean>
+        </property>
+        <property name="targetMethod" value="putAll" />
+        <property name="arguments">
+            <util:properties>
+                <prop key="directory.ilDir">${directory.ilDir}</prop>
+				<prop key="directory.rrTZDir">${directory.rrTZDir}</prop>
+                <prop key="directory.hmisDir">${directory.hmisDir}</prop>
+                <prop key="admin.email">${admin.email}</prop>
+                <prop key="server.identity">${server.identity}</prop> 
+                <prop key="directory.ilMassOutputPath">${directory.ilMassOutputPath}</prop>
+            </util:properties>
+        </property>
+    </bean>
+    
+    <task:annotation-driven />
+    <mvc:annotation-driven />
+    <mvc:resources mapping="/dspResources/**" location="/dspResources/" /> 
+</beans>
