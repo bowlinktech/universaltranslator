@@ -4,14 +4,13 @@
              xsi:schemaLocation="http://www.springframework.org/schema/beans
     http://www.springframework.org/schema/beans/spring-beans.xsd
     http://www.springframework.org/schema/security
-    http://www.springframework.org/schema/security/spring-security-3.2.xsd">
+    http://www.springframework.org/schema/security/spring-security.xsd">
 
     <http pattern="/css/**" security="none"/>
     <http pattern="/javascript/**" security="none" />
-    <http pattern="/headerImages/**" security="none"/>
     <http pattern="/rest.api/**" security="none"/>
 
-    <http auto-config="true" use-expressions="true" disable-url-rewriting="false" >
+    <http auto-config="true" use-expressions="true" disable-url-rewriting="true" >
         <intercept-url access="hasAnyRole('ROLE_ADMIN')" pattern="/administrator/processing-activity/wsmessage/**"></intercept-url>
         <intercept-url access="hasAnyRole('ROLE_ADMIN')" pattern="/administrator/processing-activity/wsmessageOut/**"></intercept-url>
         <intercept-url access="hasAnyRole('ROLE_ADMIN','ROLE_OPERATIONSSTAFF','ROLE_SYSTEMADMIN')" pattern="/administrator/**"></intercept-url>
@@ -20,11 +19,15 @@
         <intercept-url access="permitAll" pattern="/login/*"></intercept-url>
         <intercept-url access="permitAll" pattern="/logout"></intercept-url>
         <logout invalidate-session="true" delete-cookies="JSESSIONID" logout-success-url="/login"></logout>
-        <form-login authentication-success-handler-ref="authenticationSuccessRedirecthandler" 
-                    authentication-failure-url="/loginfailed" 
-                    authentication-details-source-ref="customWebAuthenticationDetails"
-                    login-page="/login" />
-        <session-management invalid-session-url="/login" />
+	<form-login 
+	    authentication-success-handler-ref="authenticationSuccessRedirecthandler" 
+	    authentication-failure-url="/loginfailed" 
+	    authentication-details-source-ref="customWebAuthenticationDetails"
+	    login-page="/login" 
+	    login-processing-url="/loginAction" />
+        <session-management invalid-session-url="/login">
+            <concurrency-control session-registry-alias="sessionRegistry" max-sessions="1" expired-url="/login?expired" />
+        </session-management>
         <headers>
             <cache-control />
             <content-type-options />
@@ -32,14 +35,15 @@
             <frame-options policy="SAMEORIGIN" />
             <xss-protection />
         </headers>
+        <csrf disabled="true"></csrf>
     </http>
      
     <authentication-manager>
         <authentication-provider ref="customAuthenticationProvider" />
     </authentication-manager>
      
-    <beans:bean class="com.hel.iltz.security.CustomWebAuthenticationDetails" id="customWebAuthenticationDetails"></beans:bean>
-    <beans:bean class="com.hel.iltz.security.CustomAuthenticationProvider" id="customAuthenticationProvider"></beans:bean>
-    <beans:bean class="com.hel.iltz.security.CustomAuthenticationHandler" id="authenticationSuccessRedirecthandler"></beans:bean>
+    <beans:bean class="com.hel.ut.security.CustomWebAuthenticationDetails" id="customWebAuthenticationDetails"></beans:bean>
+    <beans:bean class="com.hel.ut.security.CustomAuthenticationProvider" id="customAuthenticationProvider"></beans:bean>
+    <beans:bean class="com.hel.ut.security.CustomAuthenticationHandler" id="authenticationSuccessRedirecthandler"></beans:bean>
     
 </beans:beans>

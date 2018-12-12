@@ -56,17 +56,17 @@
                 </div>
             </section>
         </div>     
-        <div class="col-md-3 col-sm-3 col-xs-6">
-            <section class="panel panel-default panel-stats">
-                <div class="panel-body">
-                    <span class="stat-number"><a href="loginAs" class="loginAs" title="Login As">${totalUsers}</a></span>
-                    <h3>Total Users</h3>
-                    <a href="loginAs" id="loginAs" class="btn btn-primary btn-small" class="loginAs" title="Login As User">
-                        Login As</a>               
-                </div>
-            </section>
-        </div>   	
-<div class="col-md-3 col-sm-3 col-xs-3">
+	<%-- <div class="col-md-3 col-sm-3 col-xs-6">
+	   <section class="panel panel-default panel-stats">
+	       <div class="panel-body">
+		   <span class="stat-number"><a href="loginAs" class="loginAs" title="Login As">${totalUsers}</a></span>
+		   <h3>Total Users</h3>
+		   <a href="loginAs" id="loginAs" class="btn btn-primary btn-small" class="loginAs" title="Login As User">
+		       Login As</a>               
+	       </div>
+	   </section>
+       </div>--%>
+	<div class="col-md-3 col-sm-3 col-xs-3">
             <section class="panel panel-default panel-stats">
                 <div class="panel-body">
                     <span class="stat-number"><a href="getLog" class="getLog" title="Download Latest Tomcat Log">1</a></span>
@@ -81,9 +81,10 @@
             <section class="panel panel-default panel-stats">
                 <div class="panel-body">
                     <span class="stat-number"><a href="moveFilePaths" class="moveFilePaths" title="View File Paths">${filePaths}&nbsp;</a></span>
-                    <h3>View Errored File Paths</h3>
-                         <a href="moveFilePaths" id="moveFilePaths" class="btn btn-primary btn-small" class="moveFilePaths" title="View File Paths">
-                         File Paths</a>               
+
+                    <h3>Bad File Paths</h3>
+                         <a href="moveFilePaths" id="moveFilePaths" class="btn btn-primary btn-small" class="moveFilePaths" title="View File Paths">Bad File Paths</a>               
+
                 </div>
             </section>
         </div>

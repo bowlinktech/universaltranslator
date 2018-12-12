@@ -17,7 +17,8 @@ require.config({
         'responsive-tables': ['jquery'],
         'daterangepicker': ['jquery', 'bootstrap'],
         'dataTables': ['jquery']
-    }
+    },
+    waitSeconds: 0
 });
 
 var datatable;

@@ -6,8 +6,8 @@
 package com.hel.ut.jobs;
 
 import com.hel.ut.service.configurationManager;
-import com.hel.rrKit.messenger.emailManager;
-import com.hel.rrKit.messenger.emailMessage;
+import com.registryKit.messenger.emailManager;
+import com.registryKit.messenger.emailMessage;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;

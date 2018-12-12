@@ -78,7 +78,7 @@ public class hl7toTxt {
 	    Method myMethod = cls.getMethod("HL7toTxt", new Class[]{File.class});
 
 	    /* Get the uploaded HL7 File */
-	    fileLocation = fileLocation.replace("/Applications/ILTZ/", "").replace("/home/ILTZ/", "").replace("/ILTZ/", "");
+	    fileLocation = fileLocation.replace("/Applications/HELProductSuite/universalTranslator/", "").replace("/home/HELProductSuite/universalTranslator/", "").replace("/HELProductSuite/universalTranslator/", "");
 	    dir.setDirByName(fileLocation);
 
 	    File hl7File = new File(dir.getDir() + fileName + ".hr");

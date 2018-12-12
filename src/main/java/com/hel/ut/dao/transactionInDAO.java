@@ -257,5 +257,7 @@ public interface transactionInDAO {
     List<batchDownloads> findBatchesToCleanUp() throws Exception;
     
     void batchUploadTableCleanUp(List<batchDownloads> batchesToCleanup) throws Exception;
+	
+	 List<configurationConnection> getPassThruBatchTargets(Integer batchId, boolean active);
 }
 

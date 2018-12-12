@@ -28,7 +28,6 @@ import javax.annotation.Resource;
 import org.hibernate.Criteria;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
-import org.springframework.beans.factory.annotation.Qualifier;
 
 /**
  * @see com.hel.ut.dao.sysAdminDAO
@@ -41,21 +40,18 @@ public class sysAdminDAOImpl implements sysAdminDAO {
     private UtilitiesDAO udao;
 
     @Autowired
-    @Qualifier("ilsessionFactory")
     private SessionFactory sessionFactory;
 
     @Resource(name = "myProps")
     private Properties myProps;
 
     
-
-
     /**
      * this method takes the table name and searchTerm (if there is one) and return the data in the table
      *
      */
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     @SuppressWarnings("unchecked")
     public List<TableData> getDataList(String utTableName, String searchTerm) {
 
@@ -83,7 +79,7 @@ public class sysAdminDAOImpl implements sysAdminDAO {
     }
 
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public Integer findTotalDataRows(String utTableName) {
         String sql = "select count(id) as rowCount from " + utTableName;
         Query query = sessionFactory
@@ -95,7 +91,7 @@ public class sysAdminDAOImpl implements sysAdminDAO {
     }
 
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public LookUpTable getTableInfo(String urlId) {
 
         LookUpTable lookUpTable = new LookUpTable();
@@ -123,7 +119,7 @@ public class sysAdminDAOImpl implements sysAdminDAO {
      * this method deletes the data item in the table*
      */
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public boolean deleteDataItem(String utTableName, int id) {
         String sql = "delete from " + utTableName + " where id = :id";
         Query deleteTable = sessionFactory.getCurrentSession().createSQLQuery(sql)
@@ -139,7 +135,7 @@ public class sysAdminDAOImpl implements sysAdminDAO {
     }
 
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public TableData getTableData(Integer id, String utTableName) {
         //we create sql, we transform
         TableData tableData = new TableData();
@@ -162,7 +158,7 @@ public class sysAdminDAOImpl implements sysAdminDAO {
     }
 
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public boolean updateTableData(TableData tableData, String utTableName) {
         boolean updated = false;
         String sql = "update " + utTableName
@@ -216,7 +212,7 @@ public class sysAdminDAOImpl implements sysAdminDAO {
 
     @SuppressWarnings("unchecked")
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public List<Macros> getMarcoList(String searchTerm) {
 
         Query query = sessionFactory.getCurrentSession().createQuery("from Macros where "
@@ -228,7 +224,7 @@ public class sysAdminDAOImpl implements sysAdminDAO {
     }
 
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public Long findTotalMacroRows() {
         Query query = sessionFactory.getCurrentSession().createQuery("select count(id) as totalMacros from Macros");
         Long totalMacros = (Long) query.uniqueResult();
@@ -236,7 +232,7 @@ public class sysAdminDAOImpl implements sysAdminDAO {
     }
 
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public Long findtotalHL7Entries() {
         Query query = sessionFactory.getCurrentSession().createQuery("select count(id) as totalHL7 from mainHL7Details");
         Long totalHL7Entries = (Long) query.uniqueResult();
@@ -244,7 +240,7 @@ public class sysAdminDAOImpl implements sysAdminDAO {
     }
 
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public Long findtotalNewsArticles() {
         Query query = sessionFactory.getCurrentSession().createQuery("select count(id) as totalArticles from newsArticle");
         Long totalNewsArticles = (Long) query.uniqueResult();
@@ -255,7 +251,7 @@ public class sysAdminDAOImpl implements sysAdminDAO {
      * this method deletes the macro in the table*
      */
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public boolean deleteMacro(int id) {
         Query deletMarco = sessionFactory.getCurrentSession().createQuery("delete from Macros where id = :macroId)");
         deletMarco.setParameter("macroId", id);
@@ -273,7 +269,7 @@ public class sysAdminDAOImpl implements sysAdminDAO {
      * this method adds a macro*
      */
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public void createMacro(Macros macro) {
         try {
             sessionFactory.getCurrentSession().save(macro);
@@ -284,7 +280,7 @@ public class sysAdminDAOImpl implements sysAdminDAO {
     }
 
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public boolean updateMacro(Macros macro) {
         try {
             sessionFactory.getCurrentSession().update(macro);
@@ -296,7 +292,7 @@ public class sysAdminDAOImpl implements sysAdminDAO {
     }
 
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public void createProcessStatus(lu_ProcessStatus lu) {
         try {
             sessionFactory.getCurrentSession().save(lu);
@@ -306,7 +302,7 @@ public class sysAdminDAOImpl implements sysAdminDAO {
     }
 
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public lu_ProcessStatus getProcessStatusById(int id) throws Exception {
         try {
             return (lu_ProcessStatus) sessionFactory.getCurrentSession().get(lu_ProcessStatus.class, id);
@@ -317,7 +313,7 @@ public class sysAdminDAOImpl implements sysAdminDAO {
     }
 
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public void updateProcessStatus(lu_ProcessStatus lu) {
         try {
             sessionFactory.getCurrentSession().update(lu);
@@ -327,7 +323,7 @@ public class sysAdminDAOImpl implements sysAdminDAO {
     }
 
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     @SuppressWarnings("unchecked")
     public LogoInfo getLogoInfo() {
         LogoInfo logoInfo = new LogoInfo();
@@ -344,7 +340,7 @@ public class sysAdminDAOImpl implements sysAdminDAO {
     }
 
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public void updateLogoInfo(LogoInfo logoDetails) {
         try {
             sessionFactory.getCurrentSession().update(logoDetails);
@@ -357,7 +353,7 @@ public class sysAdminDAOImpl implements sysAdminDAO {
      * The 'getHL7List' function will return the list of saved hl7 standard versions.
      */
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public List<mainHL7Details> getHL7List() throws Exception {
 
         Query query = sessionFactory.getCurrentSession().createQuery("from mainHL7Details order by id desc");
@@ -376,7 +372,7 @@ public class sysAdminDAOImpl implements sysAdminDAO {
      * @return	This function will return a HL7Details object
      */
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     @SuppressWarnings("unchecked")
     public mainHL7Details getHL7Details(int hl7Id) {
         Criteria criteria = sessionFactory.getCurrentSession().createCriteria(mainHL7Details.class);
@@ -398,7 +394,7 @@ public class sysAdminDAOImpl implements sysAdminDAO {
      * @return This function will return a list of HL7Segment objects
      */
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public List<mainHL7Segments> getHL7Segments(int hl7Id) {
         Criteria criteria = sessionFactory.getCurrentSession().createCriteria(mainHL7Segments.class);
         criteria.add(Restrictions.eq("hl7Id", hl7Id));
@@ -415,7 +411,7 @@ public class sysAdminDAOImpl implements sysAdminDAO {
      * @return This function will return a list of HL7Elements objects
      */
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public List<mainHL7Elements> getHL7Elements(int hl7Id, int segmentId) {
         Criteria criteria = sessionFactory.getCurrentSession().createCriteria(mainHL7Elements.class);
         criteria.add(Restrictions.eq("hl7Id", hl7Id));
@@ -431,7 +427,7 @@ public class sysAdminDAOImpl implements sysAdminDAO {
      * @param details The Hl7 details object
      */
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public void updateHL7Details(mainHL7Details details) {
         sessionFactory.getCurrentSession().saveOrUpdate(details);
     }
@@ -442,7 +438,7 @@ public class sysAdminDAOImpl implements sysAdminDAO {
      * @param segment The segment object to update
      */
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public void updateHL7Segments(mainHL7Segments segment) {
         sessionFactory.getCurrentSession().update(segment);
     }
@@ -453,7 +449,7 @@ public class sysAdminDAOImpl implements sysAdminDAO {
      * @param element The segment element object to update.
      */
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public void updateHL7Elements(mainHL7Elements element) {
         sessionFactory.getCurrentSession().update(element);
     }
@@ -464,7 +460,7 @@ public class sysAdminDAOImpl implements sysAdminDAO {
      * @param HL7Details The object holding the new HL7 Object
      */
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public int createHL7(mainHL7Details HL7Details) {
         Integer lastId;
 
@@ -479,7 +475,7 @@ public class sysAdminDAOImpl implements sysAdminDAO {
      * @param newSegment The object holding the new HL7 Object
      */
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public int saveHL7Segment(mainHL7Segments newSegment) {
         Integer lastId;
 
@@ -494,7 +490,7 @@ public class sysAdminDAOImpl implements sysAdminDAO {
      * @param newElement The object holding the new HL7 Element Object
      */
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public int saveHL7Element(mainHL7Elements newElement) {
         Integer lastId;
 
@@ -504,7 +500,7 @@ public class sysAdminDAOImpl implements sysAdminDAO {
     }
 
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public List<lu_ProcessStatus> getAllProcessStatus() throws Exception {
 
         Criteria statusList = sessionFactory.getCurrentSession().createCriteria(lu_ProcessStatus.class);
@@ -517,7 +513,7 @@ public class sysAdminDAOImpl implements sysAdminDAO {
     }
 
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public List<lu_ProcessStatus> getAllHistoryFormProcessStatus() throws Exception {
 
         Criteria statusList = sessionFactory.getCurrentSession().createCriteria(lu_ProcessStatus.class);
@@ -531,7 +527,7 @@ public class sysAdminDAOImpl implements sysAdminDAO {
     }
 
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public Long findTotalUsers() throws Exception {
         Query query = sessionFactory.getCurrentSession().createQuery("select count(id) as totalUsers from User");
         Long totalUsers = (Long) query.uniqueResult();
@@ -540,7 +536,7 @@ public class sysAdminDAOImpl implements sysAdminDAO {
     
     
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
 	public List<MoveFilesLog> getMoveFilesLog(Integer statusId) throws Exception {
 		Criteria criteria = sessionFactory.getCurrentSession().createCriteria(MoveFilesLog.class);
 		if (statusId != null) {
@@ -552,7 +548,7 @@ public class sysAdminDAOImpl implements sysAdminDAO {
 	}
 
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public void deleteMoveFilesLog(MoveFilesLog moveFileLog) throws Exception {
         Query deleteFields = sessionFactory.getCurrentSession().createQuery("delete from MoveFilesLog where id = :moveFilePathId");
         deleteFields.setParameter("moveFilePathId", moveFileLog.getId());

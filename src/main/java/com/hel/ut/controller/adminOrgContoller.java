@@ -33,11 +33,7 @@ import com.hel.ut.reference.USStateList;
 import com.hel.ut.service.configurationManager;
 import com.hel.ut.service.configurationTransportManager;
 import com.hel.ut.service.messageTypeManager;
-import com.hel.rrKit.hierarchy.hierarchyManager;
-import com.hel.rrKit.hierarchy.programHierarchyDetails;
-import com.hel.rrKit.hierarchy.programOrgHierarchy;
-import com.hel.rrKit.program.program;
-import com.hel.rrKit.program.programManager;
+
 
 /**
  * The adminOrgController class will handle all URL requests that fall inside of the '/administrator/organizations' url path.
@@ -67,11 +63,6 @@ public class adminOrgContoller {
     @Autowired
     private configurationTransportManager configurationTransportManager;
     
-    @Autowired
-    private programManager programmanager;
-    
-    @Autowired
-    private hierarchyManager hierarchymanager;
 
     /**
      * The private maxResults variable will hold the number of results to show per list page.
@@ -131,9 +122,6 @@ public class adminOrgContoller {
         List<Organization> organizations = organizationManager.getOrganizations();
         mav.addObject("organizationList", organizations);
 	
-	//Get the list of rapid registry programs
-	List<program> registries = programmanager.getActivePrograms();
-	mav.addObject("registries", registries);
 	
         return mav;
 
@@ -238,10 +226,6 @@ public class adminOrgContoller {
         List<Organization> organizations = organizationManager.getOrganizations();
         mav.addObject("organizationList", organizations);
 	
-	//Get the list of rapid registry programs
-	List<program> registries = programmanager.getActivePrograms();
-	mav.addObject("registries", registries);
-
         return mav;
 
     }
@@ -675,40 +659,6 @@ public class adminOrgContoller {
         return mav;
     }
 
-    /**
-     * The '/getRegistryEntities.do' GET request will return a list of Tier 2 entities
-     * for the passed in registry
-     *
-     * @param registryId
-     *
-     * @return The function will return a list of program upload types.
-     */
-    @SuppressWarnings("rawtypes")
-    @RequestMapping(value = {"/{cleanURL}/getRegistryEntities.do", "/getRegistryEntities.do"}, method = RequestMethod.GET)
-    public @ResponseBody
-    List<programHierarchyDetails> getRegistryEntities(@RequestParam(value = "registryId", required = true) String registryId) throws Exception {
-	
-	List<programOrgHierarchy> entities = hierarchymanager.getProgramOrgHierarchy(Integer.parseInt(registryId));
-	List<programHierarchyDetails> registryEntities = new ArrayList<programHierarchyDetails>();
-	
-	if(entities != null) {
-	    if(entities.size() > 0) {
-		List<programHierarchyDetails> tier2Entities = hierarchymanager.getProgramHierarchyItems(entities.get(1).getId());
-		
-		if(tier2Entities != null) {
-		    if(tier2Entities.size() > 0) {
-			for(programHierarchyDetails tier2Entity : tier2Entities) {
-			    if(tier2Entity.isStatus() == true) {
-				registryEntities.add(tier2Entity);
-			    }
-			}
-		    }
-		}
-	    }
-	}
-	
-        return registryEntities;
-    }
-
+    
 
 }

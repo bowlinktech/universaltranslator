@@ -18,7 +18,6 @@ import com.hel.ut.reference.fileSystem;
 import java.util.ArrayList;
 import org.hibernate.criterion.Order;
 import org.hibernate.exception.SQLGrammarException;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
@@ -32,7 +31,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class organizationDAOImpl implements organizationDAO {
 
     @Autowired
-    @Qualifier("ilsessionFactory")
     private SessionFactory sessionFactory;
 
     /**
@@ -45,7 +43,7 @@ public class organizationDAOImpl implements organizationDAO {
      * @return The function will return the id of the created organization
      */
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public Integer createOrganization(Organization organization) {
         Integer lastId = null;
 
@@ -63,7 +61,7 @@ public class organizationDAOImpl implements organizationDAO {
      *
      */
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public void updateOrganization(Organization organization) {
         sessionFactory.getCurrentSession().update(organization);
     }
@@ -78,7 +76,7 @@ public class organizationDAOImpl implements organizationDAO {
      * @return	This function will return a single organization object
      */
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public Organization getOrganizationById(int orgId) {
         return (Organization) sessionFactory.
                 getCurrentSession().
@@ -95,7 +93,7 @@ public class organizationDAOImpl implements organizationDAO {
      * @return	This function will return a single organization object
      */
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     @SuppressWarnings("unchecked")
     public List<Organization> getOrganizationByName(String cleanURL) {
         Criteria criteria = sessionFactory.getCurrentSession().createCriteria(Organization.class);
@@ -111,7 +109,7 @@ public class organizationDAOImpl implements organizationDAO {
      * @return This function will return the total organizations
      */
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public Long findTotalOrgs() {
         Query query = sessionFactory.getCurrentSession().createQuery("select count(id) as totalOrgs from Organization where cleanURL is not ''");
 
@@ -130,7 +128,7 @@ public class organizationDAOImpl implements organizationDAO {
      * @Return	This function will return a list of organization objects
      */
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     @SuppressWarnings("unchecked")
     public List<Organization> getOrganizations() {
 	
@@ -151,7 +149,7 @@ public class organizationDAOImpl implements organizationDAO {
      * @Return	This function will return a list of organization objects
      */
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     @SuppressWarnings("unchecked")
     public List<Organization> getLatestOrganizations(int maxResults) {
         Query query = sessionFactory.getCurrentSession().createQuery("from Organization where status = 1 order by dateCreated desc");
@@ -173,7 +171,7 @@ public class organizationDAOImpl implements organizationDAO {
      * @Return	This function will return a list of organization objects
      */
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     @SuppressWarnings("unchecked")
     public List<Organization> getAllActiveOrganizations() {
         Query query = sessionFactory.getCurrentSession().createQuery("from Organization where cleanURL is not '' and status = 1 order by orgName asc");
@@ -192,7 +190,7 @@ public class organizationDAOImpl implements organizationDAO {
      * @Return	This function will return the total number of users for the organization
      */
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public Long findTotalUsers(int orgId) {
 
         Query query = sessionFactory.getCurrentSession().createQuery("select count(id) as totalUsers from User where orgId = :orgId");
@@ -214,7 +212,7 @@ public class organizationDAOImpl implements organizationDAO {
      * @Return	This function will return the total number of configurations for the organization
      */
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public Long findTotalConfigurations(int orgId) {
 
         Query query = sessionFactory.getCurrentSession().createQuery("select count(id) as totalConfigs from configuration where orgId = :orgId");
@@ -236,7 +234,7 @@ public class organizationDAOImpl implements organizationDAO {
      * @Return	This function will return a list of user objects
      */
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     @SuppressWarnings("unchecked")
     public List<User> getOrganizationUsers(int orgId) {
 
@@ -255,7 +253,7 @@ public class organizationDAOImpl implements organizationDAO {
      * @Return This function will not return any values.
      */
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     @SuppressWarnings({"unchecked", "empty-statement"})
     public void deleteOrganization(int orgId) {
         
@@ -319,7 +317,7 @@ public class organizationDAOImpl implements organizationDAO {
      * @return This function will return a list or organization objects
      */
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public List<Organization> getAssociatedOrgs(int orgId) {
 
         /* Get a list of configurations for the passed in org */

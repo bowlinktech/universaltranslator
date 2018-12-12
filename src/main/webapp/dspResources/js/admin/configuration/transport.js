@@ -46,26 +46,7 @@ require(['./main'], function () {
             $('#wsDiv').show();
         }
 	
-	if(selMethodId === "8") {
-	    $('#rrProgramDiv').show();
-	    $('#rrprogramuploadtypeDiv').show();
-	    $('#fileLocation').val("/ILTZ/hmis/input/");
-	    $('#fileLocation').attr('readonly', true);
-	    $('#fileType option[value=2]').attr("selected", "selected");
-	    $('#fileType').attr('readonly', true);
-	    $('#fileExt').val("txt");
-	    $('#fileExt').attr('readonly', true);
-	    $('#fileDelimiter option[value=2]').attr("selected", "selected");
-	    $('#fileDelimiter').attr('readonly', true);
-	    $('#appendDateTimeDiv').hide();
-	    $('#mergeBatchesDiv').hide();
-	    $('#useSourceFileName').hide();
-	    $('#encodingId option[value=2]').attr("selected", "selected");
-	    $('#encodingId').attr('readonly', true);
-	    $('#targetFileName').attr('readonly', true);
-	    
-	    getRegistryUploadTypes();
-	}
+	
 	
 	if (selMethodId === "9") {
             $('#apiDiv').show();
@@ -131,24 +112,7 @@ require(['./main'], function () {
 		$('#rrprogramuploadtypeDiv').show();
 	    }
 	    
-	    if(methodId === "8") {
-		$('#rrProgramDiv').show();
-		$('#rrprogramuploadtypeDiv').show();
-		$('#fileLocation').val("/ILTZ/hmis/input/");
-		$('#fileLocation').attr('readonly', true);
-		$('#fileType option[value=2]').attr("selected", "selected");
-		$('#fileType').attr('readonly', true);
-		$('#fileExt').val("txt");
-		$('#fileExt').attr('readonly', true);
-		$('#fileDelimiter option[value=2]').attr("selected", "selected");
-		$('#fileDelimiter').attr('readonly', true);
-		$('#appendDateTimeDiv').hide();
-		$('#mergeBatchesDiv').hide();
-		$('#useSourceFileName').hide();
-		$('#encodingId option[value=2]').attr("selected", "selected");
-		$('#encodingId').attr('readonly', true);
-		$('#targetFileName').attr('readonly', true);
-	    }
+	    
 	    
 	    if (methodId === "9") {
 		$('#apiDiv').show();
@@ -407,10 +371,11 @@ function checkFormFields() {
     $('span.control-label').removeClass("has-error");
     $('span.control-label').html("");
     $('.alert-danger').hide();
-
+    
+    var type = $('#configtype').attr('rel');
+    
     var selMethodId = $('#transportMethod').val();
     var fileType = $('#fileType').val();
-    var type = $('#configType').val();
     
     //Make sure a transport method is chosen
     if ($('#transportMethod').val() === "") {
@@ -420,7 +385,8 @@ function checkFormFields() {
         hasErrors = 1;
     }
     
-    if( selMethodId !== "8" && type === "1") {
+    
+    if (selMethodId !== "8" && type !== "2") {
 	//Make sure the error threshold is numeric and greater than 0
         if ($('#threshold').val() > 100 || !$.isNumeric($('#threshold').val())) {
             $('#thresholdDiv').addClass("has-error");

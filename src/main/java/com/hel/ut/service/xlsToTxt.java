@@ -44,7 +44,7 @@ public class xlsToTxt {
 
     	dir.setDir(orgDetails.getcleanURL(), "loadFiles");
     	/* Get the uploaded xls File */
-    	fileLocation = fileLocation.replace("/Applications/ILTZ/", "").replace("/home/ILTZ/", "").replace("/ILTZ/", "");
+    	fileLocation = fileLocation.replace("/Applications/HELProductSuite/universalTranslator/", "").replace("/home/HELProductSuite/universalTranslator/", "").replace("/HELProductSuite/universalTranslator/", "");
     	dir.setDirByName(fileLocation);
     	
     	String excelFile = (excelFileName + ".xls");

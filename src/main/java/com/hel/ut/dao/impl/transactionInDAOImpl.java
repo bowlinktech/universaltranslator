@@ -57,7 +57,6 @@ import org.hibernate.criterion.Restrictions;
 import org.hibernate.transform.Transformers;
 import org.hibernate.type.StandardBasicTypes;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -69,7 +68,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class transactionInDAOImpl implements transactionInDAO {
 
     @Autowired
-    @Qualifier("ilsessionFactory")
     private SessionFactory sessionFactory;
 
     @Autowired
@@ -80,8 +78,6 @@ public class transactionInDAOImpl implements transactionInDAO {
 
     @Autowired
     private configurationTransportManager configurationtransportmanager;
-
-    private String schemaName = "iltz";
 
     //list of final status - these records we skip
     private List<Integer> transRELId = Arrays.asList(11, 12, 13, 16);
@@ -100,7 +96,7 @@ public class transactionInDAOImpl implements transactionInDAO {
      * @return The function will return a String
      */
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public String getFieldValue(String tableName, String tableCol, String idCol, int idValue) {
 
 	String sql = ("select " + tableCol + " from " + tableName + " where " + idCol + " = :id");
@@ -136,7 +132,7 @@ public class transactionInDAOImpl implements transactionInDAO {
      * @return The function will return a list of select box options
      */
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public List<fieldSelectOptions> getFieldSelectOptions(int fieldId, int configId) {
 
 	List<fieldSelectOptions> fieldSelectOptions = new ArrayList<fieldSelectOptions>();
@@ -190,7 +186,7 @@ public class transactionInDAOImpl implements transactionInDAO {
      * @return This function returns the batchId for the newly inserted batch
      */
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public Integer submitBatchUpload(batchUploads batchUpload) throws Exception {
 
 	Integer batchId = null;
@@ -212,7 +208,7 @@ public class transactionInDAOImpl implements transactionInDAO {
      * @return This function does not return anything
      */
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public void submitBatchUploadChanges(batchUploads batchUpload) throws Exception {
 	sessionFactory.getCurrentSession().update(batchUpload);
     }
@@ -226,7 +222,7 @@ public class transactionInDAOImpl implements transactionInDAO {
      * @return The function will return a list of sent transactions
      */
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public List<batchUploads> getsentBatches(int userId, int orgId, Date fromDate, Date toDate) throws Exception {
 
 	return findsentBatches(userId, orgId, 0, 0, fromDate, toDate);
@@ -240,7 +236,7 @@ public class transactionInDAOImpl implements transactionInDAO {
      * @return The function will return a list of sent transactions
      */
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public List<batchUploads> getsentBatchesHistory(int userId, int orgId, int toOrgId, int messageTypeId, Date fromDate, Date toDate) throws Exception {
 
 	return findsentBatches(userId, orgId, toOrgId, messageTypeId, fromDate, toDate);
@@ -253,7 +249,7 @@ public class transactionInDAOImpl implements transactionInDAO {
      *
      * @return The function will return a list of sent transactions
      */
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public List<batchUploads> findsentBatches(int userId, int orgId, int toOrgId, int messageTypeId, Date fromDate, Date toDate) throws Exception {
 
 	/* Get a list of connections the user has access to */
@@ -336,7 +332,7 @@ public class transactionInDAOImpl implements transactionInDAO {
      * @param batchId The id of the batch to return.
      */
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public batchUploads getBatchDetails(int batchId) throws Exception {
 	return (batchUploads) sessionFactory.getCurrentSession().get(batchUploads.class, batchId);
     }
@@ -349,7 +345,7 @@ public class transactionInDAOImpl implements transactionInDAO {
      * @return This function will return a batchUpload object
      */
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public batchUploads getBatchDetailsByBatchName(String batchName) throws Exception {
 	Query query = sessionFactory.getCurrentSession().createQuery("from batchUploads where utBatchName = :batchName");
 	query.setParameter("batchName", batchName);
@@ -363,7 +359,7 @@ public class transactionInDAOImpl implements transactionInDAO {
     }
 
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     @SuppressWarnings("unchecked")
     public List<ConfigForInsert> setConfigForInsert(int configId, int batchUploadId) {
 	String sql = ("call setSqlForConfig(:id, :batchUploadId);");
@@ -396,14 +392,14 @@ public class transactionInDAOImpl implements transactionInDAO {
      * added the ability to exclude selected statusIds. Original method only exclude statusId of 1 for uploadBatch
      */
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public List<batchUploads> getuploadedBatches(int userId, int orgId, Date fromDate, Date toDate) throws Exception {
 	return getuploadedBatches(userId, orgId, fromDate, toDate, Arrays.asList(1));
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public List<batchUploads> getuploadedBatches(int userId, int orgId, Date fromDate, Date toDate, List<Integer> excludedStatusIds) throws Exception {
 
 	/* Get a list of connections the user has access to */
@@ -469,7 +465,7 @@ public class transactionInDAOImpl implements transactionInDAO {
     }
 
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public List<batchUploads> getAllUploadedBatches(Date fromDate, Date toDate) throws Exception {
 	return getAllUploadedBatches(fromDate, toDate, 0, "");
     }
@@ -483,7 +479,7 @@ public class transactionInDAOImpl implements transactionInDAO {
      * @throws Exception
      */
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public List<batchUploads> getAllRejectedBatches(Date fromDate, Date toDate, Integer fetchSize) throws Exception {
 
 
@@ -520,7 +516,7 @@ public class transactionInDAOImpl implements transactionInDAO {
      * @throws Exception
      */
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public List<batchUploads> getAllUploadedBatches(Date fromDate, Date toDate, Integer fetchSize, String batchName) throws Exception {
 
 	int firstResult = 0;
@@ -551,7 +547,7 @@ public class transactionInDAOImpl implements transactionInDAO {
     
 
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public void updateBatchStatus(Integer batchUploadId, Integer statusId, String timeField) throws Exception {
 
 	String sql = "update batchUploads set statusId = :statusId ";
@@ -577,7 +573,7 @@ public class transactionInDAOImpl implements transactionInDAO {
     }
 
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public boolean allowBatchClear(Integer batchUploadId) {
 	String sql
 		= "select count(id) as rowCount from batchUploads where id = :id and statusId in (22,23,1);";
@@ -591,7 +587,7 @@ public class transactionInDAOImpl implements transactionInDAO {
     }
 
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public Integer clearBatchTransactionTables(Integer batchUploadId, Integer configId) {
 	
 	String clearSQL = "";
@@ -614,7 +610,7 @@ public class transactionInDAOImpl implements transactionInDAO {
      * errorId = 1 is required field missing* we do not re-check REL records
      */
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public Integer insertFailedRequiredFields(configurationFormFields cff, Integer batchUploadId) {
 	
 	try {
@@ -644,7 +640,7 @@ public class transactionInDAOImpl implements transactionInDAO {
     }
 
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public Integer genericValidation(configurationFormFields cff, Integer validationTypeId, Integer batchUploadId, String regEx) {
 
 	String sql = "call insertValidationErrors(:vtType, :fieldNo, :batchUploadId, :configId, :transactionId)";
@@ -672,7 +668,7 @@ public class transactionInDAOImpl implements transactionInDAO {
      * The 'getFeedbackReportConnection' method will return a list of connections for the clicked feedback report.
      */
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public List<Integer> getFeedbackReportConnection(int configId, int targetorgId) {
 
 	Criteria configurationConnections = sessionFactory.getCurrentSession().createCriteria(configurationConnection.class);
@@ -705,7 +701,7 @@ public class transactionInDAOImpl implements transactionInDAO {
 
     
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public void updateFieldNoWithCWData(Integer configId, Integer batchId, Integer fieldNo, Integer passClear, boolean foroutboundProcessing) {
 	
 	String inboundOutbound = "Inbound";
@@ -754,7 +750,7 @@ public class transactionInDAOImpl implements transactionInDAO {
     }
 
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public void flagCWErrors(Integer configId, Integer batchId, configurationDataTranslations cdt, boolean foroutboundProcessing) {
 
 	String sql;
@@ -800,7 +796,7 @@ public class transactionInDAOImpl implements transactionInDAO {
     }
 
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public Integer flagMacroErrors(Integer configId, Integer batchId, configurationDataTranslations cdt, boolean foroutboundProcessing) {
 	
 	String inboundOutbound = "Inbound";
@@ -860,7 +856,7 @@ public class transactionInDAOImpl implements transactionInDAO {
      * @return
      */
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public Integer executeMacro(Integer configId, Integer batchId, configurationDataTranslations cdt, boolean foroutboundProcessing,Macros macro) {
 
 	String inboundOutbound = "Inbound";
@@ -917,7 +913,7 @@ public class transactionInDAOImpl implements transactionInDAO {
     }
 
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public void insertProcessingError(Integer errorId, Integer configId, Integer batchId,
 	    Integer fieldNo, Integer macroId, Integer cwId, Integer validationTypeId,
 	    boolean required, boolean foroutboundProcessing, String stackTrace) {
@@ -928,7 +924,7 @@ public class transactionInDAOImpl implements transactionInDAO {
     }
 
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public void insertProcessingError(Integer errorId, Integer configId, Integer batchId,
 	    Integer fieldNo, Integer macroId, Integer cwId, Integer validationTypeId,
 	    boolean required, boolean foroutboundProcessing, String stackTrace, Integer transactionId) {
@@ -967,7 +963,7 @@ public class transactionInDAOImpl implements transactionInDAO {
     }
 
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     @SuppressWarnings("unchecked")
     public List<configurationTransport> getHandlingDetailsByBatch(int batchId) throws Exception {
 	
@@ -989,7 +985,7 @@ public class transactionInDAOImpl implements transactionInDAO {
     }
 
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public void updateRecordCounts(Integer batchId, List<Integer> statusIds, boolean foroutboundProcessing, String colNameToUpdate) {
 	String sql = "";
 	
@@ -1034,7 +1030,7 @@ public class transactionInDAOImpl implements transactionInDAO {
     }
 
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public Integer getRecordCounts(Integer batchId, List<Integer> statusIds, boolean foroutboundProcessing, boolean inStatusIds) {
 	
 	String tableName = "transactiontranslatedin_"+batchId;
@@ -1068,7 +1064,7 @@ public class transactionInDAOImpl implements transactionInDAO {
     }
 
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public Integer insertLoadData(Integer batchId, Integer configId,String delimChar, String fileWithPath, String loadTableName, boolean containsHeaderRow, String lineTerminator) {
 
 	try {
@@ -1101,7 +1097,7 @@ public class transactionInDAOImpl implements transactionInDAO {
     }
 
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public Integer updateConfigIdForBatch(Integer batchId, Integer configId) {
 	
 	try {
@@ -1117,7 +1113,7 @@ public class transactionInDAOImpl implements transactionInDAO {
     }
 
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public Integer loadTransactionTranslatedIn(Integer batchId, Integer configId) {
 	
 	List<configurationFormFields> configFormFields = configurationtransportmanager.getConfigurationFields(configId,0);
@@ -1159,7 +1155,7 @@ public class transactionInDAOImpl implements transactionInDAO {
     }
 
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     @SuppressWarnings("unchecked")
     public List<configurationConnection> getBatchTargets(Integer batchId, boolean active) {
 	
@@ -1198,7 +1194,7 @@ public class transactionInDAOImpl implements transactionInDAO {
      */
     @SuppressWarnings("unchecked")
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public List<batchUploads> getBatchesByStatusIds(List<Integer> statusIds) {
 	try {
 	    /* Get a list of uploaded batches for these statuses */
@@ -1213,7 +1209,7 @@ public class transactionInDAOImpl implements transactionInDAO {
     }
 
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public Integer rejectInvalidTargetOrg(Integer batchId, configurationConnection bt) {
 	try {
 	    //error Id 9 - invalid target org
@@ -1239,7 +1235,7 @@ public class transactionInDAOImpl implements transactionInDAO {
     }
 
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public Integer rejectNoConnections(batchUploads batch) {
 	try {
 	    //error Id 10 - no connections for source config
@@ -1263,7 +1259,7 @@ public class transactionInDAOImpl implements transactionInDAO {
     }
 
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public boolean checkPermissionForBatch(User userInfo, batchUploads batchInfo) {
 
 	try {
@@ -1287,7 +1283,7 @@ public class transactionInDAOImpl implements transactionInDAO {
     }
 
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public ConfigErrorInfo setConfigErrorInfo(Integer batchId, Integer errorCode, ConfigErrorInfo configErrorInfo) {
 
 	//depending on errorCode
@@ -1295,7 +1291,7 @@ public class transactionInDAOImpl implements transactionInDAO {
     }
 
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     @SuppressWarnings("unchecked")
     public ConfigErrorInfo getHeaderForConfigErrorInfo(Integer batchId, ConfigErrorInfo configErrorInfo, List<Integer> rptFieldArray) {
 
@@ -1332,7 +1328,7 @@ public class transactionInDAOImpl implements transactionInDAO {
     }
 
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     @SuppressWarnings("unchecked")
     public List<UserActivity> getBatchUserActivities(batchUploads batchInfo, boolean foroutboundProcessing) {
 	String batchColName = "batchUploadId";
@@ -1364,7 +1360,7 @@ public class transactionInDAOImpl implements transactionInDAO {
     }
 
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public Integer insertSFTPRun(MoveFilesLog sftpJob) {
 	try {
 	    Integer lastId = (Integer) sessionFactory.getCurrentSession().save(sftpJob);
@@ -1377,7 +1373,7 @@ public class transactionInDAOImpl implements transactionInDAO {
     }
 
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public void updateSFTPRun(MoveFilesLog sftpJob) {
 	try {
 	    sessionFactory.getCurrentSession().update(sftpJob);
@@ -1388,7 +1384,7 @@ public class transactionInDAOImpl implements transactionInDAO {
     }
 
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public List<configurationFTPFields> getFTPInfoForJob(Integer method) {
 	try {
 	    String sql = ("select rel_TransportFTPDetails.id, directory, ip, username, password, method, port, protocol, certification, transportId "
@@ -1413,7 +1409,7 @@ public class transactionInDAOImpl implements transactionInDAO {
     }
 
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     @SuppressWarnings("unchecked")
     public List<configurationRhapsodyFields> getRhapsodyInfoForJob(
 	    Integer method) {
@@ -1440,7 +1436,7 @@ public class transactionInDAOImpl implements transactionInDAO {
     }
 
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     @SuppressWarnings("unchecked")
     public List<Integer> checkCWFieldForList(Integer configId, Integer batchId,configurationDataTranslations cdt, boolean foroutboundProcessing) {
 	
@@ -1484,7 +1480,7 @@ public class transactionInDAOImpl implements transactionInDAO {
     }
 
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     @SuppressWarnings("unchecked")
     public List<IdAndFieldValue> getIdAndValuesForConfigField(Integer configId,Integer batchId, configurationDataTranslations cdt,boolean foroutboundProcessing) {
 	
@@ -1533,7 +1529,7 @@ public class transactionInDAOImpl implements transactionInDAO {
     }
 
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public Integer updateFieldValue(Integer batchId, String fieldValue, Integer fieldNo, Integer transactionId, boolean foroutboundProcessing) {
 	try {
 	    String sql = "";
@@ -1559,7 +1555,7 @@ public class transactionInDAOImpl implements transactionInDAO {
     }
 
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public void trimFieldValues(Integer batchId, boolean foroutboundProcessing, Integer configId, boolean trimAll) {
 	
 	String sql = "";
@@ -1596,7 +1592,7 @@ public class transactionInDAOImpl implements transactionInDAO {
     }
 
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public Integer updateBatchDLStatusByUploadBatchId(Integer batchUploadId, Integer fromStatusId, Integer toStatusId, String timeField) {
 	try {
 	    String sql = "update batchDownloads set statusId = :toStatusId ";
@@ -1633,7 +1629,7 @@ public class transactionInDAOImpl implements transactionInDAO {
 
 
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public Integer clearBatchDownloads(List<Integer> batchIds) {
 	String sql = "delete from batchDownloads where id in (:batchIds);";
 	try {
@@ -1649,7 +1645,7 @@ public class transactionInDAOImpl implements transactionInDAO {
     }
 
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public String getTransactionInIdsFromBatch(Integer batchUploadId) {
 	try {
 	    String sql = "select concat('', min(id),' to ', max(id)) as idList from transactioninrecords_"+batchUploadId+" "
@@ -1671,7 +1667,7 @@ public class transactionInDAOImpl implements transactionInDAO {
     }
 
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     @SuppressWarnings("unchecked")
     public List<WSMessagesIn> getWSMessagesByStatusId(List<Integer> statusIds) {
 	//1 if list of statusId is null, we get all
@@ -1692,7 +1688,7 @@ public class transactionInDAOImpl implements transactionInDAO {
     }
 
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     @SuppressWarnings("unchecked")
     public WSMessagesIn getWSMessagesById(Integer wsMessageId) {
 	//1 if list of statusId is null, we get all
@@ -1713,7 +1709,7 @@ public class transactionInDAOImpl implements transactionInDAO {
     }
 
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public Integer updateWSMessage(WSMessagesIn wsMessage) {
 	try {
 	    sessionFactory.getCurrentSession().update(wsMessage);
@@ -1727,7 +1723,7 @@ public class transactionInDAOImpl implements transactionInDAO {
     }
 
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public List<Integer> getErrorCodes(List<Integer> codesToIgnore) {
 	try {
 	    String sql = "select id from lu_errorcodes";
@@ -1750,7 +1746,7 @@ public class transactionInDAOImpl implements transactionInDAO {
     }
 
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public Integer rejectInvalidSourceSubOrg(batchUploads batch,configurationConnection bt, boolean nofinalStatus) {
 	
 	try {
@@ -1796,7 +1792,7 @@ public class transactionInDAOImpl implements transactionInDAO {
      * @throws Exception
      */
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public List<Integer> geBatchesIdsForReport(String fromDate, String toDate) throws Exception {
 
 	String sql = "select id from batchUploads a "
@@ -1814,7 +1810,7 @@ public class transactionInDAOImpl implements transactionInDAO {
     }
 
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public BigInteger getMessagesSent(String fromDate, String toDate) throws Exception {
 
 	String sql = "select count(a.id) as totalMessagesSent "
@@ -1828,7 +1824,7 @@ public class transactionInDAOImpl implements transactionInDAO {
     }
 
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public BigInteger getRejectedCount(String fromDate, String toDate) throws Exception {
 
 	String sql = "select count(a.id) as totalErrors "
@@ -1842,7 +1838,7 @@ public class transactionInDAOImpl implements transactionInDAO {
     }
 
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public List<activityReportList> getReferralList(String fromDate, String toDate) throws Exception {
 
 	String sql = ("select a.configId, c.orgname as orgName, d.displayName as messageType, d.id as messageTypeId,"
@@ -1880,7 +1876,7 @@ public class transactionInDAOImpl implements transactionInDAO {
      * @throws Exception
      */
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public List<referralActivityExports> getReferralActivityExports() throws Exception {
 
 	Query query = sessionFactory.getCurrentSession().createQuery("from referralActivityExports order by dateSubmitted desc");
@@ -1900,7 +1896,7 @@ public class transactionInDAOImpl implements transactionInDAO {
      * @throws Exception
      */
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public void saveReferralActivityExport(referralActivityExports activityExport) throws Exception {
 	sessionFactory.getCurrentSession().save(activityExport);
     }
@@ -1913,7 +1909,7 @@ public class transactionInDAOImpl implements transactionInDAO {
      * @throws Exception
      */
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public String getReportActivityStatusValueById(Integer activityStatusId) throws Exception {
 	String sql = "select descValue as statusValue from rel_crosswalkdata where crosswalkId = 19 and targetValue = " + activityStatusId;
 
@@ -1930,7 +1926,7 @@ public class transactionInDAOImpl implements transactionInDAO {
      * @throws Exception
      */
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public String getActivityStatusValueById(Integer activityStatusId) throws Exception {
 	String sql = "select displayText as statusValue from lu_internalmessagestatus where id = " + activityStatusId;
 
@@ -1946,7 +1942,7 @@ public class transactionInDAOImpl implements transactionInDAO {
      * @throws Exception
      */
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public void clearMultipleTargets(Integer batchId) throws Exception {
 	Query deletMultipleTargets = sessionFactory.getCurrentSession().createQuery("delete from batchMultipleTargets where batchId = :batchId");
 	deletMultipleTargets.setParameter("batchId", batchId);
@@ -1955,7 +1951,7 @@ public class transactionInDAOImpl implements transactionInDAO {
 
     @SuppressWarnings("unchecked")
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public List<Transaction> setTransactionInInfoByStatusId(Integer batchId, List<Integer> statusIds, Integer howMany) throws Exception {
 
 	String sql = "select c.configName as srcConfigName, "
@@ -1982,7 +1978,7 @@ public class transactionInDAOImpl implements transactionInDAO {
     }
 
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     @SuppressWarnings("unchecked")
     public List<CrosswalkData> getCrosswalkDataForBatch(configurationDataTranslations cdt, Integer batchId, boolean foroutboundProcessing) throws Exception {
 	
@@ -2013,7 +2009,7 @@ public class transactionInDAOImpl implements transactionInDAO {
 
     @SuppressWarnings("unchecked")
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public List<referralActivityExports> getReferralActivityExportsByStatus(
 	    List<Integer> statusIds, Integer howMany) throws Exception {
 	Criteria criteria = sessionFactory.getCurrentSession().createCriteria(referralActivityExports.class);
@@ -2033,14 +2029,14 @@ public class transactionInDAOImpl implements transactionInDAO {
      * @throws Exception
      */
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public void updateReferralActivityExport(referralActivityExports activityExport) throws Exception {
 	sessionFactory.getCurrentSession().update(activityExport);
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public List<referralActivityExports> getReferralActivityExportsWithUserNames(
 	    List<Integer> statusIds) throws Exception {
 
@@ -2061,7 +2057,7 @@ public class transactionInDAOImpl implements transactionInDAO {
 
     @SuppressWarnings("unchecked")
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public referralActivityExports getReferralActivityExportById(Integer exportId) throws Exception {
 	Criteria criteria = sessionFactory.getCurrentSession().createCriteria(referralActivityExports.class);
 	criteria.add(Restrictions.eq("id", exportId));
@@ -2074,7 +2070,7 @@ public class transactionInDAOImpl implements transactionInDAO {
     }
 
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public void populateAuditReport(Integer batchUploadId, Integer configId)
 	    throws Exception {
 	String sql = "call populateAuditReport(:configId, :batchUploadId);";
@@ -2086,7 +2082,7 @@ public class transactionInDAOImpl implements transactionInDAO {
 
     @SuppressWarnings("unchecked")
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public List<Integer> getErrorFieldNos(Integer batchUploadId) throws Exception {
 	
 	String sql = "select distinct fieldNo from transactionIndetailauditerrors_"+batchUploadId;
@@ -2097,7 +2093,7 @@ public class transactionInDAOImpl implements transactionInDAO {
     }
 
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public void populateFieldError(Integer batchUploadId, Integer fieldNo, configurationMessageSpecs cms) throws Exception {
 	
 	String sql = "UPDATE  transactionIndetailauditerrors_"+batchUploadId + " "
@@ -2143,7 +2139,7 @@ public class transactionInDAOImpl implements transactionInDAO {
     }
 
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public void cleanAuditErrorTable(Integer batchUploadId) throws Exception {
 	Query clearRecords = sessionFactory.getCurrentSession().createSQLQuery("DELETE from batchuploadauditerrors where batchUploadId = :batchUploadId");
 	clearRecords.setParameter("batchUploadId", batchUploadId);
@@ -2151,7 +2147,7 @@ public class transactionInDAOImpl implements transactionInDAO {
     }
 
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public Integer executeCWDataForSingleFieldValue(Integer configId, Integer batchId,
 	    configurationDataTranslations cdt, boolean foroutboundProcessing) {
 
@@ -2198,7 +2194,7 @@ public class transactionInDAOImpl implements transactionInDAO {
     }
 
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public void deleteMoveFileLogsByStatus(Integer statusId, Integer transportMethodId) throws Exception {
 	Query deletMoveFilesLog = sessionFactory.getCurrentSession().createQuery("delete from MoveFilesLog where statusId = :statusId and transportMethodId = :transportMethodId");
 	deletMoveFilesLog.setParameter("statusId", statusId);
@@ -2209,7 +2205,7 @@ public class transactionInDAOImpl implements transactionInDAO {
     }
 
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public void deleteLoadTableRows(Integer howMany, String ascOrDesc, String laodTableName) throws Exception {
 	String sql = "delete from " + laodTableName + " order by id " + ascOrDesc + " limit " + howMany;
 	Query deleteTable = sessionFactory.getCurrentSession().createSQLQuery(sql);
@@ -2217,7 +2213,7 @@ public class transactionInDAOImpl implements transactionInDAO {
     }
 
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public BigInteger getUserRejectedCount(Integer userId, Integer orgId, String fromDate, String toDate) throws Exception {
 
 	String sql = "select count(id) as totalReferrals "
@@ -2236,7 +2232,7 @@ public class transactionInDAOImpl implements transactionInDAO {
     }
 
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public List<batchErrorSummary> getBatchErrorSummary(int batchId) throws Exception {
 	try {
 	    String sql = ("select count(e.id) as totalErrors, e.errorId, c.displayText as errorDisplayText "
@@ -2260,7 +2256,7 @@ public class transactionInDAOImpl implements transactionInDAO {
     }
 
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public List getErrorDataBySQLStmt(String sqlStmt) throws Exception {
 
 	if (!"".equals(sqlStmt)) {
@@ -2274,7 +2270,7 @@ public class transactionInDAOImpl implements transactionInDAO {
 
     @SuppressWarnings("unchecked")
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public List getErrorReportField(Integer batchUploadId)
 	    throws Exception {
 	String sql = "select rptField1.rptLabel1 ,rptField2.rptLabel2,rptField3.rptLabel3,rptField4.rptLabel4 "
@@ -2313,7 +2309,7 @@ public class transactionInDAOImpl implements transactionInDAO {
      * @throws Exception
      */
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public List<batchUploads> getBatchesByStatusIdsAndDate(Date fromDate, Date toDate, Integer fetchSize, List<Integer> statusIds) throws Exception {
 
 	String sql = "select case when orgName is null then 'No Org Match' else orgName end orgName, "
@@ -2364,7 +2360,7 @@ public class transactionInDAOImpl implements transactionInDAO {
 
     @SuppressWarnings("unchecked")
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public batchRetry getBatchRetryByUploadId(Integer batchUploadId, Integer statusId)
 	    throws Exception {
 	Criteria criteria = sessionFactory.getCurrentSession().createCriteria(batchRetry.class);
@@ -2384,14 +2380,14 @@ public class transactionInDAOImpl implements transactionInDAO {
     }
 
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public void saveBatchRetry(batchRetry br) throws Exception {
 	sessionFactory.getCurrentSession().save(br);
     }
 
     //we call this when batch is being reset, not when batch is being re-process
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public void clearBatchRetry(Integer batchUploadId) throws Exception {
 	Query delBatch = sessionFactory.getCurrentSession().createQuery("delete from batchRetry where batchUploadId = :batchUploadId");
 	delBatch.setParameter("batchUploadId", batchUploadId);
@@ -2399,7 +2395,7 @@ public class transactionInDAOImpl implements transactionInDAO {
     }
 
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public Integer insertRestApiMessage(RestAPIMessagesIn newRestAPIMessage) throws Exception {
 	Integer newRestAPIMessageId = null;
 
@@ -2409,7 +2405,7 @@ public class transactionInDAOImpl implements transactionInDAO {
     }
 
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     @SuppressWarnings("unchecked")
     public List<RestAPIMessagesIn> getRestAPIMessagesByStatusId(List<Integer> statusIds) {
 	//1 if list of statusId is null, we get all
@@ -2431,7 +2427,7 @@ public class transactionInDAOImpl implements transactionInDAO {
     }
 
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     @SuppressWarnings("unchecked")
     public RestAPIMessagesIn getRestAPIMessagesById(Integer restAPIMessageId) {
 	//1 if list of statusId is null, we get all
@@ -2452,7 +2448,7 @@ public class transactionInDAOImpl implements transactionInDAO {
     }
 
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public Integer updateRestAPIMessage(RestAPIMessagesIn APIMessage) {
 	try {
 	    sessionFactory.getCurrentSession().update(APIMessage);
@@ -2466,7 +2462,7 @@ public class transactionInDAOImpl implements transactionInDAO {
     }
 
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public void updateBatchClearAfterDeliveryByBatchUploadId(Integer batchUploadId, Integer newStatusId) throws Exception {
 	
 	String sql = "update batchClearAfterDelivery set statusId = :newStatusId where batchUploadId = :batchUploadId";
@@ -2483,7 +2479,7 @@ public class transactionInDAOImpl implements transactionInDAO {
     }
 
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public Integer clearBatchClearAfterDeliveryByBatchUploadId(Integer batchUploadId) throws Exception {
 	Query clearRecords = sessionFactory.getCurrentSession().createSQLQuery("DELETE from batchClearAfterDelivery where batchUploadId = :batchUploadId");
 	clearRecords.setParameter("batchUploadId", batchUploadId);
@@ -2498,7 +2494,7 @@ public class transactionInDAOImpl implements transactionInDAO {
 
     @SuppressWarnings("unchecked")
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public List<Integer> getTargetConfigsForUploadBatch(Integer batchUploadId, Integer configId) throws Exception {
 	
 	String sql = "select distinct targetconfigId from configurationconnections "
@@ -2513,7 +2509,7 @@ public class transactionInDAOImpl implements transactionInDAO {
 
     @SuppressWarnings("unchecked")
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public Integer checkClearAfterDeliveryBatch(int batchUploadId)
 	    throws Exception {
 	
@@ -2563,7 +2559,7 @@ public class transactionInDAOImpl implements transactionInDAO {
     }
 
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public void updateStatusForErrorTrans(Integer batchId, Integer statusId, boolean foroutboundProcessing) throws Exception {
 	
 	String inboundOutbound = "Outbound";
@@ -2604,7 +2600,7 @@ public class transactionInDAOImpl implements transactionInDAO {
     }
 
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public void nullForCWCol(Integer configId, Integer batchId, boolean foroutboundProcessing) {
 
 	String sql;
@@ -2634,7 +2630,7 @@ public class transactionInDAOImpl implements transactionInDAO {
     }
 
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public void deleteBatch(Integer batchId) throws Exception {
 
 	/* Delete all the stored records */
@@ -2663,7 +2659,7 @@ public class transactionInDAOImpl implements transactionInDAO {
     }
  
    @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public Integer getRecordCountForTable(String tableName, String colName, int matchId) throws Exception {
 	String sql = "select count(id) as total from " + tableName + " where " + colName + " = :matchId limit 1";
 	Query query = sessionFactory
@@ -2684,13 +2680,13 @@ public class transactionInDAOImpl implements transactionInDAO {
      * @return This function returns the batchId for the newly inserted batch
      */
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public void updateBatchUpload(batchUploads batchUpload) throws Exception {
 	sessionFactory.getCurrentSession().update(batchUpload);
     }
 
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     @SuppressWarnings("unchecked")
     public List<Integer> getConfigIdsForBatchOnly(int batchUploadId) {
 	try {
@@ -2706,7 +2702,7 @@ public class transactionInDAOImpl implements transactionInDAO {
     }
 
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public void createBatchTables(int batchUploadId, int configId) {
 	try {
 
@@ -2844,7 +2840,7 @@ public class transactionInDAOImpl implements transactionInDAO {
     }
     
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public void deleteBatchTransactionTables(Integer batchId) throws Exception {
 
 	/* Delete all the stored records */
@@ -2862,7 +2858,7 @@ public class transactionInDAOImpl implements transactionInDAO {
     }
     
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager") 
+    @Transactional(readOnly = true) 
     public List<batchDownloads> findBatchesToCleanUp() throws Exception {
 	
 	String sql = "select * from ("
@@ -2882,7 +2878,7 @@ public class transactionInDAOImpl implements transactionInDAO {
     }
     
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public void batchUploadTableCleanUp(List<batchDownloads> batchesToCleanup) throws Exception {
 	
 	if(batchesToCleanup != null) {
@@ -2902,6 +2898,33 @@ public class transactionInDAOImpl implements transactionInDAO {
 		    deleteQuery.executeUpdate();
 		}
 	    }
+	}
+    }
+	
+	@Override
+    @Transactional(readOnly = true)
+    @SuppressWarnings("unchecked")
+    public List<configurationConnection> getPassThruBatchTargets(Integer batchId, boolean active) {
+	try {
+	    String sql = ("select sourceConfigId, targetConfigId, configurationconnections.id "
+		+ "from configurations, configurationconnections "
+		+ "where sourceconfigId in (select configId from batchUploads where id = :batchId) "
+		+ "and targetConfigId = configurations.id");
+	    
+	    if (active) {
+		sql = sql + " and configurations.status = 1 and configurationconnections.status = 1 and messageTypeId = 0";
+	    }
+	    sql = sql + " order by sourceConfigId;";
+	    
+	    Query query = sessionFactory.getCurrentSession().createSQLQuery(sql).setResultTransformer(
+		    Transformers.aliasToBean(configurationConnection.class));
+	    query.setParameter("batchId", batchId);
+
+	    List<configurationConnection> cc = query.list();
+	    return cc;
+	} catch (Exception ex) {
+	    System.err.println("getBatchTargets " + ex.getCause());
+	    return null;
 	}
     }
 }

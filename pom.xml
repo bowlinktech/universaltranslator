@@ -13,7 +13,7 @@
   
     <properties>
 	<org.springframework.version>4.3.2.RELEASE</org.springframework.version>
-	<org.spring.security.version>3.2.3.RELEASE</org.spring.security.version>
+	<org.spring.security.version>4.2.8.RELEASE</org.spring.security.version>
 	<javax.servlet-api.version>3.1.0</javax.servlet-api.version>
 	<jsp-api.version>2.2</jsp-api.version>
 	<org.slf4j.version>1.6.1</org.slf4j.version>
@@ -28,9 +28,9 @@
 	<commons-fileupload.version>1.3.1</commons-fileupload.version>
 	<commons-io.version>1.3.2</commons-io.version>
 	<commons-net.version>2.0</commons-net.version>
-	<jackson-databind.version>2.7.0</jackson-databind.version>
-	<jackson-core.version>2.7.0</jackson-core.version>
-	<jackson-annotations.version>2.7.0</jackson-annotations.version>
+	<jackson-databind.version>2.9.7</jackson-databind.version>
+	<jackson-core.version>2.9.7</jackson-core.version>
+	<jackson-annotations.version>2.9.7</jackson-annotations.version>
 	<poi.version>3.16</poi.version>
 	<poi-ooxml.version>3.16</poi-ooxml.version>
 	<log4j.version>2.0-beta8</log4j.version>
@@ -47,21 +47,14 @@
   
  
     <dependencies>
+	<!--  Registry Kit  -->
+	<dependency>
+            <groupId>registryKit</groupId>
+            <artifactId>registryKit</artifactId>
+            <version>3.0.0</version>
+        </dependency>
         
-	<!--  Include the Facility Registry Kit  -->
-	<dependency>
-	    <groupId>com.hel</groupId>
-	    <artifactId>frKit</artifactId>
-	    <version>1.0</version>
-	</dependency>
 	
-	<!--  Include the Worker Registry Kit  -->
-	<dependency>
-	    <groupId>com.hel</groupId>
-	    <artifactId>wrKit</artifactId>
-	    <version>1.0</version>
-	</dependency>
-  
 	<!--  Spring  -->
 	<dependency>
 	    <groupId>org.springframework</groupId>

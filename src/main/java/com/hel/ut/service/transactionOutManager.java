@@ -16,6 +16,7 @@ import com.hel.ut.model.pendingDeliveryTargets;
 import com.hel.ut.model.systemSummary;
 import com.hel.ut.model.transactionOutRecords;
 import com.hel.ut.model.custom.ConfigOutboundForInsert;
+import java.io.File;
 
 import java.math.BigInteger;
 import java.util.Date;
@@ -96,4 +97,7 @@ public interface transactionOutManager {
     List<batchDownloads> getPendingResetBatches(Integer batchUploadId) throws Exception;
     
     void submitBatchDownloadChanges(batchDownloads batchDownload) throws Exception;
+	
+    void sendPassThruFiles(batchUploads batchULDetails, batchDownloads batchDLDetails,configurationTransport transportDetails,File archiveFile) throws Exception;
+
 }

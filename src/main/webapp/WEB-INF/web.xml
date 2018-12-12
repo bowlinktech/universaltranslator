@@ -14,11 +14,12 @@
     </context-param>
     <context-param>
         <param-name>contentLabelForReport</param-name>
-        <param-value/>
+        <param-value></param-value>
     </context-param>
     <!--  Set the default timeout setting for a logged in user/admin -->
     <session-config>
         <session-timeout>30</session-timeout>
+        <tracking-mode>COOKIE</tracking-mode>
     </session-config>
     <servlet>
         <servlet-name>appServlet</servlet-name>

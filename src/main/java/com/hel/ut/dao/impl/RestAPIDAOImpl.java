@@ -20,7 +20,6 @@ import java.text.SimpleDateFormat;
 import org.hibernate.Query;
 import org.hibernate.transform.Transformers;
 import org.hibernate.type.StandardBasicTypes;
-import org.springframework.beans.factory.annotation.Qualifier;
 
 /**
  * The WebServicesDAOImpl class will implement the DAO access layer to handle updates for web services messages
@@ -30,17 +29,16 @@ import org.springframework.beans.factory.annotation.Qualifier;
  *
  */
 @Repository
-public class RestAPIDAOImpl1 implements RestAPIDAO {
+public class RestAPIDAOImpl implements RestAPIDAO {
 
     @Autowired
-    @Qualifier("ilsessionFactory")
     private SessionFactory sessionFactory;
     
     private SimpleDateFormat mysqlDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     @SuppressWarnings("unchecked")
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public List<RestAPIMessagesIn> getRestAPIMessagesInList(Date fromDate, Date toDate,Integer fetchSize, String batchName) throws Exception {
 
         Integer batchUploadId = 0;
@@ -96,7 +94,7 @@ public class RestAPIDAOImpl1 implements RestAPIDAO {
 
     @SuppressWarnings("unchecked")
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public RestAPIMessagesIn getRestAPIMessagesIn(Integer messageId) throws Exception {
         Criteria findApiMessageIn = sessionFactory.getCurrentSession().createCriteria(RestAPIMessagesIn.class);
         findApiMessageIn.add(Restrictions.eq("id", messageId));
@@ -110,7 +108,7 @@ public class RestAPIDAOImpl1 implements RestAPIDAO {
     
     @SuppressWarnings("unchecked")
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public List<RestAPIMessagesOut> getRestAPIMessagesOutList(Date fromDate, Date toDate,Integer fetchSize, String batchName) throws Exception {
 
         Integer batchDownloadId = 0;
@@ -151,7 +149,7 @@ public class RestAPIDAOImpl1 implements RestAPIDAO {
 
     @SuppressWarnings("unchecked")
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public RestAPIMessagesOut getRestAPIMessagesOut(Integer messageId) throws Exception {
         Criteria findApiMessageOut = sessionFactory.getCurrentSession().createCriteria(RestAPIMessagesOut.class);
         findApiMessageOut.add(Restrictions.eq("id", messageId));
@@ -165,7 +163,7 @@ public class RestAPIDAOImpl1 implements RestAPIDAO {
     
     @SuppressWarnings("unchecked")
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public RestAPIMessagesIn getRestAPIMessagesInByBatchId(Integer batchId) throws Exception {
         Criteria findApiMessageIn = sessionFactory.getCurrentSession().createCriteria(RestAPIMessagesIn.class);
         findApiMessageIn.add(Restrictions.eq("batchUploadId", batchId));

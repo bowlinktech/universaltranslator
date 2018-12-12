@@ -30,7 +30,6 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.hibernate.criterion.Disjunction;
-import org.springframework.beans.factory.annotation.Qualifier;
 
 /**
  * The brochureDAOImpl class will implement the DAO access layer to handle updates for organization brochures
@@ -46,7 +45,6 @@ public class messageTypeDAOImpl implements messageTypeDAO {
     private Properties myProps;
 
     @Autowired
-    @Qualifier("ilsessionFactory")
     private SessionFactory sessionFactory;
 
     /**
@@ -60,7 +58,7 @@ public class messageTypeDAOImpl implements messageTypeDAO {
      *
      */
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public Integer createMessageType(messageType messageType) {
         Integer lastId = null;
 
@@ -77,7 +75,7 @@ public class messageTypeDAOImpl implements messageTypeDAO {
      * @return the function does not return anything
      */
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public void updateMessageType(messageType messageType) {
         sessionFactory.getCurrentSession().saveOrUpdate(messageType);
     }
@@ -90,7 +88,7 @@ public class messageTypeDAOImpl implements messageTypeDAO {
      * @return the function does not return anything
      */
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public void deleteMessageType(int messageTypeId) {
         Query deleteMessageType = sessionFactory.getCurrentSession().createQuery("delete from messageType where id = :messageTypeId");
         deleteMessageType.setParameter("messageTypeId", messageTypeId);
@@ -105,7 +103,7 @@ public class messageTypeDAOImpl implements messageTypeDAO {
      * @return	The function will return a messageType object
      */
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public messageType getMessageTypeById(int messageTypeId) {
         return (messageType) sessionFactory.getCurrentSession().get(messageType.class, messageTypeId);
     }
@@ -118,7 +116,7 @@ public class messageTypeDAOImpl implements messageTypeDAO {
      * @return	The function will return a messageType object
      */
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public messageType getMessageTypeByName(String name) {
         Criteria criteria = sessionFactory.getCurrentSession().createCriteria(messageType.class);
         criteria.add(Restrictions.like("name", name));
@@ -135,7 +133,7 @@ public class messageTypeDAOImpl implements messageTypeDAO {
      * @Return	This function will return a list of message type objects
      */
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     @SuppressWarnings("unchecked")
     public List<messageType> getMessageTypes() {
 
@@ -155,7 +153,7 @@ public class messageTypeDAOImpl implements messageTypeDAO {
      * @Return	This function will return a list of message type objects
      */
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     @SuppressWarnings("unchecked")
     public List<messageType> getAvailableMessageTypes(int orgId) {
 
@@ -175,7 +173,7 @@ public class messageTypeDAOImpl implements messageTypeDAO {
      * @Return	This function will return a list of message type objects
      */
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     @SuppressWarnings("unchecked")
     public List<messageType> getAssociatedMessageTypes(int orgId) {
 
@@ -195,7 +193,7 @@ public class messageTypeDAOImpl implements messageTypeDAO {
      * @Return	This function will return a list of message type objects
      */
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     @SuppressWarnings("unchecked")
     public List<messageType> getLatestMessageTypes(int maxResults) {
 
@@ -216,7 +214,7 @@ public class messageTypeDAOImpl implements messageTypeDAO {
      * @Return	This function will return a list of active message type objects
      */
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     @SuppressWarnings("unchecked")
     public List<messageType> getActiveMessageTypes() {
 
@@ -234,7 +232,7 @@ public class messageTypeDAOImpl implements messageTypeDAO {
      * @Return	This function will return the total number of message types set up in the system
      */
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public Long findTotalMessageTypes() {
 
         Query query = sessionFactory.getCurrentSession().createQuery("select count(id) as totalMessageTypes from messageType");
@@ -255,7 +253,7 @@ public class messageTypeDAOImpl implements messageTypeDAO {
      * @Return	This function will return the total number of generic crosswalks set up in the system
      */
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public double findTotalCrosswalks(int orgId) {
 
         Criteria criteria = sessionFactory.getCurrentSession().createCriteria(Crosswalks.class);
@@ -283,7 +281,7 @@ public class messageTypeDAOImpl implements messageTypeDAO {
      * @Return This function will return a list of fields
      */
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     @SuppressWarnings("unchecked")
     public List<messageTypeFormFields> getMessageTypeFields(int messageTypeId) {
         Criteria criteria = sessionFactory.getCurrentSession().createCriteria(messageTypeFormFields.class)
@@ -301,7 +299,7 @@ public class messageTypeDAOImpl implements messageTypeDAO {
      * @Return This function does not return anything
      */
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public void updateMessageTypeFields(messageTypeFormFields formField) {
         sessionFactory.getCurrentSession().update(formField);
     }
@@ -314,7 +312,7 @@ public class messageTypeDAOImpl implements messageTypeDAO {
      * @Return This function does not return anything
      */
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public void saveMessageTypeFields(messageTypeFormFields formField) {
         Integer lastId = (Integer) sessionFactory.getCurrentSession().save(formField);
 
@@ -347,7 +345,7 @@ public class messageTypeDAOImpl implements messageTypeDAO {
      */
     @Override
     @SuppressWarnings("rawtypes")
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public List getInformationTables() {
         Query query = sessionFactory.getCurrentSession().createSQLQuery("SELECT distinct table_name FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = '" + myProps.getProperty("schemaNameIL") + "' and TABLE_NAME LIKE 'message\\_%'");
 
@@ -359,7 +357,7 @@ public class messageTypeDAOImpl implements messageTypeDAO {
      */
     @Override
     @SuppressWarnings("rawtypes")
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public List getAllTables() {
         Query query = sessionFactory.getCurrentSession().createSQLQuery("SELECT distinct table_name FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = '" + myProps.getProperty("schemaNameIL") + "'");
 
@@ -372,7 +370,7 @@ public class messageTypeDAOImpl implements messageTypeDAO {
      */
     @Override
     @SuppressWarnings("rawtypes")
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public List getTableColumns(String tableName) {
         Query query = sessionFactory.getCurrentSession().createSQLQuery("SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = '" + myProps.getProperty("schemaNameIL") + "' AND TABLE_NAME = :tableName and COLUMN_NAME not in ('id', 'dateCreated', 'transactionInId') order by COLUMN_NAME")
                 .setParameter("tableName", tableName);
@@ -386,7 +384,7 @@ public class messageTypeDAOImpl implements messageTypeDAO {
      */
     @Override
     @SuppressWarnings("rawtypes")
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public List getValidationTypes() {
         Query query = sessionFactory.getCurrentSession().createSQLQuery("SELECT id, validationType FROM ref_validationTypes order by id asc");
 
@@ -398,7 +396,7 @@ public class messageTypeDAOImpl implements messageTypeDAO {
      */
     @Override
     @SuppressWarnings("rawtypes")
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public List getFieldTypes() {
         Query query = sessionFactory.getCurrentSession().createSQLQuery("SELECT id, fieldType FROM ref_fieldTypes order by id asc");
 
@@ -411,7 +409,7 @@ public class messageTypeDAOImpl implements messageTypeDAO {
      */
     @Override
     @SuppressWarnings("rawtypes")
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public String getValidationById(int id) {
         Query query = sessionFactory.getCurrentSession().createSQLQuery("SELECT validationType FROM ref_validationTypes where id = :id");
         query.setParameter("id", id);
@@ -427,7 +425,7 @@ public class messageTypeDAOImpl implements messageTypeDAO {
      */
     @Override
     @SuppressWarnings("rawtypes")
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public List getDelimiters() {
         Query query = sessionFactory.getCurrentSession().createSQLQuery("SELECT id, delimiter FROM ref_delimiters order by delimiter asc");
 
@@ -441,7 +439,7 @@ public class messageTypeDAOImpl implements messageTypeDAO {
      *
      * @returns string
      */
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public String getDelimiterChar(int id) {
         Query query = sessionFactory.getCurrentSession().createSQLQuery("SELECT delimChar FROM ref_delimiters where id = :id");
         query.setParameter("id", id);
@@ -458,7 +456,7 @@ public class messageTypeDAOImpl implements messageTypeDAO {
      *
      * @Return	Long	The total number of fields for the message type
      */
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public Long getTotalFields(int messageTypeId) {
 
         Query query = sessionFactory.getCurrentSession().createQuery("select count(id) as totalFields from messageTypeFormFields where messageTypeId = :messageTypeId")
@@ -483,7 +481,7 @@ public class messageTypeDAOImpl implements messageTypeDAO {
      */
     @Override
     @SuppressWarnings("unchecked")
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public List<Crosswalks> getCrosswalks(int page, int maxResults, int orgId) {
 
         Query query = null;
@@ -518,7 +516,7 @@ public class messageTypeDAOImpl implements messageTypeDAO {
      *
      */
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public Long checkCrosswalkName(String name, int orgId) {
         Query query = null;
 
@@ -547,7 +545,7 @@ public class messageTypeDAOImpl implements messageTypeDAO {
      *
      */
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public Integer createCrosswalk(Crosswalks crosswalkDetails) {
         Integer lastId = null;
 
@@ -564,7 +562,7 @@ public class messageTypeDAOImpl implements messageTypeDAO {
      * @return	The function will return a crosswalk object
      */
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public Crosswalks getCrosswalk(int cwId) {
         return (Crosswalks) sessionFactory.getCurrentSession().get(Crosswalks.class, cwId);
     }
@@ -579,7 +577,7 @@ public class messageTypeDAOImpl implements messageTypeDAO {
      */
     @Override
     @SuppressWarnings("rawtypes")
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public List getCrosswalkData(int cwId) {
         Query query = sessionFactory.getCurrentSession().createSQLQuery("SELECT sourceValue, targetValue, descValue FROM rel_crosswalkData where crosswalkId = :crosswalkid order by id asc");
         query.setParameter("crosswalkid", cwId);
@@ -594,7 +592,7 @@ public class messageTypeDAOImpl implements messageTypeDAO {
      *
      */
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public void saveDataTranslations(messageTypeDataTranslations translations) {
         sessionFactory.getCurrentSession().save(translations);
     }
@@ -606,7 +604,7 @@ public class messageTypeDAOImpl implements messageTypeDAO {
      *
      */
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public void deleteDataTranslations(int messageTypeId) {
         Query deleteTranslations = sessionFactory.getCurrentSession().createQuery("delete from messageTypeDataTranslations where messageTypeId = :messageTypeId");
         deleteTranslations.setParameter("messageTypeId", messageTypeId);
@@ -622,7 +620,7 @@ public class messageTypeDAOImpl implements messageTypeDAO {
      */
     @SuppressWarnings("unchecked")
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public List<messageTypeDataTranslations> getMessageTypeTranslations(int messageTypeId) {
         Query query = sessionFactory.getCurrentSession().createQuery("from messageTypeDataTranslations where messageTypeId = :messageTypeId order by processOrder asc");
         query.setParameter("messageTypeId", messageTypeId);
@@ -638,7 +636,7 @@ public class messageTypeDAOImpl implements messageTypeDAO {
      * @Return This function will return a string (field name)
      */
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public String getFieldName(int fieldId) {
         Query query = sessionFactory.getCurrentSession().createSQLQuery("SELECT fieldDesc FROM messageTypeFormFields where id = :fieldId")
                 .setParameter("fieldId", fieldId);
@@ -656,7 +654,7 @@ public class messageTypeDAOImpl implements messageTypeDAO {
      * @Return This function will return a string (crosswalk name).
      */
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public String getCrosswalkName(int cwId) {
         Criteria criteria = sessionFactory.getCurrentSession().createCriteria(Crosswalks.class);
         criteria.add(Restrictions.eq("id", cwId));
@@ -676,13 +674,13 @@ public class messageTypeDAOImpl implements messageTypeDAO {
 
     @SuppressWarnings("unchecked")
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public List<validationType> getValidationTypes1() {
         Query query = sessionFactory.getCurrentSession().createQuery("from validationType order by id asc");
         return query.list();
     }
     
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public void executeSQLStatement(String sqlStmt) {
 	if(sqlStmt != null) {
 	    if(!"".equals(sqlStmt)) {
@@ -695,7 +693,7 @@ public class messageTypeDAOImpl implements messageTypeDAO {
 	}
     }
     
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public void loadExcelContents(Integer id, String fileName) {
 	try {
             
@@ -793,7 +791,7 @@ public class messageTypeDAOImpl implements messageTypeDAO {
      * @return The function will return the id of the new crosswalk
      *
      */
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public void updateCrosswalk(Crosswalks crosswalkDetails) {
         sessionFactory.getCurrentSession().update(crosswalkDetails);
     }

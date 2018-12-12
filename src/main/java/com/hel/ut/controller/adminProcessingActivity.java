@@ -5,7 +5,6 @@
  */
 package com.hel.ut.controller;
 
-import com.hel.hmiskit.processing.processingManager;
 import com.hel.ut.model.WSMessagesIn;
 import com.hel.ut.model.activityReportList;
 import com.hel.ut.model.Organization;
@@ -43,8 +42,6 @@ import com.hel.ut.service.transactionInManager;
 import com.hel.ut.service.transactionOutManager;
 import com.hel.ut.service.userManager;
 import com.hel.ut.webServices.WSManager;
-import com.hel.rrKit.importTool.importManager;
-import com.hel.rrKit.importTool.programImport;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -95,9 +92,6 @@ import org.springframework.web.servlet.view.RedirectView;
 public class adminProcessingActivity {
     
     @Autowired
-    private processingManager HMISProcessingManager;
-
-    @Autowired
     private transactionInManager transactionInManager;
 
     @Autowired
@@ -128,9 +122,6 @@ public class adminProcessingActivity {
     private WSManager wsmanager;
     
     @Autowired
-    private importManager importmanager;
-    
-    @Autowired
     private restfulManager restfulmanager;
 
     private String topSecret = "Hello123JavaTomcatMysqlDPHSystem2016";
@@ -140,7 +131,7 @@ public class adminProcessingActivity {
      */
     private static int maxResults = 10;
 
-    private String archivePath = "/ILTZ/archivesIn/";
+    private String archivePath = "/HELProductSuite/universalTranslator/archivesIn/";
     
 
     /**
@@ -2191,21 +2182,21 @@ public class adminProcessingActivity {
         //Make sure the passed in batch is valid
         batchUploads batchDetails = transactionInManager.getBatchDetailsByBatchName(batchName);
 	
-	programImport existingProgramImport = null;
+	//programImport existingProgramImport = null;
 	
 	if(batchDetails != null) {
 	    
 	    if(batchDetails.getoriginalFileName() != null) {
 		if(batchDetails.getoriginalFileName().lastIndexOf('.') > 0) {
 		    /* Need to check to see if uploaded file exists in RR program uploads */
-		    existingProgramImport = importmanager.getProgramImportByAssignedName(batchDetails.getoriginalFileName().substring(0, batchDetails.getoriginalFileName().lastIndexOf('.')), 0);
+		    //existingProgramImport = importmanager.getProgramImportByAssignedName(batchDetails.getoriginalFileName().substring(0, batchDetails.getoriginalFileName().lastIndexOf('.')), 0);
 		}
 	    }
 	    
-	    if(existingProgramImport != null) {
+	    /*if(existingProgramImport != null) {
 		existingProgramImport.setStatusId(32);
 		importmanager.updateImport(existingProgramImport);
-	    }
+	    }*/
 	    
 	    transactionInManager.deleteBatch(batchDetails.getId()); 
 	}

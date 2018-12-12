@@ -4,18 +4,26 @@
 
 <div class="main clearfix full-width" role="main">
     <div class="col-md-12">
-
-        <c:if test="${not empty savedStatus}" >
-            <div class="alert alert-success">
-                <strong>Success!</strong> 
-                <c:choose>
-                    <c:when test="${savedStatus == 'updated'}">The configuration has been successfully updated!</c:when>
-                    <c:when test="${savedStatus == 'created'}">The configuration has been successfully added!</c:when>
-                    <c:when test="${savedStatus == 'deleted'}">The configuration has been successfully removed!</c:when>
-                </c:choose>
-            </div>
-        </c:if>
-
+	 <c:choose>
+	    <c:when test="${not empty savedStatus}" >
+		<div class="alert alert-success">
+		    <strong>Success!</strong> 
+		    <c:choose>
+			<c:when test="${savedStatus == 'updated'}">The configuration has been successfully updated!</c:when>
+			<c:when test="${savedStatus == 'created'}">The configuration has been successfully added!</c:when>
+			<c:when test="${savedStatus == 'deleted'}">The configuration has been successfully removed!</c:when>
+		    </c:choose>
+		</div>
+	    </c:when>
+	    <c:when test="${not empty param.msg}" >
+		<div class="alert alert-success">
+		    <strong>Success!</strong> 
+		    <c:choose>
+			<c:when test="${param.msg == 'updated'}">The configuration has been successfully saved!</c:when>
+		    </c:choose>
+		</div>
+	    </c:when>
+	</c:choose>
         <section class="panel panel-default">
             <div class="panel-body">
 

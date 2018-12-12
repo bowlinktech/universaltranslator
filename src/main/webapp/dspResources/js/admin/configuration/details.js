@@ -8,7 +8,27 @@ require(['./main'], function () {
         if ($('.alert').length > 0) {
             $('.alert').delay(2000).fadeOut(1000);
         }
-
+	
+	//get the configuration type value
+	var configTypeVal = $(".configurationType:checked").val();
+	
+	//If passThru hide the message type value, it is not needed for a passthru configuration
+	if(configTypeVal == 2) {
+	    $('#messageTypeDiv').hide();
+	}
+	else {
+	    $('#messageTypeDiv').show();
+	}
+	
+	
+        $('.configurationType').change(function (event) {
+	    $("#messageTypeId").val($("#messageTypeId option:first").val());
+            if ($(this).val() == 2) {
+                $('#messageTypeDiv').hide();
+            } else {
+                $('#messageTypeDiv').show();
+            }
+        });
 
         $('#saveDetails').click(function (event) {
             $('#action').val('save');

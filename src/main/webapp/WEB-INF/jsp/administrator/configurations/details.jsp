@@ -60,7 +60,18 @@
                                 </label>
                                 <c:if test="${configurationDetails.id > 0}"><form:hidden id="sourceTypeVal" path="sourceType"/></c:if>  
                                 </div>
-                            </div>        
+                            </div>       
+			     <div id="sourceTypeDiv" class="form-group" style="display:${configurationDetails.type == 1 ? 'block' : 'none'}">
+				<label for="type">Configuration Type * </label>
+				<div>
+				    <label class="radio-inline">
+					<form:radiobutton id="configurationType" path="configurationType" class="configurationType" value="1" /> Translate Incoming Message 
+				    </label>
+				    <label class="radio-inline">
+					<form:radiobutton id="configurationType" path="configurationType" class="configurationType" value="2"/> Passthru
+				    </label>
+				</div>
+                            </div>    
                         <spring:bind path="orgId">
                             <div id="orgDiv" class="form-group ${status.error ? 'has-error' : '' }">
                                 <label class="control-label" for="organization">Organization *</label>

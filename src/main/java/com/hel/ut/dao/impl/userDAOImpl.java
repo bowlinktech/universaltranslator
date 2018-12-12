@@ -10,7 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import com.hel.ut.dao.userDAO;
-import com.hel.ut.model.Organization;
 import com.hel.ut.model.User;
 import com.hel.ut.model.UserActivity;
 import com.hel.ut.model.configuration;
@@ -20,7 +19,6 @@ import com.hel.ut.model.userLogin;
 import java.util.ArrayList;
 import java.util.Date;
 import org.hibernate.type.StandardBasicTypes;
-import org.springframework.beans.factory.annotation.Qualifier;
 
 /**
  * The userDAOImpl class will implement the DAO access layer to handle updates for organization system users
@@ -33,7 +31,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 public class userDAOImpl implements userDAO {
 
     @Autowired
-    @Qualifier("ilsessionFactory")
     private SessionFactory sessionFactory;
 
     /**
@@ -47,7 +44,7 @@ public class userDAOImpl implements userDAO {
      *
      */
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public Integer createUser(User user) {
         Integer lastId = null;
 
@@ -65,7 +62,7 @@ public class userDAOImpl implements userDAO {
      * @return the function does not return anything
      */
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public void updateUser(User user) {
         sessionFactory.getCurrentSession().update(user);
     }
@@ -78,7 +75,7 @@ public class userDAOImpl implements userDAO {
      * @return	The function will return a user object
      */
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public User getUserById(int userId) {
         return (User) sessionFactory.getCurrentSession().get(User.class, userId);
     }
@@ -91,7 +88,7 @@ public class userDAOImpl implements userDAO {
      * @return The function will return a list of user objects
      */
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public List<User> getUsersByOrganization(int orgId) {
 
         List<Integer> OrgIds = new ArrayList<Integer>();
@@ -115,7 +112,7 @@ public class userDAOImpl implements userDAO {
      * @return	The function will return a user object
      */
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public User getUserByUserName(String username) {
         Criteria criteria = sessionFactory.getCurrentSession().createCriteria(User.class);
         criteria.add(Restrictions.eq("username", username));
@@ -131,7 +128,7 @@ public class userDAOImpl implements userDAO {
      * @return	The function will return a number of logins
      */
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public Long findTotalLogins(int userId) {
 
         Query query = sessionFactory.getCurrentSession().createQuery("select count(id) as totalLogins from userLogin where userId = :userId");
@@ -150,7 +147,7 @@ public class userDAOImpl implements userDAO {
      *
      */
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public void setLastLogin(String username) {
         Query q1 = sessionFactory.getCurrentSession().createQuery("insert into userLogin (userId)" + "select id from User where username = :username");
         q1.setParameter("username", username);
@@ -171,7 +168,7 @@ public class userDAOImpl implements userDAO {
      */
     @Override
     @SuppressWarnings("unchecked")
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public List<User> getOrganizationContact(int orgId, int mainContact) {
         Query query = sessionFactory.getCurrentSession().createQuery("from User where orgId = :orgId and mainContact = :mainContact");
         query.setParameter("orgId", orgId);
@@ -189,7 +186,7 @@ public class userDAOImpl implements userDAO {
      * @return The function will return a user object
      */
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public Integer getUserByIdentifier(String identifier) {
 
         String sql = ("select id from users where lower(email) = '" + identifier + "' or lower(username) = '" + identifier + "' or lower(concat(concat(firstName,' '),lastName)) = '" + identifier + "'");
@@ -215,7 +212,7 @@ public class userDAOImpl implements userDAO {
      * @return The function will return a user object
      */
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public User getUserByResetCode(String resetCode) {
 
         Query query = sessionFactory.getCurrentSession().createQuery("from User where resetCode = :resetCode");
@@ -239,7 +236,7 @@ public class userDAOImpl implements userDAO {
      * @return no return is expected
      */
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public void insertUserLog(UserActivity userActivity) {
         try {
             sessionFactory.getCurrentSession().save(userActivity);
@@ -250,7 +247,7 @@ public class userDAOImpl implements userDAO {
     }
 
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     @SuppressWarnings("unchecked")
     public UserActivity getUAById(Integer uaId) {
         try {
@@ -269,7 +266,7 @@ public class userDAOImpl implements userDAO {
 
     @Override
     @SuppressWarnings("unchecked")
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public List<User> getUserByTypeByOrganization(int orgId) {
         try {
             Query query = sessionFactory.getCurrentSession().createQuery("from User where orgId = :orgId and status = 1 order by userType");
@@ -285,7 +282,7 @@ public class userDAOImpl implements userDAO {
 
     @Override
     @SuppressWarnings("unchecked")
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public List<User> getSendersForConfig(List<Integer> configIds) {
         try {
             String sql = ("select * from users where status = 1 and id in (select userId from configurationconnectionsenders where connectionId in "
@@ -309,7 +306,7 @@ public class userDAOImpl implements userDAO {
 
     @Override
     @SuppressWarnings("unchecked")
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public List<User> getOrgUsersForConfig(List<Integer> configIds) {
         try {
             String sql = ("select * from users where status = 1 and orgId in (select orgId from configurations where id "
@@ -333,7 +330,7 @@ public class userDAOImpl implements userDAO {
 
     @Override
     @SuppressWarnings("unchecked")
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public List<User> getUserConnectionListSending(Integer configId) {
         try {
             String sql = ("select * from users where status = 1 and Id in (select userId from configurationconnectionsenders where sendEmailAlert = 1 and connectionId "
@@ -356,7 +353,7 @@ public class userDAOImpl implements userDAO {
 
     @Override
     @SuppressWarnings("unchecked")
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public List<User> getUserConnectionListReceiving(Integer configId) {
         try {
             String sql = ("select * from users where status = 1 and Id in (select userId from configurationconnectionreceivers where sendEmailAlert = 1 and connectionId "
@@ -379,7 +376,7 @@ public class userDAOImpl implements userDAO {
 
     @Override
     @SuppressWarnings("unchecked")
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public List<User> getAllUsers() {
         Query query = sessionFactory.getCurrentSession().createQuery("from User");
 
@@ -388,7 +385,7 @@ public class userDAOImpl implements userDAO {
     }
 
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public void updateUserActivity(UserActivity userActivity) {
         try {
             sessionFactory.getCurrentSession().update(userActivity);
@@ -401,7 +398,7 @@ public class userDAOImpl implements userDAO {
 
     @Override
     @SuppressWarnings("unchecked")
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public List<String> getUserRoles(User user) {
         try {
             String sql = ("select r.role from users u inner join userRoles r on u.roleId = r.id where u.status = 1 and u.username = :userName");
@@ -420,14 +417,14 @@ public class userDAOImpl implements userDAO {
     }
 
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public void updateUserOnly(User user) throws Exception {
         sessionFactory.getCurrentSession().update(user);
     }
 
     @Override
     @SuppressWarnings("unchecked")
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public List<User> getUsersByStatuRolesAndOrg(boolean status, List<Integer> rolesToExclude, List<Integer> orgs, boolean include) throws Exception {
         String sql = ("select users.*, orgName from users, organizations "
                 + " where users.status = :status and users.orgId = organizations.id");
@@ -459,7 +456,7 @@ public class userDAOImpl implements userDAO {
     }
 
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public List<Integer> getUserAllowedTargets(int userId, List<configurationConnectionSenders> connections) throws Exception {
         List<Integer> orgList = new ArrayList<Integer>();
 
@@ -487,7 +484,7 @@ public class userDAOImpl implements userDAO {
     }
 
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public List<Integer> getUserAllowedMessageTypes(int userId, List<configurationConnectionSenders> connections) throws Exception {
         List<Integer> messageTypeList = new ArrayList<Integer>();
 
@@ -515,7 +512,7 @@ public class userDAOImpl implements userDAO {
     }
 
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public List<configurationConnectionSenders> configurationConnectionSendersByUserId(int userId) {
         /* Get a list of connections the user has access to */
         Criteria connections = sessionFactory.getCurrentSession().createCriteria(configurationConnectionSenders.class);
@@ -526,7 +523,7 @@ public class userDAOImpl implements userDAO {
     }
     
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public void loguserout(int userId) throws Exception {
 	
 	Query query = sessionFactory.getCurrentSession().createQuery("from userLogin where userId = :userId order by id desc");
@@ -549,7 +546,7 @@ public class userDAOImpl implements userDAO {
      * @return The function will return a list of user objects
      */
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public List<User> getUsersByOrganizationWithLogins(int orgId) {
 
         List<Integer> OrgIds = new ArrayList<Integer>();
@@ -587,7 +584,7 @@ public class userDAOImpl implements userDAO {
      * @return The function will return a list of user objects
      */
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public List<userLogin> getUserLogins(int userId) {
 
 	String sql = "select dateCreated,IFNULL(TIMESTAMPDIFF(MINUTE,dateCreated,dateLoggedOut),0) as totalTimeLoggedIn " 
@@ -614,7 +611,7 @@ public class userDAOImpl implements userDAO {
      * @return The function will return a list of user objects
      */
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public List<User> getAllUsersByOrganization(int orgId) {
 
         List<Integer> OrgIds = new ArrayList<Integer>();
@@ -638,7 +635,7 @@ public class userDAOImpl implements userDAO {
      * @return 
      */
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public List<User> getSuccessEmailSendersForConfig(Integer targetConfigId) {
         try {
             String sql = ("select * from users where status = 1 and id in (select userId from configurationconnectionreceivers where sendEmailAlert = 1 and connectionId in "
@@ -668,7 +665,7 @@ public class userDAOImpl implements userDAO {
      * @return 
      */
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public List<User> getSuccessEmailReceiversForConfig(Integer targetConfigId) {
         try {
             String sql = ("select * from users where status = 1 and id in (select userId from configurationconnectionsenders where sendEmailAlert = 1 and connectionId in "

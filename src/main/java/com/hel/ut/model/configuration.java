@@ -65,6 +65,9 @@ public class configuration {
     
     @Column(name = "THRESHOLD", nullable = false)
     private int threshold = 100;
+    
+    @Column(name = "configurationType", nullable = false)
+    private int configurationType = 1;
 
     public int getId() {
         return id;
@@ -200,6 +203,14 @@ public class configuration {
 
     public void setThreshold(int threshold) {
 	this.threshold = threshold;
+    }
+
+    public int getConfigurationType() {
+	return configurationType;
+    }
+
+    public void setConfigurationType(int configurationType) {
+	this.configurationType = configurationType;
     }
 
 }

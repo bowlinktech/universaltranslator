@@ -62,10 +62,6 @@ import java.util.logging.Logger;
 import org.springframework.stereotype.Service;
 import com.hel.ut.service.transactionInManager;
 import com.hel.ut.service.zipFileManager;
-import com.hel.rrKit.hierarchy.hierarchyManager;
-import com.hel.rrKit.hierarchy.programHierarchyDetails;
-import com.hel.rrKit.importTool.importManager;
-import com.hel.rrKit.importTool.programImport;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileOutputStream;
@@ -76,6 +72,7 @@ import java.math.BigInteger;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
@@ -162,12 +159,6 @@ public class transactionInManagerImpl implements transactionInManager {
     private utilManager utilmanager;
 
     @Autowired
-    private importManager importmanager;
-
-    @Autowired
-    private hierarchyManager hierarchymanager;
-
-    @Autowired
     private zipFileManager zipFileManager;
 
     @Autowired
@@ -181,9 +172,11 @@ public class transactionInManagerImpl implements transactionInManager {
     //reject Ids
     private List<Integer> rejectIds = Arrays.asList(13, 14);
 
-    private String directoryPath = System.getProperty("directory.ilDir");
+    private String directoryPath = System.getProperty("directory.utRootDir");
 
     private String archivePath = (directoryPath + "archivesIn/");
+    
+    private String archiveOutPath = (directoryPath + "archivesOut/");
 
     private List<String> zipExtensions = Arrays.asList("gz", "zip");
 
@@ -603,14 +596,14 @@ public class transactionInManagerImpl implements transactionInManager {
 	batchUploads batchInfo = transactionInDAO.getBatchDetails(batchUploadId);
 
 	/* Need to check to see if uploaded file exists in RR program uploads */
-	programImport existingProgramImport = importmanager.getProgramImportByAssignedName(batchInfo.getoriginalFileName().substring(0, batchInfo.getoriginalFileName().lastIndexOf('.')), 0);
+	//programImport existingProgramImport = importmanager.getProgramImportByAssignedName(batchInfo.getoriginalFileName().substring(0, batchInfo.getoriginalFileName().lastIndexOf('.')), 0);
 
-	if (existingProgramImport != null) {
+	/*if (existingProgramImport != null) {
 	    if (!existingProgramImport.getStatusId().equals(47)) {
 		existingProgramImport.setStatusId(statusId);
 		importmanager.updateImport(existingProgramImport);
 	    }
-	}
+	}*/
 
 	transactionInDAO.updateBatchStatus(batchUploadId, statusId, timeField);
     }
@@ -929,7 +922,7 @@ public class transactionInManagerImpl implements transactionInManager {
 	if (batch.getstatusId() == 2 || batch.getstatusId() == 42) {
 	    Integer batchStatusId = 38;
 	    List<Integer> errorStatusIds = Arrays.asList(11, 13, 14, 16);
-	    String processFolderPath = "/ILTZ/loadFiles/";
+	    String processFolderPath = "/HELProductSuite/universalTranslator/loadFiles/";
 	    
 	    try {
 		try {
@@ -1617,7 +1610,7 @@ public class transactionInManagerImpl implements transactionInManager {
 	    File[] listOfFiles = folder.listFiles((FileFilter) HiddenFileFilter.VISIBLE);
 	    Arrays.sort(listOfFiles, LastModifiedFileComparator.LASTMODIFIED_COMPARATOR);
 	    Organization orgDetails = organizationmanager.getOrganizationById(orgId);
-	    String defPath = "/ILTZ/" + orgDetails.getcleanURL() + "/input files/";
+	    String defPath = "/HELProductSuite/universalTranslator/" + orgDetails.getcleanURL() + "/input files/";
 	    String outPath = fileSystem.setPath(defPath);
 
 	    //too many variables that could come into play regarding file types, will check files with one method
@@ -1974,7 +1967,7 @@ public class transactionInManagerImpl implements transactionInManager {
 				    if (transportDetails.getRrProgramId() > 0 && transportDetails.getRrprogramuploadtypeid() > 0) {
 
 					/* Need to check to see if uploaded file exists in RR program uploads */
-					programImport existingProgramImport = importmanager.getProgramImportByAssignedName(batchInfo.getoriginalFileName().substring(0, batchInfo.getoriginalFileName().lastIndexOf('.')), 0);
+					/*programImport existingProgramImport = importmanager.getProgramImportByAssignedName(batchInfo.getoriginalFileName().substring(0, batchInfo.getoriginalFileName().lastIndexOf('.')), 0);
 
 					if (existingProgramImport != null) {
 					    existingProgramImport.setStatusId(23);
@@ -1990,7 +1983,7 @@ public class transactionInManagerImpl implements transactionInManager {
 					    newProgramImport.setTransportId(0);
 					    newProgramImport.setSystemUserId(0);
 
-					    /*Get the associated entityId*/
+					    //Get the associated entityId
 					    programHierarchyDetails entity1Details = hierarchymanager.getProgramHierarchyByAssoc(orgDetails.getRrEntity2DetailId());
 
 					    if (entity1Details != null) {
@@ -2003,7 +1996,7 @@ public class transactionInManagerImpl implements transactionInManager {
 					    newProgramImport.setConfigurationName(configDetails.getconfigName());
 
 					    importmanager.submitImport(newProgramImport);
-					}
+					}*/
 				    }
 				}
 			    }
@@ -2087,7 +2080,7 @@ public class transactionInManagerImpl implements transactionInManager {
 	    fileSystem dir = new fileSystem();
 
 	    String filelocation = transportDetails.getfileLocation();
-	    filelocation = filelocation.replace("/ILTZ/", "");
+	    filelocation = filelocation.replace("/HELProductSuite/universalTranslator/", "");
 	    dir.setDirByName(filelocation);
 
 	    newFile = new File(dir.getDir() + fileName);
@@ -2462,7 +2455,7 @@ public class transactionInManagerImpl implements transactionInManager {
 	    batchInfo.setSenderEmail(ws.getFromAddress());
 
 	    Organization orgDetails = organizationmanager.getOrganizationById(ws.getOrgId());
-	    String writeToFolder = "/ILTZ/" + orgDetails.getcleanURL() + "/input files/";
+	    String writeToFolder = "/HELProductSuite/universalTranslator/" + orgDetails.getcleanURL() + "/input files/";
 	    String fileExt = ".txt";
 	    String fileNamePath = writeToFolder + batchName + fileExt;
 	    //set folder path
@@ -3363,7 +3356,7 @@ public class transactionInManagerImpl implements transactionInManager {
 	    batchInfo.setConfigId(configId);
 
 	    Organization orgDetails = organizationmanager.getOrganizationById(APIMessage.getOrgId());
-	    String writeToFolder = "/ILTZ/" + orgDetails.getcleanURL() + "/input files/";
+	    String writeToFolder = "/HELProductSuite/universalTranslator/" + orgDetails.getcleanURL() + "/input files/";
 	    String fileExt = ".txt";
 	    String fileNamePath = writeToFolder + batchName + fileExt;
 	    //set folder path
@@ -3394,9 +3387,13 @@ public class transactionInManagerImpl implements transactionInManager {
 
 	    } else {
 
+		//Get the configuration details
+		configuration configDetails = configurationManager.getConfigurationById(ct.getconfigId());
+
 		// Check the rest API Type
 		// Rest API Type = 1 ** Source message requires full processing
 		// Rest API Type = 2 ** Source message to update status of original batch upload
+		// Rest API Type = 3 ** Source message is a passthru and no processing is required
 		if (ct.getRestAPIType() == 2) {
 
 		    String jsonObjectAsString = APIMessage.getPayload().replace("{", "").replace("}", "");
@@ -3579,15 +3576,19 @@ public class transactionInManagerImpl implements transactionInManager {
 		    batchInfo.setendDateTime(new Date());
 		    batchInfo.settotalRecordCount(1); // need to be at least one to show up in activites
 		    if (batchInfo.getConfigId() != 0 && batchInfo.getstatusId() == 2) {
-			/**
-			 * check for mass translation *
-			 */
-			if (configurationtransportmanager.getTransportDetails(batchInfo.getConfigId()).isMassTranslation()) {
-			    batchInfo.setstatusId(42);
+
+			//If configuration is set for passthru
+			if (configDetails.getConfigurationType() == 2) {
+			    batchInfo.setstatusId(24);
+			    statusId = 24;
+			} else {
+			    if (configurationtransportmanager.getTransportDetails(batchInfo.getConfigId()).isMassTranslation()) {
+				batchInfo.setstatusId(42);
+			    }
 			}
 		    }
 		    batchId = submitBatchUpload(batchInfo);
-		    if (statusId != 2 || statusId != 42) {
+		    if (statusId != 2 && statusId != 42 && statusId != 24) {
 			insertProcessingError(errorId, 0, batchId, null, null, null, null, false, false, "");
 		    }
 
@@ -3595,6 +3596,10 @@ public class transactionInManagerImpl implements transactionInManager {
 		    APIMessage.setStatusId(2);
 		    APIMessage.setBatchUploadId(batchId);
 		    sysErrors = updateRestAPIMessage(APIMessage);
+		}
+
+		if (configDetails.getConfigurationType() == 2) {
+		    handlePassthruBatchUpload(batchId,writeToFile);
 		}
 	    }
 
@@ -3829,5 +3834,161 @@ public class transactionInManagerImpl implements transactionInManager {
 	    }
 	}
 	
+    }
+    
+    @Override
+    public List<configurationConnection> getPassThruBatchTargets(Integer batchId, boolean active) {
+	return transactionInDAO.getPassThruBatchTargets(batchId, active);
+    }
+	
+    /**
+     * The handlePassthruBatchUpload method will take care of a batch were no processing needs to take place
+     * and just needs to pass the passedin file to the outbound batch.
+     * 
+     * @param batchId 
+     */
+    public void handlePassthruBatchUpload(Integer batchId, String sourceFile) throws Exception {
+	
+	//Get the batch details
+	batchUploads batchDetails = transactionInDAO.getBatchDetails(batchId);
+
+	//Get the configuration details
+	configuration configDetails = configurationManager.getConfigurationById(batchDetails.getConfigId());
+	
+	//Get the list of targets for this batch
+	List<configurationConnection> batchTargetList = getPassThruBatchTargets(batchId, true);
+	
+	for (configurationConnection bt : batchTargetList) {
+	    
+	    configuration tgtconfigDetails = configurationManager.getConfigurationById(bt.gettargetConfigId());
+	    
+	    /*batchUploadSummary uploadSummary = new batchUploadSummary();
+	    uploadSummary.setbatchId(batchId);
+	    uploadSummary.setTransactionTargetId(0);
+	    uploadSummary.setmessageTypeId(0);
+	    uploadSummary.setsourceOrgId(configDetails.getorgId());
+	    uploadSummary.settargetOrgId(tgtconfigDetails.getorgId());
+	    uploadSummary.setSourceSubOrgId(0);
+	    uploadSummary.setTargetSubOrgId(0);
+	    uploadSummary.setTargetConfigId(bt.gettargetConfigId());
+	    
+	    transactionInDAO.submitBatchUploadSummary(uploadSummary);*/
+	    
+	    if (batchDetails.getConfigId() != bt.getsourceConfigId()) {
+		if (bt.getTargetOrgCol() != 0) {
+		    rejectInvalidTargetOrg(batchId, bt);
+		}
+	    }
+	    else {
+		
+		//each outbound config is its own batch, this doesn't consider combining outbound batches yet **/	
+		/* Create the batch name (OrgId+MessageTypeId+Date/Time) - need milliseconds as computer is fast and files have the same name*/
+		DateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmssS");
+		Date date = new Date();
+
+		configurationTransport transportDetails = configurationtransportmanager.getTransportDetails(tgtconfigDetails.getId());
+
+		String utbatchName = new StringBuilder().append(transportDetails.gettransportMethodId()).append("_m_").append(tgtconfigDetails.getorgId()).append(tgtconfigDetails.getMessageTypeId()).append(dateFormat.format(date)).toString();
+
+		/* Get the userId for the configuration */
+		List<configurationConnection> connections = configurationManager.getConnectionsBySrcAndTargetConfigurations(batchDetails.getConfigId(), tgtconfigDetails.getId());
+
+		int userId = 0;
+		if (!connections.isEmpty()) {
+		    for (configurationConnection connection : connections) {
+			List<configurationConnectionReceivers> receivers = configurationManager.getConnectionReceivers(connection.getId());
+
+			if (!receivers.isEmpty()) {
+			    for (configurationConnectionReceivers receiver : receivers) {
+				userId = receiver.getuserId();
+			    }
+			}
+
+		    }
+		}
+
+		//we create a batchDownloads
+		batchDownloads batchDownload = new batchDownloads();
+
+		//set batch download details
+		batchDownload.setutBatchName(utbatchName);
+		//set it to interim status
+		batchDownload.setstatusId(28);
+
+		//we determine output file name
+		batchDownload.setoutputFIleName(transactionoutmanager.generateDLBatchName(transportDetails, tgtconfigDetails, batchDetails, date) + "." + transportDetails.getfileExt());
+		batchDownload.setmergeable(false);
+		batchDownload.setstartDateTime(new Date());
+		batchDownload.settransportMethodId(transportDetails.gettransportMethodId());
+		batchDownload.setOrgId(tgtconfigDetails.getorgId());
+		batchDownload.setuserId(userId);
+		batchDownload.settotalErrorCount(0);
+		batchDownload.settotalRecordCount(1);
+		batchDownload.setdeleted(false);
+		batchDownload.setdateCreated(new Date());
+		/* Submit a new batch */
+		int batchDLId = (int) transactionOutDAO.submitBatchDownload(batchDownload);
+		
+		batchDownloads batchDLDetails = transactionOutDAO.getBatchDetails(batchDLId);
+		
+		//Insert the batch download summary
+		/*batchDownloadSummary downloadSummary = new batchDownloadSummary();
+		downloadSummary.setbatchId(batchDLId);
+		downloadSummary.settargetOrgId(tgtconfigDetails.getorgId());
+		downloadSummary.setsourceOrgId(configDetails.getorgId());
+		downloadSummary.settransactionTargetId(0);
+		downloadSummary.setmessageTypeId(0);
+		downloadSummary.settargetConfigId(bt.gettargetConfigId());
+		downloadSummary.setTargetSubOrgId(0);
+		downloadSummary.setSourceSubOrgId(0);
+		
+		transactionOutDAO.submitSummaryEntry(downloadSummary);*/
+		
+		//Insert transaction Target
+		/*transactionTarget transTarget = new transactionTarget();
+		transTarget.setbatchUploadId(batchId);
+		transTarget.setbatchDLId(batchDLId);
+		transTarget.setSourceSubOrgId(0);
+		transTarget.setTargetSubOrgId(0);
+		transTarget.setconfigId(bt.gettargetConfigId());
+		transTarget.setstatusId(60);
+		
+		transactionInDAO.submitTransactionTarget(transTarget);*/
+		
+		//Need to copy the source file into the target location (final target location to send from.
+		String fileName = new StringBuilder().append(batchDLDetails.getoutputFIleName()).toString();
+		fileSystem dir = new fileSystem();
+
+		String filelocation = transportDetails.getfileLocation();
+		filelocation = filelocation.replace("/HELProductSuite/", "");
+		dir.setDirByName(filelocation);
+
+		File targetFile = new File(dir.getDir() + fileName);
+		Files.copy(new File(sourceFile).toPath(), targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+		
+		//Copy the file to the archive path as well
+		dir = new fileSystem();
+		File archiveFile = new File(dir.setPathFromRoot(archivePath) + batchDownload.getutBatchName() + "." + transportDetails.getfileExt());
+		File archiveOutFile = new File(dir.setPathFromRoot(archiveOutPath) + batchDownload.getutBatchName() + "." + transportDetails.getfileExt());
+		
+		//at this point, message it not encrypted
+		//we always encrypt the archive file
+		String strEncodedFile = filemanager.encodeFileToBase64Binary(new File(sourceFile));
+		if (archiveFile.exists()) {
+		    archiveFile.delete();
+		}
+		if (archiveOutFile.exists()) {
+		    archiveOutFile.delete();
+		}
+		//write to archive IN folder
+		filemanager.writeFile(archiveFile.getAbsolutePath(), strEncodedFile);
+		
+		//write to archive OUT folder
+		filemanager.writeFile(archiveOutFile.getAbsolutePath(), strEncodedFile);
+		
+		//Need to call new method for sending of the file only
+		//transactionOutManager.sendPassThruFiles(batchDetails,batchDLDetails,transportDetails,archiveFile);
+	    }
+	}
     }
 }

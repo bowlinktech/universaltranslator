@@ -80,7 +80,7 @@ public class JSONtoTxt {
 	    Method myMethod = cls.getMethod("JSONtoTxt", String.class);
 	    
 	    /* Get the uploaded CCD File */
-	    fileLocation = fileLocation.replace("/Applications/ILTZ/", "").replace("/home/ILTZ/", "").replace("/ILTZ/", "");
+	    fileLocation = fileLocation.replace("/Applications/HELProductSuite/universalTranslator/", "").replace("/home/HELProductSuite/universalTranslator/", "").replace("/HELProductSuite/universalTranslator/", "");
 	    dir.setDirByName(fileLocation);
 
 	    File jsonFile = new File(dir.getDir() + fileName + ".json");

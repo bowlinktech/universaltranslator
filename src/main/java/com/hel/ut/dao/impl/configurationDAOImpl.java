@@ -46,7 +46,6 @@ import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.springframework.beans.factory.annotation.Qualifier;
 
 import org.springframework.stereotype.Repository;
 
@@ -54,7 +53,6 @@ import org.springframework.stereotype.Repository;
 public class configurationDAOImpl implements configurationDAO {
 
     @Autowired
-    @Qualifier("ilsessionFactory")
     private SessionFactory sessionFactory;
 
     /**
@@ -67,7 +65,7 @@ public class configurationDAOImpl implements configurationDAO {
      * @return The function will return the id of the created configuration
      */
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public Integer createConfiguration(configuration configuration) {
         Integer lastId;
 
@@ -85,7 +83,7 @@ public class configurationDAOImpl implements configurationDAO {
      *
      */
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public void updateConfiguration(configuration configuration) {
         sessionFactory.getCurrentSession().update(configuration);
     }
@@ -100,7 +98,7 @@ public class configurationDAOImpl implements configurationDAO {
      * @return	This function will return a single configuration object
      */
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public configuration getConfigurationById(int configId) {
         return (configuration) sessionFactory.
                 getCurrentSession().
@@ -117,7 +115,7 @@ public class configurationDAOImpl implements configurationDAO {
      * @return	This function will return a list of configuration object
      */
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     @SuppressWarnings("unchecked")
     public List<configuration> getConfigurationsByOrgId(int orgId, String searchTerm) {
 
@@ -165,7 +163,7 @@ public class configurationDAOImpl implements configurationDAO {
      * @return	This function will return a list of configuration object
      */
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     @SuppressWarnings("unchecked")
     public List<configuration> getActiveConfigurationsByOrgId(int orgId) {
         Criteria criteria = sessionFactory.getCurrentSession().createCriteria(configuration.class);
@@ -185,7 +183,7 @@ public class configurationDAOImpl implements configurationDAO {
      * @return	This function will return a single configuration object
      */
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     @SuppressWarnings("unchecked")
     public configuration getConfigurationByName(String configName, int orgId) {
         Criteria criteria = sessionFactory.getCurrentSession().createCriteria(configuration.class);
@@ -203,7 +201,7 @@ public class configurationDAOImpl implements configurationDAO {
      * @Return	This function will return a list of configuration objects
      */
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     @SuppressWarnings("unchecked")
     public List<configuration> getConfigurations() {
         Query query = sessionFactory.getCurrentSession().createQuery("from configuration order by dateCreated desc");
@@ -222,7 +220,7 @@ public class configurationDAOImpl implements configurationDAO {
      */
     @SuppressWarnings("unchecked")
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public List<configurationDataTranslations> getDataTranslations(int configId) {
         Query query = sessionFactory.getCurrentSession().createQuery("from configurationDataTranslations where configId = :configId order by processOrder asc");
         query.setParameter("configId", configId);
@@ -238,7 +236,7 @@ public class configurationDAOImpl implements configurationDAO {
      * @return This function will return the total configurations
      */
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public Long findTotalConfigs() {
         Query query = sessionFactory.getCurrentSession().createQuery("select count(id) as totalConfigs from configuration");
 
@@ -257,7 +255,7 @@ public class configurationDAOImpl implements configurationDAO {
      * @Return	This function will return a list of organization objects
      */
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     @SuppressWarnings("unchecked")
     public List<configuration> getLatestConfigurations(int maxResults) {
         Query query = sessionFactory.getCurrentSession().createQuery("from configuration order by dateCreated desc");
@@ -280,7 +278,7 @@ public class configurationDAOImpl implements configurationDAO {
      *
      */
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public Long getTotalConnections(int configId) {
 
         Query query = sessionFactory.getCurrentSession().createSQLQuery("SELECT count(id) FROM configurationConnections where configId = :configId and status = 1")
@@ -299,7 +297,7 @@ public class configurationDAOImpl implements configurationDAO {
      * @param	configId	This will hold the id of the configuration to update stepCompleted	This will hold the completed step number
      */
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public void updateCompletedSteps(int configId, int stepCompleted) {
 
         Query query = sessionFactory.getCurrentSession().createSQLQuery("UPDATE configurations set stepsCompleted = :stepCompleted where id = :configId")
@@ -315,7 +313,7 @@ public class configurationDAOImpl implements configurationDAO {
      */
     @SuppressWarnings("rawtypes")
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public List getFileTypes() {
         Query query = sessionFactory.getCurrentSession().createSQLQuery("SELECT id, fileType FROM ref_fileTypes where active = 1 order by id asc");
 
@@ -333,7 +331,7 @@ public class configurationDAOImpl implements configurationDAO {
      */
     @SuppressWarnings("rawtypes")
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public String getFileTypesById(int id) {
         Query query = sessionFactory.getCurrentSession().createSQLQuery("SELECT fileType FROM ref_fileTypes where id = :id")
                 .setParameter("id", id);
@@ -351,7 +349,7 @@ public class configurationDAOImpl implements configurationDAO {
      * @Return This function will return a string (field name)
      */
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public String getFieldName(int fieldId) {
         Query query = sessionFactory.getCurrentSession().createSQLQuery("SELECT fieldDesc FROM configurationFormFields where id = :fieldId")
                 .setParameter("fieldId", fieldId);
@@ -370,7 +368,7 @@ public class configurationDAOImpl implements configurationDAO {
      *
      */
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public void deleteDataTranslations(int configId, int categoryId) {
         Query deleteTranslations = sessionFactory.getCurrentSession().createQuery("delete from configurationDataTranslations where configId = :configId and categoryId = :categoryId");
         deleteTranslations.setParameter("configId", configId);
@@ -385,7 +383,7 @@ public class configurationDAOImpl implements configurationDAO {
      *
      */
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public void saveDataTranslations(configurationDataTranslations translations) {
         sessionFactory.getCurrentSession().save(translations);
     }
@@ -396,7 +394,7 @@ public class configurationDAOImpl implements configurationDAO {
      * @return list of macros
      */
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public List<Macros> getMacrosByCategory(int categoryId) {
         Query query = sessionFactory.getCurrentSession().createQuery("from Macros where categoryId = :categoryId order by macro_short_name asc");
         query.setParameter("categoryId", categoryId);
@@ -413,7 +411,7 @@ public class configurationDAOImpl implements configurationDAO {
      */
     @SuppressWarnings("unchecked")
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public List<Macros> getMacros() {
         Query query = sessionFactory.getCurrentSession().createQuery("from Macros where categoryId = 1 order by macro_short_name asc");
         return query.list();
@@ -426,7 +424,7 @@ public class configurationDAOImpl implements configurationDAO {
      *
      * @return macros object
      */
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public Macros getMacroById(int macroId) {
         return (Macros) sessionFactory.getCurrentSession().get(Macros.class, macroId);
     }
@@ -441,7 +439,7 @@ public class configurationDAOImpl implements configurationDAO {
      */
     @SuppressWarnings("unchecked")
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public List<configurationConnection> getAllConnections() {
         Query query = sessionFactory.getCurrentSession().createQuery("from configurationConnection order by dateCreated desc");
 
@@ -460,7 +458,7 @@ public class configurationDAOImpl implements configurationDAO {
      */
     @SuppressWarnings("unchecked")
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public List<configurationConnection> getLatestConnections(int maxResults) {
         Query query = sessionFactory.getCurrentSession().createQuery("from configurationConnection order by dateCreated desc");
 
@@ -479,7 +477,7 @@ public class configurationDAOImpl implements configurationDAO {
      * @return This function will return a list of configurationConnection objects
      */
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     @SuppressWarnings("unchecked")
     public List<configurationConnection> getConnectionsByConfiguration(int configId, int userId) {
         Query query = sessionFactory.getCurrentSession().createQuery("from configurationConnection where sourceConfigId = :configId and id in (select connectionId from configurationConnectionSenders where userId = :userId)");
@@ -498,7 +496,7 @@ public class configurationDAOImpl implements configurationDAO {
      * @return This function will return a list of configurationConnection objects
      */
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public List<configurationConnection> getConnectionsByTargetConfiguration(int configId) {
         Query query = sessionFactory.getCurrentSession().createQuery("from configurationConnection where targetConfigId = :configId");
         query.setParameter("configId", configId);
@@ -515,7 +513,7 @@ public class configurationDAOImpl implements configurationDAO {
      * @return This function does not return anything.
      */
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public Integer saveConnection(configurationConnection connection) {
         Integer connectionId;
 
@@ -535,7 +533,7 @@ public class configurationDAOImpl implements configurationDAO {
      * @return This function does not return anything
      */
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public void saveConnectionSenders(configurationConnectionSenders senders) {
         sessionFactory.getCurrentSession().save(senders);
     }
@@ -550,7 +548,7 @@ public class configurationDAOImpl implements configurationDAO {
      * @return This function does not return anything
      */
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public void saveConnectionReceivers(configurationConnectionReceivers receivers) {
         sessionFactory.getCurrentSession().save(receivers);
     }
@@ -565,7 +563,7 @@ public class configurationDAOImpl implements configurationDAO {
      * @return	This function will return a single connection object
      */
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public configurationConnection getConnection(int connectionId) {
         return (configurationConnection) sessionFactory.getCurrentSession().get(configurationConnection.class, connectionId);
     }
@@ -578,7 +576,7 @@ public class configurationDAOImpl implements configurationDAO {
      * @return This function will return a list of configurationConnectionSenders objects
      */
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public List<configurationConnectionSenders> getConnectionSenders(int connectionId) {
         Criteria criteria = sessionFactory.getCurrentSession().createCriteria(configurationConnectionSenders.class);
         criteria.add(Restrictions.eq("connectionId", connectionId));
@@ -594,7 +592,7 @@ public class configurationDAOImpl implements configurationDAO {
      * @return This function will return a list of configurationConnectionSenders objects
      */
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public List<configurationConnectionReceivers> getConnectionReceivers(int connectionId) {
         Criteria criteria = sessionFactory.getCurrentSession().createCriteria(configurationConnectionReceivers.class);
         criteria.add(Restrictions.eq("connectionId", connectionId));
@@ -610,7 +608,7 @@ public class configurationDAOImpl implements configurationDAO {
      * @return THis function does not return anything
      */
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public void removeConnectionSenders(int connectionId) {
         Query query = sessionFactory.getCurrentSession().createSQLQuery("DELETE from configurationConnectionSenders where connectionId = :connectionId")
                 .setParameter("connectionId", connectionId);
@@ -626,7 +624,7 @@ public class configurationDAOImpl implements configurationDAO {
      * @return THis function does not return anything
      */
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public void removeConnectionReceivers(int connectionId) {
         Query query = sessionFactory.getCurrentSession().createSQLQuery("DELETE from configurationConnectionReceivers where connectionId = :connectionId")
                 .setParameter("connectionId", connectionId);
@@ -642,7 +640,7 @@ public class configurationDAOImpl implements configurationDAO {
      * @return This function does not return anything.
      */
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public void updateConnection(configurationConnection connection) {
         sessionFactory.getCurrentSession().update(connection);
     }
@@ -654,7 +652,7 @@ public class configurationDAOImpl implements configurationDAO {
      *
      * @return The function will return a configurationSchedules object containing the details for the schedule.
      */
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public configurationSchedules getScheduleDetails(int configId) {
         Query query = sessionFactory.getCurrentSession().createQuery("from configurationSchedules where configId = :configId");
         query.setParameter("configId", configId);
@@ -680,7 +678,7 @@ public class configurationDAOImpl implements configurationDAO {
      *
      * @return This function does not return anything.
      */
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public void saveSchedule(configurationSchedules scheduleDetails) {
         sessionFactory.getCurrentSession().saveOrUpdate(scheduleDetails);
     }
@@ -693,7 +691,7 @@ public class configurationDAOImpl implements configurationDAO {
      * @return This function will return the configuartionMessageSpec object.
      */
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public configurationMessageSpecs getMessageSpecs(int configId) {
         Query query = sessionFactory.getCurrentSession().createQuery("from configurationMessageSpecs where configId = :configId");
         query.setParameter("configId", configId);
@@ -710,7 +708,7 @@ public class configurationDAOImpl implements configurationDAO {
      * @return This function does not return anything.
      */
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public void updateMessageSpecs(configurationMessageSpecs messageSpecs, int transportDetailId, int clearFields) {
 
         //if clearFields == 1 then we need to clear out the configuration form fields, mappings and data
@@ -743,7 +741,7 @@ public class configurationDAOImpl implements configurationDAO {
      * @return This function will return a list of ERG configurations.
      */
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public List<configuration> getActiveConfigurationsByUserId(int userId, int transportMethod) throws Exception {
 
         /* Find all SENDER connections for the passed in user */
@@ -809,7 +807,7 @@ public class configurationDAOImpl implements configurationDAO {
     }
 
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     @SuppressWarnings("unchecked")
     public List<configurationDataTranslations> getDataTranslationsWithFieldNo(
             int configId, int categoryId) {
@@ -829,7 +827,7 @@ public class configurationDAOImpl implements configurationDAO {
     }
 
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     @SuppressWarnings("unchecked")
     public List<CrosswalkData> getCrosswalkData(int cwId) {
         try {
@@ -853,7 +851,7 @@ public class configurationDAOImpl implements configurationDAO {
      * @return	This function will return a HL7Details object
      */
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     @SuppressWarnings("unchecked")
     public HL7Details getHL7Details(int configId) {
         Criteria criteria = sessionFactory.getCurrentSession().createCriteria(HL7Details.class);
@@ -875,7 +873,7 @@ public class configurationDAOImpl implements configurationDAO {
      * @return This function will return a list of HL7Segment objects
      */
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public List<HL7Segments> getHL7Segments(int hl7Id) {
         Criteria criteria = sessionFactory.getCurrentSession().createCriteria(HL7Segments.class);
         criteria.add(Restrictions.eq("hl7Id", hl7Id));
@@ -892,7 +890,7 @@ public class configurationDAOImpl implements configurationDAO {
      * @return This function will return a list of HL7Elements objects
      */
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public List<HL7Elements> getHL7Elements(int hl7Id, int segmentId) {
         Criteria criteria = sessionFactory.getCurrentSession().createCriteria(HL7Elements.class);
         criteria.add(Restrictions.eq("hl7Id", hl7Id));
@@ -910,7 +908,7 @@ public class configurationDAOImpl implements configurationDAO {
      * @return This function will return a list of element component objects
      */
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public List<HL7ElementComponents> getHL7ElementComponents(int elementId) {
         Criteria criteria = sessionFactory.getCurrentSession().createCriteria(HL7ElementComponents.class);
         criteria.add(Restrictions.eq("elementId", elementId));
@@ -925,7 +923,7 @@ public class configurationDAOImpl implements configurationDAO {
      * @param details The Hl7 details object
      */
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public void updateHL7Details(HL7Details details) {
         sessionFactory.getCurrentSession().update(details);
 
@@ -937,7 +935,7 @@ public class configurationDAOImpl implements configurationDAO {
      * @param segment The segment object to update
      */
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public void updateHL7Segments(HL7Segments segment) {
         sessionFactory.getCurrentSession().update(segment);
     }
@@ -948,7 +946,7 @@ public class configurationDAOImpl implements configurationDAO {
      * @param element The segment element object to update.
      */
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public void updateHL7Elements(HL7Elements element) {
         sessionFactory.getCurrentSession().update(element);
     }
@@ -959,7 +957,7 @@ public class configurationDAOImpl implements configurationDAO {
      * @param component The element component object to update.
      */
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public void updateHL7ElementComponent(HL7ElementComponents component) {
         sessionFactory.getCurrentSession().update(component);
     }
@@ -970,7 +968,7 @@ public class configurationDAOImpl implements configurationDAO {
      * @param newSegment The object holding the new HL7 Object
      */
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public int saveHL7Details(HL7Details details) {
         Integer lastId;
 
@@ -985,7 +983,7 @@ public class configurationDAOImpl implements configurationDAO {
      * @param newSegment The object holding the new HL7 Object
      */
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public int saveHL7Segment(HL7Segments newSegment) {
         Integer lastId;
 
@@ -1000,7 +998,7 @@ public class configurationDAOImpl implements configurationDAO {
      * @param newElement The object holding the new HL7 Element Object
      */
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public int saveHL7Element(HL7Elements newElement) {
         Integer lastId;
 
@@ -1015,21 +1013,32 @@ public class configurationDAOImpl implements configurationDAO {
      * @param newcomponent The object holding the new HL7 Element Component Object
      */
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public void saveHL7Component(HL7ElementComponents newcomponent) {
         sessionFactory.getCurrentSession().save(newcomponent);
     }
 
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public String getMessageTypeNameByConfigId(Integer configId) {
         try {
             String sql = ("select name from messageTypes where id in (select messageTypeId from configurations where id = :configId);");
             Query query = sessionFactory.getCurrentSession().createSQLQuery(sql).addScalar("name", StandardBasicTypes.STRING);
             query.setParameter("configId", configId);
-
-            String mtName = (String) query.list().get(0);
-
+	    
+	    String mtName = "N/A";
+	    
+	    if(query.list().isEmpty()) {
+		String configSQL = ("select configName from configurations where id = :configId");
+		Query configQuery = sessionFactory.getCurrentSession().createSQLQuery(configSQL).addScalar("configName", StandardBasicTypes.STRING);
+		configQuery.setParameter("configId", configId);
+		
+		mtName = (String) configQuery.list().get(0);
+	    }
+	    else {
+		mtName = (String) query.list().get(0);
+	    }
+	   
             return mtName;
         } catch (Exception ex) {
             System.err.println("getMessageTypeNameByConfigId " + ex.getCause());
@@ -1044,7 +1053,7 @@ public class configurationDAOImpl implements configurationDAO {
      */
     @SuppressWarnings("rawtypes")
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public List getEncodings() {
         try {
             Query query = sessionFactory.getCurrentSession().createSQLQuery("select id, encoding from ref_encoding order by id asc");
@@ -1057,7 +1066,7 @@ public class configurationDAOImpl implements configurationDAO {
     }
 
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public void removeHL7ElementComponent(Integer componentId) {
         Query deleteComponent = sessionFactory.getCurrentSession().createQuery("delete from HL7ElementComponents where id = :componentId");
         deleteComponent.setParameter("componentId", componentId);
@@ -1065,7 +1074,7 @@ public class configurationDAOImpl implements configurationDAO {
     }
 
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public void removeHL7Element(Integer elementId) {
         Query deleteComponents = sessionFactory.getCurrentSession().createQuery("delete from HL7ElementComponents where elementId = :elementId");
         deleteComponents.setParameter("elementId", elementId);
@@ -1077,7 +1086,7 @@ public class configurationDAOImpl implements configurationDAO {
     }
 
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public void removeHL7Segment(Integer segmentId) {
         Query deleteComponents = sessionFactory.getCurrentSession().createSQLQuery("delete from configurationhl7elementvalues where elementId in (select id from configurationhl7elements where segmentId = :segmentId)");
         deleteComponents.setParameter("segmentId", segmentId);
@@ -1102,7 +1111,7 @@ public class configurationDAOImpl implements configurationDAO {
      * @return	This function will return a configurationCCDElements object
      */
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     @SuppressWarnings("unchecked")
     public List<configurationCCDElements> getCCDElements(Integer configId) throws Exception {
 
@@ -1132,7 +1141,7 @@ public class configurationDAOImpl implements configurationDAO {
      * @throws Exception
      */
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public configurationCCDElements getCCDElement(Integer elementId) throws Exception {
         return (configurationCCDElements) sessionFactory.
                 getCurrentSession().
@@ -1146,13 +1155,13 @@ public class configurationDAOImpl implements configurationDAO {
      * @throws Exception
      */
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public void saveCCDElement(configurationCCDElements ccdElement) throws Exception {
         sessionFactory.getCurrentSession().saveOrUpdate(ccdElement);
     }
 
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public configurationExcelDetails getExcelDetails(Integer configId, Integer orgId) throws Exception {
         Criteria criteria = sessionFactory.getCurrentSession().createCriteria(configurationExcelDetails.class);
         criteria.add(Restrictions.eq("configId", configId));
@@ -1175,7 +1184,7 @@ public class configurationDAOImpl implements configurationDAO {
      *
      */
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public void loadExcelContents(int id, int transportDetailId, String fileName, fileSystem dir) throws Exception {
         String errorMessage = "";
         try {
@@ -1266,7 +1275,7 @@ public class configurationDAOImpl implements configurationDAO {
     }
     
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public void updateExcelConfigDetails(Integer orgId, configurationMessageSpecs messageSpecs) throws Exception {
 	
 	//Delete existing entry
@@ -1297,7 +1306,7 @@ public class configurationDAOImpl implements configurationDAO {
      */
     @SuppressWarnings("rawtypes")
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public Integer getFieldCrosswalkIdByFieldName(int configId, String fieldName) {
         Query query = sessionFactory.getCurrentSession().createSQLQuery("SELECT crosswalkId from configurationdatatranslations where fieldId in (select id FROM configurationformfields where configId = :configId and fieldDesc = :fieldName)")
                 .setParameter("configId", configId)
@@ -1322,7 +1331,7 @@ public class configurationDAOImpl implements configurationDAO {
      * @return This function will return a list of ERG configurations.
      */
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public List<configuration> getActiveConfigurationsByTransportType(int userId, List<Integer> transportMethods) throws Exception {
 
         /* Find all SENDER connections for the passed in user */
@@ -1393,7 +1402,7 @@ public class configurationDAOImpl implements configurationDAO {
      */
     @SuppressWarnings("rawtypes")
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public List getZipTypes() {
         Query query = sessionFactory.getCurrentSession().createSQLQuery("SELECT id, zipType FROM lu_ziptypes order by id asc");
 
@@ -1406,7 +1415,7 @@ public class configurationDAOImpl implements configurationDAO {
      */
     @SuppressWarnings("rawtypes")
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public List getrestAPITypes() {
 	Query query = sessionFactory.getCurrentSession().createSQLQuery("SELECT id, apiType FROM lu_restapitypes order by id asc");
 
@@ -1414,7 +1423,7 @@ public class configurationDAOImpl implements configurationDAO {
     }
 
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public List<configurationConnection> getConnectionsBySrcAndTargetConfigurations(
 		    int sourceConfigId, int targetConfigId) {
 	    Query query = sessionFactory.getCurrentSession().createQuery("from configurationConnection where sourceConfigId = :sourceConfigId and targetConfigId = :targetConfigId and status = TRUE");
@@ -1433,7 +1442,7 @@ public class configurationDAOImpl implements configurationDAO {
      */
     @SuppressWarnings("rawtypes")
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public List getrestAPIFunctions(Integer orgId) {
 	
 	String sql = "select id, functionName from lu_availablerestapifunctions where forOrgId = 0 or forOrgId = :orgId order by id asc";
@@ -1445,7 +1454,7 @@ public class configurationDAOImpl implements configurationDAO {
     }
     
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public List<watchlist> getDashboardWatchList() throws Exception {
 	
 	String sql = "select a.entryMessage, a.id, b.orgName, c.configName, m.name as messageTypeName, e.transportMethod, a.expected, a.expectFirstFile, a.expectFirstFileTime "
@@ -1464,7 +1473,7 @@ public class configurationDAOImpl implements configurationDAO {
     }
     
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public watchlist getDashboardWatchListById(int watchId) throws Exception {
 	Criteria criteria = sessionFactory.getCurrentSession().createCriteria(watchlist.class);
         criteria.add(Restrictions.eq("id", watchId));
@@ -1480,7 +1489,7 @@ public class configurationDAOImpl implements configurationDAO {
      * @return This function does not return anything.
      */
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public Integer saveDashboardWatchListEntry(watchlist watchListEntry) {
         Integer watchListEntryId;
 
@@ -1497,13 +1506,13 @@ public class configurationDAOImpl implements configurationDAO {
      * @return This function does not return anything.
      */
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public void updateDashboardWatchListEntry(watchlist watchListEntry) {
         sessionFactory.getCurrentSession().update(watchListEntry);
     }
     
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public List<watchlist> getDashboardWatchListToInsert() throws Exception {
 	
 	String sql = "SELECT a.*, IFNULL(c.messageTypeId, 0) as messageTypeId FROM dashboardwatchlist a left outer join configurations c on c.id = a.configId where nextInsertDate <= now();";
@@ -1533,7 +1542,7 @@ public class configurationDAOImpl implements configurationDAO {
      * @return This function does not return anything.
      */
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public void insertDashboardWatchListEntry(watchlistEntry watchListEntry) {
         sessionFactory.getCurrentSession().saveOrUpdate(watchListEntry);
     }
@@ -1547,7 +1556,7 @@ public class configurationDAOImpl implements configurationDAO {
      * @throws Exception
      */
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public List<watchlistEntry> getWatchListEntries(Date fromDate, Date toDate) throws Exception {
 
 	int firstResult = 0;
@@ -1565,10 +1574,10 @@ public class configurationDAOImpl implements configurationDAO {
     }
     
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public void deleteWatchEntry(Integer watchId) throws Exception {
 	
-	String sql = "delete from iltz.dashboardwatchlistentries where watchlistentryid = "+watchId+"; delete from iltz.dashboardwatchlist where id = "+watchId+";";
+	String sql = "delete from dashboardwatchlistentries where watchlistentryid = "+watchId+"; delete from dashboardwatchlist where id = "+watchId+";";
 	
 	Query deleteWatchEntry = sessionFactory.getCurrentSession().createSQLQuery(sql);
         deleteWatchEntry.executeUpdate();
@@ -1583,7 +1592,7 @@ public class configurationDAOImpl implements configurationDAO {
      * @throws Exception
      */
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public List<watchlistEntry> getGenericWatchListEntries(Date fromDate, Date toDate) throws Exception {
 
 	int firstResult = 0;
@@ -1600,7 +1609,7 @@ public class configurationDAOImpl implements configurationDAO {
     }
     
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public watchlistEntry getWatchListEntry(Integer entryId) throws Exception {
 	Criteria criteria = sessionFactory.getCurrentSession().createCriteria(watchlistEntry.class);
         criteria.add(Restrictions.eq("id", entryId));

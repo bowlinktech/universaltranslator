@@ -187,7 +187,7 @@ require(['./main'], function () {
                 type: "POST",
                 data: {'categoryId': 3},
                 success: function (data) {
-                    window.location.href = "preprocessing?msg=updated";
+                    window.location.href = "list?msg=updated";
                 }
             });
         });

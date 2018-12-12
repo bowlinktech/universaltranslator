@@ -153,7 +153,7 @@ public class restfulManager {
 	    fileSystem dir = new fileSystem();
 
 	    String filelocation = transportDetails.getfileLocation();
-	    filelocation = filelocation.replace("/ILTZ/", "");
+	    filelocation = filelocation.replace("/HELProductSuite/universalTranslator/", "");
 	    dir.setDirByName(filelocation);
 
 	    File file = new File(dir.getDir() + fileName);
@@ -450,7 +450,7 @@ public class restfulManager {
 	    fileSystem dir = new fileSystem();
 
 	    String filelocation = transportDetails.getfileLocation();
-	    filelocation = filelocation.replace("/ILTZ/", "");
+	    filelocation = filelocation.replace("/HELProductSuite/universalTranslator/", "");
 	    dir.setDirByName(filelocation);
 
 	    File file = new File(dir.getDir() + fileName);
@@ -804,7 +804,7 @@ public class restfulManager {
 	    fileSystem dir = new fileSystem();
 
 	    String filelocation = transportDetails.getfileLocation();
-	    filelocation = filelocation.replace("/ILTZ/", "");
+	    filelocation = filelocation.replace("/HELProductSuite/universalTranslator/", "");
 	    dir.setDirByName(filelocation);
 
 	    File file = new File(dir.getDir() + fileName);

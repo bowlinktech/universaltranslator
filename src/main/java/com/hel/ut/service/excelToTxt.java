@@ -50,7 +50,7 @@ public class excelToTxt {
 
 	dir.setDir(orgDetails.getcleanURL(), "loadFiles");
 	/* Get the uploaded xlsx File */
-	fileLocation = fileLocation.replace("/Applications/ILTZ/", "").replace("/home/ILTZ/", "").replace("/ILTZ/", "");
+	fileLocation = fileLocation.replace("/Applications/HELProductSuite/universalTranslator/", "").replace("/home/HELProductSuite/universalTranslator/", "").replace("/HELProductSuite/universalTranslator/", "");
 	dir.setDirByName(fileLocation);
 	
 	String excelFile = (excelFileName + ".xlsx");

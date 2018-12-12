@@ -67,10 +67,6 @@ import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.InitBinder;
 
 import com.hel.ut.model.configurationWebServiceFields;
-import com.hel.rrKit.importTool.importManager;
-import com.hel.rrKit.importTool.programImportType;
-import com.hel.rrKit.program.program;
-import com.hel.rrKit.program.programManager;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -99,12 +95,6 @@ public class adminConfigController {
 
     @Autowired
     private sysAdminManager sysAdminManager;
-    
-    @Autowired
-    private programManager programmanager;
-    
-    @Autowired
-    private importManager importmanager;
 
     @InitBinder
     public void initBinder(WebDataBinder binder) {
@@ -141,10 +131,15 @@ public class adminConfigController {
         for (configuration config : configurations) {
             org = organizationmanager.getOrganizationById(config.getorgId());
             config.setOrgName(org.getOrgName());
-
-            messagetype = messagetypemanager.getMessageTypeById(config.getMessageTypeId());
-            config.setMessageTypeName(messagetype.getName());
-
+	    
+	    if(config.getMessageTypeId() > 0) {
+		messagetype = messagetypemanager.getMessageTypeById(config.getMessageTypeId());
+		config.setMessageTypeName(messagetype.getName());
+	    }
+	    else {
+		config.setMessageTypeName("N/A");
+	    }
+            
             transportDetails = configurationTransportManager.getTransportDetails(config.getId());
             if (transportDetails != null) {
                 config.settransportMethod(configurationTransportManager.getTransportMethodById(transportDetails.gettransportMethodId()));
@@ -449,11 +444,11 @@ public class adminConfigController {
     @RequestMapping(value = "/transport", method = RequestMethod.GET)
     public ModelAndView viewTransportDetails(HttpSession session) throws Exception {
 	
-        Integer configId = 0;
+        ModelAndView mav = new ModelAndView();
 	
-	ModelAndView mav = new ModelAndView();
+	Integer configId = 0;
 	
-        if(session.getAttribute("manageconfigId") == null){  
+	if(session.getAttribute("manageconfigId") == null){  
 	    mav = new ModelAndView(new RedirectView("list"));
             return mav;
 	}
@@ -474,9 +469,9 @@ public class adminConfigController {
             transportDetails = new configurationTransport();
 
             if (configurationDetails.getType() == 1) {
-                transportDetails.setfileLocation("/ILTZ/" + orgDetails.getcleanURL() + "/input files/");
+                transportDetails.setfileLocation("/HELProductSuite/universalTranslator/" + orgDetails.getcleanURL() + "/input files/");
             } else {
-                transportDetails.setfileLocation("/ILTZ/" + orgDetails.getcleanURL() + "/output files/");
+                transportDetails.setfileLocation("/HELProductSuite/universalTranslator/" + orgDetails.getcleanURL() + "/output files/");
             }
 
             List<Integer> assocMessageTypes = new ArrayList<Integer>();
@@ -572,7 +567,13 @@ public class adminConfigController {
 
         for (configuration config : configurations) {
             configurationTransport transDetails = configurationTransportManager.getTransportDetails(config.getId());
-            config.setMessageTypeName(messagetypemanager.getMessageTypeById(config.getMessageTypeId()).getName());
+	    
+	    if(config.getMessageTypeId() > 0) {
+		config.setMessageTypeName(messagetypemanager.getMessageTypeById(config.getMessageTypeId()).getName());
+	    }
+	    else {
+		config.setMessageTypeName("N/A");
+	    }
 
             if (transDetails != null) {
                 config.settransportDetailId(transDetails.getId());
@@ -601,7 +602,13 @@ public class adminConfigController {
 	mav.addObject("showAllConfigOptions", session.getAttribute("showAllConfigOptions"));
 	
         configurationDetails.setOrgName(organizationmanager.getOrganizationById(configurationDetails.getorgId()).getOrgName());
-        configurationDetails.setMessageTypeName(messagetypemanager.getMessageTypeById(configurationDetails.getMessageTypeId()).getName());
+	if(configurationDetails.getMessageTypeId() > 0) {
+	     configurationDetails.setMessageTypeName(messagetypemanager.getMessageTypeById(configurationDetails.getMessageTypeId()).getName());
+	}
+	else {
+	    configurationDetails.setMessageTypeName("N/A");
+	}
+        
         configurationDetails.settransportMethod(configurationTransportManager.getTransportMethodById(transportDetails.gettransportMethodId()));
 
         //pass the configuration detail object back to the page.
@@ -625,10 +632,6 @@ public class adminConfigController {
         //Get the list of available encodings
         List encodings = configurationmanager.getEncodings();
         mav.addObject("encodings", encodings);
-	
-	//Get the list of rapid registry programs
-	List<program> registries = programmanager.getActivePrograms();
-	mav.addObject("registries", registries);
 	
 	//Get the list of available file types
         List zipTypes = configurationmanager.getZipTypes();
@@ -675,12 +678,22 @@ public class adminConfigController {
             @RequestParam String action, @RequestParam(value = "domain1", required = false) String domain1
     ) throws Exception {
 	
+	Integer configId = 0;
+	
+	if(session.getAttribute("manageconfigId") == null){  
+	    ModelAndView mav = new ModelAndView(new RedirectView("list"));
+            return mav;
+	}
+	else {
+	    configId = (Integer) session.getAttribute("manageconfigId");
+	}
+	
         Integer currTransportId = transportDetails.getId();
 	
         /**
          * if transport method = ERG (2) then set up the online form OR if transport method is not ERG but the error handling is set to fix errors via ERG set up the online form
          */
-        configuration configurationDetails = configurationmanager.getConfigurationById(transportDetails.getconfigId());
+        configuration configurationDetails = configurationmanager.getConfigurationById(configId);
 
         /* submit the updates */
         Integer transportId = (Integer) configurationTransportManager.updateTransportDetails(transportDetails);
@@ -705,7 +718,7 @@ public class adminConfigController {
         }
 	
         if (currTransportId == 0) {
-	    configurationTransportManager.setupOnlineForm(transportId, transportDetails.getconfigId(), configurationDetails.getMessageTypeId());
+	    configurationTransportManager.setupOnlineForm(transportId, configId, configurationDetails.getMessageTypeId());
 	}
 	
 	//Need to set the mappings static variable
@@ -801,7 +814,7 @@ public class adminConfigController {
              *
              */
             if ((Integer) session.getAttribute("configStepsCompleted") < 2) {
-                configurationmanager.updateCompletedSteps(transportDetails.getconfigId(), 2);
+                configurationmanager.updateCompletedSteps(configId, 2);
 		session.setAttribute("configStepsCompleted", 2);
             }
             ModelAndView mav = new ModelAndView(new RedirectView("transport"));
@@ -809,45 +822,62 @@ public class adminConfigController {
         } else {
             //If the type of configuration is for a source then send to message specs
             if (configurationDetails.getType() == 1) {
-                /**
-                 * Need to update the configuration completed step
-                 *
-                 */
-                if ((Integer) session.getAttribute("configStepsCompleted") < 2) {
-                    configurationmanager.updateCompletedSteps(transportDetails.getconfigId(), 2);
-                    session.setAttribute("configStepsCompleted", 2);
-                }
-                ModelAndView mav = new ModelAndView(new RedirectView("messagespecs"));
-                return mav;
+                
+		//Check if passthru
+		if(configurationDetails.getConfigurationType() == 2) {
+		    configurationmanager.updateCompletedSteps(configId, 2);
+		    session.setAttribute("configStepsCompleted", 2);
+		    ModelAndView mav = new ModelAndView(new RedirectView("scheduling"));
+		    return mav;
+		}
+		else {
+		     if ((Integer) session.getAttribute("configStepsCompleted") < 2) {
+			configurationmanager.updateCompletedSteps(configId, 2);
+			session.setAttribute("configStepsCompleted", 2);
+		    }
+		    ModelAndView mav = new ModelAndView(new RedirectView("messagespecs"));
+		    return mav;
+		}
+               
             } else {
                 /**
                  * If transport method is ERG send to the ERG Customization page
                  */
                 if (transportDetails.gettransportMethodId() == 2) {
-                    /**
-                     * Need to update the configuration completed step
-                     *
-                     */
-                    if ((Integer) session.getAttribute("configStepsCompleted") < 2) {
-                        configurationmanager.updateCompletedSteps(transportDetails.getconfigId(), 3);
-                        session.setAttribute("configStepsCompleted", 3);
-                    }
-                    ModelAndView mav = new ModelAndView(new RedirectView("ERGCustomize"));
-                    return mav;
+                    //Check if passthru
+		    if(configurationDetails.getConfigurationType() == 2) {
+			configurationmanager.updateCompletedSteps(configId, 2);
+			session.setAttribute("configStepsCompleted", 2);
+			ModelAndView mav = new ModelAndView(new RedirectView("scheduling"));
+			return mav;
+		    }
+		    else {
+			if ((Integer) session.getAttribute("configStepsCompleted") < 2) {
+			    configurationmanager.updateCompletedSteps(configId, 3);
+			    session.setAttribute("configStepsCompleted", 3);
+			}
+			ModelAndView mav = new ModelAndView(new RedirectView("ERGCustomize"));
+			return mav;
+		    }
                 } /**
                  * Otherwise send to the field mappings page
                  */
                 else {
-                    /**
-                     * Need to update the configuration completed step
-                     *
-                     */
-                    if ((Integer) session.getAttribute("configStepsCompleted") < 2) {
-                        configurationmanager.updateCompletedSteps(transportDetails.getconfigId(), 2);
-                        session.setAttribute("configStepsCompleted", 2);
-                    }
-                    ModelAndView mav = new ModelAndView(new RedirectView("messagespecs"));
-                    return mav;
+                    //Check if passthru
+		    if(configurationDetails.getConfigurationType() == 2) {
+			configurationmanager.updateCompletedSteps(configId, 2);
+			session.setAttribute("configStepsCompleted", 2);
+			ModelAndView mav = new ModelAndView(new RedirectView("scheduling"));
+			return mav;
+		    }
+		    else {
+			if ((Integer) session.getAttribute("configStepsCompleted") < 2) {
+			    configurationmanager.updateCompletedSteps(configId, 2);
+			    session.setAttribute("configStepsCompleted", 2);
+			}
+			ModelAndView mav = new ModelAndView(new RedirectView("messagespecs"));
+			return mav;
+		    }
                 }
             }
         }
@@ -867,10 +897,10 @@ public class adminConfigController {
     @SuppressWarnings("rawtypes")
     @RequestMapping(value = "/messagespecs", method = RequestMethod.GET)
     public ModelAndView viewMessageSpecDetails(HttpSession session) throws Exception {
-
-        ModelAndView mav = new ModelAndView();
 	
 	Integer configId = 0;
+	
+	ModelAndView mav = new ModelAndView();
 	
 	if(session.getAttribute("manageconfigId") == null){  
 	    mav = new ModelAndView(new RedirectView("list"));
@@ -906,7 +936,15 @@ public class adminConfigController {
         configuration configurationDetails = configurationmanager.getConfigurationById(configId);
 
         configurationDetails.setOrgName(organizationmanager.getOrganizationById(configurationDetails.getorgId()).getOrgName());
-        configurationDetails.setMessageTypeName(messagetypemanager.getMessageTypeById(configurationDetails.getMessageTypeId()).getName());
+	
+	configurationDetails.setOrgName(organizationmanager.getOrganizationById(configurationDetails.getorgId()).getOrgName());
+	if(configurationDetails.getMessageTypeId() > 0) {
+	     configurationDetails.setMessageTypeName(messagetypemanager.getMessageTypeById(configurationDetails.getMessageTypeId()).getName());
+	}
+	else {
+	    configurationDetails.setMessageTypeName("N/A");
+	}
+	
         configurationDetails.settransportMethod(configurationTransportManager.getTransportMethodById(transportDetails.gettransportMethodId()));
 
         //pass the configuration detail object back to the page.
@@ -996,10 +1034,10 @@ public class adminConfigController {
     @SuppressWarnings("rawtypes")
     @RequestMapping(value = "/ERGCustomize", method = RequestMethod.GET)
     public ModelAndView viewERGCustomization(HttpSession session) throws Exception {
-
-        ModelAndView mav = new ModelAndView();
 	
 	Integer configId = 0;
+	
+	ModelAndView mav = new ModelAndView();
 	
 	if(session.getAttribute("manageconfigId") == null){  
 	    mav = new ModelAndView(new RedirectView("list"));
@@ -1056,10 +1094,10 @@ public class adminConfigController {
     @SuppressWarnings("rawtypes")
     @RequestMapping(value = "/mappings", method = RequestMethod.GET)
     public ModelAndView getConfigurationMappings(HttpSession session) throws Exception {
-
-        ModelAndView mav = new ModelAndView();
 	
 	Integer configId = 0;
+	
+	ModelAndView mav = new ModelAndView();
 	
 	if(session.getAttribute("manageconfigId") == null){  
 	    mav = new ModelAndView(new RedirectView("list"));
@@ -1173,13 +1211,14 @@ public class adminConfigController {
         //Set the data translations array to get ready to hold data=
         List<configurationDataTranslations> translations = new CopyOnWriteArrayList<configurationDataTranslations>();
 	session.setAttribute("confgirationDataTranslastions", translations);
-
-        ModelAndView mav = new ModelAndView();
+	
 	Integer configId = 0;
 	
+	ModelAndView mav = new ModelAndView();
+	
 	if(session.getAttribute("manageconfigId") == null){  
-	    mav = new ModelAndView(new RedirectView("list"));
-            return mav;
+	   mav = new ModelAndView(new RedirectView("list"));
+           return mav;
 	}
 	else {
 	    configId = (Integer) session.getAttribute("manageconfigId");
@@ -1268,7 +1307,9 @@ public class adminConfigController {
     public @ResponseBody
     Integer submitDataTranslations(HttpSession session, @RequestParam(value = "categoryId", required = true) Integer categoryId) throws Exception {
 
-        Integer configId = (Integer) session.getAttribute("manageconfigId");
+        Integer configId = 0;
+	
+	configId = (Integer) session.getAttribute("manageconfigId");
 	
 	/**
          * Need to update the configuration completed step
@@ -1303,9 +1344,10 @@ public class adminConfigController {
     ModelAndView getTranslations(HttpSession session,@RequestParam(value = "reload", required = true) boolean reload, @RequestParam(value = "categoryId", required = true) Integer categoryId) throws Exception {
 
         ModelAndView mav = new ModelAndView();
-        mav.setViewName("/administrator/configurations/existingTranslations");
 	
 	Integer configId = (Integer) session.getAttribute("manageconfigId");
+	
+        mav.setViewName("/administrator/configurations/existingTranslations");
 	
 	List<configurationDataTranslations> translations = (List<configurationDataTranslations>) session.getAttribute("confgirationDataTranslastions");
 
@@ -1543,9 +1585,10 @@ public class adminConfigController {
      */
     @RequestMapping(value = "/connections", method = RequestMethod.GET)
     public ModelAndView getConnections(HttpSession session) throws Exception {
-
-        ModelAndView mav = new ModelAndView();
+	
 	Integer configId = 0;
+	
+	 ModelAndView mav = new ModelAndView();
 	
 	if(session.getAttribute("manageconfigId") == null){  
 	    mav = new ModelAndView(new RedirectView("list"));
@@ -1578,7 +1621,14 @@ public class adminConfigController {
                 configurationTransport srctransportDetails = configurationTransportManager.getTransportDetails(srcconfigDetails.getId());
 
                 srcconfigDetails.setOrgName(organizationmanager.getOrganizationById(srcconfigDetails.getorgId()).getOrgName());
-                srcconfigDetails.setMessageTypeName(messagetypemanager.getMessageTypeById(srcconfigDetails.getMessageTypeId()).getName());
+		
+		if(srcconfigDetails.getMessageTypeId() > 0) {
+		    srcconfigDetails.setMessageTypeName(messagetypemanager.getMessageTypeById(srcconfigDetails.getMessageTypeId()).getName());
+		}
+		else {
+		    srcconfigDetails.setMessageTypeName("N/A");
+		}
+		
                 srcconfigDetails.settransportMethod(configurationTransportManager.getTransportMethodById(srctransportDetails.gettransportMethodId()));
                 if (srctransportDetails.gettransportMethodId() == 1 && srcconfigDetails.getType() == 2) {
                     srcconfigDetails.settransportMethod("File Download");
@@ -1592,7 +1642,14 @@ public class adminConfigController {
                 configurationTransport tgttransportDetails = configurationTransportManager.getTransportDetails(tgtconfigDetails.getId());
 
                 tgtconfigDetails.setOrgName(organizationmanager.getOrganizationById(tgtconfigDetails.getorgId()).getOrgName());
-                tgtconfigDetails.setMessageTypeName(messagetypemanager.getMessageTypeById(tgtconfigDetails.getMessageTypeId()).getName());
+		
+		if(tgtconfigDetails.getMessageTypeId() > 0) {
+		    tgtconfigDetails.setMessageTypeName(messagetypemanager.getMessageTypeById(tgtconfigDetails.getMessageTypeId()).getName());
+		}
+		else {
+		    tgtconfigDetails.setMessageTypeName("N/A");
+		}
+		
                 if (tgttransportDetails.gettransportMethodId() == 1 && tgtconfigDetails.getType() == 2) {
                     tgtconfigDetails.settransportMethod("File Download");
                 } else {
@@ -1831,7 +1888,15 @@ public class adminConfigController {
                 configurationTransport transportDetails = configurationTransportManager.getTransportDetails(configuration.getId());
 
                 configuration.setOrgName(organizationmanager.getOrganizationById(configuration.getorgId()).getOrgName());
-                configuration.setMessageTypeName(messagetypemanager.getMessageTypeById(configuration.getMessageTypeId()).getName());
+		
+		if(configuration.getMessageTypeId() > 0) {
+		    configuration.setMessageTypeName(messagetypemanager.getMessageTypeById(configuration.getMessageTypeId()).getName());
+		}
+		else {
+		    configuration.setMessageTypeName("N/A");
+		}
+		
+                
                 configuration.settransportMethod(configurationTransportManager.getTransportMethodById(transportDetails.gettransportMethodId()));
             }
         }
@@ -1936,8 +2001,9 @@ public class adminConfigController {
     @RequestMapping(value = "/scheduling", method = RequestMethod.GET)
     public ModelAndView getConfigurationSchedules(HttpSession session) throws Exception {
 
-        ModelAndView mav = new ModelAndView();
-	Integer configId = 0;
+       Integer configId = 0;
+	
+	ModelAndView mav = new ModelAndView();
 	
 	if(session.getAttribute("manageconfigId") == null){  
 	    mav = new ModelAndView(new RedirectView("list"));
@@ -1961,7 +2027,14 @@ public class adminConfigController {
         configurationTransport transportDetails = configurationTransportManager.getTransportDetails(configId);
 
         configurationDetails.setOrgName(organizationmanager.getOrganizationById(configurationDetails.getorgId()).getOrgName());
-        configurationDetails.setMessageTypeName(messagetypemanager.getMessageTypeById(configurationDetails.getMessageTypeId()).getName());
+	
+	if(configurationDetails.getMessageTypeId() > 0) {
+	    configurationDetails.setMessageTypeName(messagetypemanager.getMessageTypeById(configurationDetails.getMessageTypeId()).getName());
+	}
+	else {
+	    configurationDetails.setMessageTypeName("N/A");
+	}
+	
         configurationDetails.settransportMethod(configurationTransportManager.getTransportMethodById(transportDetails.gettransportMethodId()));
 
         //pass the configuration detail object back to the page.
@@ -2031,11 +2104,21 @@ public class adminConfigController {
         }
 
         redirectAttr.addFlashAttribute("savedStatus", "updated");
+	
+	boolean HL7Val = (boolean) session.getAttribute("configHL7");
 
         if ("save".equals(action)) {
-            ModelAndView mav = new ModelAndView(new RedirectView("scheduling"));
-            return mav;
-        } else if ((boolean) session.getAttribute("configHL7") == true) {
+	    
+	    if(configurationDetails.getConfigurationType() == 2) {
+		 ModelAndView mav = new ModelAndView(new RedirectView("/administrator/configurations/list?msg=updated"));
+		return mav;
+	    }
+	    else {
+		 ModelAndView mav = new ModelAndView(new RedirectView("scheduling"));
+		return mav;
+	    }
+           
+        } else if (HL7Val) {
             ModelAndView mav = new ModelAndView(new RedirectView("HL7"));
             return mav;
         } else {
@@ -2051,8 +2134,9 @@ public class adminConfigController {
     @RequestMapping(value = "/HL7", method = RequestMethod.GET)
     public ModelAndView getHL7Form(HttpSession session) throws Exception {
 
-        ModelAndView mav = new ModelAndView();
-	Integer configId = 0;
+        Integer configId = 0;
+	
+	ModelAndView mav = new ModelAndView();
 	
 	if(session.getAttribute("manageconfigId") == null){  
 	    mav = new ModelAndView(new RedirectView("list"));
@@ -2683,8 +2767,9 @@ public class adminConfigController {
     @RequestMapping(value = "/CCD", method = RequestMethod.GET)
     public ModelAndView getCCDForm(HttpSession session) throws Exception {
 
-        ModelAndView mav = new ModelAndView();
-	Integer configId = 0;
+        Integer configId = 0;
+	
+	ModelAndView mav = new ModelAndView();
 	
 	if(session.getAttribute("manageconfigId") == null){  
 	    mav = new ModelAndView(new RedirectView("list"));
@@ -2872,35 +2957,6 @@ public class adminConfigController {
 
     }
     
-    /**
-     * The '/getRegistryProgramUploadTypes.do' GET request will return a list of program upload types
-     * for the passed in registry
-     *
-     * @param registryId
-     *
-     * @return The function will return a list of program upload types.
-     */
-    @SuppressWarnings("rawtypes")
-    @RequestMapping(value = "/getRegistryProgramUploadTypes.do", method = RequestMethod.GET)
-    public @ResponseBody
-    List<programImportType> getRegistryProgramUploadTypes(@RequestParam(value = "registryId", required = true) String registryId) throws Exception {
-	
-	List<programImportType> uploadTypes = importmanager.getImportTypes(Integer.parseInt(registryId));
-	
-	List<programImportType> activeUploadTypes = new ArrayList<programImportType>();
-	
-	if(uploadTypes != null) {
-	    if(uploadTypes.size() > 0) {
-		for(programImportType uploadType : uploadTypes) {
-		    if(uploadType.isStatus() == true) {
-			activeUploadTypes.add(uploadType);
-		    }
-		}
-	    }
-	}
-	
-        return activeUploadTypes;
-    }
     
     /**
      * The 'copyConfiguration.do' method will copy the selected configuration.

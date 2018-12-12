@@ -17,7 +17,7 @@ public class fileSystem {
 
     String dir = null;
 
-    String directoryPath = System.getProperty("directory.ilDir");
+    String directoryPath = System.getProperty("directory.utRootDir");
 
     public String getDir() {
         return dir;
@@ -362,13 +362,13 @@ public class fileSystem {
         String path = "";
         //Windows
         if (os.indexOf("win") >= 0) {
-            path = directoryPath.replace("\\ILTZ\\", "") + addOnPath.replace("", "").replace("/", "\\");
+            path = directoryPath.replace("\\HELProductSuite\\universalTranslator\\", "") + addOnPath.replace("", "").replace("/", "\\");
         } //Mac
         else if (os.indexOf("mac") >= 0) {
-            path = directoryPath.replace("/ILTZ/", "") + addOnPath;
+            path = directoryPath.replace("/HELProductSuite/universalTranslator/", "") + addOnPath;
         } //Unix or Linux or Solarix
         else if (os.indexOf("nix") >= 0 || os.indexOf("nux") >= 0 || os.indexOf("aix") >= 0 || os.indexOf("sunos") >= 0) {
-            path = directoryPath.replace("/ILTZ/", "") + addOnPath;
+            path = directoryPath.replace("/HELProductSuite/universalTranslator/", "") + addOnPath;
         }
         return path;
     }

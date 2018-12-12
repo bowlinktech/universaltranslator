@@ -5,114 +5,49 @@
            http://www.springframework.org/schema/beans/spring-beans-3.1.xsd
             http://www.springframework.org/schema/tx
             http://www.springframework.org/schema/tx/spring-tx-3.1.xsd">
-
-    <!-- IOL Database Connection -->
-    <bean id="ildataSource" class="org.apache.tomcat.jdbc.pool.DataSource">
-        <property name="driverClassName" value="${mysql.jdbc.driver}" />
-        <property name="url" value="${mysql.jdbc.iltzURL}" />
-        <property name="username" value="${mysql.jdbc.iltzUSER}" />
-        <property name="password" value="${mysql.jdbc.iltzPassword}" />
-        <property name="logAbandoned" value="${mysql.jdbc.logAbandoned}" />
-        <property name="removeAbandoned" value="${mysql.jdbc.removeAbandoned}" />
-        <property name="initialSize" value="${mysql.jdbc.initialSize}" />
-        <property name="maxActive" value="${mysql.jdbc.maxActive}" />
-        <property name="maxIdle" value="${mysql.jdbc.maxIdle}" />
-        <property name="minIdle" value="${mysql.jdbc.minIdle}" />
-        <property name="timeBetweenEvictionRunsMillis" value="${mysql.jdbc.timeBetweenEvictionRunsMillis}" />
-        <property name="validationQuery" value="${mysql.jdbc.validationQuery}" />
-        <property name="validationInterval" value="${mysql.jdbc.validationInterval}" />
-        <property name="testOnBorrow" value="${mysql.jdbc.testOnBorrow}" />
-        <property name="removeAbandonedTimeout" value="${mysql.jdbc.removeAbandonedTimeout}" />
+    
+    
+    <bean id="dataSource" class="org.apache.tomcat.jdbc.pool.DataSource">
+        <property name="driverClassName" value="${jdbc.driver}" />
+        <property name="url" value="${jdbc.url}" />
+        <property name="username" value="${jdbc.user}" />
+        <property name="password" value="${jdbc.password}" />
+        <property name="logAbandoned" value="${jdbc.logAbandoned}" />
+        <property name="removeAbandoned" value="${jdbc.removeAbandoned}" />
+        <property name="initialSize" value="${jdbc.initialSize}" />
+        <property name="maxActive" value="${jdbc.maxActive}" />
+        <property name="maxIdle" value="${jdbc.maxIdle}" />
+        <property name="minIdle" value="${jdbc.minIdle}" />
+        <property name="timeBetweenEvictionRunsMillis" value="${jdbc.timeBetweenEvictionRunsMillis}" />
+        <property name="validationQuery" value="${jdbc.validationQuery}" />
+        <property name="validationInterval" value="${jdbc.validationInterval}" />
+        <property name="testOnBorrow" value="${jdbc.testOnBorrow}" />
+        <property name="removeAbandonedTimeout" value="${jdbc.removeAbandonedTimeout}" />
     </bean>
     
-    <bean id="ilsessionFactory" class="org.springframework.orm.hibernate4.LocalSessionFactoryBean">
-        <property name="dataSource" ref="ildataSource"></property>
-        <property name="hibernateProperties">
-            <props>
-                <prop 
-                    key="hibernate.dialect">org.hibernate.dialect.MySQL5Dialect</prop>
-                <prop key="hibernate.show_sql">${mysql.jdbc.hibernate.show_sql}</prop>
-            </props>
-        </property>
-        <property name="packagesToScan" value="com.hel.iltz.model, com.hel.iltz.model.custom, com.hel.iltz.model.lutables" />
-    </bean>
-
-    <tx:annotation-driven transaction-manager="iltransactionManager"/>
-
-    <bean id="iltransactionManager" class="org.springframework.orm.hibernate4.HibernateTransactionManager">
-        <property name="sessionFactory" ref="ilsessionFactory"/>
-    </bean>
-    
-    <!-- hmisKit Database Connection -->
-    <bean id="hmisKitdataSource" class="org.apache.tomcat.jdbc.pool.DataSource">
-        <property name="driverClassName" value="${mysql.jdbc.driver}" />
-        <property name="url" value="${mysql.jdbc.hmisKitURL}" />
-        <property name="username" value="${mysql.jdbc.hmisKitUSER}" />
-        <property name="password" value="${mysql.jdbc.hmisKitPassword}" />
-        <property name="logAbandoned" value="${mysql.jdbc.logAbandoned}" />
-        <property name="removeAbandoned" value="${mysql.jdbc.removeAbandoned}" />
-        <property name="initialSize" value="${mysql.jdbc.initialSize}" />
-        <property name="maxActive" value="${mysql.jdbc.maxActive}" />
-        <property name="maxIdle" value="${mysql.jdbc.maxIdle}" />
-        <property name="minIdle" value="${mysql.jdbc.minIdle}" />
-        <property name="timeBetweenEvictionRunsMillis" value="${mysql.jdbc.timeBetweenEvictionRunsMillis}" />
-        <property name="validationQuery" value="${mysql.jdbc.validationQuery}" />
-        <property name="validationInterval" value="${mysql.jdbc.validationInterval}" />
-        <property name="testOnBorrow" value="${mysql.jdbc.testOnBorrow}" />
-        <property name="removeAbandonedTimeout" value="${mysql.jdbc.removeAbandonedTimeout}" />
-    </bean>
-    
-    <bean id="hmisKitsessionFactory" class="org.springframework.orm.hibernate4.LocalSessionFactoryBean">
-        <property name="dataSource" ref="hmisKitdataSource"></property>
+    <bean id="sessionFactory" class="org.springframework.orm.hibernate4.LocalSessionFactoryBean">
         <property name="hibernateProperties">
             <props>
                 <prop key="hibernate.dialect">org.hibernate.dialect.MySQL5Dialect</prop>
-                <prop key="hibernate.show_sql">${mysql.jdbc.hibernate.show_sql}</prop>
-            </props>
+		<prop key="hibernate.multiTenancy">DATABASE</prop>
+                <prop key="hibernate.show_sql">${jdbc.hibernate.show_sql}</prop>
+		<prop key="hibernate.tenant_identifier_resolver">com.hel.ut.util.CurrentTenantIdentifierResolverImpl</prop>
+		<prop key="hibernate.multi_tenant_connection_provider">com.hel.ut.util.MultiTenantConnectionprovideImpl</prop>
+	    </props>
         </property>
-        <property name="packagesToScan" value="com.hel.hmiskit" />
+	<property name="packagesToScan">
+	    <list>
+		 <value>com.hel.ut.model</value>
+		 <value>com.registryKit</value>
+	    </list>
+	</property>   
     </bean>
 
-    <tx:annotation-driven transaction-manager="hmisKittransactionManager"/>
+    <tx:annotation-driven transaction-manager="transactionManager"/>
 
-    <bean id="hmisKittransactionManager" class="org.springframework.orm.hibernate4.HibernateTransactionManager">
-        <property name="sessionFactory" ref="hmisKitsessionFactory"/>
-    </bean>
-    
-    <!-- rrKit Database Connection -->
-    <bean id="rrKitdataSource" class="org.apache.tomcat.jdbc.pool.DataSource">
-        <property name="driverClassName" value="${mysql.jdbc.driver}" />
-        <property name="url" value="${mysql.jdbc.rrKitURL}" />
-        <property name="username" value="${mysql.jdbc.rrKitUSER}" />
-        <property name="password" value="${mysql.jdbc.rrKitPassword}" />
-        <property name="logAbandoned" value="${mysql.jdbc.logAbandoned}" />
-        <property name="removeAbandoned" value="${mysql.jdbc.removeAbandoned}" />
-        <property name="initialSize" value="${mysql.jdbc.initialSize}" />
-        <property name="maxActive" value="${mysql.jdbc.maxActive}" />
-        <property name="maxIdle" value="${mysql.jdbc.maxIdle}" />
-        <property name="minIdle" value="${mysql.jdbc.minIdle}" />
-        <property name="timeBetweenEvictionRunsMillis" value="${mysql.jdbc.timeBetweenEvictionRunsMillis}" />
-        <property name="validationQuery" value="${mysql.jdbc.validationQuery}" />
-        <property name="validationInterval" value="${mysql.jdbc.validationInterval}" />
-        <property name="testOnBorrow" value="${mysql.jdbc.testOnBorrow}" />
-        <property name="removeAbandonedTimeout" value="${mysql.jdbc.removeAbandonedTimeout}" />
-    </bean>
-    
-    <bean id="rrKitsessionFactory" class="org.springframework.orm.hibernate4.LocalSessionFactoryBean">
-        <property name="dataSource" ref="rrKitdataSource"></property>
-        <property name="hibernateProperties">
-            <props>
-                <prop key="hibernate.dialect">org.hibernate.dialect.MySQL5Dialect</prop>
-                <prop key="hibernate.show_sql">${mysql.jdbc.hibernate.show_sql}</prop>
-            </props>
-        </property>
-        <property name="packagesToScan" value="com.hel.rrKit" />
+    <bean id="transactionManager" class="org.springframework.orm.hibernate4.HibernateTransactionManager">
+	<property name="autodetectDataSource" value="false"/>
+        <property name="sessionFactory" ref="sessionFactory"/>
     </bean>
 
-    <tx:annotation-driven transaction-manager="rrKittransactionManager"/>
-
-    <bean id="rrKittransactionManager" class="org.springframework.orm.hibernate4.HibernateTransactionManager">
-        <property name="sessionFactory" ref="rrKitsessionFactory"/>
-    </bean>
-    
 </beans>

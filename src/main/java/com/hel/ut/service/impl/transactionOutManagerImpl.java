@@ -5,7 +5,6 @@
  */
 package com.hel.ut.service.impl;
 
-import com.hel.hmiskit.processing.processingManager;
 import com.hel.ut.service.convertTextToPDF;
 import com.hel.ut.dao.messageTypeDAO;
 import com.hel.ut.dao.transactionInDAO;
@@ -102,9 +101,6 @@ public class transactionOutManagerImpl implements transactionOutManager {
     private Properties myProps;
 
     @Autowired
-    private processingManager HMISProcessingManager;
-
-    @Autowired
     private transactionOutDAO transactionOutDAO;
 
     @Autowired
@@ -151,13 +147,13 @@ public class transactionOutManagerImpl implements transactionOutManager {
 
     private int processingSysErrorId = 5;
 
-    private String directoryPath = System.getProperty("directory.ilDir");
+    private String directoryPath = System.getProperty("directory.utRootDir");
 
     private String archivePath = (directoryPath + "archivesOut/");
 
     private String massOutPutPath = (directoryPath + "massoutputfiles/");
 
-    private String massOutPutPathMysqlPath = System.getProperty("directory.ilMassOutputPath");
+    private String massOutPutPathMysqlPath = System.getProperty("directory.massOutputPath");
 
     //list of final status - these records we skip
     private List<Integer> transRELId = Arrays.asList(11, 12, 13, 16, 18, 20, 9);
@@ -266,7 +262,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
 	fileSystem dir = new fileSystem();
 
 	String filelocation = transportDetails.getfileLocation();
-	filelocation = filelocation.replace("/ILTZ/", "");
+	filelocation = filelocation.replace("/HELProductSuite/universalTranslator/", "");
 
 	dir.setDirByName(filelocation);
 
@@ -1007,7 +1003,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
 		    fileSystem dir = new fileSystem();
 
 		    String filelocation = transportDetails.getfileLocation();
-		    filelocation = filelocation.replace("/ILTZ/", "");
+		    filelocation = filelocation.replace("/HELProductSuite/universalTranslator/", "");
 		    dir.setDirByName(filelocation);
 
 		    File file = new File(dir.getDir() + fileName);
@@ -1069,7 +1065,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
 		    fileSystem dir = new fileSystem();
 
 		    String filelocation = transportDetails.getfileLocation();
-		    filelocation = filelocation.replace("/ILTZ/", "");
+		    filelocation = filelocation.replace("/HELProductSuite/universalTranslator/", "");
 		    dir.setDirByName(filelocation);
 
 		    File file = new File(dir.getDir() + fileName);
@@ -1088,7 +1084,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
 	    try {
 		fileSystem dir = new fileSystem();
 		String filelocation = transportDetails.getfileLocation();
-		filelocation = filelocation.replace("/ILTZ/", "");
+		filelocation = filelocation.replace("/HELProductSuite/universalTranslator/", "");
 		dir.setDirByName(filelocation);
 
 		File sourceFile = new File(dir.getDir() + batchFTPFileInfo.getoutputFIleName());
@@ -1337,7 +1333,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
 	    // the file is in output folder already, we need to rebuild path and move it
 	    fileSystem dir = new fileSystem();
 	    String filelocation = transportDetails.getfileLocation();
-	    filelocation = filelocation.replace("/ILTZ/", "");
+	    filelocation = filelocation.replace("/HELProductSuite/universalTranslator/", "");
 	    dir.setDirByName(filelocation);
 
 	    File sourceFile = new File(dir.getDir() + batchDetails.getoutputFIleName());
@@ -1435,7 +1431,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
 	    //1. we read file
 	    fileSystem dir = new fileSystem();
 	    String filelocation = transportDetails.getfileLocation();
-	    filelocation = filelocation.replace("/ILTZ/", "");
+	    filelocation = filelocation.replace("/HELProductSuite/universalTranslator/", "");
 	    dir.setDirByName(filelocation);
 
 	    File sourceFile = new File(dir.getDir() + batchDetails.getoutputFIleName());
@@ -1988,17 +1984,11 @@ public class transactionOutManagerImpl implements transactionOutManager {
 		// the file is in output folder already, we need to rebuild path and move it
 		fileSystem dir = new fileSystem();
 		String filelocation = transportDetails.getfileLocation();
-		filelocation = filelocation.replace("/ILTZ/", "");
+		filelocation = filelocation.replace("/HELProductSuite/universalTranslator/", "");
 		dir.setDirByName(filelocation);
 
 		File targetFile = new File(directoryPath + rhapsodyDetails.getDirectory() + batchDownload.getoutputFIleName());
 		Files.copy(archiveFile.toPath(), targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-	    } 
-	    //hmis file
-	    else if (transportDetails.gettransportMethodId() == 8) {
-		configuration sourceconfigDetails = configurationManager.getConfigurationById(batchUploadDetails.getConfigId());
-		Organization orgDetails = organizationManager.getOrganizationById(batchUploadDetails.getOrgId());
-		HMISProcessingManager.processHMISFile(batchDownload.getoutputFIleName(), batchUploadDetails.getId(), batchUploadDetails.getoriginalFileName(), sourceconfigDetails.getId(), sourceconfigDetails.getconfigName(), orgDetails.getRrEntity2DetailId());
 	    } 
 	    // REST API 
 	    else if (transportDetails.gettransportMethodId() == 9) {
@@ -2122,5 +2112,35 @@ public class transactionOutManagerImpl implements transactionOutManager {
     @Override
     public void submitBatchDownloadChanges(batchDownloads batchDownload) throws Exception {
 	transactionOutDAO.submitBatchDownloadChanges(batchDownload);
+    }
+	
+    @Override
+    public void sendPassThruFiles(batchUploads batchULDetails, batchDownloads batchDLDetails,configurationTransport transportDetails,File archiveFile) throws Exception {
+	
+	//we have file already, we just need to move it
+	if (transportDetails.gettransportMethodId() == 5) {
+	    /* Get the Rhapsody Details */
+	    configurationRhapsodyFields rhapsodyDetails = configurationTransportManager.getTransRhapsodyDetailsPush(transportDetails.getId());
+
+	    // the file is in output folder already, we need to rebuild path and move it
+	    fileSystem dir = new fileSystem();
+	    String filelocation = transportDetails.getfileLocation();
+	    filelocation = filelocation.replace("/HELProductSuite/universalTranslator/", "");
+	    dir.setDirByName(filelocation);
+
+	    File targetFile = new File(directoryPath + rhapsodyDetails.getDirectory() + batchDLDetails.getoutputFIleName());
+	    Files.copy(archiveFile.toPath(), targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+	} 
+	// REST API 
+	else if (transportDetails.gettransportMethodId() == 9) {
+	    
+	    //we need to update our totals
+	    String methodName = configurationTransportManager.getRestAPIMethodName(transportDetails.getRestAPIFunctionId());
+	    
+	    Class<?>[] paramTypes = {int.class, configurationTransport.class};
+	    Method method = restfulManager.getClass().getMethod(methodName, paramTypes);
+	    method.invoke(restfulManager, batchDLDetails.getId(), transportDetails);
+
+	}
     }
 }

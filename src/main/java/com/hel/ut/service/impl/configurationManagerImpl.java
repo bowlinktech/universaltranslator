@@ -36,14 +36,12 @@ import java.io.OutputStream;
 import java.util.Calendar;
 import java.util.Date;
 import org.hibernate.SessionFactory;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
 public class configurationManagerImpl implements configurationManager {
 
     @Autowired
-    @Qualifier("ilsessionFactory")
     private SessionFactory sessionFactory;
 
     @Autowired

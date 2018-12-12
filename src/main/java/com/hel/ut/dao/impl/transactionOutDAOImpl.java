@@ -38,7 +38,6 @@ import org.hibernate.criterion.Restrictions;
 import org.hibernate.transform.Transformers;
 import org.hibernate.type.StandardBasicTypes;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -50,7 +49,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class transactionOutDAOImpl implements transactionOutDAO {
 
     @Autowired
-    @Qualifier("ilsessionFactory")
     private SessionFactory sessionFactory;
 
     @Autowired
@@ -83,7 +81,7 @@ public class transactionOutDAOImpl implements transactionOutDAO {
      * @return This function returns the batchId for the newly inserted batch
      */
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public Integer submitBatchDownload(batchDownloads batchDownload) {
 
 	Integer batchId = null;
@@ -103,7 +101,7 @@ public class transactionOutDAOImpl implements transactionOutDAO {
      * @return This function will return the id of a mergeable batch or 0 if no batches are found.
      */
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public int findMergeableBatch(int orgId) {
 
 	Query query = sessionFactory.getCurrentSession().createQuery("select id FROM batchDownloads where orgId = :orgId and mergeable = 1 and (statusId = 23 OR statusId = 28)");
@@ -128,7 +126,7 @@ public class transactionOutDAOImpl implements transactionOutDAO {
      * @return The function will return a list of received batches
      */
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     @SuppressWarnings("UnusedAssignment")
     public List<batchDownloads> getInboxBatches(int userId, int orgId, Date fromDate, Date toDate) throws Exception {
 
@@ -144,7 +142,7 @@ public class transactionOutDAOImpl implements transactionOutDAO {
      *
      * @return The function will return a list of received batches
      */
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     @SuppressWarnings("UnusedAssignment")
     public List<batchDownloads> findInboxBatches(int userId, int orgId, int fromOrgId, int messageTypeId, Date fromDate, Date toDate) throws Exception {
 	int firstResult = 0;
@@ -235,7 +233,7 @@ public class transactionOutDAOImpl implements transactionOutDAO {
      * @throws Exception
      */
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public List<batchDownloads> getAllBatches(Date fromDate, Date toDate, String batchName) throws Exception {
 
 	int firstResult = 0;
@@ -271,7 +269,7 @@ public class transactionOutDAOImpl implements transactionOutDAO {
      * @param batchId The id of the batch to return.
      */
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public batchDownloads getBatchDetails(int batchId) throws Exception {
 	return (batchDownloads) sessionFactory.getCurrentSession().get(batchDownloads.class, batchId);
 
@@ -285,7 +283,7 @@ public class transactionOutDAOImpl implements transactionOutDAO {
      * @return This function will return a batchUpload object
      */
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public batchDownloads getBatchDetailsByBatchName(String batchName) throws Exception {
 	Query query = sessionFactory.getCurrentSession().createQuery("from batchDownloads where utBatchName = :batchName");
 	query.setParameter("batchName", batchName);
@@ -305,7 +303,7 @@ public class transactionOutDAOImpl implements transactionOutDAO {
      *
      */
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public List<transactionOutRecords> getTransactionRecords(Integer batchId, Integer configId, Integer totalFields) throws Exception {
 	
 	totalFields = totalFields + 10;
@@ -331,7 +329,7 @@ public class transactionOutDAOImpl implements transactionOutDAO {
      * @return This function will return a list of internal status codes
      */
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public List getInternalStatusCodes() {
 	Query query = sessionFactory.getCurrentSession().createSQLQuery("SELECT id, displaytext FROM lu_internalMessageStatus order by displayText asc");
 	return query.list();
@@ -345,7 +343,7 @@ public class transactionOutDAOImpl implements transactionOutDAO {
      * @param timeField
      */
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public void updateTargetBatchStatus(Integer batchDLId, Integer statusId, String timeField) throws Exception {
 
 	String sql = "update batchDownloads set statusId = :statusId ";
@@ -374,7 +372,7 @@ public class transactionOutDAOImpl implements transactionOutDAO {
      * @param fileName The new file name to update.
      */
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public void updateBatchOutputFileName(int batchId, String fileName) {
 	String sql = "update BatchDownloads "
 		+ " set outputFileName = :fileName "
@@ -399,7 +397,7 @@ public class transactionOutDAOImpl implements transactionOutDAO {
      * @return This function will return the max field number.
      */
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public int getMaxFieldNo(int configId) throws Exception {
 
 	String sql = "select max(fieldNo) as maxFieldNo from configurationFormFields where configId = :configId";
@@ -421,7 +419,7 @@ public class transactionOutDAOImpl implements transactionOutDAO {
      * @return The function will return a list of downloadable batches
      */
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     @SuppressWarnings("UnusedAssignment")
     public List<batchDownloads> getdownloadableBatches(int userId, int orgId, Date fromDate, Date toDate) throws Exception {
 	int firstResult = 0;
@@ -516,7 +514,7 @@ public class transactionOutDAOImpl implements transactionOutDAO {
      * @return this function will not return anything.
      */
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public void updateLastDownloaded(int batchId) throws Exception {
 
 	String sql = "update BatchDownloads "
@@ -538,7 +536,7 @@ public class transactionOutDAOImpl implements transactionOutDAO {
      * The 'getScheduledConfigurations' function will return a list of configurations that have a Daily, Weekly or Monthly schedule setting
      */
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public List<configurationSchedules> getScheduledConfigurations() {
 
 	Query query = sessionFactory.getCurrentSession().createQuery("from configurationSchedules where type = 2 or type = 3 or type = 4");
@@ -556,7 +554,7 @@ public class transactionOutDAOImpl implements transactionOutDAO {
      * @param timeField
      */
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public void updateBatchStatus(Integer batchId, Integer statusId) {
 
 	String sql = "update batchDownloads set statusId = :statusId ";
@@ -579,7 +577,7 @@ public class transactionOutDAOImpl implements transactionOutDAO {
      * @param log The output run log to save.
      */
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public void saveOutputRunLog(targetOutputRunLogs log) throws Exception {
 	sessionFactory.getCurrentSession().save(log);
     }
@@ -592,7 +590,7 @@ public class transactionOutDAOImpl implements transactionOutDAO {
      * @return This function will return the latest log
      */
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public List<targetOutputRunLogs> getLatestRunLog(int configId) throws Exception {
 
 	Criteria latestLogQuery = sessionFactory.getCurrentSession().createCriteria(targetOutputRunLogs.class);
@@ -604,7 +602,7 @@ public class transactionOutDAOImpl implements transactionOutDAO {
     }
 
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public Integer writeOutputToTextFile(configurationTransport transportDetails, Integer batchDownloadId, String filePathAndName, String fieldNos) {
 
 	String sql = "";
@@ -645,7 +643,7 @@ public class transactionOutDAOImpl implements transactionOutDAO {
 
     @SuppressWarnings("unchecked")
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public List<ConfigOutboundForInsert> setConfigOutboundForInsert(
 	    int configId, int batchDownloadId) throws Exception {
 	String sql = ("call setSqlForOutboundConfig(:configId, :batchDownloadId);");
@@ -670,7 +668,7 @@ public class transactionOutDAOImpl implements transactionOutDAO {
     
     @SuppressWarnings("unchecked")
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public String getConfigFieldsForOutput(Integer configId) throws Exception {
 	String sql = ""
 		+ "select group_concat('REPLACE(REPLACE(ifnull(F', fieldNo, ',\"\") , ''\\n'', ''''), ''\\r'', '''')') as fieldNos "
@@ -686,14 +684,14 @@ public class transactionOutDAOImpl implements transactionOutDAO {
     }
 
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public void setSessionLength() throws Exception {
 	Query query1 = sessionFactory.getCurrentSession().createSQLQuery("SET SESSION group_concat_max_len = 9999999;");
 	query1.executeUpdate();
     }
 
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public BigInteger getRejectedCount(String fromDate, String toDate) throws Exception {
 
 	String sql = "select count(id) as totalReferrals "
@@ -708,7 +706,7 @@ public class transactionOutDAOImpl implements transactionOutDAO {
 
     @SuppressWarnings("unchecked")
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public String getCustomXMLFieldsForOutput(Integer configId) throws Exception {
 	String sql = "select group_concat('REPLACE(REPLACE(ifnull(F', fieldValue, ',\"\") , ''\\n'', ''''), ''\\r'', '''')') as fieldNos "
 		+ " from configurationccdelements where configId = :configId order by id asc";
@@ -723,7 +721,7 @@ public class transactionOutDAOImpl implements transactionOutDAO {
     }
 
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public List getOutputForCustomTargetFile(configurationTransport transportDetails, Integer batchDownloadId, String fieldNos) {
 	
 	String sql = "SELECT " + fieldNos
@@ -744,7 +742,7 @@ public class transactionOutDAOImpl implements transactionOutDAO {
     
     @SuppressWarnings("unchecked")
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public List<batchDownloads> getBatchesByStatusIdsAndDate(Date fromDate,
 	    Date toDate, Integer fetchSize, List<Integer> statusIds)
 	    throws Exception {
@@ -795,7 +793,7 @@ public class transactionOutDAOImpl implements transactionOutDAO {
     }
 
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public Integer insertRestApiMessage(RestAPIMessagesOut APIMessageOut) throws Exception {
 	Integer newRestAPIMessageId = null;
 
@@ -806,7 +804,7 @@ public class transactionOutDAOImpl implements transactionOutDAO {
 
     @SuppressWarnings("unchecked")
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public List<batchDownloads> getDLBatchesByStatusIds(List<Integer> statusIds) throws Exception {
 	Criteria dlBatches = sessionFactory.getCurrentSession().createCriteria(batchDownloads.class);
 	dlBatches.add(Restrictions.in("statusId", statusIds));
@@ -815,7 +813,7 @@ public class transactionOutDAOImpl implements transactionOutDAO {
     }
 
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public batchDLRetry getBatchDLRetryByDownloadId(Integer batchDownloadId,Integer statusId) throws Exception {
 	Criteria criteria = sessionFactory.getCurrentSession().createCriteria(batchDLRetry.class);
 	criteria.add(Restrictions.eq("batchDownloadId", batchDownloadId));
@@ -833,14 +831,14 @@ public class transactionOutDAOImpl implements transactionOutDAO {
     }
 
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public void saveBatchDLRetry(batchDLRetry br) throws Exception {
 	sessionFactory.getCurrentSession().save(br);
 
     }
 
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public void clearBatchDLRetry(Integer batchDownloadId) throws Exception {
 	Query delBatch = sessionFactory.getCurrentSession().createQuery("delete from batchDLRetry where batchDownloadId = :batchDownloadId");
 	delBatch.setParameter("batchDownloadId", batchDownloadId);
@@ -849,7 +847,7 @@ public class transactionOutDAOImpl implements transactionOutDAO {
     }
 
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public void deleteRestAPIMessageByDownloadId(int batchDownloadId)
 	    throws Exception {
 	Query deletNote = sessionFactory.getCurrentSession().createQuery("delete from RestAPIMessagesOut where batchDownloadId = :batchDownloadId");
@@ -858,7 +856,7 @@ public class transactionOutDAOImpl implements transactionOutDAO {
     }
    
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public void createTargetBatchTables(Integer batchDownloadId, Integer configId) throws Exception {
 	try {
 
@@ -1013,7 +1011,7 @@ public class transactionOutDAOImpl implements transactionOutDAO {
     }
     
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public void loadTargetBatchTables(Integer batchDownloadId, Integer batchUploadId, Integer configId, Integer uploadConfigId) throws Exception {
 	
 	List<configurationFormFields> configFormFields = configurationTransportManager.getConfigurationFieldsToCopy(configId);
@@ -1156,7 +1154,7 @@ public class transactionOutDAOImpl implements transactionOutDAO {
     }
     
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public void deleteBatchUploadTables(Integer batchId) throws Exception {
 
 	/* Delete all the stored records */
@@ -1173,7 +1171,7 @@ public class transactionOutDAOImpl implements transactionOutDAO {
     }
     
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public Integer clearBatchTransactionTables(Integer batchDownloadId) {
 	
 	String clearSQL = "";
@@ -1198,7 +1196,7 @@ public class transactionOutDAOImpl implements transactionOutDAO {
      * errorId = 1 is required field missing* we do not re-check REL records
      */
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public Integer insertFailedRequiredFields(configurationFormFields cff, Integer batchDownloadId) {
 	
 	try {
@@ -1228,7 +1226,7 @@ public class transactionOutDAOImpl implements transactionOutDAO {
     }
 
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public void deleteBatchDownloadTables(Integer batchId) throws Exception {
 
 	/* Delete all the stored records */
@@ -1248,7 +1246,7 @@ public class transactionOutDAOImpl implements transactionOutDAO {
     
     
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public void deleteBatchDownloadTablesByBatchUpload(List<batchDownloads> batchDownloads) throws Exception {
 
 	/* Delete all the stored records */
@@ -1276,7 +1274,7 @@ public class transactionOutDAOImpl implements transactionOutDAO {
     
     
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public List<batchDownloads> getDLBatchesByBatchUploadId(Integer batchUploadId) throws Exception {
 	
 	Criteria dlBatches = sessionFactory.getCurrentSession().createCriteria(batchDownloads.class);
@@ -1288,7 +1286,7 @@ public class transactionOutDAOImpl implements transactionOutDAO {
     }
     
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public List<batchDownloads> getPendingResetBatches(Integer batchUploadId) throws Exception {
 	
 	Criteria dlBatches = sessionFactory.getCurrentSession().createCriteria(batchDownloads.class);
@@ -1310,7 +1308,7 @@ public class transactionOutDAOImpl implements transactionOutDAO {
      * @return This function does not return anything
      */
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public void submitBatchDownloadChanges(batchDownloads batchDownload) throws Exception {
 	sessionFactory.getCurrentSession().update(batchDownload);
     }

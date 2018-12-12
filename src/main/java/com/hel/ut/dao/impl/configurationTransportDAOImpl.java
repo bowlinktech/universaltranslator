@@ -23,7 +23,6 @@ import com.hel.ut.model.configurationWebServiceFields;
 import com.hel.ut.model.configurationWebServiceSenders;
 
 import java.util.Iterator;
-import org.springframework.beans.factory.annotation.Qualifier;
 
 import org.springframework.stereotype.Repository;
 
@@ -31,7 +30,6 @@ import org.springframework.stereotype.Repository;
 public class configurationTransportDAOImpl implements configurationTransportDAO {
 
     @Autowired
-    @Qualifier("ilsessionFactory")
     private SessionFactory sessionFactory;
 
     /**
@@ -42,7 +40,7 @@ public class configurationTransportDAOImpl implements configurationTransportDAO 
      * @Return	This function will return a list of configurationTransport objects
      */
     @SuppressWarnings("unchecked")
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public configurationTransport getTransportDetails(int configId) throws Exception {
         Query query = sessionFactory.getCurrentSession().createQuery("from configurationTransport where configId = :configId");
         query.setParameter("configId", configId);
@@ -58,7 +56,7 @@ public class configurationTransportDAOImpl implements configurationTransportDAO 
      *
      * @Return	This function will return a configurationTransport object
      */
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public configurationTransport getTransportDetailsByTransportMethod(int configId, int transportMethod) {
         Query query = sessionFactory.getCurrentSession().createQuery("from configurationTransport where configId = :configId and transportMethodId = :transportMethod");
         query.setParameter("configId", configId);
@@ -76,7 +74,7 @@ public class configurationTransportDAOImpl implements configurationTransportDAO 
      * @Return	This function does not return anything
      */
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public void setupOnlineForm(int transportId, int configId, int messageTypeId) {
         copyMessageTypeFields(transportId, configId, messageTypeId);
     }
@@ -89,7 +87,7 @@ public class configurationTransportDAOImpl implements configurationTransportDAO 
      *
      * @return	this function does not return anything
      */
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public Integer updateTransportDetails(configurationTransport transportDetails) {
 
         if (transportDetails.getId() > 0) {
@@ -108,7 +106,7 @@ public class configurationTransportDAOImpl implements configurationTransportDAO 
      */
     @Override
     @SuppressWarnings("rawtypes")
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public List getTransportMethods() {
         Query query = sessionFactory.getCurrentSession().createSQLQuery("SELECT id, transportMethod FROM ref_transportMethods where active = 1 order by transportMethod asc");
 
@@ -124,7 +122,7 @@ public class configurationTransportDAOImpl implements configurationTransportDAO 
      *
      * @return	This function does not return anything
      */
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public void copyMessageTypeFields(int transportId, int configId, int messageTypeId) {
 
         /* Check to see if there are any data translations for the passed in message type */
@@ -186,7 +184,7 @@ public class configurationTransportDAOImpl implements configurationTransportDAO 
      */
     @SuppressWarnings("unchecked")
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public List<configurationFormFields> getConfigurationFields(int configId, int transportDetailId) {
         Criteria criteria = sessionFactory.getCurrentSession().createCriteria(configurationFormFields.class)
             .add(Restrictions.eq("configId", configId));
@@ -208,7 +206,7 @@ public class configurationTransportDAOImpl implements configurationTransportDAO 
      */
     @SuppressWarnings("unchecked")
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public List<configurationFormFields> getConfigurationFieldsByBucket(int configId, int transportDetailId, int bucket) throws Exception {
         Criteria criteria = sessionFactory.getCurrentSession().createCriteria(configurationFormFields.class)
                 .add(Restrictions.eq("configId", configId))
@@ -229,7 +227,7 @@ public class configurationTransportDAOImpl implements configurationTransportDAO 
      */
     @SuppressWarnings("unchecked")
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public configurationFormFields getConfigurationFieldsByFieldNo(int configId, int transportDetailId, int fieldNo) throws Exception {
         Criteria criteria = sessionFactory.getCurrentSession().createCriteria(configurationFormFields.class)
                 .add(Restrictions.eq("configId", configId))
@@ -246,7 +244,7 @@ public class configurationTransportDAOImpl implements configurationTransportDAO 
      *
      * @return This function will not return anything
      */
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public void updateConfigurationFormFields(configurationFormFields formField) {
         sessionFactory.getCurrentSession().saveOrUpdate(formField);
     }
@@ -259,7 +257,7 @@ public class configurationTransportDAOImpl implements configurationTransportDAO 
      * @return This function will return a list of FTP details
      */
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public List<configurationFTPFields> getTransportFTPDetails(int transportDetailId) throws Exception {
         Criteria criteria = sessionFactory.getCurrentSession().createCriteria(configurationFTPFields.class)
                 .add(Restrictions.eq("transportId", transportDetailId));
@@ -275,7 +273,7 @@ public class configurationTransportDAOImpl implements configurationTransportDAO 
      * @return This function will return the PUSH FTP details
      */
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public configurationFTPFields getTransportFTPDetailsPush(int transportDetailId) throws Exception {
         Criteria criteria = sessionFactory.getCurrentSession().createCriteria(configurationFTPFields.class)
                 .add(Restrictions.eq("transportId", transportDetailId))
@@ -293,7 +291,7 @@ public class configurationTransportDAOImpl implements configurationTransportDAO 
      * @return This function will return the PULL FTP details
      */
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public configurationFTPFields getTransportFTPDetailsPull(int transportDetailId) throws Exception {
         Criteria criteria = sessionFactory.getCurrentSession().createCriteria(configurationFTPFields.class)
                 .add(Restrictions.eq("transportId", transportDetailId))
@@ -311,7 +309,7 @@ public class configurationTransportDAOImpl implements configurationTransportDAO 
      * @return this function will not return anything.
      */
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public void saveTransportFTP(configurationFTPFields FTPFields) {
         sessionFactory.getCurrentSession().saveOrUpdate(FTPFields);
     }
@@ -324,7 +322,7 @@ public class configurationTransportDAOImpl implements configurationTransportDAO 
      * @Return This function will return a string (transport Method).
      */
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public String getTransportMethodById(int Id) {
         Query query = sessionFactory.getCurrentSession().createSQLQuery("SELECT transportMethod FROM ref_transportMethods where id = :Id")
                 .setParameter("Id", Id);
@@ -342,7 +340,7 @@ public class configurationTransportDAOImpl implements configurationTransportDAO 
      * @return This function will return a list of configurationTransportMessageType objects.
      */
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public List<configurationTransportMessageTypes> getTransportMessageTypes(int configTransportId) {
         Query query = sessionFactory.getCurrentSession().createQuery("FROM configurationTransportMessageTypes where configTransportId = :configTransportId");
         query.setParameter("configTransportId", configTransportId);
@@ -358,7 +356,7 @@ public class configurationTransportDAOImpl implements configurationTransportDAO 
      * @retuern This function does not return anything.
      */
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public void deleteTransportMessageTypes(int configTransportId) {
         Query query = sessionFactory.getCurrentSession().createQuery("DELETE FROM configurationTransportMessageTypes where configTransportId = :configTransportId");
         query.setParameter("configTransportId", configTransportId);
@@ -373,7 +371,7 @@ public class configurationTransportDAOImpl implements configurationTransportDAO 
      *
      * @return This function does not return anything.
      */
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public void saveTransportMessageTypes(configurationTransportMessageTypes messageType) {
         sessionFactory.getCurrentSession().save(messageType);
     }
@@ -386,7 +384,7 @@ public class configurationTransportDAOImpl implements configurationTransportDAO 
      *
      * @return This function does not return anything.
      */
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public void copyExistingTransportMethod(int configTransportId, int configId) {
 
         Query query = sessionFactory.getCurrentSession().createSQLQuery("INSERT INTO configurationTransportDetails (configId, transportMethodId, fileType, fileDelimiter, status, targetFileName, appendDateTime, maxFileSize, clearRecords, fileLocation, autoRelease, errorHandling, mergeBatches, copiedTransportId, fileExt, encodingId) select :configId, transportMethodId, fileType, fileDelimiter, status, targetFileName, appendDateTime, maxFileSize, clearRecords, fileLocation, autoRelease, errorHandling, mergeBatches, :configTransportId, fileExt, encodingId FROM configurationTransportDetails where id = :configTransportId");
@@ -402,7 +400,7 @@ public class configurationTransportDAOImpl implements configurationTransportDAO 
      */
     @SuppressWarnings("unchecked")
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public List<configurationFormFields> getRequiredFieldsForConfig(Integer configId) {
         Criteria criteria = sessionFactory.getCurrentSession().createCriteria(configurationFormFields.class)
                 .add(Restrictions.eq("configId", configId))
@@ -417,7 +415,7 @@ public class configurationTransportDAOImpl implements configurationTransportDAO 
      */
     @SuppressWarnings("unchecked")
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public List<configurationFormFields> getCffByValidationType(
             Integer configId, Integer validationTypeId) {
         Criteria criteria = sessionFactory.getCurrentSession().createCriteria(configurationFormFields.class)
@@ -431,7 +429,7 @@ public class configurationTransportDAOImpl implements configurationTransportDAO 
     }
 
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     @SuppressWarnings("unchecked")
     public List<configurationTransport> getDistinctConfigTransportForOrg(Integer orgId, Integer transportMethodId) {
         try {
@@ -460,7 +458,7 @@ public class configurationTransportDAOImpl implements configurationTransportDAO 
     }
 
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     @SuppressWarnings("unchecked")
     public List<configurationMessageSpecs> getConfigurationMessageSpecsForUserTransport(Integer userId, Integer transportMethodId, boolean getZeroMessageTypeCol) {
         try {
@@ -496,7 +494,7 @@ public class configurationTransportDAOImpl implements configurationTransportDAO 
      */
     @SuppressWarnings("unchecked")
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public configurationFormFields getCFFByFieldNo(int configId, int fieldNo) throws Exception {
         Criteria criteria = sessionFactory.getCurrentSession().createCriteria(configurationFormFields.class)
                 .add(Restrictions.eq("configId", configId))
@@ -506,7 +504,7 @@ public class configurationTransportDAOImpl implements configurationTransportDAO 
     }
 
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     @SuppressWarnings("unchecked")
     public List<configurationMessageSpecs> getConfigurationMessageSpecsForOrgTransport(
             Integer orgId, Integer transportMethodId, boolean getZeroMessageTypeCol) {
@@ -536,7 +534,7 @@ public class configurationTransportDAOImpl implements configurationTransportDAO 
     }
 
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     @SuppressWarnings("unchecked")
     public List<configurationTransport> getConfigTransportForFileExtAndPath(String fileExt, Integer transportMethodId, Integer status, String inPath) {
         try {
@@ -573,7 +571,7 @@ public class configurationTransportDAOImpl implements configurationTransportDAO 
     }
 
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     @SuppressWarnings("unchecked")
     public List<configurationTransport> getTransportListForFileExtAndPath(String fileExt, Integer transportMethodId, Integer status, String inputPath) {
         try {
@@ -607,7 +605,7 @@ public class configurationTransportDAOImpl implements configurationTransportDAO 
     }
 
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public configurationTransport getTransportDetailsByTransportId(Integer transportId) {
         try {
             Query query = sessionFactory.getCurrentSession().createQuery("from configurationTransport where id = :id");
@@ -621,7 +619,7 @@ public class configurationTransportDAOImpl implements configurationTransportDAO 
     }
 
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public Integer getOrgIdForFTPPath(configurationFTPFields ftpInfo)
             throws Exception {
         try {
@@ -643,7 +641,7 @@ public class configurationTransportDAOImpl implements configurationTransportDAO 
     }
 
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public Integer getMinMaxFileSize(String fileExt, Integer transportMethodId) {
         try {
             String sql = ("select min(maxFileSize) as filesize from configurationTransportDetails "
@@ -664,7 +662,7 @@ public class configurationTransportDAOImpl implements configurationTransportDAO 
     }
 
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     @SuppressWarnings("unchecked")
     public List<configurationTransport> getCountContainsHeaderRow(String fileExt, Integer transportMethodId) {
         try {
@@ -690,7 +688,7 @@ public class configurationTransportDAOImpl implements configurationTransportDAO 
     }
 
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     @SuppressWarnings("unchecked")
     public List<Integer> getConfigCount(String fileExt, Integer transportMethodId, Integer fileDelimiter) {
         try {
@@ -714,7 +712,7 @@ public class configurationTransportDAOImpl implements configurationTransportDAO 
     }
 
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     @SuppressWarnings("unchecked")
     public List<configurationTransport> getDistinctDelimCharForFileExt(String fileExt, Integer transportMethodId) {
         try {
@@ -750,7 +748,7 @@ public class configurationTransportDAOImpl implements configurationTransportDAO 
      * @return this function will not return anything.
      */
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public void saveTransportRhapsody(configurationRhapsodyFields RhapsodyFields) throws Exception {
         try {
             sessionFactory.getCurrentSession().saveOrUpdate(RhapsodyFields);
@@ -768,7 +766,7 @@ public class configurationTransportDAOImpl implements configurationTransportDAO 
      * @return This function will return a list of Rhapsody details
      */
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public List<configurationRhapsodyFields> getTransRhapsodyDetails(int transportDetailId) throws Exception {
         Criteria criteria = sessionFactory.getCurrentSession().createCriteria(configurationRhapsodyFields.class)
                 .add(Restrictions.eq("transportId", transportDetailId));
@@ -784,7 +782,7 @@ public class configurationTransportDAOImpl implements configurationTransportDAO 
      * @return This function will return the PUSH Rhapsody details
      */
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public configurationRhapsodyFields getTransRhapsodyDetailsPush(int transportDetailId) throws Exception {
         Criteria criteria = sessionFactory.getCurrentSession().createCriteria(configurationRhapsodyFields.class)
                 .add(Restrictions.eq("transportId", transportDetailId))
@@ -802,7 +800,7 @@ public class configurationTransportDAOImpl implements configurationTransportDAO 
      * @return This function will return the PULL Rhapsody details
      */
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public configurationRhapsodyFields getTransRhapsodyDetailsPull(int transportDetailId) throws Exception {
         Criteria criteria = sessionFactory.getCurrentSession().createCriteria(configurationRhapsodyFields.class)
                 .add(Restrictions.eq("transportId", transportDetailId))
@@ -813,7 +811,7 @@ public class configurationTransportDAOImpl implements configurationTransportDAO 
     }
 
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     @SuppressWarnings("unchecked")
     public List<configurationTransport> getTransportEncoding(String fileExt, Integer transportMethodId) {
         try {
@@ -837,7 +835,7 @@ public class configurationTransportDAOImpl implements configurationTransportDAO 
     }
 
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public Integer getOrgIdForRhapsodyPath(configurationRhapsodyFields RhapsodyInfo) throws Exception {
         try {
             String sql = ("select distinct orgId from configurations where id in (select configId from configurationTransportDetails where id in (select transportId from"
@@ -863,7 +861,7 @@ public class configurationTransportDAOImpl implements configurationTransportDAO 
      */
     @SuppressWarnings("unchecked")
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public List<TransportMethod> getTransportMethods(List<Integer> statusIds) {
         try {
             Query query = sessionFactory.getCurrentSession()
@@ -881,7 +879,7 @@ public class configurationTransportDAOImpl implements configurationTransportDAO 
 
     @SuppressWarnings("unchecked")
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public List<configurationTransport> getConfigurationTransportFileExtByFileType(
             Integer orgId, Integer transportMethodId,
             List<Integer> fileTypeIds, List<Integer> statusIds,
@@ -922,7 +920,7 @@ public class configurationTransportDAOImpl implements configurationTransportDAO 
     }
 
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public List<configurationWebServiceFields> getTransWSDetails(int transportDetailId) throws Exception {
         Criteria criteria = sessionFactory.getCurrentSession().createCriteria(configurationWebServiceFields.class)
                 .add(Restrictions.eq("transportId", transportDetailId));
@@ -931,13 +929,13 @@ public class configurationTransportDAOImpl implements configurationTransportDAO 
     }
 
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public void saveTransportWebService(configurationWebServiceFields wsFields) throws Exception {
         sessionFactory.getCurrentSession().saveOrUpdate(wsFields);
     }
 
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     @SuppressWarnings("unchecked")
     public List<configurationTransport> getDistinctTransportDetailsForOrgByTransportMethodId(Integer transportMethodId, Integer status, Integer orgId) {
         try {
@@ -976,7 +974,7 @@ public class configurationTransportDAOImpl implements configurationTransportDAO 
     }
 
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     @SuppressWarnings("unchecked")
     public List<configurationTransport> getCTForOrgByTransportMethodId(Integer transportMethodId, Integer status, Integer orgId) {
         try {
@@ -1021,7 +1019,7 @@ public class configurationTransportDAOImpl implements configurationTransportDAO 
      * @return This function will return the PUSH Rhapsody details
      */
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public configurationWebServiceFields getTransWSDetailsPush(int transportDetailId) throws Exception {
         Criteria criteria = sessionFactory.getCurrentSession().createCriteria(configurationWebServiceFields.class)
                 .add(Restrictions.eq("transportId", transportDetailId))
@@ -1039,7 +1037,7 @@ public class configurationTransportDAOImpl implements configurationTransportDAO 
      * @return This function will return the PULL Rhapsody details
      */
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public configurationWebServiceFields getTransWSDetailsPull(int transportDetailId) throws Exception {
         Criteria criteria = sessionFactory.getCurrentSession().createCriteria(configurationWebServiceFields.class)
                 .add(Restrictions.eq("transportId", transportDetailId))
@@ -1051,7 +1049,7 @@ public class configurationTransportDAOImpl implements configurationTransportDAO 
 
     @SuppressWarnings("unchecked")
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public List<configurationWebServiceSenders> getWSSenderList(int transportId)
             throws Exception {
         Criteria criteria = sessionFactory.getCurrentSession().createCriteria(configurationWebServiceSenders.class)
@@ -1061,14 +1059,14 @@ public class configurationTransportDAOImpl implements configurationTransportDAO 
     }
 
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public void saveWSSender(configurationWebServiceSenders wsSender)
             throws Exception {
         sessionFactory.getCurrentSession().saveOrUpdate(wsSender);
     }
 
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public void deleteWSSender(configurationWebServiceSenders wsSender)
             throws Exception {
         sessionFactory.getCurrentSession().delete(wsSender);
@@ -1076,7 +1074,7 @@ public class configurationTransportDAOImpl implements configurationTransportDAO 
 
     @SuppressWarnings("unchecked")
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public boolean hasConfigsWithMasstranslations(
             Integer orgId, Integer transportMethodId) throws Exception {
         String sql = ("select masstranslation from configurationTransportDetails "
@@ -1096,7 +1094,7 @@ public class configurationTransportDAOImpl implements configurationTransportDAO 
     
     
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public configurationTransport validateAPICall(String apiCustomCall) throws Exception {
 	
 	String sql = ("select id, configId "
@@ -1120,7 +1118,7 @@ public class configurationTransportDAOImpl implements configurationTransportDAO 
     }
     
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public configurationTransport validateAPIAuthentication(String[] credValue, String apiCustomCall) throws Exception {
 	
 	String sql = ("select id "
@@ -1157,7 +1155,7 @@ public class configurationTransportDAOImpl implements configurationTransportDAO 
      * @Return This function will return a string (transport Method).
      */
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public String getRestAPIMethodName(Integer methodId) {
         Query query = sessionFactory.getCurrentSession().createSQLQuery("SELECT functionName FROM lu_availablerestapifunctions where id = :Id")
                 .setParameter("Id", methodId);
@@ -1174,7 +1172,7 @@ public class configurationTransportDAOImpl implements configurationTransportDAO 
      *
      * @return This function will not return anything
      */
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public Integer saveConfigurationFormFields(configurationFormFields formField) {
 	
 	Integer lastId;
@@ -1194,7 +1192,7 @@ public class configurationTransportDAOImpl implements configurationTransportDAO 
      */
     @SuppressWarnings("unchecked")
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public List<configurationFormFields> getConfigurationFieldsToCopy(int configId) {
         
 	String sql = "select a.*, b.fieldNo as mappedToField "

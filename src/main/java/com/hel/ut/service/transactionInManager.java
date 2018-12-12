@@ -125,6 +125,8 @@ public interface transactionInManager {
     Integer updateConfigIdForBatch(Integer batchId, Integer configId);
 
     Integer loadTransactionTranslatedIn(Integer batchId, Integer configId);
+    
+    List<configurationConnection> getPassThruBatchTargets(Integer batchId, boolean active);
 
     List<configurationConnection> getBatchTargets(Integer batchId, boolean active);
 

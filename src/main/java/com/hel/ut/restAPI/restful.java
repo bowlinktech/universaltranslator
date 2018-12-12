@@ -156,7 +156,7 @@ public class restful {
     @RequestMapping(value = "/post/JSON/{apiCustomCall}", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
     public void consumePostAPICall(
 	    @PathVariable("apiCustomCall") String apiCustomCall,
-	    @RequestBody String jsonSent,
+	    @RequestBody(required = false) String jsonSent,
 	    HttpServletResponse response,
 	    HttpServletRequest request) throws Exception {
 	
@@ -188,20 +188,29 @@ public class restful {
 				//response.setStatus((HttpServletResponse.SC_UNAUTHORIZED));
 			    } 
 			    else {
-				Integer newRestAPIMessageID = transactionInManager.insertRestApiMessage(transportDetails.getconfigId(), jsonSent);
-				
-				if(newRestAPIMessageID > 0) {
-				    //User and custom api call is validated send response and proceed
-				    obj.put("status", new Integer(HttpServletResponse.SC_OK));
-				    obj.put("Message", "Successfully received and processed your message.");
-				    //response.setStatus((HttpServletResponse.SC_OK));
+				if(jsonSent == null) {
+				    obj.put("status", new Integer(HttpServletResponse.SC_BAD_REQUEST));
+				    obj.put("Message", "Empty Message");
+				}
+				else if(jsonSent.isEmpty()) {
+				    obj.put("status", new Integer(HttpServletResponse.SC_BAD_REQUEST));
+				    obj.put("Message", "Empty Message");
 				}
 				else {
-				    obj.put("status", new Integer(HttpServletResponse.SC_EXPECTATION_FAILED));
-				    obj.put("Message", "Failed to process your message.");
-				    //response.setStatus((HttpServletResponse.SC_EXPECTATION_FAILED));
-				}
+				    Integer newRestAPIMessageID = transactionInManager.insertRestApiMessage(transportDetails.getconfigId(), jsonSent);
 				
+				    if(newRestAPIMessageID > 0) {
+					//User and custom api call is validated send response and proceed
+					obj.put("status", new Integer(HttpServletResponse.SC_OK));
+					obj.put("Message", "Successfully received and processed your message.");
+					//response.setStatus((HttpServletResponse.SC_OK));
+				    }
+				    else {
+					obj.put("status", new Integer(HttpServletResponse.SC_EXPECTATION_FAILED));
+					obj.put("Message", "Failed to process your message.");
+					//response.setStatus((HttpServletResponse.SC_EXPECTATION_FAILED));
+				    }
+				}
 			    }
 			} else {
 			    obj.put("status", new Integer(HttpServletResponse.SC_BAD_REQUEST));

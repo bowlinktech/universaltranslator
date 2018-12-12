@@ -14,7 +14,6 @@ import org.springframework.transaction.annotation.Transactional;
 import com.hel.ut.dao.WebServicesDAO;
 import com.hel.ut.model.WSMessagesIn;
 import com.hel.ut.model.wsMessagesOut;
-import org.springframework.beans.factory.annotation.Qualifier;
 
 /**
  * The WebServicesDAOImpl class will implement the DAO access layer to handle updates for web services messages
@@ -27,12 +26,11 @@ import org.springframework.beans.factory.annotation.Qualifier;
 public class WebServicesDAOImpl implements WebServicesDAO {
 
     @Autowired
-    @Qualifier("ilsessionFactory")
     private SessionFactory sessionFactory;
 
     @SuppressWarnings("unchecked")
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public List<WSMessagesIn> getWSMessagesInList(Date fromDate, Date toDate,
             Integer fetchSize) throws Exception {
 
@@ -57,7 +55,7 @@ public class WebServicesDAOImpl implements WebServicesDAO {
 
     @SuppressWarnings("unchecked")
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public WSMessagesIn getWSMessagesIn(Integer wsId) throws Exception {
         Criteria findWSIn = sessionFactory.getCurrentSession().createCriteria(WSMessagesIn.class);
         findWSIn.add(Restrictions.eq("id", wsId));
@@ -70,7 +68,7 @@ public class WebServicesDAOImpl implements WebServicesDAO {
     }
 
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public void saveWSMessagesOut(wsMessagesOut wsMessagesOut) throws Exception {
         sessionFactory.getCurrentSession().saveOrUpdate(wsMessagesOut);
     }
@@ -80,7 +78,7 @@ public class WebServicesDAOImpl implements WebServicesDAO {
      */
     @SuppressWarnings("unchecked")
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     public List<wsMessagesOut> getWSMessagesOutList(Date fromDate, Date toDate,
             Integer fetchSize) throws Exception {
 
@@ -103,7 +101,7 @@ public class WebServicesDAOImpl implements WebServicesDAO {
     }
 
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     @SuppressWarnings("unchecked")
     public wsMessagesOut getWSMessagesOut(Integer wsId) throws Exception {
         Criteria findWSOut = sessionFactory.getCurrentSession().createCriteria(wsMessagesOut.class);
@@ -117,7 +115,7 @@ public class WebServicesDAOImpl implements WebServicesDAO {
     }
 
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     @SuppressWarnings("unchecked")
     public List<wsMessagesOut> getWSMessagesOutByBatchId(Integer batchId)
             throws Exception {
@@ -128,7 +126,7 @@ public class WebServicesDAOImpl implements WebServicesDAO {
     }
 
     @Override
-    @Transactional(readOnly = true, value = "iltransactionManager")
+    @Transactional(readOnly = true)
     @SuppressWarnings("unchecked")
     public List<WSMessagesIn> getWSMessagesInByBatchId(Integer batchId)
             throws Exception {
@@ -139,7 +137,7 @@ public class WebServicesDAOImpl implements WebServicesDAO {
     }
 
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public void saveWSMessagesIn(WSMessagesIn wsIn) throws Exception {
         sessionFactory.getCurrentSession().saveOrUpdate(wsIn);
     }
