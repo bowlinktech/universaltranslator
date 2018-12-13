@@ -204,7 +204,7 @@ public class configurationDAOImpl implements configurationDAO {
     @Transactional(readOnly = true)
     @SuppressWarnings("unchecked")
     public List<utConfiguration> getConfigurations() {
-        Query query = sessionFactory.getCurrentSession().createQuery("from configuration order by dateCreated desc");
+        Query query = sessionFactory.getCurrentSession().createQuery("from utConfiguration order by dateCreated desc");
 
         List<utConfiguration> configurationList = query.list();
         return configurationList;
@@ -238,7 +238,7 @@ public class configurationDAOImpl implements configurationDAO {
     @Override
     @Transactional(readOnly = true)
     public Long findTotalConfigs() {
-        Query query = sessionFactory.getCurrentSession().createQuery("select count(id) as totalConfigs from configuration");
+        Query query = sessionFactory.getCurrentSession().createQuery("select count(id) as totalConfigs from utConfiguration");
 
         Long totalConfigs = (Long) query.uniqueResult();
 
@@ -258,7 +258,7 @@ public class configurationDAOImpl implements configurationDAO {
     @Transactional(readOnly = true)
     @SuppressWarnings("unchecked")
     public List<utConfiguration> getLatestConfigurations(int maxResults) {
-        Query query = sessionFactory.getCurrentSession().createQuery("from configuration order by dateCreated desc");
+        Query query = sessionFactory.getCurrentSession().createQuery("from utConfiguration order by dateCreated desc");
 
         //Set the max results to display
         query.setMaxResults(maxResults);

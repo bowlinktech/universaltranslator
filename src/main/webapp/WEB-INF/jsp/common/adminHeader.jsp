@@ -6,7 +6,7 @@
         <div class="contain">
             <div class="navbar-header">
                 <a href="<c:url value='/administrator' />" class="navbar-brand" title="{company name}">
-                   <span style="color:white; font-family: sans-serif; font-size: 20px">TZ HIM</span>
+                   <span style="color:white; font-family: sans-serif; font-size: 20px">Health-e-Link UT</span>
                 </a>
                 <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
                     <span class="sr-only">Toggle navigation</span>

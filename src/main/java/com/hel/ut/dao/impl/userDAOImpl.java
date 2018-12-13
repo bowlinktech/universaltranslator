@@ -131,7 +131,7 @@ public class userDAOImpl implements userDAO {
     @Transactional(readOnly = true)
     public Long findTotalLogins(int userId) {
 
-        Query query = sessionFactory.getCurrentSession().createQuery("select count(id) as totalLogins from userLogin where userId = :userId");
+        Query query = sessionFactory.getCurrentSession().createQuery("select count(id) as totalLogins from utUserLogin where userId = :userId");
         query.setParameter("userId", userId);
 
         Long totalLogins = (Long) query.uniqueResult();
@@ -149,7 +149,7 @@ public class userDAOImpl implements userDAO {
     @Override
     @Transactional(readOnly = false)
     public void setLastLogin(String username) {
-        Query q1 = sessionFactory.getCurrentSession().createQuery("insert into userLogin (userId)" + "select id from User where username = :username");
+        Query q1 = sessionFactory.getCurrentSession().createQuery("insert into utUserLogin (userId)" + " select id from utUser where username = :username");
         q1.setParameter("username", username);
         q1.executeUpdate();
 
@@ -170,7 +170,7 @@ public class userDAOImpl implements userDAO {
     @SuppressWarnings("unchecked")
     @Transactional(readOnly = true)
     public List<utUser> getOrganizationContact(int orgId, int mainContact) {
-        Query query = sessionFactory.getCurrentSession().createQuery("from User where orgId = :orgId and mainContact = :mainContact");
+        Query query = sessionFactory.getCurrentSession().createQuery("from utUser where orgId = :orgId and mainContact = :mainContact");
         query.setParameter("orgId", orgId);
         query.setParameter("mainContact", mainContact);
 
@@ -215,7 +215,7 @@ public class userDAOImpl implements userDAO {
     @Transactional(readOnly = true)
     public utUser getUserByResetCode(String resetCode) {
 
-        Query query = sessionFactory.getCurrentSession().createQuery("from User where resetCode = :resetCode");
+        Query query = sessionFactory.getCurrentSession().createQuery("from utUser where resetCode = :resetCode");
         query.setParameter("resetCode", resetCode);
 
         if (query.list().size() > 1) {
@@ -269,7 +269,7 @@ public class userDAOImpl implements userDAO {
     @Transactional(readOnly = true)
     public List<utUser> getUserByTypeByOrganization(int orgId) {
         try {
-            Query query = sessionFactory.getCurrentSession().createQuery("from User where orgId = :orgId and status = 1 order by userType");
+            Query query = sessionFactory.getCurrentSession().createQuery("from utUser where orgId = :orgId and status = 1 order by userType");
             query.setParameter("orgId", orgId);
             List<utUser> users = query.list();
             return users;
@@ -374,7 +374,7 @@ public class userDAOImpl implements userDAO {
     @SuppressWarnings("unchecked")
     @Transactional(readOnly = true)
     public List<utUser> getAllUsers() {
-        Query query = sessionFactory.getCurrentSession().createQuery("from User");
+        Query query = sessionFactory.getCurrentSession().createQuery("from utUser");
 
         List<utUser> userList = query.list();
         return userList;
@@ -521,7 +521,7 @@ public class userDAOImpl implements userDAO {
     @Transactional(readOnly = false)
     public void loguserout(int userId) throws Exception {
 	
-	Query query = sessionFactory.getCurrentSession().createQuery("from userLogin where userId = :userId order by id desc");
+	Query query = sessionFactory.getCurrentSession().createQuery("from utUserLogin where userId = :userId order by id desc");
         query.setParameter("userId", userId);
 	
 	List<utUserLogin> logins = query.list();

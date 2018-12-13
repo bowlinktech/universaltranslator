@@ -1063,11 +1063,11 @@ public class adminProcessingActivity {
 		mav.addObject("batchErrorSummary", batchErrorSummary);
 	    }
                  
-	    if(orgDetails.getRrEntity2DetailId() > 0) {
+	    if(orgDetails.getHelRegistryOrgId()> 0) {
 		canReset = false;
 	    }
 	    
-	    if(orgDetails.getRrProgramId() > 0) {
+	    if(orgDetails.getHelRegistryId()> 0) {
 		showButtons = false;
 	    }
 	    
@@ -2927,7 +2927,7 @@ public class adminProcessingActivity {
         /* Get all inbound transactions */
         toDate = DateUtils.addDays(toDate, 1);
 	
-	try {
+	//try {
 
             Integer fetchCount = 0;
 	    
@@ -3057,9 +3057,9 @@ public class adminProcessingActivity {
 
             mav.addObject("batches", dashboardUploads);
 
-        } catch (Exception e) {
-            throw new Exception("Error occurred viewing the dashboard inbound messages.", e);
-        }
+        //} catch (Exception e) {
+            //throw new Exception("Error occurred viewing the dashboard inbound messages.", e);
+       // }
 
         return mav;
     }
@@ -3344,11 +3344,11 @@ public class adminProcessingActivity {
 		//mav.addObject("batchErrorSummary", batchErrorSummary);
 	    }
 	         
-	    if(orgDetails.getRrEntity2DetailId() > 0) {
+	    if(orgDetails.getHelRegistryOrgId()> 0) {
 		canReset = false;
 	    }
 	    
-	    if(orgDetails.getRrProgramId() > 0) {
+	    if(orgDetails.getHelRegistryId()> 0) {
 		showButtons = false;
 	    }
 	    

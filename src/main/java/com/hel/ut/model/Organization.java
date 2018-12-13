@@ -92,13 +92,20 @@ public class Organization {
     private String infoURL = "";
     
     @Column(name = "COUNTRY", nullable = true)
-    private String country = "";
+    private String country = "United States of America";
     
-    @Column(name = "rrProgramId", nullable = true)
-    private int rrProgramId = 0;
+    @Column(name = "helRegistryId", nullable = true)
+    private int helRegistryId = 0;
     
-    @Column(name = "rrEntity2DetailId", nullable = true)
-    private int rrEntity2DetailId = 0;
+    @Column(name = "helRegistryOrgId", nullable = true)
+    private int helRegistryOrgId = 0;
+    
+    @Column(name = "helRegistrySchemaName", nullable = true)
+    private String helRegistrySchemaName = "";
+    
+    @Column(name = "primaryContactEmail", nullable = true)
+    private String primaryContactEmail = "";
+    
     
     public int getId() {
         return id;
@@ -268,20 +275,45 @@ public class Organization {
         this.country = country;
     }
 
-    public int getRrProgramId() {
-	return rrProgramId;
+    public String getCleanURL() {
+	return cleanURL;
     }
 
-    public void setRrProgramId(int rrProgramId) {
-	this.rrProgramId = rrProgramId;
+    public void setCleanURL(String cleanURL) {
+	this.cleanURL = cleanURL;
     }
 
-    public int getRrEntity2DetailId() {
-	return rrEntity2DetailId;
+    public int getHelRegistryId() {
+	return helRegistryId;
     }
 
-    public void setRrEntity2DetailId(int rrEntity2DetailId) {
-	this.rrEntity2DetailId = rrEntity2DetailId;
+    public void setHelRegistryId(int helRegistryId) {
+	this.helRegistryId = helRegistryId;
     }
 
+    public int getHelRegistryOrgId() {
+	return helRegistryOrgId;
+    }
+
+    public void setHelRegistryOrgId(int helRegistryOrgId) {
+	this.helRegistryOrgId = helRegistryOrgId;
+    }
+
+    public String getPrimaryContactEmail() {
+	return primaryContactEmail;
+    }
+
+    public void setPrimaryContactEmail(String primaryContactEmail) {
+	this.primaryContactEmail = primaryContactEmail;
+    }
+
+    public String getHelRegistrySchemaName() {
+	return helRegistrySchemaName;
+    }
+
+    public void setHelRegistrySchemaName(String helRegistrySchemaName) {
+	this.helRegistrySchemaName = helRegistrySchemaName;
+    }
+
+    
 }

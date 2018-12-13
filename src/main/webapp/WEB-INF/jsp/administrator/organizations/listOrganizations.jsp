@@ -26,8 +26,7 @@
                                 <th scope="col">Organization Name ${result}</th>
                                 <th scope="col">Organization Type</th>
                                 <th scope="col">Contact Information</th>
-                                <th scope="col" class="center-text"># of Users</th>
-                                <th scope="col" class="center-text"># of Configurations</th>
+				<th scope="col" class="center-text">Health-e-Link Registry</th>
                                 <th scope="col" class="center-text">Date Created</th>
                                 <th scope="col"></th>
                             </tr>
@@ -48,6 +47,7 @@
                                                     <c:when test="${org.orgType == 3}">Health Management Information System</c:when>
                                                     <c:when test="${org.orgType == 4}">Data Warehouse</c:when>
                                                 </c:choose>
+					    </td>
                                             <td>
 						<c:choose>
 						    <c:when test="${not empty org.address}">
@@ -58,12 +58,12 @@
 						    <c:otherwise>N/A</c:otherwise>
 						</c:choose>
                                             </td>
-                                            <td class="center-text">
-                                                ${orgFunctions.findTotalUsers(org.id)}
-                                            </td>
-                                            <td class="center-text">
-                                                ${orgFunctions.findTotalConfigurations(org.id)}
-                                            </td>
+					    <td class="center-text">
+						<c:choose>
+                                                    <c:when test="${org.helRegistryId > 0}">Yes (id: ${org.helRegistryId})</c:when>
+                                                    <c:otherwise>No</c:otherwise>
+                                                </c:choose>
+					    </td>
                                             <td class="center-text"><fmt:formatDate value="${org.dateCreated}" type="date" pattern="M/dd/yyyy" /></td>
                                             <td class="actions-col">
                                                 <a href="javascript:void(0);" class="btn btn-link" title="Edit this organization" role="button">
@@ -75,7 +75,7 @@
                                     </c:forEach>
                                 </c:when>
                                 <c:otherwise>
-                                    <tr><td colspan="7" class="center-text">There are currently no organizations set up.</td></tr>
+                                    <tr><td colspan="6" class="center-text">There are currently no organizations set up.</td></tr>
                                 </c:otherwise>
                             </c:choose>
                         </tbody>

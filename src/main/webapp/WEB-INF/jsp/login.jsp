@@ -10,7 +10,7 @@
     <div class="login clearfix">
         <header class="login-header" role="banner">
             <div class="login-header-content">
-                <p style="color:white; font-family: sans-serif; font-size: 30px">TZ HIM</p>
+                <p style="color:white; font-family: sans-serif; font-size: 25px">Health-e-Link Universal Translator</p>
             </div>
         </header>
         <c:if test="${not empty error}">
@@ -33,7 +33,7 @@
                 </c:otherwise>
             </c:choose>
         </c:if>
-        <form role="form" id="form-admin-login" name='f' action="<c:url value='/login' />" method='POST'>
+        <form role="form" id="form-admin-login" name='f' action="<c:url value='loginAction' />" method='POST'>
             <fieldset name="login-fields" form="form-admin-login" class="basic-clearfix">
                 <div class="form-group ${not empty error ? 'has-error' : '' }">
                     <label class="control-label" for="username">Username</label>

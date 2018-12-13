@@ -2,12 +2,9 @@ package com.hel.ut.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -17,14 +14,10 @@ import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.servlet.view.RedirectView;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import com.hel.ut.model.Organization;
 import com.hel.ut.service.organizationManager;
-import com.hel.ut.model.utUser;
-import com.hel.ut.service.userManager;
 import com.hel.ut.model.utConfiguration;
 import com.hel.ut.model.configurationTransport;
 import com.hel.ut.model.messageType;
@@ -33,6 +26,11 @@ import com.hel.ut.reference.USStateList;
 import com.hel.ut.service.configurationManager;
 import com.hel.ut.service.configurationTransportManager;
 import com.hel.ut.service.messageTypeManager;
+import com.registryKit.registry.helRegistry;
+import com.registryKit.registry.helRegistryManager;
+import com.registryKit.registry.tiers.tierManager;
+import com.registryKit.registry.tiers.tierOrganizationDetails;
+import com.registryKit.registry.tiers.tiers;
 
 
 /**
@@ -51,10 +49,6 @@ public class adminOrgContoller {
     private organizationManager organizationManager;
 
     @Autowired
-    private userManager userManager;
-
-
-    @Autowired
     private configurationManager configurationmanager;
 
     @Autowired
@@ -62,6 +56,12 @@ public class adminOrgContoller {
 
     @Autowired
     private configurationTransportManager configurationTransportManager;
+    
+    @Autowired
+    private helRegistryManager helregistrymanager;
+    
+    @Autowired
+    private tierManager tiermanager;
     
 
     /**
@@ -72,7 +72,6 @@ public class adminOrgContoller {
     /**
      * The '/list' GET request will serve up the existing list of organizations in the system
      *
-     * @param page	The page parameter will hold the page to view when pagination is built.
      * @return	The organization page list
      *
      * @Objects	(1) An object containing all the found organizations (2) An object will be returned that hold the organiationManager so we can run some functions on each returned org in the list
@@ -85,7 +84,6 @@ public class adminOrgContoller {
         mav.setViewName("/administrator/organizations/listOrganizations");
 
         List<Organization> organizations = organizationManager.getOrganizations();
-        mav.addObject("orgFunctions", organizationManager);
         mav.addObject("organizationList", organizations);
 
         return mav;
@@ -119,12 +117,7 @@ public class adminOrgContoller {
         //Get the object that will hold the countries
         mav.addObject("countryList", countryList.getCountries());
 
-        List<Organization> organizations = organizationManager.getOrganizations();
-        mav.addObject("organizationList", organizations);
-	
-	
         return mav;
-
     }
 
     /**
@@ -146,8 +139,8 @@ public class adminOrgContoller {
         
         //Get a list of countries
         CountryList countryList = new CountryList();
-
-        if (result.hasErrors()) {
+	
+       if (result.hasErrors()) {
             ModelAndView mav = new ModelAndView();
             mav.setViewName("/administrator/organizations/organizationDetails");
             //Get the object that will hold the states
@@ -155,7 +148,7 @@ public class adminOrgContoller {
             mav.addObject("countryList", countryList.getCountries());
             return mav;
         }
-
+       
         List<Organization> existing = organizationManager.getOrganizationByName(organization.getcleanURL());
         if (!existing.isEmpty()) {
             ModelAndView mav = new ModelAndView();
@@ -167,9 +160,8 @@ public class adminOrgContoller {
             mav.addObject("countryList", countryList.getCountries());
             return mav;
         }
-
-        Integer id = null;
-        id = (Integer) organizationManager.createOrganization(organization);
+	
+        Integer id = organizationManager.createOrganization(organization);
 
         //Get the organization name that was just added
         Organization latestorg = organizationManager.getOrganizationById(id);
@@ -223,8 +215,6 @@ public class adminOrgContoller {
         //Get the object that will hold the countries
         mav.addObject("countryList", countryList.getCountries());
 
-        List<Organization> organizations = organizationManager.getOrganizations();
-        mav.addObject("organizationList", organizations);
 	
         return mav;
 
@@ -302,6 +292,9 @@ public class adminOrgContoller {
      * The '/{cleanURL}/delete POST request will remove the clicked organization and anything associated to it.
      *
      * @param id	The variable that holds the id of the clicked organization
+     * @param redirectAttr
+     * @return 
+     * @throws java.lang.Exception
      *
      * @Return	Will return the organization list page
      *
@@ -319,7 +312,8 @@ public class adminOrgContoller {
 
     /**
      * *********************************************************
-     * ORGANIZATION CONFIGUARATION FUNCTIONS ********************************************************
+     * ORGANIZATION CONFIGUARATION FUNCTIONS 
+     ********************************************************
      */
     /**
      * The '/{cleanURL/configurations' GET request will display the list of configurations set up for the selected organization.
@@ -365,300 +359,66 @@ public class adminOrgContoller {
     }
 
     /**
-     * *********************************************************
-     * ORGANIZATION USER FUNCTIONS ********************************************************
+     * The '/getHELRegistries' GET request will return a list of Health-e-Link registries
+     * 
+     *
+     * @return The function will return a list of active health-e-link registries.
+     * @throws java.lang.Exception
      */
-    /**
-     * The '/{cleanURL/users' GET request will display the list of system users for the selected organization.
-     *
-     * @param cleanURL	The variable that holds the organization that is being viewed
-     *
-     * @return	Will return the organization user list page
-     *
-     * @Objects	(1) An object that holds users found for the organization (2) The userManager object so we can run some functions on each user returned. (3)	The orgId used for the menu and action bar
-     *
-     * @throws Exception
-     */
-    @RequestMapping(value = "/{cleanURL}/users", method = RequestMethod.GET)
-    public ModelAndView listOrganizationUsers(@PathVariable String cleanURL) throws Exception {
+    @SuppressWarnings("rawtypes")
+    @RequestMapping(value = {"/{cleanURL}/getHELRegistries", "/getHELRegistries"}, method = RequestMethod.GET)
+    public @ResponseBody List<helRegistry> getHealtheLinkRegistries() throws Exception {
 	
-	List<Organization> organization = organizationManager.getOrganizationByName(cleanURL);
-        Organization orgDetails = organization.get(0);
-
-        ModelAndView mav = new ModelAndView();
-        mav.setViewName("/administrator/organizations/users");
-
-        mav.addObject("orgName", orgDetails.getOrgName());
-
-        List<utUser> users = organizationManager.getOrganizationUsers(orgDetails.getId());
-        mav.addObject("id", orgDetails.getId());
-        mav.addObject("selOrgType", orgDetails.getOrgType());
-        mav.addObject("userFunctions", userManager);
-        mav.addObject("userList", users);
-
-        return mav;
-
-    }
-
-    /**
-     * The '/{cleanURL}/users/newSystemUser' GET request will be used to display the blank new system user screen (In a modal)
-     *
-     *
-     * @return	The organization user blank form page
-     *
-     * @Objects	(1) An object that will hold all the form fields of a new user (2) An object to hold the button value "Create"
-     *
-     */
-    @RequestMapping(value = "/{cleanURL}/newSystemUser", method = RequestMethod.GET)
-    public @ResponseBody
-    ModelAndView newSystemUser(@PathVariable String cleanURL) throws Exception {
+	List<helRegistry> helRegistries = helregistrymanager.getAllActiveRegistries();
 	
-	List<Organization> organization = organizationManager.getOrganizationByName(cleanURL);
-        Organization orgDetails = organization.get(0);
-	
-        ModelAndView mav = new ModelAndView();
-        mav.setViewName("/administrator/organizations/users/details");
-        utUser userdetails = new utUser();
-
-        //Set the id of the organization for the new user
-        userdetails.setOrgId(orgDetails.getId());
-        mav.addObject("btnValue", "Create");
-        mav.addObject("userdetails", userdetails);
-
-        //Get All Available user sections
-        //List<siteSections> sections = userManager.getSections();
-        //mav.addObject("sections", sections);
-
-        return mav;
+        return helRegistries;
     }
-
-    /**
-     * The '/{cleanURL}/create' POST request will handle submitting the new organization system user.
-     *
-     * @param user	The object containing the system user form fields
-     * @param result	The validation result
-     * @param redirectAttr	The variable that will hold values that can be read after the redirect
-     *
-     * @return	Will return the system user list page on "Save" Will return the system user form page on error
-     *
-     * @Objects	(1) The object containing all the information for the clicked org
-     * @throws Exception
-     */
-    @RequestMapping(value = "/{cleanURL}/create", method = RequestMethod.POST)
-    public @ResponseBody
-    ModelAndView createsystemUser(@Valid @ModelAttribute(value = "userdetails") utUser userdetails, BindingResult result, RedirectAttributes redirectAttr, @PathVariable String cleanURL) throws Exception {
-	
-        /*if (userdetails.getsectionList() == null) {
-            ModelAndView mav = new ModelAndView();
-            List<siteSections> sections = userManager.getSections();
-            mav.addObject("sections", sections);
-            mav.addObject("sectionListError", true);
-            mav.setViewName("/administrator/organizations/users/details");
-            mav.addObject("btnValue", "Create");
-            return mav;
-        }*/
-
-        if (result.hasErrors()) {
-            ModelAndView mav = new ModelAndView();
-            mav.setViewName("/administrator/organizations/users/details");
-            //List<siteSections> sections = userManager.getSections();
-            //mav.addObject("sections", sections);
-            mav.addObject("btnValue", "Create");
-            return mav;
-        }
-
-        utUser existing = userManager.getUserByUserName(userdetails.getUsername());
-
-        if (existing != null) {
-            ModelAndView mav = new ModelAndView();
-            mav.setViewName("/administrator/organizations/users/details");
-            //List<siteSections> sections = userManager.getSections();
-            //mav.addObject("sections", sections);
-            mav.addObject("btnValue", "Create");
-            mav.addObject("existingUsername", "Username " + userdetails.getUsername().trim() + " already exists.");
-            return mav;
-        }
-
-        userdetails = userManager.encryptPW(userdetails);
-        userManager.createUser(userdetails);
-
-        ModelAndView mav = new ModelAndView("/administrator/organizations/users/details");
-        mav.addObject("success", "userCreated");
-        return mav;
-    }
-
-    /**
-     * The '/{cleanURL}/users/update' POST request will handle submitting changes for the selected organization system user.
-     *
-     * @param user	The object containing the system user form fields
-     * @param result	The validation result
-     * @param redirectAttr	The variable that will hold values that can be read after the redirect
-     *
-     * @return	Will return the system user list page on "Save" Will return the system user form page on error
-     *
-     * @Objects	(1) The object containing all the information for the clicked org
-     * @throws Exception
-     */
-    @RequestMapping(value = "/{cleanURL}/update", method = RequestMethod.POST)
-    public @ResponseBody
-    ModelAndView updatesystemUser(@Valid @ModelAttribute(value = "userdetails") utUser userdetails, BindingResult result, RedirectAttributes redirectAttr, @PathVariable String cleanURL) throws Exception {
-
-        /*if (userdetails.getsectionList() == null) {
-            ModelAndView mav = new ModelAndView();
-            List<siteSections> sections = userManager.getSections();
-            mav.addObject("sections", sections);
-            mav.addObject("sectionListError", true);
-            mav.setViewName("/administrator/organizations/users/details");
-            mav.addObject("btnValue", "Update");
-            return mav;
-        }*/
-	
-        if (result.hasErrors()) {
-            ModelAndView mav = new ModelAndView();
-            //List<siteSections> sections = userManager.getSections();
-            //mav.addObject("sections", sections);
-            mav.setViewName("/administrator/organizations/users/details");
-            mav.addObject("btnValue", "Update");
-            return mav;
-        }
-
-        utUser currentUser = userManager.getUserById(userdetails.getId());
-
-        if (!currentUser.getUsername().trim().equals(userdetails.getUsername().trim())) {
-            utUser existing = userManager.getUserByUserName(userdetails.getUsername());
-            if (existing != null) {
-                ModelAndView mav = new ModelAndView();
-                mav.setViewName("/administrator/organizations/users/details");
-                //List<siteSections> sections = userManager.getSections();
-                //mav.addObject("sections", sections);
-                mav.addObject("btnValue", "Update");
-                mav.addObject("existingUsername", "Username " + userdetails.getUsername().trim() + " already exists.");
-                return mav;
-            }
-        }
-
-        /**
-         * need to check user's password, if blank, we do not change *
-         */
-        //here we get salt and redo password
-        if (!userdetails.getPassword().equalsIgnoreCase("")) {
-            userdetails = userManager.encryptPW(userdetails);
-        } else {
-            userdetails.setRandomSalt(currentUser.getRandomSalt());
-            userdetails.setEncryptedPw(currentUser.getEncryptedPw());
-        }
-
-        userManager.updateUser(userdetails);
-
-        ModelAndView mav = new ModelAndView("/administrator/organizations/users/details");
-        mav.addObject("success", "userUpdated");
-        return mav;
-    }
-
-    /**
-     * The '/{cleanURL}/user/{person}?i=##' GET request will be used to return the details of the selected user.
-     *
-     * @param i	The id of the user selected
-     *
-     * @return	The organization user details page
-     *
-     * @Objects	(1) An object that will hold all the details of the clicked user (2) An object that will hold all the available sections the user can have access to
-     *
-     */
-    @RequestMapping(value = "/{cleanURL}/user/{person}", method = RequestMethod.GET)
-    @ResponseBody
-    public ModelAndView viewUserDetails(@RequestParam(value = "i", required = true) Integer userId) throws Exception {
-
-        ModelAndView mav = new ModelAndView();
-        mav.setViewName("/administrator/organizations/users/details");
-
-        //Get all the details for the clicked user
-        utUser userDetails = userManager.getUserById(userId);
-
-        mav.addObject("userId", userDetails.getId());
-        mav.addObject("btnValue", "Update");
-        mav.addObject("userdetails", userDetails);
-
-        //Get All Available user sections
-        /*List<siteSections> sections = userManager.getSections();
-        mav.addObject("sections", sections);
-
-        //Return the sections for the clicked user
-        List<userAccess> userSections = userManager.getuserSections(userId);
-        List<Integer> userSectionList = new ArrayList<Integer>();
-
-        for (int i = 0; i < userSections.size(); i++) {
-            userSectionList.add(userSections.get(i).getFeatureId());
-        }
-
-        userDetails.setsectionList(userSectionList);*/
-
-        return mav;
-
-    }
-
-    /**
-     * login as response body *
-     */
-    @RequestMapping(value = "/{cleanURL}/loginAs", method = RequestMethod.POST)
-    public @ResponseBody
-    ModelAndView loginAs(@PathVariable String cleanURL, HttpServletRequest request) throws Exception {
-
-        ModelAndView mav = new ModelAndView();
-        mav.setViewName("/administrator/organizations/users/login");
-
-        //Set the id of the organization for the new provider
-        List<Organization> organization = organizationManager.getOrganizationByName(cleanURL);
-        Organization orgDetails = organization.get(0);
-        
-        String loginAsUser = request.getParameter("loginAsUser");
-        List<utUser> usersList = userManager.getUsersByStatuRolesAndOrg(true, Arrays.asList(1), Arrays.asList(orgDetails.getId()), true);
-        mav.addObject("usersList", usersList);
-        mav.addObject("loginAsUser", loginAsUser);
-        return mav;
-    }
-
-    /**
-     * login as post check - response body *
-     */
-    @RequestMapping(value = "/{cleanURL}/loginAsCheck", method = RequestMethod.POST)
-    public @ResponseBody
-    ModelAndView checkLoginAsPW(@PathVariable String cleanURL, HttpServletRequest request,
-            Authentication authentication) throws Exception {
-
-        ModelAndView mav = new ModelAndView();
-        mav.setViewName("/administrator/organizations/users/login");
-
-        utUser user = userManager.getUserByUserName(authentication.getName());
-        boolean okToLoginAs = false;
-
-        /**
-         * we verify existing password *
-         */
-        if (user.getRoleId() == 1 || user.getRoleId() == 4) {
-            try {
-                okToLoginAs = userManager.authenticate(request.getParameter("j_password"), user.getEncryptedPw(), user.getRandomSalt());
-            } catch (Exception ex) {
-                okToLoginAs = false;
-            }
-        }
-
-        if (okToLoginAs) {
-            mav.addObject("msg", "pwmatched");
-        } else {
-            //Set the id of the organization for the new provider
-            List<Organization> organization = organizationManager.getOrganizationByName(cleanURL);
-            Organization orgDetails = organization.get(0);
-
-            String loginAsUser = request.getParameter("loginAsUser");
-            List<utUser> usersList = userManager.getUsersByStatuRolesAndOrg(true, Arrays.asList(1), Arrays.asList(orgDetails.getId()), true);
-            mav.addObject("usersList", usersList);
-            mav.addObject("loginAsUser", loginAsUser);
-
-        }
-        return mav;
-    }
-
     
-
+    
+    /**
+     * The '/getHELRegistryOrganizations' GET request will return a list of registry organizations saved at the
+     * last set up tier.
+     *
+     *
+     * @return The function will return a list of organizations
+     * @throws java.lang.Exception
+     */
+    @SuppressWarnings("rawtypes")
+    @RequestMapping(value = {"/{cleanURL}/getHELRegistryOrganizations", "/getHELRegistryOrganizations"}, method = RequestMethod.GET)
+    public @ResponseBody List<tierOrganizationDetails> getHELRegistryOrganizations() throws Exception {
+	
+	tiers lastRegistryTier = tiermanager.getLastTier();
+	
+	if(lastRegistryTier != null) {
+	    List<tierOrganizationDetails> tierOrganizations = tiermanager.getTierEntries(lastRegistryTier.getId());
+	    
+	    if(tierOrganizations != null) {
+		return tierOrganizations;
+	    }
+	    else {
+		return null;
+	    }
+	}
+	else {
+	    return null;
+	}
+    }
+    
+    
+    /**
+     * The '/getHELRegistryOrganizationDetails' GET request will return the details of the selected registry
+     * organization.
+     *
+     * @param selRegistryOrgId
+     * @return The function will return the details of the selected organization
+     * @throws java.lang.Exception
+     */
+    @SuppressWarnings("rawtypes")
+    @RequestMapping(value = {"/{cleanURL}/getHELRegistryOrganizationDetails", "/getHELRegistryOrganizationDetails"}, method = RequestMethod.GET)
+    public @ResponseBody tierOrganizationDetails getHELRegistryOrganizationDetails(@RequestParam(value = "selRegistryOrgId", required = true) Integer selRegistryOrgId) throws Exception {
+	
+	tierOrganizationDetails orgDetails = tiermanager.getTierEntryById(selRegistryOrgId);
+	return orgDetails;
+    }
+    
 }
