@@ -19,7 +19,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 @Entity
 @Table(name = "USERS")
-public class User {
+public class utUser {
 
 
     @Transient

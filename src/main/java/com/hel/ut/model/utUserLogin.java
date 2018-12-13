@@ -14,7 +14,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 @Entity
 @Table(name = "REL_USERLOGINS")
-public class userLogin {
+public class utUserLogin {
     
     @Transient
     private int totalTimeLoggedIn;

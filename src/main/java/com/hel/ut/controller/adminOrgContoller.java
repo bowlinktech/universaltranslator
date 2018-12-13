@@ -23,9 +23,9 @@ import java.util.List;
 
 import com.hel.ut.model.Organization;
 import com.hel.ut.service.organizationManager;
-import com.hel.ut.model.User;
+import com.hel.ut.model.utUser;
 import com.hel.ut.service.userManager;
-import com.hel.ut.model.configuration;
+import com.hel.ut.model.utConfiguration;
 import com.hel.ut.model.configurationTransport;
 import com.hel.ut.model.messageType;
 import com.hel.ut.reference.CountryList;
@@ -326,7 +326,7 @@ public class adminOrgContoller {
      *
      * @param cleanURL	The variable that holds the organization that is being viewed
      *
-     * @return	Will return the organization configuration list page
+     * @return	Will return the organization utConfiguration list page
      *
      * @Objects	(1) An object that holds configurations found for the organization (2) The orgId used for the menu and action bar
      *
@@ -341,7 +341,7 @@ public class adminOrgContoller {
         ModelAndView mav = new ModelAndView();
         mav.setViewName("/administrator/organizations/configurations");
 
-        List<configuration> configurations = configurationmanager.getConfigurationsByOrgId(orgDetails.getId(), "");
+        List<utConfiguration> configurations = configurationmanager.getConfigurationsByOrgId(orgDetails.getId(), "");
 
         mav.addObject("orgName", orgDetails.getOrgName());
         mav.addObject("id", orgDetails.getId());
@@ -351,7 +351,7 @@ public class adminOrgContoller {
         messageType messagetype;
         configurationTransport transportDetails;
 
-        for (configuration config : configurations) {
+        for (utConfiguration config : configurations) {
             messagetype = messagetypemanager.getMessageTypeById(config.getMessageTypeId());
             config.setMessageTypeName(messagetype.getName());
 
@@ -390,7 +390,7 @@ public class adminOrgContoller {
 
         mav.addObject("orgName", orgDetails.getOrgName());
 
-        List<User> users = organizationManager.getOrganizationUsers(orgDetails.getId());
+        List<utUser> users = organizationManager.getOrganizationUsers(orgDetails.getId());
         mav.addObject("id", orgDetails.getId());
         mav.addObject("selOrgType", orgDetails.getOrgType());
         mav.addObject("userFunctions", userManager);
@@ -418,7 +418,7 @@ public class adminOrgContoller {
 	
         ModelAndView mav = new ModelAndView();
         mav.setViewName("/administrator/organizations/users/details");
-        User userdetails = new User();
+        utUser userdetails = new utUser();
 
         //Set the id of the organization for the new user
         userdetails.setOrgId(orgDetails.getId());
@@ -446,7 +446,7 @@ public class adminOrgContoller {
      */
     @RequestMapping(value = "/{cleanURL}/create", method = RequestMethod.POST)
     public @ResponseBody
-    ModelAndView createsystemUser(@Valid @ModelAttribute(value = "userdetails") User userdetails, BindingResult result, RedirectAttributes redirectAttr, @PathVariable String cleanURL) throws Exception {
+    ModelAndView createsystemUser(@Valid @ModelAttribute(value = "userdetails") utUser userdetails, BindingResult result, RedirectAttributes redirectAttr, @PathVariable String cleanURL) throws Exception {
 	
         /*if (userdetails.getsectionList() == null) {
             ModelAndView mav = new ModelAndView();
@@ -467,7 +467,7 @@ public class adminOrgContoller {
             return mav;
         }
 
-        User existing = userManager.getUserByUserName(userdetails.getUsername());
+        utUser existing = userManager.getUserByUserName(userdetails.getUsername());
 
         if (existing != null) {
             ModelAndView mav = new ModelAndView();
@@ -501,7 +501,7 @@ public class adminOrgContoller {
      */
     @RequestMapping(value = "/{cleanURL}/update", method = RequestMethod.POST)
     public @ResponseBody
-    ModelAndView updatesystemUser(@Valid @ModelAttribute(value = "userdetails") User userdetails, BindingResult result, RedirectAttributes redirectAttr, @PathVariable String cleanURL) throws Exception {
+    ModelAndView updatesystemUser(@Valid @ModelAttribute(value = "userdetails") utUser userdetails, BindingResult result, RedirectAttributes redirectAttr, @PathVariable String cleanURL) throws Exception {
 
         /*if (userdetails.getsectionList() == null) {
             ModelAndView mav = new ModelAndView();
@@ -522,10 +522,10 @@ public class adminOrgContoller {
             return mav;
         }
 
-        User currentUser = userManager.getUserById(userdetails.getId());
+        utUser currentUser = userManager.getUserById(userdetails.getId());
 
         if (!currentUser.getUsername().trim().equals(userdetails.getUsername().trim())) {
-            User existing = userManager.getUserByUserName(userdetails.getUsername());
+            utUser existing = userManager.getUserByUserName(userdetails.getUsername());
             if (existing != null) {
                 ModelAndView mav = new ModelAndView();
                 mav.setViewName("/administrator/organizations/users/details");
@@ -573,7 +573,7 @@ public class adminOrgContoller {
         mav.setViewName("/administrator/organizations/users/details");
 
         //Get all the details for the clicked user
-        User userDetails = userManager.getUserById(userId);
+        utUser userDetails = userManager.getUserById(userId);
 
         mav.addObject("userId", userDetails.getId());
         mav.addObject("btnValue", "Update");
@@ -612,7 +612,7 @@ public class adminOrgContoller {
         Organization orgDetails = organization.get(0);
         
         String loginAsUser = request.getParameter("loginAsUser");
-        List<User> usersList = userManager.getUsersByStatuRolesAndOrg(true, Arrays.asList(1), Arrays.asList(orgDetails.getId()), true);
+        List<utUser> usersList = userManager.getUsersByStatuRolesAndOrg(true, Arrays.asList(1), Arrays.asList(orgDetails.getId()), true);
         mav.addObject("usersList", usersList);
         mav.addObject("loginAsUser", loginAsUser);
         return mav;
@@ -629,7 +629,7 @@ public class adminOrgContoller {
         ModelAndView mav = new ModelAndView();
         mav.setViewName("/administrator/organizations/users/login");
 
-        User user = userManager.getUserByUserName(authentication.getName());
+        utUser user = userManager.getUserByUserName(authentication.getName());
         boolean okToLoginAs = false;
 
         /**
@@ -651,7 +651,7 @@ public class adminOrgContoller {
             Organization orgDetails = organization.get(0);
 
             String loginAsUser = request.getParameter("loginAsUser");
-            List<User> usersList = userManager.getUsersByStatuRolesAndOrg(true, Arrays.asList(1), Arrays.asList(orgDetails.getId()), true);
+            List<utUser> usersList = userManager.getUsersByStatuRolesAndOrg(true, Arrays.asList(1), Arrays.asList(orgDetails.getId()), true);
             mav.addObject("usersList", usersList);
             mav.addObject("loginAsUser", loginAsUser);
 

@@ -7,12 +7,12 @@ package com.hel.ut.service;
 
 import com.hel.ut.model.activityReportList;
 import com.hel.ut.model.MoveFilesLog;
-import com.hel.ut.model.UserActivity;
+import com.hel.ut.model.utUserActivity;
 import com.hel.ut.model.CrosswalkData;
 import com.hel.ut.model.Macros;
 import com.hel.ut.model.RestAPIMessagesIn;
 import com.hel.ut.model.Transaction;
-import com.hel.ut.model.User;
+import com.hel.ut.model.utUser;
 import com.hel.ut.model.WSMessagesIn;
 import com.hel.ut.model.batchDownloads;
 import com.hel.ut.model.batchRetry;
@@ -150,15 +150,15 @@ public interface transactionInManager {
 
     systemSummary generateSystemInboundSummary();
 
-    boolean checkPermissionForBatch(User userInfo, batchUploads batchInfo);
+    boolean checkPermissionForBatch(utUser userInfo, batchUploads batchInfo);
 
     ConfigErrorInfo getHeaderForConfigErrorInfo(Integer batchId, ConfigErrorInfo configErrorInfo);
 
-    boolean hasPermissionForBatch(batchUploads batchInfo, User userInfo, boolean hasConfigurations);
+    boolean hasPermissionForBatch(batchUploads batchInfo, utUser userInfo, boolean hasConfigurations);
 
     boolean allowBatchClear(Integer batchUploadId);
 
-    List<UserActivity> getBatchActivities(batchUploads batchInfo, boolean forUsers, boolean foroutboundProcessing);
+    List<utUserActivity> getBatchActivities(batchUploads batchInfo, boolean forUsers, boolean foroutboundProcessing);
 
     Integer insertSFTPRun(MoveFilesLog sftpJob);
 
@@ -244,7 +244,7 @@ public interface transactionInManager {
 
     public void updateReferralActivityExport(referralActivityExports activityExport) throws Exception;
 
-    void sendExportEmail(User userDetails) throws Exception;
+    void sendExportEmail(utUser userDetails) throws Exception;
 
     public void saveReferralActivityExport(referralActivityExports activityExport) throws Exception;
 

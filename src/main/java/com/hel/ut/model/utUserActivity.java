@@ -25,7 +25,7 @@ import org.springframework.format.annotation.DateTimeFormat;
  */
 @Entity
 @Table(name = "userActivity")
-public class UserActivity {
+public class utUserActivity {
 
     @Transient
     String userFirstName = null;

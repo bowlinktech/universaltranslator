@@ -1,48 +1,51 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project 
+    xmlns="http://maven.apache.org/POM/4.0.0" 
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 
+    http://maven.apache.org/xsd/maven-4.0.0.xsd"
+>
     
     <modelVersion>4.0.0</modelVersion>
     
     <groupId>com.hel.ut</groupId>
     <artifactId>ut</artifactId>
     <packaging>war</packaging>
-    <version>1.0</version>
+    <version>3.0</version>
     
     <name>UT</name>
-    <url>http://maven.apache.org</url>
   
     <properties>
 	<org.springframework.version>4.3.2.RELEASE</org.springframework.version>
 	<org.spring.security.version>4.2.8.RELEASE</org.spring.security.version>
-	<javax.servlet-api.version>3.1.0</javax.servlet-api.version>
-	<jsp-api.version>2.2</jsp-api.version>
+	<javax.servlet-api.version>4.0.0</javax.servlet-api.version>
+	<jsp-api.version>2.3.1</jsp-api.version>
 	<org.slf4j.version>1.6.1</org.slf4j.version>
-	<org.apache.tiles.version>2.2.2</org.apache.tiles.version>
-	<javax.validation.version>1.1.0.Final</javax.validation.version>
-	<javax.mail.version>1.4.7</javax.mail.version>
-	<hibernate-core.version>4.3.11.Final</hibernate-core.version>
+	<org.apache.tiles.version>3.0.8</org.apache.tiles.version>
+	<javax.validation.version>2.0.1.Final</javax.validation.version>
+	<javax.mail.version>1.5.0-b01</javax.mail.version>
+	<hibernate-core.version>4.3.1.Final</hibernate-core.version>
 	<hibernate-validator.version>5.1.0.Final</hibernate-validator.version>
-	<junit.version>4.11</junit.version>
-	<mysql-connector.version>5.1.29</mysql-connector.version>
-	<jstl.version>1.2</jstl.version>
-	<commons-fileupload.version>1.3.1</commons-fileupload.version>
-	<commons-io.version>1.3.2</commons-io.version>
-	<commons-net.version>2.0</commons-net.version>
+	<junit.version>4.12</junit.version>
+	<mysql-connector.version>6.0.6</mysql-connector.version>
+        <jstl.version>1.2</jstl.version>
+	<commons-fileupload.version>1.3.3</commons-fileupload.version>
+        <commons-io.version>1.3.2</commons-io.version>
+        <commons-net.version>3.6</commons-net.version>
+	<commons-iocommons-io.version>2.6</commons-iocommons-io.version>
 	<jackson-databind.version>2.9.7</jackson-databind.version>
 	<jackson-core.version>2.9.7</jackson-core.version>
 	<jackson-annotations.version>2.9.7</jackson-annotations.version>
-	<poi.version>3.16</poi.version>
-	<poi-ooxml.version>3.16</poi-ooxml.version>
+	<poi.version>3.17</poi.version>
+	<poi-ooxml.version>3.17</poi-ooxml.version>
 	<log4j.version>2.0-beta8</log4j.version>
-	<quartz.version>2.2.1</quartz.version>
-	<commons-validator.version>1.4.0</commons-validator.version>
-	<tomcat-jdbc.version>7.0.47</tomcat-jdbc.version>
-	<sax.version>2.0.1</sax.version>
-	<maven.compiler.source>1.8</maven.compiler.source>
-	<maven.compiler.target>1.8</maven.compiler.target>
+	<quartz.version>2.3.0</quartz.version>
+	<commons-validator.version>1.6</commons-validator.version>
+        <tomcat-jdbc.version>9.0.6</tomcat-jdbc.version>
+        <sax.version>2.0.1</sax.version>
 	<xlsx.streamer.version>1.2.0</xlsx.streamer.version>
 	<jersey.version>1.19.4</jersey.version>
-	<commons-iocommons-io.version>2.6</commons-iocommons-io.version>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
     </properties>
   
  
@@ -99,10 +102,10 @@
 	</dependency>
        
 	<dependency>
-	    <groupId>javax.servlet.jsp</groupId>
-	    <artifactId>jsp-api</artifactId>
-	    <version>${jsp-api.version}</version>
-	</dependency>
+            <groupId>javax.servlet.jsp</groupId>
+            <artifactId>javax.servlet.jsp-api</artifactId>
+            <version>${jsp-api.version}</version>
+        </dependency>
        
 	<dependency>
 	    <groupId>javax.validation</groupId>
@@ -124,21 +127,17 @@
 
 	<!-- Hibernate -->
 	<dependency>
-	    <groupId>org.hibernate</groupId>
-	    <artifactId>hibernate-core</artifactId>
-	    <version>${hibernate-core.version}</version>
-	    <exclusions>
-		<exclusion>
-		    <artifactId>jboss-logging</artifactId>
-		    <groupId>org.jboss.logging</groupId>
-		</exclusion>
-		<exclusion>
-		    <artifactId>jboss-transaction-api_1.1_spec</artifactId>
-		    <groupId>org.jboss.spec.javax.transaction</groupId>
-		</exclusion>
-	    </exclusions>
-	</dependency>
-       
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-core</artifactId>
+            <version>${hibernate-core.version}</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.jboss.logging</groupId>
+            <artifactId>jboss-logging</artifactId>
+            <version>3.3.0.Final</version>
+        </dependency>
+	
 	<dependency>
 	    <groupId>org.hibernate</groupId>
 	    <artifactId>hibernate-validator</artifactId>
@@ -294,7 +293,7 @@
 	<dependency>
 	    <groupId>com.googlecode.owasp-java-html-sanitizer</groupId>
 	    <artifactId>owasp-java-html-sanitizer</artifactId>
-	    <version>[r136,)</version>
+	    <version>r156</version>
 	</dependency>
         
 	<dependency>

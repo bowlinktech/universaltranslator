@@ -1,6 +1,6 @@
 package com.hel.ut.controller;
 
-import com.hel.ut.model.User;
+import com.hel.ut.model.utUser;
 import com.hel.ut.model.mailMessage;
 import com.hel.ut.service.emailMessageManager;
 import com.hel.ut.service.userManager;
@@ -92,7 +92,7 @@ public class mainController {
     @RequestMapping(value = "/logout", method = RequestMethod.GET)
 	public ModelAndView logout(HttpServletRequest request, HttpServletResponse response, HttpSession session) throws Exception {
 
-	User userInfo = (User) session.getAttribute("userDetails");
+	utUser userInfo = (utUser) session.getAttribute("userDetails");
 
 	if (userInfo != null) {
 	    usermanager.loguserout(userInfo.getId());
@@ -168,7 +168,7 @@ public class mainController {
 
 	String randomCode = generateRandomCode();
 
-	User userDetails = usermanager.getUserById(userId);
+	utUser userDetails = usermanager.getUserById(userId);
 	userDetails.setresetCode(randomCode);
 
 	usermanager.updateUser(userDetails);
@@ -222,7 +222,7 @@ public class mainController {
     @RequestMapping(value = "/resetPassword", method = RequestMethod.POST)
 	public ModelAndView resetPassword(@RequestParam String resetCode, @RequestParam String newPassword, HttpSession session, RedirectAttributes redirectAttr) throws Exception {
 
-	User userDetails = usermanager.getUserByResetCode(resetCode);
+	utUser userDetails = usermanager.getUserByResetCode(resetCode);
 
 	if (userDetails == null) {
 	    redirectAttr.addFlashAttribute("msg", "notfound");
@@ -255,7 +255,7 @@ public class mainController {
 	String randomCode = new BigInteger(130, random).toString(32);
 
 	/* Check to make sure there is not reset code already generated */
-	User usedCode = usermanager.getUserByResetCode(randomCode);
+	utUser usedCode = usermanager.getUserByResetCode(randomCode);
 
 	if (usedCode == null) {
 	    return randomCode;

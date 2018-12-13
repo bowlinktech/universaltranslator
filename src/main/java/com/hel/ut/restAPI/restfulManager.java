@@ -9,9 +9,9 @@ import com.hel.ut.dao.RestAPIDAO;
 import com.hel.ut.dao.transactionOutDAO;
 import com.hel.ut.model.RestAPIMessagesIn;
 import com.hel.ut.model.RestAPIMessagesOut;
-import com.hel.ut.model.User;
+import com.hel.ut.model.utUser;
 import com.hel.ut.model.batchDownloads;
-import com.hel.ut.model.configuration;
+import com.hel.ut.model.utConfiguration;
 import com.hel.ut.model.configurationConnection;
 import com.hel.ut.model.configurationTransport;
 import com.hel.ut.model.mailMessage;
@@ -254,10 +254,10 @@ public class restfulManager {
 	    if (sendEmail) {
 		try {
 		    //Check to see if we need to send out an email that the message was sent.
-		    List<User> receivingusers = usermanager.getSuccessEmailReceiversForConfig(transportDetails.getconfigId());
+		    List<utUser> receivingusers = usermanager.getSuccessEmailReceiversForConfig(transportDetails.getconfigId());
 
 		    //Check to see if we need to send out an email that the message was sent.
-		    List<User> users = usermanager.getSuccessEmailSendersForConfig(transportDetails.getconfigId());
+		    List<utUser> users = usermanager.getSuccessEmailSendersForConfig(transportDetails.getconfigId());
 
 		    List<configurationConnection> connections = configurationmanager.getConnectionsByTargetConfiguration(transportDetails.getconfigId());
 
@@ -265,14 +265,14 @@ public class restfulManager {
 
 			if (users != null || receivingusers != null) {
 
-			    // Get the configuration details
-			    configuration configDetails = configurationmanager.getConfigurationById(transportDetails.getconfigId());
+			    // Get the utConfiguration details
+			    utConfiguration configDetails = configurationmanager.getConfigurationById(transportDetails.getconfigId());
 
 			    String message = "";
 
 			    if (configDetails != null) {
-				//Get the sending org configuration details
-				configuration sendingConfigDetails = configurationmanager.getConfigurationById(connections.get(0).getsourceConfigId());
+				//Get the sending org utConfiguration details
+				utConfiguration sendingConfigDetails = configurationmanager.getConfigurationById(connections.get(0).getsourceConfigId());
 
 				String sendingOrgName = "";
 
@@ -312,7 +312,7 @@ public class restfulManager {
 				    Integer firstUserId = receivingusers.get(0).getId();
 
 				    if (receivingusers.size() > 1) {
-					for (User user : receivingusers) {
+					for (utUser user : receivingusers) {
 					    if (!firstUserId.equals(user.getId())) {
 						ccAddresses.add(user.getEmail());
 					    }
@@ -359,7 +359,7 @@ public class restfulManager {
 				    Integer firstUserId = users.get(0).getId();
 
 				    if (users.size() > 1) {
-					for (User user : users) {
+					for (utUser user : users) {
 					    if (!firstUserId.equals(user.getId())) {
 						ccAddresses.add(user.getEmail());
 					    }
@@ -601,10 +601,10 @@ public class restfulManager {
 	    if (sendEmail) {
 		try {
 		    //Check to see if we need to send out an email that the message was sent.
-		    List<User> receivingusers = usermanager.getSuccessEmailReceiversForConfig(transportDetails.getconfigId());
+		    List<utUser> receivingusers = usermanager.getSuccessEmailReceiversForConfig(transportDetails.getconfigId());
 
 		    //Check to see if we need to send out an email that the message was sent.
-		    List<User> users = usermanager.getSuccessEmailSendersForConfig(transportDetails.getconfigId());
+		    List<utUser> users = usermanager.getSuccessEmailSendersForConfig(transportDetails.getconfigId());
 
 		    List<configurationConnection> connections = configurationmanager.getConnectionsByTargetConfiguration(transportDetails.getconfigId());
 
@@ -612,14 +612,14 @@ public class restfulManager {
 
 			if (users != null || receivingusers != null) {
 
-			    // Get the configuration details
-			    configuration configDetails = configurationmanager.getConfigurationById(transportDetails.getconfigId());
+			    // Get the utConfiguration details
+			    utConfiguration configDetails = configurationmanager.getConfigurationById(transportDetails.getconfigId());
 
 			    String message = "";
 
 			    if (configDetails != null) {
-				//Get the sending org configuration details
-				configuration sendingConfigDetails = configurationmanager.getConfigurationById(connections.get(0).getsourceConfigId());
+				//Get the sending org utConfiguration details
+				utConfiguration sendingConfigDetails = configurationmanager.getConfigurationById(connections.get(0).getsourceConfigId());
 
 				String sendingOrgName = "";
 
@@ -659,7 +659,7 @@ public class restfulManager {
 				    Integer firstUserId = receivingusers.get(0).getId();
 
 				    if (receivingusers.size() > 1) {
-					for (User user : receivingusers) {
+					for (utUser user : receivingusers) {
 					    if (!firstUserId.equals(user.getId())) {
 						ccAddresses.add(user.getEmail());
 					    }
@@ -706,7 +706,7 @@ public class restfulManager {
 				    Integer firstUserId = users.get(0).getId();
 
 				    if (users.size() > 1) {
-					for (User user : users) {
+					for (utUser user : users) {
 					    if (!firstUserId.equals(user.getId())) {
 						ccAddresses.add(user.getEmail());
 					    }
@@ -902,10 +902,10 @@ public class restfulManager {
 	    if (sendEmail) {
 		try {
 		    //Check to see if we need to send out an email that the message was sent.
-		    List<User> receivingusers = usermanager.getSuccessEmailReceiversForConfig(transportDetails.getconfigId());
+		    List<utUser> receivingusers = usermanager.getSuccessEmailReceiversForConfig(transportDetails.getconfigId());
 
 		    //Check to see if we need to send out an email that the message was sent.
-		    List<User> users = usermanager.getSuccessEmailSendersForConfig(transportDetails.getconfigId());
+		    List<utUser> users = usermanager.getSuccessEmailSendersForConfig(transportDetails.getconfigId());
 
 		    List<configurationConnection> connections = configurationmanager.getConnectionsByTargetConfiguration(transportDetails.getconfigId());
 
@@ -913,14 +913,14 @@ public class restfulManager {
 
 			if (users != null || receivingusers != null) {
 
-			    // Get the configuration details
-			    configuration configDetails = configurationmanager.getConfigurationById(transportDetails.getconfigId());
+			    // Get the utConfiguration details
+			    utConfiguration configDetails = configurationmanager.getConfigurationById(transportDetails.getconfigId());
 
 			    String message = "";
 
 			    if (configDetails != null) {
-				//Get the sending org configuration details
-				configuration sendingConfigDetails = configurationmanager.getConfigurationById(connections.get(0).getsourceConfigId());
+				//Get the sending org utConfiguration details
+				utConfiguration sendingConfigDetails = configurationmanager.getConfigurationById(connections.get(0).getsourceConfigId());
 
 				String sendingOrgName = "";
 
@@ -960,7 +960,7 @@ public class restfulManager {
 				    Integer firstUserId = receivingusers.get(0).getId();
 
 				    if (receivingusers.size() > 1) {
-					for (User user : receivingusers) {
+					for (utUser user : receivingusers) {
 					    if (!firstUserId.equals(user.getId())) {
 						ccAddresses.add(user.getEmail());
 					    }
@@ -1007,7 +1007,7 @@ public class restfulManager {
 				    Integer firstUserId = users.get(0).getId();
 
 				    if (users.size() > 1) {
-					for (User user : users) {
+					for (utUser user : users) {
 					    if (!firstUserId.equals(user.getId())) {
 						ccAddresses.add(user.getEmail());
 					    }

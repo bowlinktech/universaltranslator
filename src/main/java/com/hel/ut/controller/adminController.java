@@ -12,9 +12,9 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.servlet.ModelAndView;
 
 import com.hel.ut.model.Organization;
-import com.hel.ut.model.User;
+import com.hel.ut.model.utUser;
 import com.hel.ut.model.messageType;
-import com.hel.ut.model.configuration;
+import com.hel.ut.model.utConfiguration;
 import com.hel.ut.model.configurationConnection;
 import com.hel.ut.model.configurationTransport;
 import com.hel.ut.model.custom.searchParameters;
@@ -122,7 +122,7 @@ public class adminController {
     @RequestMapping(value = "/administratorOld", method = RequestMethod.GET)
     public ModelAndView listConfigurations(HttpServletRequest request, HttpServletResponse response, HttpSession session, RedirectAttributes redirectAttr) throws Exception {
 
-        User userInfo = (User) session.getAttribute("userDetails");
+        utUser userInfo = (utUser) session.getAttribute("userDetails");
 
         if (userInfo.getRoleId() == 3 || userInfo.getRoleId() == 4) {
 
@@ -155,7 +155,7 @@ public class adminController {
             mav.addObject("totalConfigs", totalConfigs);
 
             //Return the latest configurations
-            List<configuration> configurations = configurationmanager.getLatestConfigurations(maxResults);
+            List<utConfiguration> configurations = configurationmanager.getLatestConfigurations(maxResults);
             mav.addObject("latestConfigs", configurations);
 
             /* Get system inbound summary */
@@ -166,7 +166,7 @@ public class adminController {
             messageType messagetype;
             configurationTransport transportDetails;
 
-            for (configuration config : configurations) {
+            for (utConfiguration config : configurations) {
                 org = organizationManager.getOrganizationById(config.getorgId());
                 config.setOrgName(org.getOrgName());
 
@@ -182,11 +182,11 @@ public class adminController {
             /* get a list of all connections in the sysetm */
             List<configurationConnection> connections = configurationmanager.getLatestConnections(maxResults);
 
-            /* Loop over the connections to get the configuration details */
+            /* Loop over the connections to get the utConfiguration details */
             if (connections != null) {
                 for (configurationConnection connection : connections) {
 
-                    configuration srcconfigDetails = configurationmanager.getConfigurationById(connection.getsourceConfigId());
+                    utConfiguration srcconfigDetails = configurationmanager.getConfigurationById(connection.getsourceConfigId());
                     configurationTransport srctransportDetails = configurationTransportManager.getTransportDetails(srcconfigDetails.getId());
 
                     srcconfigDetails.setOrgName(organizationManager.getOrganizationById(srcconfigDetails.getorgId()).getOrgName());
@@ -200,7 +200,7 @@ public class adminController {
 
                     connection.setsrcConfigDetails(srcconfigDetails);
 
-                    configuration tgtconfigDetails = configurationmanager.getConfigurationById(connection.gettargetConfigId());
+                    utConfiguration tgtconfigDetails = configurationmanager.getConfigurationById(connection.gettargetConfigId());
                     configurationTransport tgttransportDetails = configurationTransportManager.getTransportDetails(tgtconfigDetails.getId());
 
                     tgtconfigDetails.setOrgName(organizationManager.getOrganizationById(tgtconfigDetails.getorgId()).getOrgName());
@@ -312,9 +312,9 @@ public class adminController {
     }
 
     /**
-     * The '/editWatchEntry' function will handle displaying the edit configuration connection screen.
+     * The '/editWatchEntry' function will handle displaying the edit utConfiguration connection screen.
      *
-     * @param connectionId The id of the clicked configuration connection
+     * @param connectionId The id of the clicked utConfiguration connection
      *
      * @return This function will display the edit connection overlay
      */

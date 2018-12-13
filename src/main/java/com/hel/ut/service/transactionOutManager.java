@@ -9,7 +9,7 @@ import com.hel.ut.model.Transaction;
 import com.hel.ut.model.batchDLRetry;
 import com.hel.ut.model.batchDownloads;
 import com.hel.ut.model.batchUploads;
-import com.hel.ut.model.configuration;
+import com.hel.ut.model.utConfiguration;
 import com.hel.ut.model.configurationFormFields;
 import com.hel.ut.model.configurationTransport;
 import com.hel.ut.model.pendingDeliveryTargets;
@@ -62,7 +62,7 @@ public interface transactionOutManager {
 
     Integer writeOutputToTextFile(configurationTransport transportDetails, Integer batchUploadId, String filePathAndName, String fieldNos) throws Exception;
 
-    String generateDLBatchName(configurationTransport transportDetails, configuration configDetails, batchUploads batchUploadDetails, Date date) throws Exception;
+    String generateDLBatchName(configurationTransport transportDetails, utConfiguration configDetails, batchUploads batchUploadDetails, Date date) throws Exception;
 
     List<ConfigOutboundForInsert> setConfigOutboundForInsert(int configId, int batchDownloadId) throws Exception;
 

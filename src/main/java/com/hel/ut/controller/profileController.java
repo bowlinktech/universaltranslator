@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 
-import com.hel.ut.model.User;
+import com.hel.ut.model.utUser;
 import com.hel.ut.service.userManager;
 
 /**
@@ -54,7 +54,7 @@ public class profileController {
     ModelAndView settings(Authentication authentication) throws Exception {
         
         ModelAndView mav = new ModelAndView();
-        User userDetails = usermanager.getUserByUserName(authentication.getName());
+        utUser userDetails = usermanager.getUserByUserName(authentication.getName());
         mav.addObject("btnValue", "Update");
         mav.addObject("userdetails", userDetails);
         mav.setViewName("/profile/details");
@@ -65,17 +65,17 @@ public class profileController {
     
     @RequestMapping(value = "/settings", method = {RequestMethod.POST})
     public @ResponseBody
-    ModelAndView updateSettings(HttpServletRequest request,@Valid @ModelAttribute(value = "userdetails") User userdetails, 
+    ModelAndView updateSettings(HttpServletRequest request,@Valid @ModelAttribute(value = "userdetails") utUser userdetails, 
     		Authentication authentication, BindingResult result) throws Exception {
         
         ModelAndView mav = new ModelAndView();
         mav.setViewName("/profile/details");
         
-        User currentUser = usermanager.getUserByUserName(authentication.getName());
+        utUser currentUser = usermanager.getUserByUserName(authentication.getName());
         boolean okToChangeUserName = false;
         /** check user name**/
         if (!currentUser.getUsername().trim().equals(userdetails.getUsername().trim())) {
-            User existing = usermanager.getUserByUserName(userdetails.getUsername());
+            utUser existing = usermanager.getUserByUserName(userdetails.getUsername());
             if (existing != null) {
                 mav.setViewName("/profile/details");
                 mav.addObject("btnValue", "Update");

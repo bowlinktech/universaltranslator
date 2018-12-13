@@ -39,8 +39,8 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
         final String password = authentication.getCredentials().toString();
         String loginUser = name;
 
-        com.hel.ut.model.User user = usermanager.getUserByUserName(name);
-        com.hel.ut.model.User loginUserInfo = user;
+        com.hel.ut.model.utUser user = usermanager.getUserByUserName(name);
+        com.hel.ut.model.utUser loginUserInfo = user;
 
         if (user == null) {
             throw new BadCredentialsException(strErrorMessage);

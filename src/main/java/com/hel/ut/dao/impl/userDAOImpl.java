@@ -10,12 +10,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import com.hel.ut.dao.userDAO;
-import com.hel.ut.model.User;
-import com.hel.ut.model.UserActivity;
-import com.hel.ut.model.configuration;
+import com.hel.ut.model.utUser;
+import com.hel.ut.model.utUserActivity;
+import com.hel.ut.model.utConfiguration;
 import com.hel.ut.model.configurationConnection;
 import com.hel.ut.model.configurationConnectionSenders;
-import com.hel.ut.model.userLogin;
+import com.hel.ut.model.utUserLogin;
 import java.util.ArrayList;
 import java.util.Date;
 import org.hibernate.type.StandardBasicTypes;
@@ -45,7 +45,7 @@ public class userDAOImpl implements userDAO {
      */
     @Override
     @Transactional(readOnly = false)
-    public Integer createUser(User user) {
+    public Integer createUser(utUser user) {
         Integer lastId = null;
 
         lastId = (Integer) sessionFactory.getCurrentSession().save(user);
@@ -63,7 +63,7 @@ public class userDAOImpl implements userDAO {
      */
     @Override
     @Transactional(readOnly = false)
-    public void updateUser(User user) {
+    public void updateUser(utUser user) {
         sessionFactory.getCurrentSession().update(user);
     }
 
@@ -76,8 +76,8 @@ public class userDAOImpl implements userDAO {
      */
     @Override
     @Transactional(readOnly = true)
-    public User getUserById(int userId) {
-        return (User) sessionFactory.getCurrentSession().get(User.class, userId);
+    public utUser getUserById(int userId) {
+        return (utUser) sessionFactory.getCurrentSession().get(utUser.class, userId);
     }
 
     /**
@@ -89,16 +89,16 @@ public class userDAOImpl implements userDAO {
      */
     @Override
     @Transactional(readOnly = true)
-    public List<User> getUsersByOrganization(int orgId) {
+    public List<utUser> getUsersByOrganization(int orgId) {
 
         List<Integer> OrgIds = new ArrayList<Integer>();
         OrgIds.add(orgId);
 
-        Criteria users = sessionFactory.getCurrentSession().createCriteria(User.class);
+        Criteria users = sessionFactory.getCurrentSession().createCriteria(utUser.class);
         users.add(Restrictions.eq("status", true));
         users.add(Restrictions.in("orgId", OrgIds));
 
-        List<User> userList = users.list();
+        List<utUser> userList = users.list();
 
         return userList;
 
@@ -113,11 +113,11 @@ public class userDAOImpl implements userDAO {
      */
     @Override
     @Transactional(readOnly = true)
-    public User getUserByUserName(String username) {
-        Criteria criteria = sessionFactory.getCurrentSession().createCriteria(User.class);
+    public utUser getUserByUserName(String username) {
+        Criteria criteria = sessionFactory.getCurrentSession().createCriteria(utUser.class);
         criteria.add(Restrictions.eq("username", username));
 	
-        return (User) criteria.uniqueResult();
+        return (utUser) criteria.uniqueResult();
     }
 
     /**
@@ -169,7 +169,7 @@ public class userDAOImpl implements userDAO {
     @Override
     @SuppressWarnings("unchecked")
     @Transactional(readOnly = true)
-    public List<User> getOrganizationContact(int orgId, int mainContact) {
+    public List<utUser> getOrganizationContact(int orgId, int mainContact) {
         Query query = sessionFactory.getCurrentSession().createQuery("from User where orgId = :orgId and mainContact = :mainContact");
         query.setParameter("orgId", orgId);
         query.setParameter("mainContact", mainContact);
@@ -213,7 +213,7 @@ public class userDAOImpl implements userDAO {
      */
     @Override
     @Transactional(readOnly = true)
-    public User getUserByResetCode(String resetCode) {
+    public utUser getUserByResetCode(String resetCode) {
 
         Query query = sessionFactory.getCurrentSession().createQuery("from User where resetCode = :resetCode");
         query.setParameter("resetCode", resetCode);
@@ -224,7 +224,7 @@ public class userDAOImpl implements userDAO {
             if (query.uniqueResult() == null) {
                 return null;
             } else {
-                return (User) query.uniqueResult();
+                return (utUser) query.uniqueResult();
             }
         }
     }
@@ -237,7 +237,7 @@ public class userDAOImpl implements userDAO {
      */
     @Override
     @Transactional(readOnly = false)
-    public void insertUserLog(UserActivity userActivity) {
+    public void insertUserLog(utUserActivity userActivity) {
         try {
             sessionFactory.getCurrentSession().save(userActivity);
         } catch (Exception ex) {
@@ -249,11 +249,11 @@ public class userDAOImpl implements userDAO {
     @Override
     @Transactional(readOnly = true)
     @SuppressWarnings("unchecked")
-    public UserActivity getUAById(Integer uaId) {
+    public utUserActivity getUAById(Integer uaId) {
         try {
-            Query query = sessionFactory.getCurrentSession().createSQLQuery("select * from userActivity where id = :uaId").setResultTransformer(Transformers.aliasToBean(UserActivity.class));
+            Query query = sessionFactory.getCurrentSession().createSQLQuery("select * from userActivity where id = :uaId").setResultTransformer(Transformers.aliasToBean(utUserActivity.class));
             query.setParameter("uaId", uaId);
-            List<UserActivity> uaList = query.list();
+            List<utUserActivity> uaList = query.list();
             if (uaList.size() > 0) {
                 return uaList.get(0);
             }
@@ -267,11 +267,11 @@ public class userDAOImpl implements userDAO {
     @Override
     @SuppressWarnings("unchecked")
     @Transactional(readOnly = true)
-    public List<User> getUserByTypeByOrganization(int orgId) {
+    public List<utUser> getUserByTypeByOrganization(int orgId) {
         try {
             Query query = sessionFactory.getCurrentSession().createQuery("from User where orgId = :orgId and status = 1 order by userType");
             query.setParameter("orgId", orgId);
-            List<User> users = query.list();
+            List<utUser> users = query.list();
             return users;
         } catch (Exception ex) {
             System.err.println("getUserByTypeByOrganization " + ex.getCause());
@@ -283,17 +283,16 @@ public class userDAOImpl implements userDAO {
     @Override
     @SuppressWarnings("unchecked")
     @Transactional(readOnly = true)
-    public List<User> getSendersForConfig(List<Integer> configIds) {
+    public List<utUser> getSendersForConfig(List<Integer> configIds) {
         try {
             String sql = ("select * from users where status = 1 and id in (select userId from configurationconnectionsenders where connectionId in "
                     + " (select id from configurationconnections "
                     + " where sourceConfigId in ( :configId))) order by userType;");
 
-            Query query = sessionFactory.getCurrentSession().createSQLQuery(sql).setResultTransformer(
-                    Transformers.aliasToBean(User.class));
+            Query query = sessionFactory.getCurrentSession().createSQLQuery(sql).setResultTransformer(Transformers.aliasToBean(utUser.class));
             query.setParameterList("configId", configIds);
 
-            List<User> users = query.list();
+            List<utUser> users = query.list();
 
             return users;
 
@@ -307,17 +306,16 @@ public class userDAOImpl implements userDAO {
     @Override
     @SuppressWarnings("unchecked")
     @Transactional(readOnly = true)
-    public List<User> getOrgUsersForConfig(List<Integer> configIds) {
+    public List<utUser> getOrgUsersForConfig(List<Integer> configIds) {
         try {
             String sql = ("select * from users where status = 1 and orgId in (select orgId from configurations where id "
                     + " in ( :configId ) "
                     + " and status = 1) order by userType;");
 
-            Query query = sessionFactory.getCurrentSession().createSQLQuery(sql).setResultTransformer(
-                    Transformers.aliasToBean(User.class));
+            Query query = sessionFactory.getCurrentSession().createSQLQuery(sql).setResultTransformer(Transformers.aliasToBean(utUser.class));
             query.setParameterList("configId", configIds);
 
-            List<User> users = query.list();
+            List<utUser> users = query.list();
 
             return users;
 
@@ -331,16 +329,15 @@ public class userDAOImpl implements userDAO {
     @Override
     @SuppressWarnings("unchecked")
     @Transactional(readOnly = true)
-    public List<User> getUserConnectionListSending(Integer configId) {
+    public List<utUser> getUserConnectionListSending(Integer configId) {
         try {
             String sql = ("select * from users where status = 1 and Id in (select userId from configurationconnectionsenders where sendEmailAlert = 1 and connectionId "
                     + " in (select id from configurationconnections where sourceConfigId = :configId))");
 
-            Query query = sessionFactory.getCurrentSession().createSQLQuery(sql).setResultTransformer(
-                    Transformers.aliasToBean(User.class));
+            Query query = sessionFactory.getCurrentSession().createSQLQuery(sql).setResultTransformer(Transformers.aliasToBean(utUser.class));
             query.setParameter("configId", configId);
 
-            List<User> users = query.list();
+            List<utUser> users = query.list();
 
             return users;
 
@@ -354,16 +351,15 @@ public class userDAOImpl implements userDAO {
     @Override
     @SuppressWarnings("unchecked")
     @Transactional(readOnly = true)
-    public List<User> getUserConnectionListReceiving(Integer configId) {
+    public List<utUser> getUserConnectionListReceiving(Integer configId) {
         try {
             String sql = ("select * from users where status = 1 and Id in (select userId from configurationconnectionreceivers where sendEmailAlert = 1 and connectionId "
                     + " in (select id from configurationconnections where targetConfigId = :configId))");
 
-            Query query = sessionFactory.getCurrentSession().createSQLQuery(sql).setResultTransformer(
-                    Transformers.aliasToBean(User.class));
+            Query query = sessionFactory.getCurrentSession().createSQLQuery(sql).setResultTransformer(Transformers.aliasToBean(utUser.class));
             query.setParameter("configId", configId);
 
-            List<User> users = query.list();
+            List<utUser> users = query.list();
 
             return users;
 
@@ -377,16 +373,16 @@ public class userDAOImpl implements userDAO {
     @Override
     @SuppressWarnings("unchecked")
     @Transactional(readOnly = true)
-    public List<User> getAllUsers() {
+    public List<utUser> getAllUsers() {
         Query query = sessionFactory.getCurrentSession().createQuery("from User");
 
-        List<User> userList = query.list();
+        List<utUser> userList = query.list();
         return userList;
     }
 
     @Override
     @Transactional(readOnly = true)
-    public void updateUserActivity(UserActivity userActivity) {
+    public void updateUserActivity(utUserActivity userActivity) {
         try {
             sessionFactory.getCurrentSession().update(userActivity);
         } catch (Exception ex) {
@@ -399,7 +395,7 @@ public class userDAOImpl implements userDAO {
     @Override
     @SuppressWarnings("unchecked")
     @Transactional(readOnly = true)
-    public List<String> getUserRoles(User user) {
+    public List<String> getUserRoles(utUser user) {
         try {
             String sql = ("select r.role from users u inner join userRoles r on u.roleId = r.id where u.status = 1 and u.username = :userName");
 
@@ -418,14 +414,14 @@ public class userDAOImpl implements userDAO {
 
     @Override
     @Transactional(readOnly = false)
-    public void updateUserOnly(User user) throws Exception {
+    public void updateUserOnly(utUser user) throws Exception {
         sessionFactory.getCurrentSession().update(user);
     }
 
     @Override
     @SuppressWarnings("unchecked")
     @Transactional(readOnly = true)
-    public List<User> getUsersByStatuRolesAndOrg(boolean status, List<Integer> rolesToExclude, List<Integer> orgs, boolean include) throws Exception {
+    public List<utUser> getUsersByStatuRolesAndOrg(boolean status, List<Integer> rolesToExclude, List<Integer> orgs, boolean include) throws Exception {
         String sql = ("select users.*, orgName from users, organizations "
                 + " where users.status = :status and users.orgId = organizations.id");
 
@@ -440,8 +436,7 @@ public class userDAOImpl implements userDAO {
             sql = sql + " in (:orgs)";
         }
         sql = sql + " order by orgName, username";
-        Query query = sessionFactory.getCurrentSession().createSQLQuery(sql).setResultTransformer(
-                Transformers.aliasToBean(User.class));
+        Query query = sessionFactory.getCurrentSession().createSQLQuery(sql).setResultTransformer(Transformers.aliasToBean(utUser.class));
         query.setParameter("status", status);
         if (!rolesToExclude.isEmpty()) {
             query.setParameterList("rolesToExclude", rolesToExclude);
@@ -450,7 +445,7 @@ public class userDAOImpl implements userDAO {
             query.setParameterList("orgs", orgs);
         }
 
-        List<User> users = query.list();
+        List<utUser> users = query.list();
 
         return users;
     }
@@ -470,9 +465,9 @@ public class userDAOImpl implements userDAO {
                 configurationConnection connectionInfo = (configurationConnection) connection.uniqueResult();
 
                 /* Get the list of target orgs */
-                Criteria targetconfigurationQuery = sessionFactory.getCurrentSession().createCriteria(configuration.class);
+                Criteria targetconfigurationQuery = sessionFactory.getCurrentSession().createCriteria(utConfiguration.class);
                 targetconfigurationQuery.add(Restrictions.eq("id", connectionInfo.gettargetConfigId()));
-                configuration targetconfigDetails = (configuration) targetconfigurationQuery.uniqueResult();
+                utConfiguration targetconfigDetails = (utConfiguration) targetconfigurationQuery.uniqueResult();
 
                 /* Add the target org to the target organization list */
                 orgList.add(targetconfigDetails.getorgId());
@@ -497,10 +492,10 @@ public class userDAOImpl implements userDAO {
 
                 configurationConnection connectionInfo = (configurationConnection) connection.uniqueResult();
 
-                /* Get the message type for the configuration */
-                Criteria sourceconfigurationQuery = sessionFactory.getCurrentSession().createCriteria(configuration.class);
+                /* Get the message type for the utConfiguration */
+                Criteria sourceconfigurationQuery = sessionFactory.getCurrentSession().createCriteria(utConfiguration.class);
                 sourceconfigurationQuery.add(Restrictions.eq("id", connectionInfo.getsourceConfigId()));
-                configuration configDetails = (configuration) sourceconfigurationQuery.uniqueResult();
+                utConfiguration configDetails = (utConfiguration) sourceconfigurationQuery.uniqueResult();
 
                 /* Add the message type to the message type list */
                 messageTypeList.add(configDetails.getMessageTypeId());
@@ -529,10 +524,10 @@ public class userDAOImpl implements userDAO {
 	Query query = sessionFactory.getCurrentSession().createQuery("from userLogin where userId = :userId order by id desc");
         query.setParameter("userId", userId);
 	
-	List<userLogin> logins = query.list();
+	List<utUserLogin> logins = query.list();
 	
 	if(logins != null) {
-	    userLogin lastLogin = (userLogin) logins.get(0);
+	    utUserLogin lastLogin = (utUserLogin) logins.get(0);
 	    lastLogin.setDateLoggedOut(new Date());
 	    sessionFactory.getCurrentSession().saveOrUpdate(lastLogin);
 	}
@@ -547,7 +542,7 @@ public class userDAOImpl implements userDAO {
      */
     @Override
     @Transactional(readOnly = true)
-    public List<User> getUsersByOrganizationWithLogins(int orgId) {
+    public List<utUser> getUsersByOrganizationWithLogins(int orgId) {
 
         List<Integer> OrgIds = new ArrayList<Integer>();
         OrgIds.add(orgId);
@@ -568,9 +563,9 @@ public class userDAOImpl implements userDAO {
                 .addScalar("totalTimeLoggedIn", StandardBasicTypes.INTEGER)
                 .addScalar("totalLogins", StandardBasicTypes.INTEGER)
 		.addScalar("roleType", StandardBasicTypes.STRING)
-		.setResultTransformer(Transformers.aliasToBean(User.class));
+		.setResultTransformer(Transformers.aliasToBean(utUser.class));
 
-        List<User> userList = query.list();
+        List<utUser> userList = query.list();
 
         return userList;
 
@@ -585,7 +580,7 @@ public class userDAOImpl implements userDAO {
      */
     @Override
     @Transactional(readOnly = true)
-    public List<userLogin> getUserLogins(int userId) {
+    public List<utUserLogin> getUserLogins(int userId) {
 
 	String sql = "select dateCreated,IFNULL(TIMESTAMPDIFF(MINUTE,dateCreated,dateLoggedOut),0) as totalTimeLoggedIn " 
 		+ "from rel_userlogins " 
@@ -595,9 +590,9 @@ public class userDAOImpl implements userDAO {
 	 Query query = sessionFactory.getCurrentSession().createSQLQuery(sql)
 		.addScalar("dateCreated", StandardBasicTypes.TIMESTAMP)
                 .addScalar("totalTimeLoggedIn", StandardBasicTypes.INTEGER)
-		.setResultTransformer(Transformers.aliasToBean(userLogin.class));
+		.setResultTransformer(Transformers.aliasToBean(utUserLogin.class));
 
-        List<userLogin> userLogins = query.list();
+        List<utUserLogin> userLogins = query.list();
 
         return userLogins;
 
@@ -612,16 +607,16 @@ public class userDAOImpl implements userDAO {
      */
     @Override
     @Transactional(readOnly = true)
-    public List<User> getAllUsersByOrganization(int orgId) {
+    public List<utUser> getAllUsersByOrganization(int orgId) {
 
         List<Integer> OrgIds = new ArrayList<Integer>();
         OrgIds.add(orgId);
 
 
-        Criteria users = sessionFactory.getCurrentSession().createCriteria(User.class);
+        Criteria users = sessionFactory.getCurrentSession().createCriteria(utUser.class);
         users.add(Restrictions.in("orgId", OrgIds));
 
-        List<User> userList = users.list();
+        List<utUser> userList = users.list();
 
         return userList;
 
@@ -636,17 +631,16 @@ public class userDAOImpl implements userDAO {
      */
     @Override
     @Transactional(readOnly = true)
-    public List<User> getSuccessEmailSendersForConfig(Integer targetConfigId) {
+    public List<utUser> getSuccessEmailSendersForConfig(Integer targetConfigId) {
         try {
             String sql = ("select * from users where status = 1 and id in (select userId from configurationconnectionreceivers where sendEmailAlert = 1 and connectionId in "
                     + " (select id from configurationconnections "
                     + " where targetConfigId = :targetConfigId)) order by userType;");
 
-            Query query = sessionFactory.getCurrentSession().createSQLQuery(sql).setResultTransformer(
-                    Transformers.aliasToBean(User.class));
+            Query query = sessionFactory.getCurrentSession().createSQLQuery(sql).setResultTransformer(Transformers.aliasToBean(utUser.class));
            query.setParameter("targetConfigId", targetConfigId);
                    
-           List<User> users = query.list();
+           List<utUser> users = query.list();
 
            return users;
 
@@ -666,17 +660,16 @@ public class userDAOImpl implements userDAO {
      */
     @Override
     @Transactional(readOnly = true)
-    public List<User> getSuccessEmailReceiversForConfig(Integer targetConfigId) {
+    public List<utUser> getSuccessEmailReceiversForConfig(Integer targetConfigId) {
         try {
             String sql = ("select * from users where status = 1 and id in (select userId from configurationconnectionsenders where sendEmailAlert = 1 and connectionId in "
                     + " (select id from configurationconnections "
                     + " where targetConfigId = :targetConfigId)) order by userType;");
 
-            Query query = sessionFactory.getCurrentSession().createSQLQuery(sql).setResultTransformer(
-                    Transformers.aliasToBean(User.class));
+            Query query = sessionFactory.getCurrentSession().createSQLQuery(sql).setResultTransformer(Transformers.aliasToBean(utUser.class));
            query.setParameter("targetConfigId", targetConfigId);
                    
-           List<User> users = query.list();
+           List<utUser> users = query.list();
 
            return users;
 

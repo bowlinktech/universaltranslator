@@ -14,7 +14,7 @@ import com.hel.ut.model.HL7Elements;
 import com.hel.ut.model.HL7Segments;
 import com.hel.ut.model.Macros;
 import com.hel.ut.model.Organization;
-import com.hel.ut.model.configuration;
+import com.hel.ut.model.utConfiguration;
 import com.hel.ut.model.configurationCCDElements;
 import com.hel.ut.model.configurationConnection;
 import com.hel.ut.model.configurationConnectionReceivers;
@@ -51,43 +51,43 @@ public class configurationManagerImpl implements configurationManager {
     private organizationDAO organizationDAO;
 
     @Override
-    public Integer createConfiguration(configuration configuration) {
+    public Integer createConfiguration(utConfiguration configuration) {
 	configuration.setstepsCompleted(1);
 	return configurationDAO.createConfiguration(configuration);
     }
 
     @Override
-    public void updateConfiguration(configuration configuration) {
+    public void updateConfiguration(utConfiguration configuration) {
 	configurationDAO.updateConfiguration(configuration);
     }
 
     @Override
-    public configuration getConfigurationById(int configId) {
+    public utConfiguration getConfigurationById(int configId) {
 	return configurationDAO.getConfigurationById(configId);
     }
 
     @Override
-    public List<configuration> getConfigurationsByOrgId(int configId, String searchTerm) {
+    public List<utConfiguration> getConfigurationsByOrgId(int configId, String searchTerm) {
 	return configurationDAO.getConfigurationsByOrgId(configId, searchTerm);
     }
 
     @Override
-    public List<configuration> getActiveConfigurationsByOrgId(int configId) {
+    public List<utConfiguration> getActiveConfigurationsByOrgId(int configId) {
 	return configurationDAO.getActiveConfigurationsByOrgId(configId);
     }
 
     @Override
-    public configuration getConfigurationByName(String configName, int orgId) {
+    public utConfiguration getConfigurationByName(String configName, int orgId) {
 	return configurationDAO.getConfigurationByName(configName, orgId);
     }
 
     @Override
-    public List<configuration> getConfigurations() {
+    public List<utConfiguration> getConfigurations() {
 	return configurationDAO.getConfigurations();
     }
 
     @Override
-    public List<configuration> getLatestConfigurations(int maxResults) {
+    public List<utConfiguration> getLatestConfigurations(int maxResults) {
 	return configurationDAO.getLatestConfigurations(maxResults);
     }
 
@@ -203,7 +203,7 @@ public class configurationManagerImpl implements configurationManager {
     }
 
     @Override
-    public List<configuration> getActiveConfigurationsByUserId(int userId, int transportMethod) throws Exception {
+    public List<utConfiguration> getActiveConfigurationsByUserId(int userId, int transportMethod) throws Exception {
 	return configurationDAO.getActiveConfigurationsByUserId(userId, transportMethod);
     }
 
@@ -249,7 +249,7 @@ public class configurationManagerImpl implements configurationManager {
 	MultipartFile file = messageSpecs.getFile();
 
 	//Need to get the selected organization clean url
-	configuration configDetails = configurationDAO.getConfigurationById(messageSpecs.getconfigId());
+	utConfiguration configDetails = configurationDAO.getConfigurationById(messageSpecs.getconfigId());
 	Organization orgDetails = organizationDAO.getOrganizationById(configDetails.getorgId());
 	cleanURL = orgDetails.getcleanURL();
 
@@ -363,9 +363,9 @@ public class configurationManagerImpl implements configurationManager {
     }
 
     /**
-     * The 'loadExcelContents' will take the contents of the uploaded excel template file and populate the corresponding configuration form fields table. This function will split up the contents into the appropriate buckets. Buckets (1 - 4) will be separated by spacer rows with in the excel file.
+     * The 'loadExcelContents' will take the contents of the uploaded excel template file and populate the corresponding utConfiguration form fields table. This function will split up the contents into the appropriate buckets. Buckets (1 - 4) will be separated by spacer rows with in the excel file.
      *
-     * @param id value of the latest added configuration
+     * @param id value of the latest added utConfiguration
      * @param fileName	file name of the uploaded excel file.
      * @param dir	the directory of the uploaded file
      *
@@ -503,7 +503,7 @@ public class configurationManagerImpl implements configurationManager {
     }
 
     @Override
-    public List<configuration> getActiveConfigurationsByTransportType(int userId, List<Integer> transportMethods) throws Exception {
+    public List<utConfiguration> getActiveConfigurationsByTransportType(int userId, List<Integer> transportMethods) throws Exception {
 	return configurationDAO.getActiveConfigurationsByTransportType(userId, transportMethods);
     }
 

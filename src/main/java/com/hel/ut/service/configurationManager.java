@@ -8,7 +8,7 @@ import com.hel.ut.model.HL7ElementComponents;
 import com.hel.ut.model.HL7Elements;
 import com.hel.ut.model.HL7Segments;
 import com.hel.ut.model.Macros;
-import com.hel.ut.model.configuration;
+import com.hel.ut.model.utConfiguration;
 import com.hel.ut.model.configurationCCDElements;
 import com.hel.ut.model.configurationConnection;
 import com.hel.ut.model.configurationConnectionReceivers;
@@ -23,21 +23,21 @@ import java.util.Date;
 
 public interface configurationManager {
 
-    Integer createConfiguration(configuration configuration);
+    Integer createConfiguration(utConfiguration configuration);
 
-    void updateConfiguration(configuration configuration);
+    void updateConfiguration(utConfiguration configuration);
 
-    configuration getConfigurationById(int configId);
+    utConfiguration getConfigurationById(int configId);
 
-    List<configuration> getConfigurationsByOrgId(int orgId, String searchTerm);
+    List<utConfiguration> getConfigurationsByOrgId(int orgId, String searchTerm);
 
-    List<configuration> getActiveConfigurationsByOrgId(int orgId);
+    List<utConfiguration> getActiveConfigurationsByOrgId(int orgId);
 
-    configuration getConfigurationByName(String configName, int orgId);
+    utConfiguration getConfigurationByName(String configName, int orgId);
 
-    List<configuration> getConfigurations();
+    List<utConfiguration> getConfigurations();
 
-    List<configuration> getLatestConfigurations(int maxResults);
+    List<utConfiguration> getLatestConfigurations(int maxResults);
 
     Long findTotalConfigs();
 
@@ -88,7 +88,7 @@ public interface configurationManager {
 
     void updateMessageSpecs(configurationMessageSpecs messageSpecs, int transportDetailId, int fileType) throws Exception;
 
-    List<configuration> getActiveConfigurationsByUserId(int userId, int transportMethod) throws Exception;
+    List<utConfiguration> getActiveConfigurationsByUserId(int userId, int transportMethod) throws Exception;
 
     List<configurationConnectionSenders> getConnectionSenders(int connectionId);
 
@@ -151,7 +151,7 @@ public interface configurationManager {
     
     Integer getFieldCrosswalkIdByFieldName (int configId, String fieldName) throws Exception;
     
-    List<configuration> getActiveConfigurationsByTransportType(int userId, List<Integer> transportMethods) throws Exception;
+    List<utConfiguration> getActiveConfigurationsByTransportType(int userId, List<Integer> transportMethods) throws Exception;
     
     @SuppressWarnings("rawtypes")
     List getZipTypes();

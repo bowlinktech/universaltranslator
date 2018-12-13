@@ -27,7 +27,7 @@
     <bean id="viewResolver" class="org.springframework.web.servlet.view.UrlBasedViewResolver">
         <property name="viewClass">
             <value>
-                org.springframework.web.servlet.view.tiles2.TilesView
+                org.springframework.web.servlet.view.tiles3.TilesView
             </value>
         </property>
     </bean>
@@ -52,8 +52,7 @@
     </bean>
 	
     <bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
-        <!-- one of the properties available; the maximum file size in bytes -->
-        <!--<property name="maxUploadSize" value="200000"/>-->
+        <property name="maxUploadSize" value="-1" />
     </bean>
     
     <bean id="mailSender" class="org.springframework.mail.javamail.JavaMailSenderImpl">

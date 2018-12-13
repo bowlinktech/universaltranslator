@@ -87,43 +87,42 @@ public class excelToTxt {
 
 	try {
 
-		FileWriter fw = new FileWriter(newFile);
-    	InputStream is = new FileInputStream(inputFile);
-    	Workbook workbook = StreamingReader.builder()
-    	        .rowCacheSize(100)    // number of rows to keep in memory (defaults to 10)
-    	        .bufferSize(4096)     // buffer size to use when reading InputStream to file (defaults to 1024)
-    	        .open(is);            // InputStream or File for XLSX file (required)
-    
-    	Sheet datatypeSheet = workbook.getSheetAt(0);
-        
-        DataFormatter formatter = new DataFormatter();
-        int  writeRow = 0;
-        
-        for(Row row : datatypeSheet) {
-        	String string = "";
-        	for(int cn=0; cn<row.getLastCellNum(); cn++) {
-     		   // If the cell is missing from the file, generate a blank one
-     	       // (Works by specifying a MissingCellPolicy)
-     	       Cell cell = row.getCell(cn, Row.CREATE_NULL_AS_BLANK);
-     	       String text = formatter.formatCellValue(cell);
-     	       string = string + text.trim() + batch.getDelimChar();
-     	   }
-        	// check to see if row is blank
-        	String stringRemoveEmptyRows = string.replaceAll("(?m)^[ \t]*\r?\n", "");
-        	if (stringRemoveEmptyRows.trim().length() > 0) {
-        		writeRow ++;
-        		if (writeRow == 1) {
-        			 fw.write(stringRemoveEmptyRows);
-        		} else {
-        			fw.write(System.getProperty("line.separator") + stringRemoveEmptyRows);
-        		}
-       		}
-        }
-        
-    	
- 	    workbook.close();
- 	    is.close();
- 	    fw.close();
+	    FileWriter fw = new FileWriter(newFile);
+	    InputStream is = new FileInputStream(inputFile);
+	    Workbook workbook = StreamingReader.builder()
+		    .rowCacheSize(100)    // number of rows to keep in memory (defaults to 10)
+		    .bufferSize(4096)     // buffer size to use when reading InputStream to file (defaults to 1024)
+		    .open(is);            // InputStream or File for XLSX file (required)
+
+	    Sheet datatypeSheet = workbook.getSheetAt(0);
+
+	    DataFormatter formatter = new DataFormatter();
+	    int  writeRow = 0;
+
+	    for(Row row : datatypeSheet) {
+		String string = "";
+		for(int cn=0; cn<row.getLastCellNum(); cn++) {
+		    // If the cell is missing from the file, generate a blank one
+		    // (Works by specifying a MissingCellPolicy)
+		    Cell cell = row.getCell(cn, Row.MissingCellPolicy.RETURN_BLANK_AS_NULL);
+		    String text = formatter.formatCellValue(cell);
+		    string = string + text.trim() + batch.getDelimChar();
+		}
+		// check to see if row is blank
+		String stringRemoveEmptyRows = string.replaceAll("(?m)^[ \t]*\r?\n", "");
+		if (stringRemoveEmptyRows.trim().length() > 0) {
+		    writeRow ++;
+		    if (writeRow == 1) {
+			     fw.write(stringRemoveEmptyRows);
+		    } else {
+			    fw.write(System.getProperty("line.separator") + stringRemoveEmptyRows);
+		    }
+		}
+	    }
+
+	    workbook.close();
+	    is.close();
+	    fw.close();
 
 	} catch (Exception ex) {
 	    ex.printStackTrace();

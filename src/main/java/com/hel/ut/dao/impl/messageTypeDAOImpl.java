@@ -13,7 +13,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import com.hel.ut.dao.messageTypeDAO;
 import com.hel.ut.model.Crosswalks;
-import com.hel.ut.model.configuration;
+import com.hel.ut.model.utConfiguration;
 import com.hel.ut.model.messageType;
 import com.hel.ut.model.messageTypeDataTranslations;
 import com.hel.ut.model.messageTypeFormFields;
@@ -305,7 +305,7 @@ public class messageTypeDAOImpl implements messageTypeDAO {
     }
 
     /**
-     * The 'saveMessageTypeFields' function will save a new message type field. The function will also search for all configurations that is using this message type and add the field as NOT USED in the online form transport method. It would be up to the administrator to go in and mark the field as USED for what ever configuration will be using this new field.
+     * The 'saveMessageTypeFields' function will save a new message type field. The function will also search for all configurations that is using this message type and add the field as NOT USED in the online form transport method. It would be up to the administrator to go in and mark the field as USED for what ever utConfiguration will be using this new field.
      *
      * @Table messageTypeFormFields
      *
@@ -317,13 +317,13 @@ public class messageTypeDAOImpl implements messageTypeDAO {
         Integer lastId = (Integer) sessionFactory.getCurrentSession().save(formField);
 
         //Need to find out all configurations that use this message type and add the new
-        //form field to the online form configuration.
+        //form field to the online form utConfiguration.
         Query query = sessionFactory.getCurrentSession().createQuery("from configuration where messageTypeId = :messageTypeId");
         query.setParameter("messageTypeId", formField.getMessageTypeId());
 
-        List<configuration> configurations = query.list();
+        List<utConfiguration> configurations = query.list();
 
-        for (configuration configuration : configurations) {
+        for (utConfiguration configuration : configurations) {
             //Need to get the transport detail id
             Query transportDetails = sessionFactory.getCurrentSession().createQuery("select id from configurationTransport where configId = :configId");
             transportDetails.setParameter("configId", configuration.getId());

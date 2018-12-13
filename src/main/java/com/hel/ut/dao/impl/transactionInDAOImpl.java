@@ -12,13 +12,13 @@ import com.hel.ut.model.Macros;
 import com.hel.ut.model.MoveFilesLog;
 import com.hel.ut.model.RestAPIMessagesIn;
 import com.hel.ut.model.Transaction;
-import com.hel.ut.model.User;
-import com.hel.ut.model.UserActivity;
+import com.hel.ut.model.utUser;
+import com.hel.ut.model.utUserActivity;
 import com.hel.ut.model.WSMessagesIn;
 import com.hel.ut.model.batchDownloads;
 import com.hel.ut.model.batchRetry;
 import com.hel.ut.model.batchUploads;
-import com.hel.ut.model.configuration;
+import com.hel.ut.model.utConfiguration;
 import com.hel.ut.model.configurationConnection;
 import com.hel.ut.model.configurationConnectionSenders;
 import com.hel.ut.model.configurationDataTranslations;
@@ -127,7 +127,7 @@ public class transactionInDAOImpl implements transactionInDAO {
      * The 'getFieldSelectOptions' function will return a list of values to populate the field select box.
      *
      * @param fieldId The fieldId to search on
-     * @param configId The configuration Id to search on
+     * @param configId The utConfiguration Id to search on
      *
      * @return The function will return a list of select box options
      */
@@ -271,11 +271,11 @@ public class transactionInDAOImpl implements transactionInDAO {
 
 		configurationConnection connectionInfo = (configurationConnection) connection.uniqueResult();
 
-		/* Get the message type for the configuration */
-		Criteria sourceconfigurationQuery = sessionFactory.getCurrentSession().createCriteria(configuration.class);
+		/* Get the message type for the utConfiguration */
+		Criteria sourceconfigurationQuery = sessionFactory.getCurrentSession().createCriteria(utConfiguration.class);
 		sourceconfigurationQuery.add(Restrictions.eq("id", connectionInfo.getsourceConfigId()));
 
-		configuration configDetails = (configuration) sourceconfigurationQuery.uniqueResult();
+		utConfiguration configDetails = (utConfiguration) sourceconfigurationQuery.uniqueResult();
 
 		/* Add the message type to the message type list */
 		if (messageTypeId == 0) {
@@ -285,9 +285,9 @@ public class transactionInDAOImpl implements transactionInDAO {
 		}
 
 		/* Get the list of target orgs */
-		Criteria targetconfigurationQuery = sessionFactory.getCurrentSession().createCriteria(configuration.class);
+		Criteria targetconfigurationQuery = sessionFactory.getCurrentSession().createCriteria(utConfiguration.class);
 		targetconfigurationQuery.add(Restrictions.eq("id", connectionInfo.gettargetConfigId()));
-		configuration targetconfigDetails = (configuration) targetconfigurationQuery.uniqueResult();
+		utConfiguration targetconfigDetails = (utConfiguration) targetconfigurationQuery.uniqueResult();
 
 		/* Add the target org to the target organization list */
 		if (toOrgId == 0) {
@@ -682,10 +682,10 @@ public class transactionInDAOImpl implements transactionInDAO {
 	if (!connections.isEmpty()) {
 
 	    for (configurationConnection connection : connections) {
-		Criteria configurations = sessionFactory.getCurrentSession().createCriteria(configuration.class);
+		Criteria configurations = sessionFactory.getCurrentSession().createCriteria(utConfiguration.class);
 		configurations.add(Restrictions.eq("id", connection.gettargetConfigId()));
 
-		configuration configDetails = (configuration) configurations.uniqueResult();
+		utConfiguration configDetails = (utConfiguration) configurations.uniqueResult();
 
 		if (configDetails.getorgId() == targetorgId) {
 		    connectionId.add(connection.getId());
@@ -1260,7 +1260,7 @@ public class transactionInDAOImpl implements transactionInDAO {
 
     @Override
     @Transactional(readOnly = true)
-    public boolean checkPermissionForBatch(User userInfo, batchUploads batchInfo) {
+    public boolean checkPermissionForBatch(utUser userInfo, batchUploads batchInfo) {
 
 	try {
 	    String sql = ("select count(id) as idCount from configurationConnectionSenders where "
@@ -1330,7 +1330,7 @@ public class transactionInDAOImpl implements transactionInDAO {
     @Override
     @Transactional(readOnly = true)
     @SuppressWarnings("unchecked")
-    public List<UserActivity> getBatchUserActivities(batchUploads batchInfo, boolean foroutboundProcessing) {
+    public List<utUserActivity> getBatchUserActivities(batchUploads batchInfo, boolean foroutboundProcessing) {
 	String batchColName = "batchUploadId";
 	if (foroutboundProcessing) {
 	    batchColName = "batchDownloadId";
@@ -1344,11 +1344,11 @@ public class transactionInDAOImpl implements transactionInDAO {
 	try {
 	    Query query = sessionFactory
 		    .getCurrentSession()
-		    .createSQLQuery(sql).setResultTransformer(Transformers.aliasToBean(UserActivity.class));
+		    .createSQLQuery(sql).setResultTransformer(Transformers.aliasToBean(utUserActivity.class));
 
 	    query.setParameter("batchId", batchInfo.getId());
 
-	    List<UserActivity> uas = query.list();
+	    List<utUserActivity> uas = query.list();
 
 	    return uas;
 
@@ -1936,7 +1936,7 @@ public class transactionInDAOImpl implements transactionInDAO {
     }
 
     /**
-     * The 'clearMultipleTargets' function will remove the multiple targets set for a configuration.
+     * The 'clearMultipleTargets' function will remove the multiple targets set for a utConfiguration.
      *
      * @param batchId
      * @throws Exception

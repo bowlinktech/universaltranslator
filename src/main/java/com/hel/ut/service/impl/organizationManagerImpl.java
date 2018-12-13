@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 import com.hel.ut.dao.organizationDAO;
 import com.hel.ut.model.Organization;
 import com.hel.ut.service.organizationManager;
-import com.hel.ut.model.User;
+import com.hel.ut.model.utUser;
 import com.hel.ut.reference.fileSystem;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -141,7 +141,7 @@ public class organizationManagerImpl implements organizationManager {
     }
 
     @Override
-    public List<User> getOrganizationUsers(int orgId) {
+    public List<utUser> getOrganizationUsers(int orgId) {
         return organizationDAO.getOrganizationUsers(orgId);
     }
 

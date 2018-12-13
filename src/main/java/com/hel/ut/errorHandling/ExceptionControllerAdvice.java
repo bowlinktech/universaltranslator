@@ -5,7 +5,7 @@
  */
 package com.hel.ut.errorHandling;
 
-import com.hel.ut.model.User;
+import com.hel.ut.model.utUser;
 import com.hel.ut.model.mailMessage;
 import com.hel.ut.service.emailMessageManager;
 import com.hel.ut.service.userManager;
@@ -68,7 +68,7 @@ public class ExceptionControllerAdvice {
 
             /* If a user is logged in then send along the user details */
             if (session.getAttribute("userDetails") != null || authentication != null) {
-                User userInfo = (User) session.getAttribute("userDetails");
+                utUser userInfo = (utUser) session.getAttribute("userDetails");
 
                 if (userInfo == null && authentication != null) {
                     // see if it is an admin that is logged in

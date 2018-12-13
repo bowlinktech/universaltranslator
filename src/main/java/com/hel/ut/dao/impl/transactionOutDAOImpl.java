@@ -9,7 +9,7 @@ import com.hel.ut.dao.transactionOutDAO;
 import com.hel.ut.model.RestAPIMessagesOut;
 import com.hel.ut.model.batchDLRetry;
 import com.hel.ut.model.batchDownloads;
-import com.hel.ut.model.configuration;
+import com.hel.ut.model.utConfiguration;
 import com.hel.ut.model.configurationConnection;
 import com.hel.ut.model.configurationConnectionReceivers;
 import com.hel.ut.model.configurationFormFields;
@@ -166,11 +166,11 @@ public class transactionOutDAOImpl implements transactionOutDAO {
 
 		configurationConnection connectionInfo = (configurationConnection) connection.uniqueResult();
 
-		/* Get the message type for the configuration */
-		Criteria targetconfigurationQuery = sessionFactory.getCurrentSession().createCriteria(configuration.class);
+		/* Get the message type for the utConfiguration */
+		Criteria targetconfigurationQuery = sessionFactory.getCurrentSession().createCriteria(utConfiguration.class);
 		targetconfigurationQuery.add(Restrictions.eq("id", connectionInfo.gettargetConfigId()));
 
-		configuration configDetails = (configuration) targetconfigurationQuery.uniqueResult();
+		utConfiguration configDetails = (utConfiguration) targetconfigurationQuery.uniqueResult();
 
 		/* Add the message type to the message type list */
 		if (messageTypeId == 0) {
@@ -183,9 +183,9 @@ public class transactionOutDAOImpl implements transactionOutDAO {
 
 
 		/* Get the list of source orgs */
-		Criteria sourceconfigurationQuery = sessionFactory.getCurrentSession().createCriteria(configuration.class);
+		Criteria sourceconfigurationQuery = sessionFactory.getCurrentSession().createCriteria(utConfiguration.class);
 		sourceconfigurationQuery.add(Restrictions.eq("id", connectionInfo.getsourceConfigId()));
-		configuration sourceconfigDetails = (configuration) sourceconfigurationQuery.uniqueResult();
+		utConfiguration sourceconfigDetails = (utConfiguration) sourceconfigurationQuery.uniqueResult();
 
 		/* Add the target org to the target organization list */
 		if (fromOrgId == 0) {
@@ -390,9 +390,9 @@ public class transactionOutDAOImpl implements transactionOutDAO {
     }
 
     /**
-     * The 'getMaxFieldNo' function will return the max field number for the passed in configuration.
+     * The 'getMaxFieldNo' function will return the max field number for the passed in utConfiguration.
      *
-     * @param configId The id of the configuration to find out how many fields it has
+     * @param configId The id of the utConfiguration to find out how many fields it has
      *
      * @return This function will return the max field number.
      */
@@ -443,11 +443,11 @@ public class transactionOutDAOImpl implements transactionOutDAO {
 
 		configurationConnection connectionInfo = (configurationConnection) connection.uniqueResult();
 
-		/* Get the message type for the configuration */
-		Criteria targetconfigurationQuery = sessionFactory.getCurrentSession().createCriteria(configuration.class);
+		/* Get the message type for the utConfiguration */
+		Criteria targetconfigurationQuery = sessionFactory.getCurrentSession().createCriteria(utConfiguration.class);
 		targetconfigurationQuery.add(Restrictions.eq("id", connectionInfo.gettargetConfigId()));
 
-		configuration configDetails = (configuration) targetconfigurationQuery.uniqueResult();
+		utConfiguration configDetails = (utConfiguration) targetconfigurationQuery.uniqueResult();
 
 		/* Need to make sure only file download configurations are displayed */
 		Criteria transportDetailsQuery = sessionFactory.getCurrentSession().createCriteria(configurationTransport.class);
@@ -465,9 +465,9 @@ public class transactionOutDAOImpl implements transactionOutDAO {
 		}
 
 		/* Get the list of source orgs */
-		Criteria sourceconfigurationQuery = sessionFactory.getCurrentSession().createCriteria(configuration.class);
+		Criteria sourceconfigurationQuery = sessionFactory.getCurrentSession().createCriteria(utConfiguration.class);
 		sourceconfigurationQuery.add(Restrictions.eq("id", connectionInfo.getsourceConfigId()));
-		configuration sourceconfigDetails = (configuration) sourceconfigurationQuery.uniqueResult();
+		utConfiguration sourceconfigDetails = (utConfiguration) sourceconfigurationQuery.uniqueResult();
 
 		/* Add the target org to the target organization list */
 		sourceOrgList.add(sourceconfigDetails.getorgId());
@@ -583,9 +583,9 @@ public class transactionOutDAOImpl implements transactionOutDAO {
     }
 
     /**
-     * The 'targetOutputRunLogs' function will return the latest output run log for the passed in configuration Id
+     * The 'targetOutputRunLogs' function will return the latest output run log for the passed in utConfiguration Id
      *
-     * @param configId = The configuration to find the latest log.
+     * @param configId = The utConfiguration to find the latest log.
      *
      * @return This function will return the latest log
      */
@@ -613,7 +613,7 @@ public class transactionOutDAOImpl implements transactionOutDAO {
 	} 
 	else {
            
-	    //we use configuration info 
+	    //we use utConfiguration info 
 	    //build this sql
 	    sql = "SELECT " + fieldNos + " "
 		+ "FROM transactionTranslatedOut_" + batchDownloadId + " "

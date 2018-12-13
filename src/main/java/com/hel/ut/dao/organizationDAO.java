@@ -3,7 +3,7 @@ package com.hel.ut.dao;
 import java.util.List;
 
 import com.hel.ut.model.Organization;
-import com.hel.ut.model.User;
+import com.hel.ut.model.utUser;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -29,7 +29,7 @@ public interface organizationDAO {
 
     Long findTotalConfigurations(int orgId);
 
-    List<User> getOrganizationUsers(int orgId);
+    List<utUser> getOrganizationUsers(int orgId);
 
     void deleteOrganization(int orgId);
 

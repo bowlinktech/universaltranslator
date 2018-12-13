@@ -11,8 +11,8 @@ import org.springframework.stereotype.Repository;
 
 import com.hel.ut.dao.organizationDAO;
 import com.hel.ut.model.Organization;
-import com.hel.ut.model.User;
-import com.hel.ut.model.configuration;
+import com.hel.ut.model.utUser;
+import com.hel.ut.model.utConfiguration;
 import com.hel.ut.model.configurationConnection;
 import com.hel.ut.reference.fileSystem;
 import java.util.ArrayList;
@@ -236,7 +236,7 @@ public class organizationDAOImpl implements organizationDAO {
     @Override
     @Transactional(readOnly = true)
     @SuppressWarnings("unchecked")
-    public List<User> getOrganizationUsers(int orgId) {
+    public List<utUser> getOrganizationUsers(int orgId) {
 
         Query query = sessionFactory.getCurrentSession().createQuery("from User where orgId = :orgId order by lastName asc, firstName asc");
         query.setParameter("orgId", orgId);
@@ -261,7 +261,7 @@ public class organizationDAOImpl implements organizationDAO {
         Query findUsers = sessionFactory.getCurrentSession().createQuery("from User where orgId = :orgId");
         findUsers.setParameter("orgId", orgId);
 
-        List<User> users = findUsers.list();
+        List<utUser> users = findUsers.list();
 
         if (users.size() > 0) {
             try {
@@ -323,14 +323,14 @@ public class organizationDAOImpl implements organizationDAO {
         /* Get a list of configurations for the passed in org */
         List<Integer> configs = new ArrayList<Integer>();
 
-        Criteria configurations = sessionFactory.getCurrentSession().createCriteria(configuration.class);
+        Criteria configurations = sessionFactory.getCurrentSession().createCriteria(utConfiguration.class);
         configurations.add(Restrictions.eq("orgId", orgId));
-        List<configuration> orgConfigs = configurations.list();
+        List<utConfiguration> orgConfigs = configurations.list();
 
         if (orgConfigs.isEmpty()) {
             configs.add(0);
         } else {
-            for (configuration config : orgConfigs) {
+            for (utConfiguration config : orgConfigs) {
                 configs.add(config.getId());
             }
         }
@@ -351,19 +351,19 @@ public class organizationDAOImpl implements organizationDAO {
         } else {
             for (configurationConnection connection : orgConnections) {
 
-                Criteria getSrcConfigDetails = sessionFactory.getCurrentSession().createCriteria(configuration.class);
+                Criteria getSrcConfigDetails = sessionFactory.getCurrentSession().createCriteria(utConfiguration.class);
                 getSrcConfigDetails.add(Restrictions.eq("id", connection.getsourceConfigId()));
 
-                configuration srcconfigDetails = (configuration) getSrcConfigDetails.uniqueResult();
+                utConfiguration srcconfigDetails = (utConfiguration) getSrcConfigDetails.uniqueResult();
 
                 if (srcconfigDetails.getorgId() != orgId && !targetOrgIds.contains(srcconfigDetails.getorgId())) {
                     targetOrgIds.add(srcconfigDetails.getorgId());
                 }
 
-                Criteria getTgtConfigDetails = sessionFactory.getCurrentSession().createCriteria(configuration.class);
+                Criteria getTgtConfigDetails = sessionFactory.getCurrentSession().createCriteria(utConfiguration.class);
                 getTgtConfigDetails.add(Restrictions.eq("id", connection.gettargetConfigId()));
 
-                configuration TgtconfigDetails = (configuration) getTgtConfigDetails.uniqueResult();
+                utConfiguration TgtconfigDetails = (utConfiguration) getTgtConfigDetails.uniqueResult();
 
                 if (TgtconfigDetails.getorgId() != orgId && !targetOrgIds.contains(TgtconfigDetails.getorgId())) {
                     targetOrgIds.add(TgtconfigDetails.getorgId());

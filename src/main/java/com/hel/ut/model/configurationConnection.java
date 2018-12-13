@@ -25,7 +25,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 public class configurationConnection {
 
     @Transient
-    private configuration srcConfigDetails = null, tgtConfigDetails = null;
+    private utConfiguration srcConfigDetails = null, tgtConfigDetails = null;
 
     @Transient
     private String targetOrgName = null;
@@ -37,7 +37,7 @@ public class configurationConnection {
     private int messageTypeId = 0;
 
     @Transient
-    private List<User> connectionSenders = null, connectionReceivers = null;
+    private List<utUser> connectionSenders = null, connectionReceivers = null;
 
     @Transient
     private Integer targetOrgCol = 0, sourceSubOrgCol = 0, transportMethodId = 0;
@@ -100,19 +100,19 @@ public class configurationConnection {
         this.status = status;
     }
 
-    public configuration getsrcConfigDetails() {
+    public utConfiguration getsrcConfigDetails() {
         return srcConfigDetails;
     }
 
-    public void setsrcConfigDetails(configuration srcConfigDetails) {
+    public void setsrcConfigDetails(utConfiguration srcConfigDetails) {
         this.srcConfigDetails = srcConfigDetails;
     }
 
-    public configuration gettgtConfigDetails() {
+    public utConfiguration gettgtConfigDetails() {
         return tgtConfigDetails;
     }
 
-    public void settgtConfigDetails(configuration tgtConfigDetails) {
+    public void settgtConfigDetails(utConfiguration tgtConfigDetails) {
         this.tgtConfigDetails = tgtConfigDetails;
     }
 
@@ -132,19 +132,19 @@ public class configurationConnection {
         this.targetOrgId = targetOrgId;
     }
 
-    public List<User> getconnectionSenders() {
+    public List<utUser> getconnectionSenders() {
         return connectionSenders;
     }
 
-    public void setconnectionSenders(List<User> senders) {
+    public void setconnectionSenders(List<utUser> senders) {
         this.connectionSenders = senders;
     }
 
-    public List<User> getconnectionReceivers() {
+    public List<utUser> getconnectionReceivers() {
         return connectionReceivers;
     }
 
-    public void setconnectionReceivers(List<User> receivers) {
+    public void setconnectionReceivers(List<utUser> receivers) {
         this.connectionReceivers = receivers;
     }
 

@@ -1,9 +1,9 @@
 package com.hel.ut.security;
 
 import com.hel.ut.model.Organization;
-import com.hel.ut.model.User;
-import com.hel.ut.model.UserActivity;
-import com.hel.ut.model.configuration;
+import com.hel.ut.model.utUser;
+import com.hel.ut.model.utUserActivity;
+import com.hel.ut.model.utConfiguration;
 import com.hel.ut.model.custom.searchParameters;
 import com.hel.ut.service.configurationManager;
 import com.hel.ut.service.organizationManager;
@@ -50,13 +50,13 @@ public class CustomAuthenticationHandler extends SimpleUrlAuthenticationSuccessH
         // System.out.println(request.getParameter("j_username"));
         //we log here 
         /* Need to get the userId */
-        User userDetails = usermanager.getUserByUserName(authentication.getName());
+        utUser userDetails = usermanager.getUserByUserName(authentication.getName());
 
         if (!request.getParameter("username").equalsIgnoreCase(authentication.getName())) {
             try {
                 //log user activity
-                User userLogDetails = usermanager.getUserByUserName(request.getParameter("username"));
-                UserActivity ua = new UserActivity();
+                utUser userLogDetails = usermanager.getUserByUserName(request.getParameter("username"));
+                utUserActivity ua = new utUserActivity();
                 ua.setUserId(userLogDetails.getId());
                 ua.setFeatureId(0);
                 ua.setAccessMethod("POST");
@@ -95,11 +95,11 @@ public class CustomAuthenticationHandler extends SimpleUrlAuthenticationSuccessH
 	    
 	    /*Check to see if the user has access to download files or upload files*/
 	    //Get a list of configurations
-	    List<configuration> configurations = configurationManager.getActiveConfigurationsByOrgId(userDetails.getOrgId());
+	    List<utConfiguration> configurations = configurationManager.getActiveConfigurationsByOrgId(userDetails.getOrgId());
 	    
 	    if(configurations != null) {
 		if(configurations.size() > 0) {
-		    for(configuration config: configurations) {
+		    for(utConfiguration config: configurations) {
 			if(config.getType() == 1) {
 			    userDetails.setUploadFiles(true);
 			}

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE tiles-definitions PUBLIC
-       "-//Apache Software Foundation//DTD Tiles Configuration 2.0//EN"
-       "http://tiles.apache.org/dtds/tiles-config_2_0.dtd">
+       "-//Apache Software Foundation//DTD Tiles Configuration 3.0//EN"
+       "http://tiles.apache.org/dtds/tiles-config_3_0.dtd">
 <tiles-definitions>
     
     <!-- Admin Definitions -->
@@ -670,94 +670,6 @@
 	<put-attribute name="jscript" value="/dspResources/js/admin/watchlist/list.js" />
     </definition>
    
-    <!--  end sysadmin definitions -->
-    
-    <!-- Front End Definitions -->
-    <definition name="base.definition.frontEnd" template="/WEB-INF/tiles/frontEndLayout.jsp">
-        <put-attribute name="title" value="Universal Translator" />
-        <put-attribute name="header" value="/WEB-INF/jsp/common/header.jsp" />
-        <put-attribute name="body" value="" />
-        <put-attribute name="footer" value="/WEB-INF/jsp/common/footer.jsp" />
-    </definition>
-    
-     <!-- Home Page -->
-    <definition name="/home" extends="base.definition.frontEnd">
-        <put-attribute name="page-id" value="home" />
-        <put-attribute name="page-section" value="home" />
-        <put-attribute name="header" value="/WEB-INF/jsp/common/header.jsp?page=home" />
-        <put-attribute name="body" value="/WEB-INF/jsp/home.jsp" />
-    </definition>
-    
-     <!-- Profile (Account) Pages -->
-    <definition name="/profile/index" extends="base.definition.frontEnd">
-        <put-attribute name="header" value="/WEB-INF/jsp/common/header.jsp?page-id=profile&amp;page-section=home&amp;page=profile" />
-        <put-attribute name="body" value="/WEB-INF/jsp/profile/index.jsp" />
-    </definition>
-    <!-- Profile (settings) Pages -->
-    <definition name="/profile/details" extends="base.definition.frontEnd">
-        <put-attribute name="header" value="/WEB-INF/jsp/common/header.jsp?page-id=profile&amp;page-section=home&amp;page=profile" />
-        <put-attribute name="body" value="/WEB-INF/jsp/profile/settings.jsp" />
-        <put-attribute name="jscript" value="/dspResources/js/front-end/profile/settings.js" />
-    </definition>
-    
-    <definition name="/frontend/upload" extends="base.definition.frontEnd">
-        <put-attribute name="header" value="/WEB-INF/jsp/common/header.jsp?page-id=profile&amp;page-section=frontend&amp;page=upload" />
-        <put-attribute name="body" value="/WEB-INF/jsp/frontend/upload.jsp" />
-        <put-attribute name="jscript" value="/dspResources/js/front-end/frontend/upload.js" />
-    </definition>
-    
-    <!-- Download -->
-    <definition name="/frontend/download" extends="base.definition.frontEnd">
-        <put-attribute name="header" value="/WEB-INF/jsp/common/header.jsp?page-id=profile&amp;page-section=frontend&amp;page=download" />
-        <put-attribute name="body" value="/WEB-INF/jsp/frontend/download.jsp" />
-        <put-attribute name="jscript" value="/dspResources/js/front-end/frontend/download.js" />
-    </definition>
-    
-    <!-- Audit Reports -->
-    <definition name="/frontend/auditReports" extends="base.definition.frontEnd">
-        <put-attribute name="header" value="/WEB-INF/jsp/common/header.jsp?page-id=profile&amp;page-section=frontend&amp;page=audit" />
-        <put-attribute name="body" value="/WEB-INF/jsp/frontend/auditReports.jsp" />
-        <put-attribute name="jscript" value="/dspResources/js/front-end/frontend/auditReports.js" />
-    </definition>
-    
-    <definition name="/frontend/auditReport" extends="base.definition.frontEnd">
-        <put-attribute name="header" value="/WEB-INF/jsp/common/header.jsp?page-id=profile&amp;page-section=frontend&amp;page=audit" />
-        <put-attribute name="body" value="/WEB-INF/jsp/frontend/auditReport.jsp" />
-        <put-attribute name="jscript" value="/dspResources/js/front-end/frontend/auditReport.js" />
-    </definition>
-    
-    <definition name="/frontend/activityReport" extends="base.definition.frontEnd">
-        <put-attribute name="header" value="/WEB-INF/jsp/common/header.jsp?page-id=profile&amp;page-section=frontend&amp;page=activityReport" />
-        <put-attribute name="body" value="/WEB-INF/jsp/frontend/activityReport.jsp" />
-        <put-attribute name="jscript" value="/dspResources/js/front-end/frontend/activityReport.js" />
-    </definition>
-    
-    <definition name="/frontend/activityReport/sent" extends="base.definition.frontEnd">
-        <put-attribute name="header" value="/WEB-INF/jsp/common/header.jsp?page-id=profile&amp;page-section=frontend&amp;page=activityReport" />
-        <put-attribute name="body" value="/WEB-INF/jsp/frontend/activityReportSent.jsp" />
-        <put-attribute name="jscript" value="/dspResources/js/front-end/frontend/activityReportSent.js" />
-    </definition>
-    
-    <definition name="/frontend/activityReport/received" extends="base.definition.frontEnd">
-        <put-attribute name="header" value="/WEB-INF/jsp/common/header.jsp?page-id=profile&amp;page-section=frontend&amp;page=activityReport" />
-        <put-attribute name="body" value="/WEB-INF/jsp/frontend/activityReportReceived.jsp" />
-        <put-attribute name="jscript" value="/dspResources/js/front-end/frontend/activityReportReceived.js" />
-    </definition>
-    
-     <definition name="/frontend/activityReport/rejected" extends="base.definition.frontEnd">
-        <put-attribute name="header" value="/WEB-INF/jsp/common/header.jsp?page-id=profile&amp;page-section=frontend&amp;page=activityReport" />
-        <put-attribute name="body" value="/WEB-INF/jsp/frontend/activityReportRejected.jsp" />
-        <put-attribute name="jscript" value="/dspResources/js/front-end/frontend/activityReportRejected.js" />
-    </definition>
-
-    
-    <!-- Exception handling -->
-    <definition name="/exception" extends="base.definition.admin">
-        <put-attribute name="description" value="" />
-        <put-attribute name="header" value="/WEB-INF/jsp/common/adminHeader.jsp" />
-        <put-attribute name="body" value="/WEB-INF/jsp/exception.jsp" />
-    </definition>
-    
     <!-- invalid batches -->
     <definition name="/administrator/processing-activity/invalidIn" extends="base.definition.admin">
         <put-attribute name="page-id" value="processing-invalid" />
@@ -813,6 +725,13 @@
         <put-attribute name="menu" value="/WEB-INF/jsp/administrator/processing-activities/menu.jsp?page=apimessages" />
         <put-attribute name="body" value="/WEB-INF/jsp/administrator/processing-activities/apimessagesOut.jsp" />
         <put-attribute name="jscript" value="/dspResources/js/admin/processing-activities/apimessagesOut.js" />
+    </definition>
+    
+     <!-- Exception handling -->
+    <definition name="/exception" extends="base.definition.admin">
+        <put-attribute name="description" value="" />
+        <put-attribute name="header" value="/WEB-INF/jsp/common/adminHeader.jsp" />
+        <put-attribute name="body" value="/WEB-INF/jsp/exception.jsp" />
     </definition>
 
 </tiles-definitions>

@@ -32,7 +32,7 @@ import com.hel.ut.model.HL7ElementComponents;
 import com.hel.ut.model.HL7Elements;
 import com.hel.ut.model.HL7Segments;
 import com.hel.ut.model.Macros;
-import com.hel.ut.model.configuration;
+import com.hel.ut.model.utConfiguration;
 import com.hel.ut.model.configurationDataTranslations;
 import com.hel.ut.model.configurationFormFields;
 import com.hel.ut.model.configurationRhapsodyFields;
@@ -40,7 +40,7 @@ import com.hel.ut.model.configurationWebServiceSenders;
 import com.hel.ut.model.messageTypeFormFields;
 import com.hel.ut.service.configurationManager;
 import com.hel.ut.model.Organization;
-import com.hel.ut.model.User;
+import com.hel.ut.model.utUser;
 import com.hel.ut.model.configurationCCDElements;
 import com.hel.ut.model.configurationConnection;
 import com.hel.ut.model.configurationConnectionReceivers;
@@ -110,7 +110,7 @@ public class adminConfigController {
      * The '/list' GET request will serve up the existing list of configurations in the system
      *
      * @param page	The page parameter will hold the page to view when pagination is built.
-     * @return	The configuration page list
+     * @return	The utConfiguration page list
      *
      * @Objects	(1) An object containing all the found configurations
      *
@@ -122,13 +122,13 @@ public class adminConfigController {
         ModelAndView mav = new ModelAndView();
         mav.setViewName("/administrator/configurations/list");
 
-        List<configuration> configurations = configurationmanager.getConfigurations();
+        List<utConfiguration> configurations = configurationmanager.getConfigurations();
 
         Organization org;
         messageType messagetype;
         configurationTransport transportDetails;
 
-        for (configuration config : configurations) {
+        for (utConfiguration config : configurations) {
             org = organizationmanager.getOrganizationById(config.getorgId());
             config.setOrgName(org.getOrgName());
 	    
@@ -154,9 +154,9 @@ public class adminConfigController {
     }
 
     /**
-     * The '/create' GET request will serve up the create new configuration page
+     * The '/create' GET request will serve up the create new utConfiguration page
      *
-     * @return	The create new configuration form
+     * @return	The create new utConfiguration form
      *
      * @Objects	(1) An object with a new configuration
      * @throws Exception
@@ -166,7 +166,7 @@ public class adminConfigController {
 
         ModelAndView mav = new ModelAndView();
         mav.setViewName("/administrator/configurations/details");
-        mav.addObject("configurationDetails", new configuration());
+        mav.addObject("configurationDetails", new utConfiguration());
 
         //Need to get a list of active organizations.
         List<Organization> organizations = organizationmanager.getAllActiveOrganizations();
@@ -193,11 +193,11 @@ public class adminConfigController {
     @SuppressWarnings("rawtypes")
     @RequestMapping(value = "/getAvailableUsers.do", method = RequestMethod.GET)
     public @ResponseBody
-    List<User> getUsers(@RequestParam(value = "orgId", required = true) int orgId) {
+    List<utUser> getUsers(@RequestParam(value = "orgId", required = true) int orgId) {
 
-        List<User> users = userManager.getUsersByOrganization(orgId);
+        List<utUser> users = userManager.getUsersByOrganization(orgId);
 
-        for (User user : users) {
+        for (utUser user : users) {
             user.setOrgName(organizationmanager.getOrganizationById(user.getOrgId()).getOrgName());
         }
 
@@ -222,21 +222,21 @@ public class adminConfigController {
     }
 
     /**
-     * The '/create' POST request will submit the new configuration once all required fields are checked, the system will also check to make sure the configuration name is not already in use.
+     * The '/create' POST request will submit the new utConfiguration once all required fields are checked, the system will also check to make sure the utConfiguration name is not already in use.
      *
-     * @param configurationDetails	The object holding the configuration details form fields
+     * @param configurationDetails	The object holding the utConfiguration details form fields
      * @param result	The validation result
      * @param redirectAttr	The variable that will hold values that can be read after the redirect
      * @param action	The variable that holds which button was pressed
      *
-     * @return	Will return the configuration details page on "Save" Will return the configuration create page on error
+     * @return	Will return the utConfiguration details page on "Save" Will return the utConfiguration create page on error
      * @throws Exception
      */
     @RequestMapping(value = "/create", method = RequestMethod.POST)
-    public ModelAndView saveNewConfiguration(HttpSession session,@ModelAttribute(value = "configurationDetails") configuration configurationDetails, BindingResult result, RedirectAttributes redirectAttr, @RequestParam String action) throws Exception {
+    public ModelAndView saveNewConfiguration(HttpSession session,@ModelAttribute(value = "configurationDetails") utConfiguration configurationDetails, BindingResult result, RedirectAttributes redirectAttr, @RequestParam String action) throws Exception {
 
         /* Need to make sure the name isn't already taken for the org selected */
-        configuration existing = configurationmanager.getConfigurationByName(configurationDetails.getconfigName(), configurationDetails.getorgId());
+        utConfiguration existing = configurationmanager.getConfigurationByName(configurationDetails.getconfigName(), configurationDetails.getorgId());
 
         if (existing != null) {
             ModelAndView mav = new ModelAndView();
@@ -278,9 +278,9 @@ public class adminConfigController {
     }
 
     /**
-     * The '/details' GET request will display the clicked configuration details page.
+     * The '/details' GET request will display the clicked utConfiguration details page.
      *
-     * @return	Will return the configuration details page.
+     * @return	Will return the utConfiguration details page.
      *
      * @Objects	(1) The object containing all the information for the clicked configuration (2) The 'id' of the clicked configuration that will be used in the menu and action bar
      *
@@ -308,10 +308,10 @@ public class adminConfigController {
 	}
         mav.setViewName("/administrator/configurations/details");
 
-        configuration configurationDetails = configurationmanager.getConfigurationById(configId);
+        utConfiguration configurationDetails = configurationmanager.getConfigurationById(configId);
         mav.addObject("configurationDetails", configurationDetails);
 
-        //Set the variable to hold the number of completed steps for this configuration;
+        //Set the variable to hold the number of completed steps for this utConfiguration;
 	session.setAttribute("configStepsCompleted", configurationDetails.getstepsCompleted());
         mav.addObject("stepsCompleted", session.getAttribute("configStepsCompleted"));
 
@@ -324,7 +324,7 @@ public class adminConfigController {
         mav.addObject("messageTypes", messageTypes);
         
         //Need to get a list of organization users 
-        List<User> users = userManager.getUsersByOrganization(configurationDetails.getorgId());
+        List<utUser> users = userManager.getUsersByOrganization(configurationDetails.getorgId());
         mav.addObject("users", users);
 
         mav.addObject("id", configId);
@@ -373,9 +373,9 @@ public class adminConfigController {
     }
 
     /**
-     * The '/details' POST request will display the clicked configuration details page.
+     * The '/details' POST request will display the clicked utConfiguration details page.
      *
-     * @return	Will return the configuration details page.
+     * @return	Will return the utConfiguration details page.
      *
      * @Objects	(1) The object containing all the information for the clicked configuration (2) The 'id' of the clicked configuration that will be used in the menu and action bar
      *
@@ -383,7 +383,7 @@ public class adminConfigController {
      *
      */
     @RequestMapping(value = "/details", method = RequestMethod.POST)
-    public ModelAndView updateConfigurationDetails(HttpSession session,@ModelAttribute(value = "configurationDetails") configuration configurationDetails, BindingResult result, RedirectAttributes redirectAttr, @RequestParam String action) throws Exception {
+    public ModelAndView updateConfigurationDetails(HttpSession session,@ModelAttribute(value = "configurationDetails") utConfiguration configurationDetails, BindingResult result, RedirectAttributes redirectAttr, @RequestParam String action) throws Exception {
 
         //Need to get a list of active organizations.
         List<Organization> organizations = organizationmanager.getAllActiveOrganizations();
@@ -392,7 +392,7 @@ public class adminConfigController {
         List<messageType> messageTypes = messagetypemanager.getActiveMessageTypes();
 
         //Need to get a list of organization users 
-        List<User> users = userManager.getUsersByOrganization(configurationDetails.getorgId());
+        List<utUser> users = userManager.getUsersByOrganization(configurationDetails.getorgId());
 
         //submit the updates
         configurationmanager.updateConfiguration(configurationDetails);
@@ -431,9 +431,9 @@ public class adminConfigController {
     }
 
     /**
-     * The '/transport' GET request will display the clicked configuration transport details form.
+     * The '/transport' GET request will display the clicked utConfiguration transport details form.
      *
-     * @return	Will return the configuration transport details form
+     * @return	Will return the utConfiguration transport details form
      *
      * @Objects	transportDetails will hold a empty object or an object containing the existing transport details for the selected configuration
      *
@@ -458,8 +458,8 @@ public class adminConfigController {
 	
         mav.setViewName("/administrator/configurations/transport");
 
-        //Get the configuration details for the selected config
-        configuration configurationDetails = configurationmanager.getConfigurationById(configId);
+        //Get the utConfiguration details for the selected config
+        utConfiguration configurationDetails = configurationmanager.getConfigurationById(configId);
 
         /* Get organization directory name */
         Organization orgDetails = organizationmanager.getOrganizationById(configurationDetails.getorgId());
@@ -563,9 +563,9 @@ public class adminConfigController {
         }
 
         //Need to get a list of all configurations for the current organization
-        List<configuration> configurations = configurationmanager.getConfigurationsByOrgId(configurationDetails.getorgId(), "");
+        List<utConfiguration> configurations = configurationmanager.getConfigurationsByOrgId(configurationDetails.getorgId(), "");
 
-        for (configuration config : configurations) {
+        for (utConfiguration config : configurations) {
             configurationTransport transDetails = configurationTransportManager.getTransportDetails(config.getId());
 	    
 	    if(config.getMessageTypeId() > 0) {
@@ -594,7 +594,7 @@ public class adminConfigController {
 	    session.setAttribute("showAllConfigOptions",true);
 	}
 	
-        //Set the variable id to hold the current configuration id
+        //Set the variable id to hold the current utConfiguration id
         mav.addObject("id", configId);
         mav.addObject("mappings", session.getAttribute("configmappings"));
         mav.addObject("HL7", session.getAttribute("configHL7"));
@@ -611,10 +611,10 @@ public class adminConfigController {
         
         configurationDetails.settransportMethod(configurationTransportManager.getTransportMethodById(transportDetails.gettransportMethodId()));
 
-        //pass the configuration detail object back to the page.
+        //pass the utConfiguration detail object back to the page.
         mav.addObject("configurationDetails", configurationDetails);
 
-        //Set the variable to hold the number of completed steps for this configuration;
+        //Set the variable to hold the number of completed steps for this utConfiguration;
 	mav.addObject("stepsCompleted", session.getAttribute("configStepsCompleted"));
 
         //Get the list of available transport methods
@@ -649,7 +649,7 @@ public class adminConfigController {
     }
 
     /**
-     * The '/copyExistingTransportMethod.do' POST request will copy the existing transport settings for the passed transport method to the new configuration passed in.
+     * The '/copyExistingTransportMethod.do' POST request will copy the existing transport settings for the passed transport method to the new utConfiguration passed in.
      *
      */
     @RequestMapping(value = "/copyExistingTransportMethod.do", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -693,7 +693,7 @@ public class adminConfigController {
         /**
          * if transport method = ERG (2) then set up the online form OR if transport method is not ERG but the error handling is set to fix errors via ERG set up the online form
          */
-        configuration configurationDetails = configurationmanager.getConfigurationById(configId);
+        utConfiguration configurationDetails = configurationmanager.getConfigurationById(configId);
 
         /* submit the updates */
         Integer transportId = (Integer) configurationTransportManager.updateTransportDetails(transportDetails);
@@ -820,7 +820,7 @@ public class adminConfigController {
             ModelAndView mav = new ModelAndView(new RedirectView("transport"));
             return mav;
         } else {
-            //If the type of configuration is for a source then send to message specs
+            //If the type of utConfiguration is for a source then send to message specs
             if (configurationDetails.getType() == 1) {
                 
 		//Check if passthru
@@ -885,9 +885,9 @@ public class adminConfigController {
     }
 
     /**
-     * The '/messagespecs' GET request will display the configuration message specs form.
+     * The '/messagespecs' GET request will display the utConfiguration message specs form.
      *
-     * @return	Will return the configuration message spec details form
+     * @return	Will return the utConfiguration message spec details form
      *
      * @Objects	transportDetails will hold a empty object or an object containing the existing transport details for the selected configuration
      *
@@ -924,7 +924,7 @@ public class adminConfigController {
         mav.addObject("transportType", transportDetails.gettransportMethodId());
 	mav.addObject("fileType", transportDetails.getfileType());
 
-        //Set the variable id to hold the current configuration id
+        //Set the variable id to hold the current utConfiguration id
         mav.addObject("id", configId);
 	mav.addObject("mappings", session.getAttribute("configmappings"));
         mav.addObject("HL7", session.getAttribute("configHL7"));
@@ -932,8 +932,8 @@ public class adminConfigController {
 	mav.addObject("showAllConfigOptions",session.getAttribute("showAllConfigOptions"));
 	
 	
-        //Get the configuration details for the selected config
-        configuration configurationDetails = configurationmanager.getConfigurationById(configId);
+        //Get the utConfiguration details for the selected config
+        utConfiguration configurationDetails = configurationmanager.getConfigurationById(configId);
 
         configurationDetails.setOrgName(organizationmanager.getOrganizationById(configurationDetails.getorgId()).getOrgName());
 	
@@ -947,23 +947,23 @@ public class adminConfigController {
 	
         configurationDetails.settransportMethod(configurationTransportManager.getTransportMethodById(transportDetails.gettransportMethodId()));
 
-        //pass the configuration detail object back to the page.
+        //pass the utConfiguration detail object back to the page.
         mav.addObject("configurationDetails", configurationDetails);
 
         //Need to get all available fields that can be used for the reportable fields
         List<configurationFormFields> fields = configurationTransportManager.getConfigurationFields(configId, transportDetails.getId());
         mav.addObject("availableFields", fields);
 
-        //Set the variable to hold the number of completed steps for this configuration;
+        //Set the variable to hold the number of completed steps for this utConfiguration;
         mav.addObject("stepsCompleted", session.getAttribute("configStepsCompleted"));
 
         return mav;
     }
 
     /**
-     * The '/messagespecs' POST request submit all the configuration message specs.
+     * The '/messagespecs' POST request submit all the utConfiguration message specs.
      *
-     * @param messageSpecs Will contain the contents of the configuration message spec form.
+     * @param messageSpecs Will contain the contents of the utConfiguration message spec form.
      *
      * @return	This function will either return to the message spec details screen or redirect to the next step (Field Mappings)
      *
@@ -998,7 +998,7 @@ public class adminConfigController {
 	
 	//If excel enter in the ref_configexceldetails
 	if(transportDetails.getfileType() == 11) {
-	    configuration configDetails = configurationmanager.getConfigurationById(messageSpecs.getconfigId());
+	    utConfiguration configDetails = configurationmanager.getConfigurationById(messageSpecs.getconfigId());
 	    configurationmanager.updateExcelConfigDetails(configDetails.getorgId(),messageSpecs);
 	}
 
@@ -1028,7 +1028,7 @@ public class adminConfigController {
     }
 
     /**
-     * The '/ERGCustomize' GET request will display the configuration ERG Customization form.
+     * The '/ERGCustomize' GET request will display the utConfiguration ERG Customization form.
      *
      */
     @SuppressWarnings("rawtypes")
@@ -1055,8 +1055,8 @@ public class adminConfigController {
 	mav.addObject("showAllConfigOptions",session.getAttribute("showAllConfigOptions"));
 	
 	
-        //Get the configuration details for the selected config
-        configuration configurationDetails = configurationmanager.getConfigurationById(configId);
+        //Get the utConfiguration details for the selected config
+        utConfiguration configurationDetails = configurationmanager.getConfigurationById(configId);
 
         //Get the transport details by configid and selected transport method
         configurationTransport transportDetails = configurationTransportManager.getTransportDetails(configId);
@@ -1071,10 +1071,10 @@ public class adminConfigController {
         configurationDetails.setMessageTypeName(messagetypemanager.getMessageTypeById(configurationDetails.getMessageTypeId()).getName());
         configurationDetails.settransportMethod(configurationTransportManager.getTransportMethodById(transportDetails.gettransportMethodId()));
 
-        //pass the configuration detail object back to the page.
+        //pass the utConfiguration detail object back to the page.
         mav.addObject("configurationDetails", configurationDetails);
 
-        //Set the variable to hold the number of completed steps for this configuration;
+        //Set the variable to hold the number of completed steps for this utConfiguration;
         mav.addObject("stepsCompleted", session.getAttribute("configStepsCompleted"));
 
         //Get the list of available field validation types
@@ -1114,8 +1114,8 @@ public class adminConfigController {
         mav.addObject("CCD", session.getAttribute("configCCD"));
 	mav.addObject("showAllConfigOptions",session.getAttribute("showAllConfigOptions"));
 
-        //Get the completed steps for the selected configuration;
-        configuration configurationDetails = configurationmanager.getConfigurationById(configId);
+        //Get the completed steps for the selected utConfiguration;
+        utConfiguration configurationDetails = configurationmanager.getConfigurationById(configId);
 
         //Get the transport details by configid and selected transport method
         configurationTransport transportDetails = configurationTransportManager.getTransportDetails(configId);
@@ -1124,7 +1124,7 @@ public class adminConfigController {
         configurationDetails.setMessageTypeName(messagetypemanager.getMessageTypeById(configurationDetails.getMessageTypeId()).getName());
         configurationDetails.settransportMethod(configurationTransportManager.getTransportMethodById(transportDetails.gettransportMethodId()));
 
-        //pass the configuration detail object back to the page.
+        //pass the utConfiguration detail object back to the page.
         mav.addObject("configurationDetails", configurationDetails);
 
         //Get the transport fields
@@ -1146,14 +1146,14 @@ public class adminConfigController {
         List fieldTypes = messagetypemanager.getFieldTypes();
         mav.addObject("fieldTypes", fieldTypes);
 
-        //Set the variable to hold the number of completed steps for this configuration;
+        //Set the variable to hold the number of completed steps for this utConfiguration;
         mav.addObject("stepsCompleted", session.getAttribute("configStepsCompleted"));
 
         return mav;
     }
 
     /**
-     * The 'saveFields' POST method will submit the changes to the form field settings for the selected configuration. This method is only for configurations set for 'Online Form' as the data transportation method.
+     * The 'saveFields' POST method will submit the changes to the form field settings for the selected utConfiguration. This method is only for configurations set for 'Online Form' as the data transportation method.
      *
      * @param	transportDetails	The field details from the form action	The field that will hold which button was pressed "Save" or "Next Step"
      *
@@ -1231,8 +1231,8 @@ public class adminConfigController {
         mav.addObject("CCD", session.getAttribute("configCCD"));
 	mav.addObject("showAllConfigOptions",session.getAttribute("showAllConfigOptions"));
 
-        //Get the completed steps for the selected configuration;
-        configuration configurationDetails = configurationmanager.getConfigurationById(configId);
+        //Get the completed steps for the selected utConfiguration;
+        utConfiguration configurationDetails = configurationmanager.getConfigurationById(configId);
 
         //Get the transport details by configid and selected transport method
         configurationTransport transportDetails = configurationTransportManager.getTransportDetails(configId);
@@ -1241,7 +1241,7 @@ public class adminConfigController {
         configurationDetails.setMessageTypeName(messagetypemanager.getMessageTypeById(configurationDetails.getMessageTypeId()).getName());
         configurationDetails.settransportMethod(configurationTransportManager.getTransportMethodById(transportDetails.gettransportMethodId()));
 
-        //pass the configuration detail object back to the page.
+        //pass the utConfiguration detail object back to the page.
         mav.addObject("configurationDetails", configurationDetails);
 
         //Get the transport fields
@@ -1269,7 +1269,7 @@ public class adminConfigController {
         }
         mav.addObject("macroLookUpList", macroLookUpList);
 
-        //Set the variable to hold the number of completed steps for this configuration;
+        //Set the variable to hold the number of completed steps for this utConfiguration;
         mav.addObject("stepsCompleted", session.getAttribute("configStepsCompleted"));
 
         return mav;
@@ -1335,7 +1335,7 @@ public class adminConfigController {
     }
 
     /**
-     * The '/getTranslations.do' function will return the list of existing translations set up for the selected configuration/transportMethod.
+     * The '/getTranslations.do' function will return the list of existing translations set up for the selected utConfiguration/transportMethod.
      *
      * @Return list of translations
      */
@@ -1412,7 +1412,7 @@ public class adminConfigController {
     }
 
     /**
-     * The '/setTranslations{params}' function will handle taking in a selected field and a selected crosswalk and add it to an array of translations. This array will be used when the form is submitted to associate to the existing configuration / trasnort method combination.
+     * The '/setTranslations{params}' function will handle taking in a selected field and a selected crosswalk and add it to an array of translations. This array will be used when the form is submitted to associate to the existing utConfiguration / trasnort method combination.
      *
      * @param f	This will hold the id of the selected field cw	This will hold the id of the selected crosswalk fText	This will hold the text value of the selected field (used for display purposes) CWText	This will hold the text value of the selected crosswalk (used for display purposes)
      *
@@ -1575,7 +1575,7 @@ public class adminConfigController {
     }
 
     /**
-     * The '/connections' function will handle displaying the configuration connections screen. The function will pass the existing connection objects for the selected configuration.
+     * The '/connections' function will handle displaying the utConfiguration connections screen. The function will pass the existing connection objects for the selected utConfiguration.
      *
      * @Return the connection view and the following objects.
      *
@@ -1610,14 +1610,14 @@ public class adminConfigController {
 
         Long totalConnections = (long) 0;
 
-        /* Loop over the connections to get the configuration details */
+        /* Loop over the connections to get the utConfiguration details */
         if (connections != null) {
             for (configurationConnection connection : connections) {
                 /* Array to holder the users */
-                List<User> connectionSenders = new ArrayList<User>();
-                List<User> connectonReceivers = new ArrayList<User>();
+                List<utUser> connectionSenders = new ArrayList<utUser>();
+                List<utUser> connectonReceivers = new ArrayList<utUser>();
 
-                configuration srcconfigDetails = configurationmanager.getConfigurationById(connection.getsourceConfigId());
+                utConfiguration srcconfigDetails = configurationmanager.getConfigurationById(connection.getsourceConfigId());
                 configurationTransport srctransportDetails = configurationTransportManager.getTransportDetails(srcconfigDetails.getId());
 
                 srcconfigDetails.setOrgName(organizationmanager.getOrganizationById(srcconfigDetails.getorgId()).getOrgName());
@@ -1638,7 +1638,7 @@ public class adminConfigController {
 
                 connection.setsrcConfigDetails(srcconfigDetails);
 
-                configuration tgtconfigDetails = configurationmanager.getConfigurationById(connection.gettargetConfigId());
+                utConfiguration tgtconfigDetails = configurationmanager.getConfigurationById(connection.gettargetConfigId());
                 configurationTransport tgttransportDetails = configurationTransportManager.getTransportDetails(tgtconfigDetails.getId());
 
                 tgtconfigDetails.setOrgName(organizationmanager.getOrganizationById(tgtconfigDetails.getorgId()).getOrgName());
@@ -1660,7 +1660,7 @@ public class adminConfigController {
  /*List<configurationConnectionSenders> senders = configurationmanager.getConnectionSenders(connection.getId());
                 
                 for(configurationConnectionSenders sender : senders) {
-                    User userDetail = userManager.getUserById(sender.getuserId());
+                    utUser userDetail = userManager.getUserById(sender.getuserId());
                     userDetail.setOrgName(organizationmanager.getOrganizationById(userDetail.getOrgId()).getOrgName());
                     connectionSenders.add(userDetail);
                 }
@@ -1669,7 +1669,7 @@ public class adminConfigController {
  /*List<configurationConnectionReceivers> receivers = configurationmanager.getConnectionReceivers(connection.getId());
                 
                 for(configurationConnectionReceivers receiver : receivers) {
-                    User userDetail = userManager.getUserById(receiver.getuserId());
+                    utUser userDetail = userManager.getUserById(receiver.getuserId());
                     userDetail.setOrgName(organizationmanager.getOrganizationById(userDetail.getOrgId()).getOrgName());
                     connectonReceivers.add(userDetail);
                 }
@@ -1683,14 +1683,14 @@ public class adminConfigController {
 
         mav.addObject("connections", connections);
 
-        /* Set the variable to hold the number of completed steps for this configuration */
+        /* Set the variable to hold the number of completed steps for this utConfiguration */
         mav.addObject("stepsCompleted", session.getAttribute("configStepsCompleted"));
 
         return mav;
     }
 
     /**
-     * The '/createConnection' function will handle displaying the create configuration connection screen.
+     * The '/createConnection' function will handle displaying the create utConfiguration connection screen.
      *
      * @return This function will display the new connection overlay
      */
@@ -1712,9 +1712,9 @@ public class adminConfigController {
     }
 
     /**
-     * The '/editConnection' funtion will handle displaying the edit configuration connection screen.
+     * The '/editConnection' funtion will handle displaying the edit utConfiguration connection screen.
      *
-     * @param connectionId The id of the clicked configuration connection
+     * @param connectionId The id of the clicked utConfiguration connection
      *
      * @return This function will display the edit connection overlay
      */
@@ -1727,11 +1727,11 @@ public class adminConfigController {
 
         configurationConnection connectionDetails = configurationmanager.getConnection(connectionId);
 
-        configuration srcconfigDetails = configurationmanager.getConfigurationById(connectionDetails.getsourceConfigId());
+        utConfiguration srcconfigDetails = configurationmanager.getConfigurationById(connectionDetails.getsourceConfigId());
         srcconfigDetails.setorgId(organizationmanager.getOrganizationById(srcconfigDetails.getorgId()).getId());
         connectionDetails.setsrcConfigDetails(srcconfigDetails);
 
-        configuration tgtconfigDetails = configurationmanager.getConfigurationById(connectionDetails.gettargetConfigId());
+        utConfiguration tgtconfigDetails = configurationmanager.getConfigurationById(connectionDetails.gettargetConfigId());
         tgtconfigDetails.setorgId(organizationmanager.getOrganizationById(tgtconfigDetails.getorgId()).getId());
         connectionDetails.settgtConfigDetails(tgtconfigDetails);
 
@@ -1742,7 +1742,7 @@ public class adminConfigController {
         List<User> connectonReceivers = new ArrayList<User>();
                 
         for(configurationConnectionSenders sender : senders) {
-            User userDetail = userManager.getUserById(sender.getuserId());
+            utUser userDetail = userManager.getUserById(sender.getuserId());
             userDetail.setOrgName(organizationmanager.getOrganizationById(userDetail.getOrgId()).getOrgName());
             connectionSenders.add(userDetail);
         }
@@ -1752,7 +1752,7 @@ public class adminConfigController {
         List<configurationConnectionReceivers> receivers = configurationmanager.getConnectionReceivers(connectionId);
 
         for(configurationConnectionReceivers receiver : receivers) {
-            User userDetail = userManager.getUserById(receiver.getuserId());
+            utUser userDetail = userManager.getUserById(receiver.getuserId());
             userDetail.setOrgName(organizationmanager.getOrganizationById(userDetail.getOrgId()).getOrgName());
             connectonReceivers.add(userDetail);
         }
@@ -1784,13 +1784,13 @@ public class adminConfigController {
         ModelAndView mav = new ModelAndView();
         mav.setViewName("/administrator/configurations/connectionSendingUsers");
 
-        List<User> users = userManager.getUsersByOrganization(orgId);
+        List<utUser> users = userManager.getUsersByOrganization(orgId);
 
         List<configurationConnectionSenders> senders = configurationmanager.getConnectionSenders(connectionId);
 
-        List<User> connectionSenders = new ArrayList<User>();
+        List<utUser> connectionSenders = new ArrayList<utUser>();
 
-        for (User user : users) {
+        for (utUser user : users) {
             boolean associated = false;
             boolean sendSentEmail = false;
             boolean sendReceivedEmail = false;
@@ -1835,13 +1835,13 @@ public class adminConfigController {
         ModelAndView mav = new ModelAndView();
         mav.setViewName("/administrator/configurations/connectionReceivingUsers");
 
-        List<User> users = userManager.getUsersByOrganization(orgId);
+        List<utUser> users = userManager.getUsersByOrganization(orgId);
 
         List<configurationConnectionReceivers> receivers = configurationmanager.getConnectionReceivers(connectionId);
 
-        List<User> connectonReceivers = new ArrayList<User>();
+        List<utUser> connectonReceivers = new ArrayList<utUser>();
 
-        for (User user : users) {
+        for (utUser user : users) {
             boolean associated = false;
             boolean sendSentEmail = false;
             boolean sendReceivedEmail = false;
@@ -1870,7 +1870,7 @@ public class adminConfigController {
     }
 
     /**
-     * The '/getAvailableConfigurations.do' function will return a list of configuration that have been set up for the passed in organization.
+     * The '/getAvailableConfigurations.do' function will return a list of utConfiguration that have been set up for the passed in organization.
      *
      * @param orgId The organization selected in the drop down
      *
@@ -1879,12 +1879,12 @@ public class adminConfigController {
     @SuppressWarnings("rawtypes")
     @RequestMapping(value = "/getAvailableConfigurations.do", method = RequestMethod.GET)
     public @ResponseBody
-    List<configuration> getAvailableConfigurations(@RequestParam(value = "orgId", required = true) int orgId) throws Exception {
+    List<utConfiguration> getAvailableConfigurations(@RequestParam(value = "orgId", required = true) int orgId) throws Exception {
 
-        List<configuration> configurations = configurationmanager.getActiveConfigurationsByOrgId(orgId);
+        List<utConfiguration> configurations = configurationmanager.getActiveConfigurationsByOrgId(orgId);
 
         if (configurations != null) {
-            for (configuration configuration : configurations) {
+            for (utConfiguration configuration : configurations) {
                 configurationTransport transportDetails = configurationTransportManager.getTransportDetails(configuration.getId());
 
                 configuration.setOrgName(organizationmanager.getOrganizationById(configuration.getorgId()).getOrgName());
@@ -1905,10 +1905,10 @@ public class adminConfigController {
     }
 
     /**
-     * The '/addConnection.do' POST request will create the connection between the passed in organization and the configuration.
+     * The '/addConnection.do' POST request will create the connection between the passed in organization and the utConfiguration.
      *
-     * @param	srcConfig The selected source configuration
-     * @param tgtConfig The selected target configuration
+     * @param	srcConfig The selected source utConfiguration
+     * @param tgtConfig The selected target utConfiguration
      *
      * @return	The method will return a 1 back to the calling ajax function which will handle the page load.
      */
@@ -2020,8 +2020,8 @@ public class adminConfigController {
         mav.addObject("CCD", session.getAttribute("configCCD"));
 	mav.addObject("showAllConfigOptions",session.getAttribute("showAllConfigOptions"));
 
-        //Get the completed steps for the selected configuration;
-        configuration configurationDetails = configurationmanager.getConfigurationById(configId);
+        //Get the completed steps for the selected utConfiguration;
+        utConfiguration configurationDetails = configurationmanager.getConfigurationById(configId);
 
         //Get the transport details by configid and selected transport method
         configurationTransport transportDetails = configurationTransportManager.getTransportDetails(configId);
@@ -2037,10 +2037,10 @@ public class adminConfigController {
 	
         configurationDetails.settransportMethod(configurationTransportManager.getTransportMethodById(transportDetails.gettransportMethodId()));
 
-        //pass the configuration detail object back to the page.
+        //pass the utConfiguration detail object back to the page.
         mav.addObject("configurationDetails", configurationDetails);
 
-        //Get the schedule for the configuration and selected transport method
+        //Get the schedule for the utConfiguration and selected transport method
         configurationSchedules scheduleDetails = configurationmanager.getScheduleDetails(configId);
 
         if (scheduleDetails == null) {
@@ -2049,14 +2049,14 @@ public class adminConfigController {
         }
         mav.addObject("scheduleDetails", scheduleDetails);
 
-        //Set the variable to hold the number of completed steps for this configuration;
+        //Set the variable to hold the number of completed steps for this utConfiguration;
         mav.addObject("stepsCompleted", session.getAttribute("configStepsCompleted"));
 
         return mav;
     }
 
     /**
-     * The '/scheduling' POST request will submit the scheduling settings for the selected configuration.
+     * The '/scheduling' POST request will submit the scheduling settings for the selected utConfiguration.
      *
      * @param scheduleDetails The object that will hold the scheduling form fields
      *
@@ -2097,8 +2097,8 @@ public class adminConfigController {
 
         configurationmanager.saveSchedule(scheduleDetails);
 
-        //Update the configuration completed step
-        configuration configurationDetails = configurationmanager.getConfigurationById(configId);
+        //Update the utConfiguration completed step
+        utConfiguration configurationDetails = configurationmanager.getConfigurationById(configId);
         if (configurationDetails.getstepsCompleted() < 6) {
             configurationmanager.updateCompletedSteps(configId, 6);
         }
@@ -2153,8 +2153,8 @@ public class adminConfigController {
         mav.addObject("CCD", session.getAttribute("configCCD"));
 	mav.addObject("showAllConfigOptions",session.getAttribute("showAllConfigOptions"));
 
-        //Get the completed steps for the selected configuration;
-        configuration configurationDetails = configurationmanager.getConfigurationById(configId);
+        //Get the completed steps for the selected utConfiguration;
+        utConfiguration configurationDetails = configurationmanager.getConfigurationById(configId);
 
         //Get the transport details by configid and selected transport method
         configurationTransport transportDetails = configurationTransportManager.getTransportDetails(configId);
@@ -2163,10 +2163,10 @@ public class adminConfigController {
         configurationDetails.setMessageTypeName(messagetypemanager.getMessageTypeById(configurationDetails.getMessageTypeId()).getName());
         configurationDetails.settransportMethod(configurationTransportManager.getTransportMethodById(transportDetails.gettransportMethodId()));
 
-        //pass the configuration detail object back to the page.
+        //pass the utConfiguration detail object back to the page.
         mav.addObject("configurationDetails", configurationDetails);
 
-        //Set the variable to hold the number of completed steps for this configuration;
+        //Set the variable to hold the number of completed steps for this utConfiguration;
         mav.addObject("stepsCompleted", session.getAttribute("configStepsCompleted"));
 
         HL7Details hl7Details = configurationmanager.getHL7Details(configId);
@@ -2217,9 +2217,9 @@ public class adminConfigController {
     }
 
     /**
-     * The '/loadHL7Spec' will load the configuration HL7 specs from one that was chosen from the list of standard hl7 specs.
+     * The '/loadHL7Spec' will load the utConfiguration HL7 specs from one that was chosen from the list of standard hl7 specs.
      *
-     * @param configId The id of the configuration to attach the HL7 spec to
+     * @param configId The id of the utConfiguration to attach the HL7 spec to
      * @param hl7SpecId The id of the selected hl7 standard spec
      *
      * @return This function will return a 1 back to the calling jquery call.
@@ -2576,7 +2576,7 @@ public class adminConfigController {
     }
 
     /**
-     * The '/preprocessing' GET request will display the configuration preprocessing page
+     * The '/preprocessing' GET request will display the utConfiguration preprocessing page
      */
     @RequestMapping(value = "/preprocessing", method = RequestMethod.GET)
     public ModelAndView getPreProcessing(HttpSession session) throws Exception {
@@ -2599,8 +2599,8 @@ public class adminConfigController {
         mav.addObject("HL7", session.getAttribute("configHL7"));
         mav.addObject("CCD", session.getAttribute("configCCD"));
 
-        //Get the completed steps for the selected configuration;
-        configuration configurationDetails = configurationmanager.getConfigurationById(configId);
+        //Get the completed steps for the selected utConfiguration;
+        utConfiguration configurationDetails = configurationmanager.getConfigurationById(configId);
 
         //Get the transport details by configid and selected transport method
         configurationTransport transportDetails = configurationTransportManager.getTransportDetails(configId);
@@ -2609,7 +2609,7 @@ public class adminConfigController {
         configurationDetails.setMessageTypeName(messagetypemanager.getMessageTypeById(configurationDetails.getMessageTypeId()).getName());
         configurationDetails.settransportMethod(configurationTransportManager.getTransportMethodById(transportDetails.gettransportMethodId()));
 
-        //pass the configuration detail object back to the page.
+        //pass the utConfiguration detail object back to the page.
         mav.addObject("configurationDetails", configurationDetails);
 
         //Get the transport fields
@@ -2632,7 +2632,7 @@ public class adminConfigController {
         }
         mav.addObject("macroLookUpList", macroLookUpList);
 
-        //Set the variable to hold the number of completed steps for this configuration;
+        //Set the variable to hold the number of completed steps for this utConfiguration;
         mav.addObject("stepsCompleted", session.getAttribute("configStepsCompleted"));
 	
 	if(transportDetails.getRestAPIType() == 2) {
@@ -2647,7 +2647,7 @@ public class adminConfigController {
     }
 
     /**
-     * The '/postprocessing' GET request will display the configuration post processing page
+     * The '/postprocessing' GET request will display the utConfiguration post processing page
      */
     @RequestMapping(value = "/postprocessing", method = RequestMethod.GET)
     public ModelAndView getPostProcessing(HttpSession session) throws Exception {
@@ -2669,8 +2669,8 @@ public class adminConfigController {
         mav.addObject("HL7", session.getAttribute("configHL7"));
         mav.addObject("CCD", session.getAttribute("configCCD"));
 
-        //Get the completed steps for the selected configuration;
-        configuration configurationDetails = configurationmanager.getConfigurationById(configId);
+        //Get the completed steps for the selected utConfiguration;
+        utConfiguration configurationDetails = configurationmanager.getConfigurationById(configId);
 
         //Get the transport details by configid and selected transport method
         configurationTransport transportDetails = configurationTransportManager.getTransportDetails(configId);
@@ -2679,7 +2679,7 @@ public class adminConfigController {
         configurationDetails.setMessageTypeName(messagetypemanager.getMessageTypeById(configurationDetails.getMessageTypeId()).getName());
         configurationDetails.settransportMethod(configurationTransportManager.getTransportMethodById(transportDetails.gettransportMethodId()));
 
-        //pass the configuration detail object back to the page.
+        //pass the utConfiguration detail object back to the page.
         mav.addObject("configurationDetails", configurationDetails);
 
         //Get the transport fields
@@ -2702,7 +2702,7 @@ public class adminConfigController {
         }
         mav.addObject("macroLookUpList", macroLookUpList);
 
-        //Set the variable to hold the number of completed steps for this configuration;
+        //Set the variable to hold the number of completed steps for this utConfiguration;
         mav.addObject("stepsCompleted", session.getAttribute("configStepsCompleted"));
 	
 	if(transportDetails.getRestAPIType() == 2) {
@@ -2786,11 +2786,11 @@ public class adminConfigController {
         mav.addObject("CCD", session.getAttribute("configCCD"));
 	
 
-        //Set the variable to hold the number of completed steps for this configuration;
+        //Set the variable to hold the number of completed steps for this utConfiguration;
         mav.addObject("stepsCompleted", session.getAttribute("configStepsCompleted"));
 
-        //Get the completed steps for the selected configuration;
-        configuration configurationDetails = configurationmanager.getConfigurationById(configId);
+        //Get the completed steps for the selected utConfiguration;
+        utConfiguration configurationDetails = configurationmanager.getConfigurationById(configId);
 
         //Get the transport details by configid and selected transport method
         configurationTransport transportDetails = configurationTransportManager.getTransportDetails(configId);
@@ -2799,7 +2799,7 @@ public class adminConfigController {
         configurationDetails.setMessageTypeName(messagetypemanager.getMessageTypeById(configurationDetails.getMessageTypeId()).getName());
         configurationDetails.settransportMethod(configurationTransportManager.getTransportMethodById(transportDetails.gettransportMethodId()));
 
-        //pass the configuration detail object back to the page.
+        //pass the utConfiguration detail object back to the page.
         mav.addObject("configurationDetails", configurationDetails);
 
         List<configurationCCDElements> ccdElements = configurationmanager.getCCDElements(configId);
@@ -2959,16 +2959,16 @@ public class adminConfigController {
     
     
     /**
-     * The 'copyConfiguration.do' method will copy the selected configuration.
+     * The 'copyConfiguration.do' method will copy the selected utConfiguration.
      */
     @RequestMapping(value = "/copyConfiguration.do", method = RequestMethod.POST)
     public @ResponseBody
     Integer copyConfiguration(@RequestParam int configId) throws Exception {
 
-        configuration configDetails = configurationmanager.getConfigurationById(configId);
+        utConfiguration configDetails = configurationmanager.getConfigurationById(configId);
 	
 	//New Configuration
-	configuration newConfig = new configuration();
+	utConfiguration newConfig = new utConfiguration();
 	newConfig.setorgId(configDetails.getorgId());
 	newConfig.setStatus(false);
 	newConfig.setType(configDetails.getType());
@@ -3022,7 +3022,7 @@ public class adminConfigController {
 	newMessageSpecs.setExcelskiprows(messageSpecs.getExcelskiprows());
 	newMessageSpecs.setParsingTemplate(messageSpecs.getParsingTemplate());
 	
-	// Save/Update the configuration message specs
+	// Save/Update the utConfiguration message specs
         configurationmanager.updateMessageSpecs(newMessageSpecs);
 	
 	//Need to get a list of existing translations

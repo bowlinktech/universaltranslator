@@ -3,7 +3,7 @@ package com.hel.ut.service;
 import java.util.List;
 
 import com.hel.ut.model.Organization;
-import com.hel.ut.model.User;
+import com.hel.ut.model.utUser;
 
 public interface organizationManager {
 
@@ -27,7 +27,7 @@ public interface organizationManager {
 
     Long findTotalConfigurations(int orgId);
 
-    List<User> getOrganizationUsers(int orgId);
+    List<utUser> getOrganizationUsers(int orgId);
 
     void deleteOrganization(int orgId);
 

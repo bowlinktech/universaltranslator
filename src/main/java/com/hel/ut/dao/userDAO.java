@@ -2,59 +2,59 @@ package com.hel.ut.dao;
 
 import java.util.List;
 
-import com.hel.ut.model.User;
-import com.hel.ut.model.UserActivity;
+import com.hel.ut.model.utUser;
+import com.hel.ut.model.utUserActivity;
 import com.hel.ut.model.configurationConnectionSenders;
-import com.hel.ut.model.userLogin;
+import com.hel.ut.model.utUserLogin;
 
 import org.springframework.stereotype.Repository;
 
 @Repository
 public interface userDAO {
 
-    Integer createUser(User user);
+    Integer createUser(utUser user);
 
-    void updateUser(User user);
+    void updateUser(utUser user);
 
-    User getUserById(int userId);
+    utUser getUserById(int userId);
 
-    List<User> getUsersByOrganization(int orgId);
+    List<utUser> getUsersByOrganization(int orgId);
 
-    User getUserByUserName(String username);
+    utUser getUserByUserName(String username);
 
     Long findTotalLogins(int orgId);
 
     void setLastLogin(String username);
 
-    List<User> getOrganizationContact(int orgId, int mainContact);
+    List<utUser> getOrganizationContact(int orgId, int mainContact);
 
     Integer getUserByIdentifier(String identifier);
 
-    User getUserByResetCode(String resetCode);
+    utUser getUserByResetCode(String resetCode);
 
-    void insertUserLog(UserActivity userActivity);
+    void insertUserLog(utUserActivity userActivity);
 
-    UserActivity getUAById(Integer uaId);
+    utUserActivity getUAById(Integer uaId);
 
-    List<User> getUserByTypeByOrganization(int orgId);
+    List<utUser> getUserByTypeByOrganization(int orgId);
 
-    List<User> getSendersForConfig(List<Integer> configIds);
+    List<utUser> getSendersForConfig(List<Integer> configIds);
 
-    List<User> getOrgUsersForConfig(List<Integer> configIds);
+    List<utUser> getOrgUsersForConfig(List<Integer> configIds);
 
-    List<User> getUserConnectionListSending(Integer configId);
+    List<utUser> getUserConnectionListSending(Integer configId);
 
-    List<User> getUserConnectionListReceiving(Integer configId);
+    List<utUser> getUserConnectionListReceiving(Integer configId);
 
-    List<User> getAllUsers();
+    List<utUser> getAllUsers();
 
-    void updateUserActivity(UserActivity userActivity);
+    void updateUserActivity(utUserActivity userActivity);
 
-    List<String> getUserRoles(User user) throws Exception;
+    List<String> getUserRoles(utUser user) throws Exception;
 
-    void updateUserOnly(User user) throws Exception;
+    void updateUserOnly(utUser user) throws Exception;
 
-    List<User> getUsersByStatuRolesAndOrg(boolean status, List<Integer> rolesToExclude, List<Integer> orgs, boolean include) throws Exception;
+    List<utUser> getUsersByStatuRolesAndOrg(boolean status, List<Integer> rolesToExclude, List<Integer> orgs, boolean include) throws Exception;
 
     List<Integer> getUserAllowedTargets(int userId, List<configurationConnectionSenders> connections) throws Exception;
 
@@ -64,13 +64,13 @@ public interface userDAO {
     
     void loguserout(int userId) throws Exception;
     
-    List<User> getUsersByOrganizationWithLogins(int orgId);
+    List<utUser> getUsersByOrganizationWithLogins(int orgId);
     
-    List<userLogin> getUserLogins(int userId);
+    List<utUserLogin> getUserLogins(int userId);
     
-    List<User> getAllUsersByOrganization(int orgId);
+    List<utUser> getAllUsersByOrganization(int orgId);
     
-    List<User> getSuccessEmailSendersForConfig(Integer targetConfigId);
+    List<utUser> getSuccessEmailSendersForConfig(Integer targetConfigId);
     
-    List<User> getSuccessEmailReceiversForConfig(Integer targetConfigId);
+    List<utUser> getSuccessEmailReceiversForConfig(Integer targetConfigId);
 }

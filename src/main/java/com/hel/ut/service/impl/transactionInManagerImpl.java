@@ -15,13 +15,13 @@ import com.hel.ut.model.Organization;
 import com.hel.ut.model.MoveFilesLog;
 import com.hel.ut.model.RestAPIMessagesIn;
 import com.hel.ut.model.Transaction;
-import com.hel.ut.model.User;
-import com.hel.ut.model.UserActivity;
+import com.hel.ut.model.utUser;
+import com.hel.ut.model.utUserActivity;
 import com.hel.ut.model.WSMessagesIn;
 import com.hel.ut.model.batchDownloads;
 import com.hel.ut.model.batchRetry;
 import com.hel.ut.model.batchUploads;
-import com.hel.ut.model.configuration;
+import com.hel.ut.model.utConfiguration;
 import com.hel.ut.model.configurationConnection;
 import com.hel.ut.model.configurationConnectionReceivers;
 import com.hel.ut.model.configurationDataTranslations;
@@ -323,7 +323,7 @@ public class transactionInManagerImpl implements transactionInManager {
     @Override
     public boolean processBatch(int batchUploadId, boolean doNotClearErrors) throws Exception {
 	
-	UserActivity ua = new UserActivity();
+	utUserActivity ua = new utUserActivity();
 	Integer batchStatusId = 29;
 	List<Integer> errorStatusIds = Arrays.asList(11, 13, 14, 16);
 	
@@ -927,7 +927,7 @@ public class transactionInManagerImpl implements transactionInManager {
 	    try {
 		try {
 		    //log user activity
-		    UserActivity ua = new UserActivity();
+		    utUserActivity ua = new utUserActivity();
 		    ua.setUserId(0);
 		    ua.setFeatureId(0);
 		    ua.setAccessMethod("System");
@@ -1468,7 +1468,7 @@ public class transactionInManagerImpl implements transactionInManager {
     }
 
     @Override
-    public boolean checkPermissionForBatch(User userInfo, batchUploads batchInfo) {
+    public boolean checkPermissionForBatch(utUser userInfo, batchUploads batchInfo) {
 	return transactionInDAO.checkPermissionForBatch(userInfo, batchInfo);
     }
 
@@ -1480,7 +1480,7 @@ public class transactionInManagerImpl implements transactionInManager {
     }
 
     @Override
-    public boolean hasPermissionForBatch(batchUploads batchInfo, User userInfo, boolean hasConfigurations) {
+    public boolean hasPermissionForBatch(batchUploads batchInfo, utUser userInfo, boolean hasConfigurations) {
 	boolean hasPermission = false;
 	/**
 	 * user can view audit report if 1. uploaded by user 2. file type uploaded was for multiple types and user has configurations 3. user is in connection sender list for batch's configId
@@ -1506,7 +1506,7 @@ public class transactionInManagerImpl implements transactionInManager {
     }
 
     @Override
-    public List<UserActivity> getBatchActivities(batchUploads batchInfo, boolean forUsers, boolean foroutboundProcessing) {
+    public List<utUserActivity> getBatchActivities(batchUploads batchInfo, boolean forUsers, boolean foroutboundProcessing) {
 	if (!forUsers) {
 	    //we have autolog that tracks the date/time each time the status change on a batch, not in use right now
 	    return null;
@@ -1716,7 +1716,7 @@ public class transactionInManagerImpl implements transactionInManager {
 				batchInfo.setEncodingId(encodingId);
 
 				//find user 
-				List<User> users = usermanager.getSendersForConfig(Arrays.asList(ct.getconfigId()));
+				List<utUser> users = usermanager.getSendersForConfig(Arrays.asList(ct.getconfigId()));
 				if (users.isEmpty()) {
 				    users = usermanager.getOrgUsersForConfig(Arrays.asList(ct.getconfigId()));
 				}
@@ -1836,7 +1836,7 @@ public class transactionInManagerImpl implements transactionInManager {
 				    //get path
 				    fileLocation = configurationtransportmanager.getTransportDetails(totalConfigs.get(0)).getfileLocation();
 				    fileSize = configurationtransportmanager.getTransportDetails(totalConfigs.get(0)).getmaxFileSize();
-				    List<User> users = usermanager.getSendersForConfig(totalConfigs);
+				    List<utUser> users = usermanager.getSendersForConfig(totalConfigs);
 				    if (users.size() == 0) {
 					users = usermanager.getOrgUsersForConfig(totalConfigs);
 				    }
@@ -1868,7 +1868,7 @@ public class transactionInManagerImpl implements transactionInManager {
 			 */
 			try {
 			    //log user activity
-			    UserActivity ua = new UserActivity();
+			    utUserActivity ua = new utUserActivity();
 			    ua.setUserId(0);
 			    ua.setFeatureId(0);
 			    ua.setAccessMethod("System");
@@ -1960,7 +1960,7 @@ public class transactionInManagerImpl implements transactionInManager {
 			/* Check to see if the batch belongs to a RR program upload */
 			if (batchInfo.getConfigId() != null) {
 			    if (batchInfo.getConfigId() > 0) {
-				configuration configDetails = configurationManager.getConfigurationById(batchInfo.getConfigId());
+				utConfiguration configDetails = configurationManager.getConfigurationById(batchInfo.getConfigId());
 				configurationTransport transportDetails = configurationtransportmanager.getTransportDetails(batchInfo.getConfigId());
 
 				if (configDetails != null && transportDetails != null) {
@@ -2117,10 +2117,10 @@ public class transactionInManagerImpl implements transactionInManager {
 
     /**
      * The 'chkUploadBatchFile' function will take in the file and orgName and upload the file to the appropriate file on the file system. The function will run the file through various validations. If a single validation fails the batch will be put in a error validation status and the file will be removed from the system. The user will receive an error message on the screen letting them know which validations have failed and be asked to upload a new file.
+
+ The following validations will be taken place. - File is not empty - Proper file type (as determined in the utConfiguration set up) - Proper delimiter (as determined in the utConfiguration set up) - Does not exceed file size (as determined in the utConfiguration set up)
      *
-     * The following validations will be taken place. - File is not empty - Proper file type (as determined in the configuration set up) - Proper delimiter (as determined in the configuration set up) - Does not exceed file size (as determined in the configuration set up)
-     *
-     * @param configId The configuration Id to get some validation parameters
+     * @param configId The utConfiguration Id to get some validation parameters
      * @param fileUpload The file to be uploaded
      *
      */
@@ -2517,7 +2517,7 @@ public class transactionInManagerImpl implements transactionInManager {
 		batchInfo.setEncodingId(encodingId);
 
 		//find user 
-		List<User> users = new ArrayList<User>();
+		List<utUser> users = new ArrayList<utUser>();
 		if (configId != 0) {
 		    users = usermanager.getSendersForConfig(Arrays.asList(configId));
 		}
@@ -2702,7 +2702,7 @@ public class transactionInManagerImpl implements transactionInManager {
 	     */
 	    try {
 		//log user activity
-		UserActivity ua = new UserActivity();
+		utUserActivity ua = new utUserActivity();
 		ua.setUserId(0);
 		ua.setFeatureId(0);
 		ua.setAccessMethod("System");
@@ -2829,7 +2829,7 @@ public class transactionInManagerImpl implements transactionInManager {
 
 	List<Transaction> transactions = getTransactionsByStatusId(batch.getId(), rejectIds, 5);
 	
-	List<User> orgUsers = usermanager.getOrganizationContact(batch.getOrgId(), 1);
+	List<utUser> orgUsers = usermanager.getOrganizationContact(batch.getOrgId(), 1);
 	
 	if (orgUsers != null && orgUsers.size() > 0) {
 	    if (orgUsers.get(0).getStatus() == true && !"".equals(orgUsers.get(0).getEmail())) {
@@ -2911,7 +2911,7 @@ public class transactionInManagerImpl implements transactionInManager {
 		    //having log in new table and checking userActivity as if it is reset manually by user and gets stuck again it wont' retry and we want it to retry at least once each time it is reset
 		    try {
 			//log user activity
-			UserActivity ua = new UserActivity();
+			utUserActivity ua = new utUserActivity();
 			ua.setUserId(0);
 			ua.setFeatureId(0);
 			ua.setAccessMethod("System");
@@ -2925,7 +2925,7 @@ public class transactionInManagerImpl implements transactionInManager {
 		} else {
 		    try {
 			//log user activity
-			UserActivity ua = new UserActivity();
+			utUserActivity ua = new utUserActivity();
 			ua.setUserId(0);
 			ua.setFeatureId(0);
 			ua.setAccessMethod("System");
@@ -3031,7 +3031,7 @@ public class transactionInManagerImpl implements transactionInManager {
 			    //having log in new table and checking userActivity as if it is reset manually by user and gets stuck again it wont' retry and we want it to retry at least once each time it is reset
 			    try {
 				//log user activity
-				UserActivity ua = new UserActivity();
+				utUserActivity ua = new utUserActivity();
 				ua.setUserId(0);
 				ua.setFeatureId(0);
 				ua.setAccessMethod("System");
@@ -3045,7 +3045,7 @@ public class transactionInManagerImpl implements transactionInManager {
 			} else {
 			    try {
 				//log user activity
-				UserActivity ua = new UserActivity();
+				utUserActivity ua = new utUserActivity();
 				ua.setUserId(0);
 				ua.setFeatureId(0);
 				ua.setAccessMethod("System");
@@ -3128,7 +3128,7 @@ public class transactionInManagerImpl implements transactionInManager {
     }
 
     @Override
-    public void sendExportEmail(User userDetails) throws Exception {
+    public void sendExportEmail(utUser userDetails) throws Exception {
 	String exportMessage = "Dear " + userDetails.getFirstName() + ", <br/>Please login to download your referral activity export.  Thank you.";
 	mailMessage mail = new mailMessage();
 	mail.setfromEmailAddress("support@health-e-link.net");
@@ -3245,7 +3245,7 @@ public class transactionInManagerImpl implements transactionInManager {
 
 	Integer newRestAPIMesageId = 0;
 
-	configuration configDetails = configurationManager.getConfigurationById(configId);
+	utConfiguration configDetails = configurationManager.getConfigurationById(configId);
 
 	try {
 
@@ -3387,8 +3387,8 @@ public class transactionInManagerImpl implements transactionInManager {
 
 	    } else {
 
-		//Get the configuration details
-		configuration configDetails = configurationManager.getConfigurationById(ct.getconfigId());
+		//Get the utConfiguration details
+		utConfiguration configDetails = configurationManager.getConfigurationById(ct.getconfigId());
 
 		// Check the rest API Type
 		// Rest API Type = 1 ** Source message requires full processing
@@ -3454,7 +3454,7 @@ public class transactionInManagerImpl implements transactionInManager {
 				    }
 
 				    //Add user activity for the batch
-				    UserActivity ua = new UserActivity();
+				    utUserActivity ua = new utUserActivity();
 				    ua.setUserId(0);
 				    ua.setFeatureId(0);
 				    ua.setBatchUploadId(batchUploadId);
@@ -3466,7 +3466,7 @@ public class transactionInManagerImpl implements transactionInManager {
 				    sysErrors = updateRestAPIMessage(APIMessage);
 
 				    //Add user activity for the batch
-				    UserActivity ua = new UserActivity();
+				    utUserActivity ua = new utUserActivity();
 				    ua.setUserId(0);
 				    ua.setFeatureId(0);
 				    ua.setBatchUploadId(batchUploadId);
@@ -3492,7 +3492,7 @@ public class transactionInManagerImpl implements transactionInManager {
 		    batchInfo.setEncodingId(encodingId);
 
 		    //find user 
-		    List<User> users = new ArrayList<>();
+		    List<utUser> users = new ArrayList<>();
 
 		    if (configId != 0) {
 			users = usermanager.getSendersForConfig(Arrays.asList(configId));
@@ -3577,7 +3577,7 @@ public class transactionInManagerImpl implements transactionInManager {
 		    batchInfo.settotalRecordCount(1); // need to be at least one to show up in activites
 		    if (batchInfo.getConfigId() != 0 && batchInfo.getstatusId() == 2) {
 
-			//If configuration is set for passthru
+			//If utConfiguration is set for passthru
 			if (configDetails.getConfigurationType() == 2) {
 			    batchInfo.setstatusId(24);
 			    statusId = 24;
@@ -3608,7 +3608,7 @@ public class transactionInManagerImpl implements transactionInManager {
 	     */
 	    try {
 		//log user activity
-		UserActivity ua = new UserActivity();
+		utUserActivity ua = new utUserActivity();
 		ua.setUserId(0);
 		ua.setFeatureId(0);
 		ua.setAccessMethod("System");
@@ -3705,12 +3705,12 @@ public class transactionInManagerImpl implements transactionInManager {
 		Date date = new Date();
 
 		//get transport & config details
-		configuration configDetails = configurationManager.getConfigurationById(configId);
+		utConfiguration configDetails = configurationManager.getConfigurationById(configId);
 		configurationTransport transportDetails = configurationtransportmanager.getTransportDetails(configDetails.getId());
 
 		String utbatchName = new StringBuilder().append(transportDetails.gettransportMethodId()).append("_m_").append(configDetails.getorgId()).append(configDetails.getMessageTypeId()).append(dateFormat.format(date)).toString();
 
-		/* Get the userId for the configuration */
+		/* Get the userId for the utConfiguration */
 		List<configurationConnection> connections = configurationManager.getConnectionsBySrcAndTargetConfigurations(batchUploadDetails.getConfigId(), configDetails.getId());
 
 		int userId = 0;
@@ -3852,15 +3852,15 @@ public class transactionInManagerImpl implements transactionInManager {
 	//Get the batch details
 	batchUploads batchDetails = transactionInDAO.getBatchDetails(batchId);
 
-	//Get the configuration details
-	configuration configDetails = configurationManager.getConfigurationById(batchDetails.getConfigId());
+	//Get the utConfiguration details
+	utConfiguration configDetails = configurationManager.getConfigurationById(batchDetails.getConfigId());
 	
 	//Get the list of targets for this batch
 	List<configurationConnection> batchTargetList = getPassThruBatchTargets(batchId, true);
 	
 	for (configurationConnection bt : batchTargetList) {
 	    
-	    configuration tgtconfigDetails = configurationManager.getConfigurationById(bt.gettargetConfigId());
+	    utConfiguration tgtconfigDetails = configurationManager.getConfigurationById(bt.gettargetConfigId());
 	    
 	    /*batchUploadSummary uploadSummary = new batchUploadSummary();
 	    uploadSummary.setbatchId(batchId);
@@ -3890,7 +3890,7 @@ public class transactionInManagerImpl implements transactionInManager {
 
 		String utbatchName = new StringBuilder().append(transportDetails.gettransportMethodId()).append("_m_").append(tgtconfigDetails.getorgId()).append(tgtconfigDetails.getMessageTypeId()).append(dateFormat.format(date)).toString();
 
-		/* Get the userId for the configuration */
+		/* Get the userId for the utConfiguration */
 		List<configurationConnection> connections = configurationManager.getConnectionsBySrcAndTargetConfigurations(batchDetails.getConfigId(), tgtconfigDetails.getId());
 
 		int userId = 0;

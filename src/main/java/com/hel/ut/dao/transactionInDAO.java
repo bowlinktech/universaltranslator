@@ -11,8 +11,8 @@ import com.hel.ut.model.CrosswalkData;
 import com.hel.ut.model.Macros;
 import com.hel.ut.model.MoveFilesLog;
 import com.hel.ut.model.RestAPIMessagesIn;
-import com.hel.ut.model.User;
-import com.hel.ut.model.UserActivity;
+import com.hel.ut.model.utUser;
+import com.hel.ut.model.utUserActivity;
 import com.hel.ut.model.WSMessagesIn;
 import com.hel.ut.model.batchDownloads;
 import com.hel.ut.model.batchRetry;
@@ -118,13 +118,13 @@ public interface transactionInDAO {
 
     List<batchUploads> getAllUploadedBatches(Date fromDate, Date toDate, Integer fetchSize, String batchName) throws Exception;
 
-    boolean checkPermissionForBatch(User userInfo, batchUploads batchInfo);
+    boolean checkPermissionForBatch(utUser userInfo, batchUploads batchInfo);
 
     ConfigErrorInfo setConfigErrorInfo(Integer batchId, Integer errorCode, ConfigErrorInfo configErrorInfo);
 
     ConfigErrorInfo getHeaderForConfigErrorInfo(Integer batchId, ConfigErrorInfo configErrorInfo, List<Integer> rptFieldArray);
 
-    List<UserActivity> getBatchUserActivities(batchUploads batchInfo, boolean foroutboundProcessing);
+    List<utUserActivity> getBatchUserActivities(batchUploads batchInfo, boolean foroutboundProcessing);
 
     Integer insertSFTPRun(MoveFilesLog sftpJob);
 

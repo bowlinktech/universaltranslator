@@ -7,11 +7,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.hel.ut.dao.userDAO;
-import com.hel.ut.model.User;
+import com.hel.ut.model.utUser;
 import com.hel.ut.service.userManager;
-import com.hel.ut.model.UserActivity;
+import com.hel.ut.model.utUserActivity;
 import com.hel.ut.model.configurationConnectionSenders;
-import com.hel.ut.model.userLogin;
+import com.hel.ut.model.utUserLogin;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
@@ -27,29 +27,29 @@ public class userManagerImpl implements userManager {
 
     @Override
 
-    public Integer createUser(User user) {
+    public Integer createUser(utUser user) {
         Integer lastId = null;
         lastId = (Integer) userDAO.createUser(user);
         return lastId;
     }
 
     @Override
-    public void updateUser(User user) {
+    public void updateUser(utUser user) {
         userDAO.updateUser(user);
     }
 
     @Override
-    public User getUserById(int userId) {
+    public utUser getUserById(int userId) {
         return userDAO.getUserById(userId);
     }
 
     @Override
-    public List<User> getUsersByOrganization(int orgId) {
+    public List<utUser> getUsersByOrganization(int orgId) {
         return userDAO.getUsersByOrganization(orgId);
     }
 
     @Override
-    public User getUserByUserName(String username) {
+    public utUser getUserByUserName(String username) {
         return userDAO.getUserByUserName(username);
     }
 
@@ -64,7 +64,7 @@ public class userManagerImpl implements userManager {
     }
 
     @Override
-    public List<User> getOrganizationContact(int orgId, int mainContact) {
+    public List<utUser> getOrganizationContact(int orgId, int mainContact) {
         return userDAO.getOrganizationContact(orgId, mainContact);
     }
 
@@ -74,52 +74,52 @@ public class userManagerImpl implements userManager {
     }
 
     @Override
-    public User getUserByResetCode(String resetCode) {
+    public utUser getUserByResetCode(String resetCode) {
         return userDAO.getUserByResetCode(resetCode);
     }
 
     @Override
-    public void insertUserLog(UserActivity userActivity) {
+    public void insertUserLog(utUserActivity userActivity) {
         userDAO.insertUserLog(userActivity);
     }
 
     @Override
-    public UserActivity getUAById(Integer uaId) {
+    public utUserActivity getUAById(Integer uaId) {
         return userDAO.getUAById(uaId);
     }
 
     @Override
-    public List<User> getUserByTypeByOrganization(int orgId) {
+    public List<utUser> getUserByTypeByOrganization(int orgId) {
         return userDAO.getUserByTypeByOrganization(orgId);
     }
 
     @Override
-    public List<User> getSendersForConfig(List<Integer> configIds) {
+    public List<utUser> getSendersForConfig(List<Integer> configIds) {
         return userDAO.getSendersForConfig(configIds);
     }
 
     @Override
-    public List<User> getOrgUsersForConfig(List<Integer> configIds) {
+    public List<utUser> getOrgUsersForConfig(List<Integer> configIds) {
         return userDAO.getOrgUsersForConfig(configIds);
     }
 
     @Override
-    public List<User> getUserConnectionListSending(Integer configId) {
+    public List<utUser> getUserConnectionListSending(Integer configId) {
         return userDAO.getUserConnectionListSending(configId);
     }
 
     @Override
-    public List<User> getUserConnectionListReceiving(Integer configId) {
+    public List<utUser> getUserConnectionListReceiving(Integer configId) {
         return userDAO.getUserConnectionListReceiving(configId);
     }
 
     @Override
-    public List<User> getAllUsers() {
+    public List<utUser> getAllUsers() {
         return userDAO.getAllUsers();
     }
 
     @Override
-    public void updateUserActivity(UserActivity userActivity) {
+    public void updateUserActivity(utUserActivity userActivity) {
         userDAO.updateUserActivity(userActivity);
     }
 
@@ -175,7 +175,7 @@ public class userManagerImpl implements userManager {
     }
 
     @Override
-    public User encryptPW(User user) throws Exception {
+    public utUser encryptPW(utUser user) throws Exception {
         //first we get salt
         byte[] salt = generateSalt();
         user.setRandomSalt(salt);
@@ -187,17 +187,17 @@ public class userManagerImpl implements userManager {
     }
 
     @Override
-    public List<String> getUserRoles(User user) throws Exception {
+    public List<String> getUserRoles(utUser user) throws Exception {
         return userDAO.getUserRoles(user);
     }
 
     @Override
-    public void updateUserOnly(User user) throws Exception {
+    public void updateUserOnly(utUser user) throws Exception {
         userDAO.updateUserOnly(user);
     }
 
     @Override
-    public List<User> getUsersByStatuRolesAndOrg(boolean status, List<Integer> rolesToExclude, List<Integer> orgs, boolean include)
+    public List<utUser> getUsersByStatuRolesAndOrg(boolean status, List<Integer> rolesToExclude, List<Integer> orgs, boolean include)
             throws Exception {
         return userDAO.getUsersByStatuRolesAndOrg(status, rolesToExclude, orgs, include);
 
@@ -224,27 +224,27 @@ public class userManagerImpl implements userManager {
     }
 
     @Override
-    public List<User> getUsersByOrganizationWithLogins(int orgId) {
+    public List<utUser> getUsersByOrganizationWithLogins(int orgId) {
         return userDAO.getUsersByOrganizationWithLogins(orgId);
     }
     
     @Override
-    public List<userLogin> getUserLogins(int userId) {
+    public List<utUserLogin> getUserLogins(int userId) {
         return userDAO.getUserLogins(userId);
     }
     
     @Override
-    public List<User> getAllUsersByOrganization(int orgId) {
+    public List<utUser> getAllUsersByOrganization(int orgId) {
         return userDAO.getAllUsersByOrganization(orgId);
     }
     
     @Override
-    public List<User> getSuccessEmailSendersForConfig(Integer targetConfigId) {
+    public List<utUser> getSuccessEmailSendersForConfig(Integer targetConfigId) {
 	return userDAO.getSuccessEmailSendersForConfig(targetConfigId);
     }
     
     @Override
-    public List<User> getSuccessEmailReceiversForConfig(Integer targetConfigId) {
+    public List<utUser> getSuccessEmailReceiversForConfig(Integer targetConfigId) {
 	return userDAO.getSuccessEmailReceiversForConfig(targetConfigId);
     }
 }

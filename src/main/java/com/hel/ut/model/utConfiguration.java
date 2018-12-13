@@ -16,7 +16,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 @Entity
 @Table(name = "CONFIGURATIONS")
-public class configuration {
+public class utConfiguration {
 
     @Transient
     private String orgName = null, messageTypeName = null, transportMethod = null;

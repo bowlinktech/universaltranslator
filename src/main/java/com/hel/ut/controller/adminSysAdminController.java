@@ -22,13 +22,13 @@ import com.hel.ut.service.sysAdminManager;
 import com.hel.ut.service.userManager;
 import com.hel.ut.model.Macros;
 import com.hel.ut.model.MoveFilesLog;
-import com.hel.ut.model.User;
-import com.hel.ut.model.UserActivity;
+import com.hel.ut.model.utUser;
+import com.hel.ut.model.utUserActivity;
 import com.hel.ut.model.custom.LogoInfo;
 import com.hel.ut.model.custom.LookUpTable;
 import com.hel.ut.model.custom.TableData;
 import com.hel.ut.model.lutables.lu_ProcessStatus;
-import com.hel.ut.model.userLogin;
+import com.hel.ut.model.utUserLogin;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -81,7 +81,7 @@ public class adminSysAdminController {
         Integer filePaths = sysAdminManager.getMoveFilesLog(1).size();
 	
 	//Get a list of system admin users
-	List<User> systemAdmins = usermanager.getAllUsersByOrganization(1);
+	List<utUser> systemAdmins = usermanager.getAllUsersByOrganization(1);
 	mav.addObject("systemAdmins", systemAdmins.size());
         
         mav.addObject("totalMacroRows", totalMacroRows);
@@ -516,10 +516,10 @@ public class adminSysAdminController {
         ModelAndView mav = new ModelAndView();
         mav.setViewName("/administrator/sysadmin/adminInfo/profile");
 	
-	User userDetails;
+	utUser userDetails;
 	
 	if(adminId == 0) {
-	    userDetails = new User();
+	    userDetails = new utUser();
 	    userDetails.setOrgId(1);
 	    mav.addObject("btnValue", "Create");
 	}
@@ -534,7 +534,7 @@ public class adminSysAdminController {
 
     @RequestMapping(value = "/adminInfo", method = RequestMethod.POST)
     public @ResponseBody
-    ModelAndView updateAdminInfo(HttpServletRequest request, @ModelAttribute(value = "userdetails") User userdetails,
+    ModelAndView updateAdminInfo(HttpServletRequest request, @ModelAttribute(value = "userdetails") utUser userdetails,
             Authentication authentication, BindingResult result) throws Exception {
 
         ModelAndView mav = new ModelAndView();
@@ -545,10 +545,10 @@ public class adminSysAdminController {
 	
 	//Check for another system admin with the same username
 	try {
-	    List<User> systemAdmins = usermanager.getUserByTypeByOrganization(1);
+	    List<utUser> systemAdmins = usermanager.getUserByTypeByOrganization(1);
 	    
 	    if(systemAdmins != null) {
-		for(User systemAdmin : systemAdmins) {
+		for(utUser systemAdmin : systemAdmins) {
 		    if((systemAdmin.getId() != userdetails.getId()) && (systemAdmin.getUsername().equals(userdetails.getUsername()))) {
 			usernameNotTaken = false;
 		    }
@@ -605,7 +605,7 @@ public class adminSysAdminController {
         mav.setViewName("/administrator/sysadmin/loginAs");
 
         //get all active users
-        List<User> usersList = usermanager.getUsersByStatuRolesAndOrg(true, Arrays.asList(1), Arrays.asList(1), false);
+        List<utUser> usersList = usermanager.getUsersByStatuRolesAndOrg(true, Arrays.asList(1), Arrays.asList(1), false);
         mav.addObject("usersList", usersList);
 
         return mav;
@@ -616,7 +616,7 @@ public class adminSysAdminController {
     ModelAndView checkAdminPW(HttpServletRequest request, Authentication authentication) throws Exception {
 
         ModelAndView mav = new ModelAndView();
-        User user = usermanager.getUserByUserName(authentication.getName());
+        utUser user = usermanager.getUserByUserName(authentication.getName());
 
         mav.setViewName("/administrator/sysadmin/loginAs");
 
@@ -645,9 +645,9 @@ public class adminSysAdminController {
     @RequestMapping(value = "/getLog", method = {RequestMethod.GET})
     public void getLog(HttpSession session, HttpServletResponse response, Authentication authentication) throws Exception {
     	
-    	User userInfo = usermanager.getUserByUserName(authentication.getName());
+    	utUser userInfo = usermanager.getUserByUserName(authentication.getName());
     	//log user activity
- 	   UserActivity ua = new UserActivity();
+ 	   utUserActivity ua = new utUserActivity();
  	   ua.setUserId(userInfo.getId());
  	   ua.setAccessMethod("GET");
  	   ua.setPageAccess("/getLog");
@@ -704,7 +704,7 @@ public class adminSysAdminController {
         ModelAndView mav = new ModelAndView();
         mav.setViewName("/administrator/sysadmin/systemadmins");
 
-	List<User> systemAdmins = usermanager.getUsersByOrganizationWithLogins(1);
+	List<utUser> systemAdmins = usermanager.getUsersByOrganizationWithLogins(1);
 	mav.addObject("systemAdmins", systemAdmins);
 
         return mav;
@@ -726,7 +726,7 @@ public class adminSysAdminController {
         ModelAndView mav = new ModelAndView();
         mav.setViewName("/administrator/sysadmin/adminInfo/logins");
 	
-	List<userLogin> systemAdminLogins = usermanager.getUserLogins(adminId);
+	List<utUserLogin> systemAdminLogins = usermanager.getUserLogins(adminId);
 	
         mav.addObject("systemAdminLogins", systemAdminLogins);
         return mav;

@@ -15,11 +15,11 @@ import com.hel.ut.model.HL7Elements;
 import com.hel.ut.model.HL7Segments;
 import com.hel.ut.model.Organization;
 import com.hel.ut.model.Transaction;
-import com.hel.ut.model.UserActivity;
+import com.hel.ut.model.utUserActivity;
 import com.hel.ut.model.batchDLRetry;
 import com.hel.ut.model.batchDownloads;
 import com.hel.ut.model.batchUploads;
-import com.hel.ut.model.configuration;
+import com.hel.ut.model.utConfiguration;
 import com.hel.ut.model.configurationCCDElements;
 import com.hel.ut.model.configurationDataTranslations;
 import com.hel.ut.model.configurationFormFields;
@@ -191,11 +191,11 @@ public class transactionOutManagerImpl implements transactionOutManager {
     }
 
     /**
-     * The 'translateTargetRecords' function will attempt to translate the target records based on the translation details set up in the target configuration.
+     * The 'translateTargetRecords' function will attempt to translate the target records based on the translation details set up in the target utConfiguration.
      *
      * @param transactionTargetId The id of the target transaction to be translated
      * @param batchId The id of the batch the target transaction belongs to
-     * @param configId The id of the target configuration.
+     * @param configId The id of the target utConfiguration.
      *
      * @return This function will return either TRUE (If translation completed with no errors) OR FALSE (If translation failed for any reason)
      */
@@ -1492,7 +1492,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
     }
 
     @Override
-    public String generateDLBatchName(configurationTransport transportDetails, configuration configDetails,
+    public String generateDLBatchName(configurationTransport transportDetails, utConfiguration configDetails,
 	    batchUploads batchUploadDetails, Date date) throws Exception {
 
 	DateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmssS");
@@ -1587,7 +1587,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
 
 
     /**
-     * this will select an upload batch that has status of 24, check its config to make sure it is for mass translation and start translating configuration that is for mass translation
+     * this will select an upload batch that has status of 24, check its config to make sure it is for mass translation and start translating utConfiguration that is for mass translation
      */
     @Override
     public void processMassOutputBatches() throws Exception {
@@ -1638,7 +1638,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
 			//having log in new table and checking userActivity as if it is reset manually by user and gets stuck again it wont' retry and we want it to retry at least once each time it is reset
 			try {
 			    //log user activity
-			    UserActivity ua = new UserActivity();
+			    utUserActivity ua = new utUserActivity();
 			    ua.setUserId(0);
 			    ua.setFeatureId(0);
 			    ua.setAccessMethod("System");
@@ -1652,7 +1652,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
 		    } else {
 			try {
 			    //log user activity
-			    UserActivity ua = new UserActivity();
+			    utUserActivity ua = new utUserActivity();
 			    ua.setUserId(0);
 			    ua.setFeatureId(0);
 			    ua.setAccessMethod("System");
@@ -1725,7 +1725,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
 
 	try {
 	    //log user activity
-	    UserActivity ua = new UserActivity();
+	    utUserActivity ua = new utUserActivity();
 	    ua.setUserId(0);
 	    ua.setFeatureId(0);
 	    ua.setAccessMethod("System");
@@ -1760,7 +1760,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
 	//we get the configs for the file
 	clearDownloadBatch(batchDownload.getId());
 
-	configuration configDetails = configurationManager.getConfigurationById(batchDownload.getConfigId());
+	utConfiguration configDetails = configurationManager.getConfigurationById(batchDownload.getConfigId());
 	configurationTransport transportDetails = configurationTransportManager.getTransportDetails(batchDownload.getConfigId());
 
 	Integer statusId = 37;

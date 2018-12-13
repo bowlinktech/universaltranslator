@@ -17,8 +17,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import com.hel.ut.model.Organization;
-import com.hel.ut.model.User;
-import com.hel.ut.model.UserActivity;
+import com.hel.ut.model.utUser;
+import com.hel.ut.model.utUserActivity;
 import com.hel.ut.service.fileManager;
 import com.hel.ut.service.organizationManager;
 import com.hel.ut.service.userManager;
@@ -61,12 +61,12 @@ public class fileDownloadController {
         String desc = "";
         try {
 
-            User userDetails = usermanager.getUserByUserName(authentication.getName());
+            utUser userDetails = usermanager.getUserByUserName(authentication.getName());
 
             /**
              * tracking *
              */
-            UserActivity ua = new UserActivity();
+            utUserActivity ua = new utUserActivity();
             ua.setUserId(userDetails.getId());
             ua.setAccessMethod(request.getMethod());
             ua.setPageAccess("/downloadFile.do"); // include mapping in case we want to send them back to page in the future

@@ -11,11 +11,11 @@ import com.hel.ut.model.Organization;
 import com.hel.ut.model.RestAPIMessagesIn;
 import com.hel.ut.model.RestAPIMessagesOut;
 import com.hel.ut.model.TransportMethod;
-import com.hel.ut.model.User;
-import com.hel.ut.model.UserActivity;
+import com.hel.ut.model.utUser;
+import com.hel.ut.model.utUserActivity;
 import com.hel.ut.model.batchDownloads;
 import com.hel.ut.model.batchUploads;
-import com.hel.ut.model.configuration;
+import com.hel.ut.model.utConfiguration;
 import com.hel.ut.model.configurationFormFields;
 import com.hel.ut.model.wsMessagesOut;
 import com.hel.ut.model.custom.TableData;
@@ -321,9 +321,9 @@ public class adminProcessingActivity {
             if (!uploadedBatches.isEmpty()) {
 		
 		//we can map the process status so we only have to query once
-                List<configuration> configurationList = configurationManager.getConfigurations();
+                List<utConfiguration> configurationList = configurationManager.getConfigurations();
                 Map<Integer, String> cMap = new HashMap<Integer, String>();
-                for (configuration c : configurationList) {
+                for (utConfiguration c : configurationList) {
                     cMap.put(c.getId(), c.getconfigName());
                 }
 		
@@ -349,9 +349,9 @@ public class adminProcessingActivity {
                 }
 
                 //same goes for users
-                List<User> users = usermanager.getAllUsers();
+                List<utUser> users = usermanager.getAllUsers();
                 Map<Integer, String> userMap = new HashMap<Integer, String>();
-                for (User user : users) {
+                for (utUser user : users) {
                     userMap.put(user.getId(), (user.getFirstName() + " " + user.getLastName()));
                 }
 
@@ -427,9 +427,9 @@ public class adminProcessingActivity {
             if (!uploadedBatches.isEmpty()) {
 		
 		//we can map the process status so we only have to query once
-                List<configuration> configurationList = configurationManager.getConfigurations();
+                List<utConfiguration> configurationList = configurationManager.getConfigurations();
                 Map<Integer, String> cMap = new HashMap<Integer, String>();
-                for (configuration c : configurationList) {
+                for (utConfiguration c : configurationList) {
                     cMap.put(c.getId(), c.getconfigName());
                 }
 		
@@ -455,9 +455,9 @@ public class adminProcessingActivity {
                 }
 
                 //same goes for users
-                List<User> users = usermanager.getAllUsers();
+                List<utUser> users = usermanager.getAllUsers();
                 Map<Integer, String> userMap = new HashMap<Integer, String>();
-                for (User user : users) {
+                for (utUser user : users) {
                     userMap.put(user.getId(), (user.getFirstName() + " " + user.getLastName()));
                 }
 
@@ -545,9 +545,9 @@ public class adminProcessingActivity {
             if (!Batches.isEmpty()) {
 		
 		//we can map the process status so we only have to query once
-                List<configuration> configurationList = configurationManager.getConfigurations();
+                List<utConfiguration> configurationList = configurationManager.getConfigurations();
                 Map<Integer, String> cMap = new HashMap<Integer, String>();
-                for (configuration c : configurationList) {
+                for (utConfiguration c : configurationList) {
                     cMap.put(c.getId(), c.getconfigName());
                 }
 
@@ -573,9 +573,9 @@ public class adminProcessingActivity {
                 }
 
                 //same goes for users
-                List<User> users = usermanager.getAllUsers();
+                List<utUser> users = usermanager.getAllUsers();
                 Map<Integer, String> userMap = new HashMap<Integer, String>();
-                for (User user : users) {
+                for (utUser user : users) {
                     userMap.put(user.getId(), (user.getFirstName() + " " + user.getLastName()));
                 }
 
@@ -670,9 +670,9 @@ public class adminProcessingActivity {
             List<Integer> statusIds = new ArrayList();
 	    
 	    //we can map the process status so we only have to query once
-	    List<configuration> configurationList = configurationManager.getConfigurations();
+	    List<utConfiguration> configurationList = configurationManager.getConfigurations();
 	    Map<Integer, String> cMap = new HashMap<Integer, String>();
-	    for (configuration c : configurationList) {
+	    for (utConfiguration c : configurationList) {
 		cMap.put(c.getId(), c.getconfigName());
 	    }
 
@@ -698,9 +698,9 @@ public class adminProcessingActivity {
             }
 
             //same goes for users
-            List<User> users = usermanager.getAllUsers();
+            List<utUser> users = usermanager.getAllUsers();
             Map<Integer, String> userMap = new HashMap<Integer, String>();
-            for (User user : users) {
+            for (utUser user : users) {
                 userMap.put(user.getId(), (user.getFirstName() + " " + user.getLastName()));
             }
 
@@ -938,7 +938,7 @@ public class adminProcessingActivity {
 
             try {
                 /* Get all the user activities for the batch */
-                List<UserActivity> uas = transactionInManager.getBatchActivities(batchDetails, true, false);
+                List<utUserActivity> uas = transactionInManager.getBatchActivities(batchDetails, true, false);
                 mav.addObject("userActivities", uas);
 
             } catch (Exception e) {
@@ -966,7 +966,7 @@ public class adminProcessingActivity {
         mav.setViewName("/administrator/processing-activities/transactionList");
 
         /* Get the details of the selected status */
-        UserActivity userActivity = usermanager.getUAById(uaId);
+        utUserActivity userActivity = usermanager.getUAById(uaId);
 
         /* Get the details of the batch */
         batchUploads batchDetails = new batchUploads();
@@ -1108,7 +1108,7 @@ public class adminProcessingActivity {
             @RequestParam(value = "batchOption", required = true) String batchOption) throws Exception {
 
         String strBatchOption = "";
-        User userInfo = usermanager.getUserByUserName(authentication.getName());
+        utUser userInfo = usermanager.getUserByUserName(authentication.getName());
         batchUploads batchDetails = transactionInManager.getBatchDetails(batchId);
 
         if (userInfo != null && batchDetails != null) {
@@ -1168,7 +1168,7 @@ public class adminProcessingActivity {
         }
 
         //log user activity
-        UserActivity ua = new UserActivity();
+        utUserActivity ua = new utUserActivity();
         ua.setUserId(userInfo.getId());
         ua.setAccessMethod("POST");
         ua.setPageAccess("/inboundBatchOptions");
@@ -1239,7 +1239,7 @@ public class adminProcessingActivity {
         int day = 1;
         Date originalDate = new Date(year, month, day);
 
-        User userInfo = (User) session.getAttribute("userDetails");
+        utUser userInfo = (utUser) session.getAttribute("userDetails");
 
         /**
          * insert a new export *
@@ -1513,9 +1513,9 @@ public class adminProcessingActivity {
             if (!rejectedBatches.isEmpty()) {
 		
 		//we can map the process status so we only have to query once
-                List<configuration> configurationList = configurationManager.getConfigurations();
+                List<utConfiguration> configurationList = configurationManager.getConfigurations();
                 Map<Integer, String> cMap = new HashMap<Integer, String>();
-                for (configuration c : configurationList) {
+                for (utConfiguration c : configurationList) {
                     cMap.put(c.getId(), c.getconfigName());
                 }
 
@@ -1541,9 +1541,9 @@ public class adminProcessingActivity {
                 }
 
                 //same goes for users
-                List<User> users = usermanager.getAllUsers();
+                List<utUser> users = usermanager.getAllUsers();
                 Map<Integer, String> userMap = new HashMap<Integer, String>();
-                for (User user : users) {
+                for (utUser user : users) {
                     userMap.put(user.getId(), (user.getFirstName() + " " + user.getLastName()));
                 }
 
@@ -1635,9 +1635,9 @@ public class adminProcessingActivity {
                 }
 
                 //same goes for users
-                List<User> users = usermanager.getAllUsers();
+                List<utUser> users = usermanager.getAllUsers();
                 Map<Integer, String> userMap = new HashMap<Integer, String>();
-                for (User user : users) {
+                for (utUser user : users) {
                     userMap.put(user.getId(), (user.getFirstName() + " " + user.getLastName()));
                 }
 
@@ -2002,12 +2002,12 @@ public class adminProcessingActivity {
     public void dlExport(@RequestParam String i, @RequestParam String v,
             HttpSession session, HttpServletResponse response) throws Exception {
 
-        User userDetails = new User();
+        utUser userDetails = new utUser();
         Integer exportId = 0;
 
         boolean canViewReport = false;
         if (session.getAttribute("userDetails") != null) {
-            userDetails = (User) session.getAttribute("userDetails");
+            userDetails = (utUser) session.getAttribute("userDetails");
             //1 decrpt and get the reportId
             decryptObject decrypt = new decryptObject();
             Object obj = decrypt.decryptObject(i, v);
@@ -2025,7 +2025,7 @@ public class adminProcessingActivity {
             }
             //we log them, grab report for them to download
             //if report doesn't exist we send them back to list with a message
-            UserActivity ua = new UserActivity();
+            utUserActivity ua = new utUserActivity();
             ua.setUserId(userDetails.getId());
             ua.setAccessMethod("POST");
             ua.setPageAccess("/dlReport");
@@ -2098,7 +2098,7 @@ public class adminProcessingActivity {
             //someone somehow got to this link, we just log
             //we log who is accessing 
             //now we have report id, we check to see which program it belongs to and if the user has permission
-            UserActivity ua = new UserActivity();
+            utUserActivity ua = new utUserActivity();
             ua.setUserId(userDetails.getId());
             ua.setAccessMethod("POST");
             ua.setPageAccess("/dlReport");
@@ -2113,12 +2113,12 @@ public class adminProcessingActivity {
     public ModelAndView delExport(@RequestParam String i, @RequestParam String v,
             HttpSession session, HttpServletResponse response) throws Exception {
 
-        User userDetails = new User();
+        utUser userDetails = new utUser();
         Integer exportId = 0;
 
         boolean canDeleteReport = false;
         if (session.getAttribute("userDetails") != null) {
-            userDetails = (User) session.getAttribute("userDetails");
+            userDetails = (utUser) session.getAttribute("userDetails");
             //1 decrpt and get the reportId
             decryptObject decrypt = new decryptObject();
             Object obj = decrypt.decryptObject(i, v);
@@ -2136,7 +2136,7 @@ public class adminProcessingActivity {
             }
             //we log them, grab report for them to download
             //if report doesn't exist we send them back to list with a message
-            UserActivity ua = new UserActivity();
+            utUserActivity ua = new utUserActivity();
             ua.setUserId(userDetails.getId());
             ua.setAccessMethod("GET");
             ua.setPageAccess("/delReport");
@@ -2156,7 +2156,7 @@ public class adminProcessingActivity {
             //someone somehow got to this link, we just log
             //we log who is accessing 
             //now we have report id, we check to see which program it belongs to and if the user has permission
-            UserActivity ua = new UserActivity();
+            utUserActivity ua = new utUserActivity();
             ua.setUserId(userDetails.getId());
             ua.setAccessMethod("GET");
             ua.setPageAccess("/dlReport");
@@ -2937,10 +2937,10 @@ public class adminProcessingActivity {
             List<batchUploads> uploadedBatches = transactionInManager.getAllUploadedBatches(fromDate, toDate, fetchCount, "");
 
 	    //we can map the process status so we only have to query once
-	    List<configuration> configurationList = configurationManager.getConfigurations();
+	    List<utConfiguration> configurationList = configurationManager.getConfigurations();
 	    Map<Integer, String> cMap = new HashMap<Integer, String>();
 	    Map<Integer, Integer> cThresholdMap = new HashMap<Integer, Integer>();
-	    for (configuration c : configurationList) {
+	    for (utConfiguration c : configurationList) {
 		cMap.put(c.getId(), c.getconfigName());
 		cThresholdMap.put(c.getId(), c.getThreshold());
 	    }
@@ -2967,9 +2967,9 @@ public class adminProcessingActivity {
 	    }
 
 	    //same goes for users
-	    List<User> users = usermanager.getAllUsers();
+	    List<utUser> users = usermanager.getAllUsers();
 	    Map<Integer, String> userMap = new HashMap<Integer, String>();
-	    for (User user : users) {
+	    for (utUser user : users) {
 		userMap.put(user.getId(), (user.getFirstName() + " " + user.getLastName()));
 	    }
 	    
@@ -3100,9 +3100,9 @@ public class adminProcessingActivity {
             if (!outboundBatches.isEmpty()) {
 		
 		//we can map the process status so we only have to query once
-                List<configuration> configurationList = configurationManager.getConfigurations();
+                List<utConfiguration> configurationList = configurationManager.getConfigurations();
                 Map<Integer, String> cMap = new HashMap<Integer, String>();
-                for (configuration c : configurationList) {
+                for (utConfiguration c : configurationList) {
                     cMap.put(c.getId(), c.getconfigName());
                 }
 		
@@ -3128,9 +3128,9 @@ public class adminProcessingActivity {
                 }
 
                 //same goes for users
-                List<User> users = usermanager.getAllUsers();
+                List<utUser> users = usermanager.getAllUsers();
                 Map<Integer, String> userMap = new HashMap<Integer, String>();
-                for (User user : users) {
+                for (utUser user : users) {
                     userMap.put(user.getId(), (user.getFirstName() + " " + user.getLastName()));
                 }
 		
@@ -3389,7 +3389,7 @@ public class adminProcessingActivity {
             @RequestParam(value = "batchOption", required = true) String batchOption) throws Exception {
 
         String strBatchOption = "";
-        User userInfo = usermanager.getUserByUserName(authentication.getName());
+        utUser userInfo = usermanager.getUserByUserName(authentication.getName());
 	
 	batchDownloads batchDetails = transactionOutManager.getBatchDetails(batchId);
 
@@ -3419,7 +3419,7 @@ public class adminProcessingActivity {
         }
 
         //log user activity
-        UserActivity ua = new UserActivity();
+        utUserActivity ua = new utUserActivity();
         ua.setUserId(userInfo.getId());
         ua.setAccessMethod("POST");
         ua.setPageAccess("/outnboundBatchOptions");
