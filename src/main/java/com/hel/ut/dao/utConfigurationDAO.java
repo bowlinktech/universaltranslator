@@ -25,7 +25,7 @@ import java.util.Date;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface configurationDAO {
+public interface utConfigurationDAO {
 
     Integer createConfiguration(utConfiguration configuration);
 

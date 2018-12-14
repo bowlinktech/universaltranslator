@@ -33,7 +33,6 @@ import com.hel.ut.model.custom.ConfigForInsert;
 import com.hel.ut.model.custom.IdAndFieldValue;
 import com.hel.ut.model.custom.batchErrorSummary;
 import com.hel.ut.model.referralActivityExports;
-import com.hel.ut.service.configurationTransportManager;
 import com.hel.ut.service.sysAdminManager;
 import com.hel.ut.service.userManager;
 
@@ -59,6 +58,7 @@ import org.hibernate.type.StandardBasicTypes;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
+import com.hel.ut.service.utConfigurationTransportManager;
 
 /**
  *
@@ -77,7 +77,7 @@ public class transactionInDAOImpl implements transactionInDAO {
     private userManager usermanager;
 
     @Autowired
-    private configurationTransportManager configurationtransportmanager;
+    private utConfigurationTransportManager configurationtransportmanager;
 
     //list of final status - these records we skip
     private List<Integer> transRELId = Arrays.asList(11, 12, 13, 16);

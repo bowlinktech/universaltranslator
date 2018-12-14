@@ -6,7 +6,6 @@
 package com.hel.ut.restAPI;
 
 import com.hel.ut.model.configurationTransport;
-import com.hel.ut.service.configurationTransportManager;
 import com.hel.ut.service.transactionInManager;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientHandlerException;
@@ -29,6 +28,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
+import com.hel.ut.service.utConfigurationTransportManager;
 
 /**
  * hfr-facilities/
@@ -40,7 +40,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class restful {
     
     @Autowired
-    private configurationTransportManager configurationtransportmanager;
+    private utConfigurationTransportManager configurationtransportmanager;
     
     @Autowired
     private transactionInManager transactionInManager;

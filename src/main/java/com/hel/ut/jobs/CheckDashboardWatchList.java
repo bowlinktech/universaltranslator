@@ -5,7 +5,6 @@
  */
 package com.hel.ut.jobs;
 
-import com.hel.ut.service.configurationManager;
 import com.registryKit.messenger.emailManager;
 import com.registryKit.messenger.emailMessage;
 
@@ -17,6 +16,7 @@ import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.context.support.SpringBeanAutowiringSupport;
+import com.hel.ut.service.utConfigurationManager;
 
 /**
  *
@@ -25,7 +25,7 @@ import org.springframework.web.context.support.SpringBeanAutowiringSupport;
 public class CheckDashboardWatchList implements Job {
 
     @Autowired
-    private configurationManager configurationManager;
+    private utConfigurationManager configurationManager;
 
     @Autowired
     private emailManager emailmanager;

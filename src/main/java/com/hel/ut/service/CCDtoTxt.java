@@ -30,10 +30,10 @@ public class CCDtoTxt {
     private organizationManager organizationmanager;
     
     @Autowired
-    private configurationManager configurationManager;
+    private utConfigurationManager configurationManager;
 
     @Autowired
-    private configurationTransportManager configurationTransportManager;
+    private utConfigurationTransportManager configurationTransportManager;
 
     public String TranslateCCDtoTxt(String fileLocation, String ccdFileName, int orgId, int configId) throws Exception {
 

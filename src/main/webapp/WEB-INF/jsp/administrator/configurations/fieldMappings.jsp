@@ -29,10 +29,10 @@
 	<div class="col-md-6">
 	    <section class="panel panel-default">
 		<div class="panel-heading">
-		    <div class="pull-right">
+		    <%--<div class="pull-right">
 			<a class="btn btn-primary btn-xs  btn-action" id="meetsStandard" data-toggle="tooltip" data-original-title="Click here to match to the starndard fields.">Meets Standard</a>
-		    </div>
-		    <h3 class="panel-title">Uploaded File Fields</h3>
+		    </div>--%>
+		    <h3 class="panel-title">Incoming File Fields</h3>
 		</div>
 		<div class="panel-body">
 		    <div class="form-container scrollable">
@@ -95,8 +95,18 @@
         </div>
         <div class="col-md-6">
             <section class="panel panel-default">
-                <div class="panel-heading">
-                    <h3 class="panel-title">Selected Message Template Fields</h3>
+                <div class="panel-heading templateFields" rel="${HELRegistryConfiguration}">
+		    <c:if test="${HELRegistryConfiguration}">
+			<div class="pull-right">
+			    <a class="btn btn-primary btn-xs" schemaname="${HELRegistrySchemaName}" id="loadConfigurationFields" data-toggle="tooltip" data-original-title="Click here to load the configuration fields.">Load Configuration Fields</a>
+			</div>
+		    </c:if>
+                    <h3 class="panel-title">
+			<c:choose>
+			    <c:when test="${HELRegistryConfiguration}">Health-e-Link Configuration Fields</c:when>
+			    <c:otherwise>Message Template Fields</c:otherwise>
+			</c:choose>
+		    </h3>
                 </div>
                 <div class="panel-body">
                     <div class="form-container scrollable">

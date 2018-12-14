@@ -34,7 +34,7 @@ public class utConfiguration {
 
     @NotNull(message = "The organization is a required field!")
     @Column(name = "orgId", nullable = false)
-    private int orgId;
+    private Integer orgId;
 
     @DateTimeFormat(pattern = "dd/MM/yyyy hh:mm:ss")
     @Column(name = "DATECREATED", nullable = true)
@@ -44,30 +44,32 @@ public class utConfiguration {
     private boolean status = false;
 
     @Column(name = "TYPE", nullable = false)
-    private int type = 1;
+    private Integer type = 1;
 
-    @NotNull(message = "The message type is a required field!")
     @Column(name = "MESSAGETYPEID", nullable = false)
-    private int messageTypeId = 0;
+    private Integer messageTypeId = 0;
 
     @Column(name = "STEPSCOMPLETED", nullable = false)
-    private int stepsCompleted = 0;
+    private Integer stepsCompleted = 0;
 
     @NoHtml
     @Column(name = "CONFIGNAME", nullable = false)
     private String configName;
 
     @Column(name = "SOURCETYPE", nullable = false)
-    private int sourceType = 1;
+    private Integer sourceType = 1;
 
     @Column(name = "ASSOCIATEDMESSAGETYPEID", nullable = false)
-    private int associatedMessageTypeId = 0;
+    private Integer associatedMessageTypeId = 0;
     
     @Column(name = "THRESHOLD", nullable = false)
-    private int threshold = 100;
+    private Integer threshold = 100;
     
     @Column(name = "configurationType", nullable = false)
-    private int configurationType = 1;
+    private Integer configurationType = 1;
+    
+    @Column(name = "helRegistryConfigId", nullable = false)
+    private Integer helRegistryConfigId = 0;
 
     public int getId() {
         return id;
@@ -77,11 +79,11 @@ public class utConfiguration {
         this.id = id;
     }
 
-    public int getorgId() {
+    public Integer getorgId() {
         return orgId;
     }
 
-    public void setorgId(int orgId) {
+    public void setorgId(Integer orgId) {
         this.orgId = orgId;
     }
 
@@ -101,19 +103,19 @@ public class utConfiguration {
         this.status = status;
     }
 
-    public int getType() {
+    public Integer getType() {
         return type;
     }
 
-    public void setType(int type) {
+    public void setType(Integer type) {
         this.type = type;
     }
 
-    public int getMessageTypeId() {
+    public Integer getMessageTypeId() {
         return messageTypeId;
     }
 
-    public void setMessageTypeId(int messageTypeId) {
+    public void setMessageTypeId(Integer messageTypeId) {
         this.messageTypeId = messageTypeId;
     }
 
@@ -133,11 +135,11 @@ public class utConfiguration {
         this.messageTypeName = messageTypeName;
     }
 
-    public int getstepsCompleted() {
+    public Integer getstepsCompleted() {
         return stepsCompleted;
     }
 
-    public void setstepsCompleted(int stepsCompleted) {
+    public void setstepsCompleted(Integer stepsCompleted) {
         this.stepsCompleted = stepsCompleted;
     }
 
@@ -149,11 +151,11 @@ public class utConfiguration {
         this.transportMethod = transportMethod;
     }
 
-    public int gettransportDetailId() {
+    public Integer gettransportDetailId() {
         return transportDetailId;
     }
 
-    public void settransportDetailId(int transportDetailId) {
+    public void settransportDetailId(Integer transportDetailId) {
         this.transportDetailId = transportDetailId;
     }
 
@@ -173,19 +175,19 @@ public class utConfiguration {
         return configName;
     }
 
-    public void setsourceType(int sourceType) {
+    public void setsourceType(Integer sourceType) {
         this.sourceType = sourceType;
     }
 
-    public int getsourceType() {
+    public Integer getsourceType() {
         return sourceType;
     }
 
-    public void setassociatedMessageTypeId(int associatedMessageTypeId) {
+    public void setassociatedMessageTypeId(Integer associatedMessageTypeId) {
         this.associatedMessageTypeId = associatedMessageTypeId;
     }
 
-    public int getassociatedMessageTypeId() {
+    public Integer getassociatedMessageTypeId() {
         return associatedMessageTypeId;
     }
 
@@ -197,20 +199,29 @@ public class utConfiguration {
 	this.scheduleType = scheduleType;
     }
 
-    public int getThreshold() {
+    public Integer getThreshold() {
 	return threshold;
     }
 
-    public void setThreshold(int threshold) {
+    public void setThreshold(Integer threshold) {
 	this.threshold = threshold;
     }
 
-    public int getConfigurationType() {
+    public Integer getConfigurationType() {
 	return configurationType;
     }
 
-    public void setConfigurationType(int configurationType) {
+    public void setConfigurationType(Integer configurationType) {
 	this.configurationType = configurationType;
     }
 
+    public Integer getHelRegistryConfigId() {
+	return helRegistryConfigId;
+    }
+
+    public void setHelRegistryConfigId(Integer helRegistryConfigId) {
+	this.helRegistryConfigId = helRegistryConfigId;
+    }
+
+    
 }

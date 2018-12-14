@@ -17,7 +17,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.hel.ut.reference.TestCategoryList;
 import com.hel.ut.reference.USStateList;
 import com.hel.ut.reference.ProcessCategoryList;
-import com.hel.ut.service.configurationManager;
 import com.hel.ut.service.sysAdminManager;
 import com.hel.ut.service.userManager;
 import com.hel.ut.model.Macros;
@@ -42,6 +41,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.servlet.view.RedirectView;
+import com.hel.ut.service.utConfigurationManager;
 
 @Controller
 @RequestMapping("/administrator/sysadmin")
@@ -54,7 +54,7 @@ public class adminSysAdminController {
     private userManager usermanager;
 
     @Autowired
-    private configurationManager configurationmanager;
+    private utConfigurationManager configurationmanager;
 
     @Autowired
     private ServletContext servletContext;

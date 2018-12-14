@@ -11,13 +11,10 @@ import com.hel.ut.model.configurationRhapsodyFields;
 import com.hel.ut.model.configurationTransport;
 import com.hel.ut.model.configurationWebServiceFields;
 import com.hel.ut.model.configurationWebServiceSenders;
-import com.hel.ut.dao.configurationTransportDAO;
 import com.hel.ut.model.Organization;
 import com.hel.ut.model.configurationFTPFields;
 import com.hel.ut.model.configurationTransportMessageTypes;
 import com.hel.ut.reference.fileSystem;
-import com.hel.ut.service.configurationManager;
-import com.hel.ut.service.configurationTransportManager;
 import com.hel.ut.service.organizationManager;
 
 import java.io.File;
@@ -28,18 +25,21 @@ import java.io.OutputStream;
 
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import com.hel.ut.service.utConfigurationManager;
+import com.hel.ut.service.utConfigurationTransportManager;
+import com.hel.ut.dao.utConfigurationTransportDAO;
 
 @Service
-public class configurationTransportManagerImpl implements configurationTransportManager {
+public class utConfigurationTransportManagerImpl implements utConfigurationTransportManager {
 
     @Autowired
-    private configurationTransportDAO configurationTransportDAO;
+    private utConfigurationTransportDAO configurationTransportDAO;
 
     @Autowired
     private organizationManager organizationManager;
 
     @Autowired
-    private configurationManager configurationManager;
+    private utConfigurationManager utConfigurationManager;
 
     @Override
     public configurationTransport getTransportDetails(int configId) throws Exception {
@@ -52,11 +52,6 @@ public class configurationTransportManagerImpl implements configurationTransport
     }
 
     @Override
-    public void setupOnlineForm(int transportId, int configId, int messageTypeId) {
-        configurationTransportDAO.setupOnlineForm(transportId, configId, messageTypeId);
-    }
-
-    @Override
     public Integer updateTransportDetails(configurationTransport transportDetails) throws Exception {
 
         MultipartFile CCDTemplatefile = transportDetails.getCcdTemplatefile();
@@ -65,7 +60,7 @@ public class configurationTransportManagerImpl implements configurationTransport
 
             String CCDTemplatefileName = CCDTemplatefile.getOriginalFilename();
 
-            int orgId = configurationManager.getConfigurationById(transportDetails.getconfigId()).getorgId();
+            int orgId = utConfigurationManager.getConfigurationById(transportDetails.getconfigId()).getorgId();
 
             Organization orgDetails = organizationManager.getOrganizationById(orgId);
 
@@ -118,6 +113,11 @@ public class configurationTransportManagerImpl implements configurationTransport
     @SuppressWarnings("rawtypes")
     public List getTransportMethods() {
         return configurationTransportDAO.getTransportMethods();
+    }
+    
+    @SuppressWarnings("rawtypes")
+    public List getTransportMethodsByType(Integer configurationType) {
+        return configurationTransportDAO.getTransportMethodsByType(configurationType);
     }
 
     @Override
@@ -225,11 +225,6 @@ public class configurationTransportManagerImpl implements configurationTransport
     @Override
     public void saveTransportMessageTypes(configurationTransportMessageTypes messageType) {
         configurationTransportDAO.saveTransportMessageTypes(messageType);
-    }
-
-    @Override
-    public void copyExistingTransportMethod(int configTransportId, int configId) {
-        configurationTransportDAO.copyExistingTransportMethod(configTransportId, configId);
     }
 
     @Override

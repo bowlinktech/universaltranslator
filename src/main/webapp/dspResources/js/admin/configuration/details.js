@@ -9,26 +9,126 @@ require(['./main'], function () {
             $('.alert').delay(2000).fadeOut(1000);
         }
 	
-	//get the configuration type value
+	//Hide the Configuration Type if a target configuration type
+	$('.type').change(function(event) {
+	   $('#organization').val("");
+	   $('#askTargetQuestion1').hide();
+	   $('#askTargetQuestion2').hide();
+	   $('#helRegistryConfigDiv').hide();
+	   $('#messageTypeDiv').hide();
+	  
+	   if($(this).val() == 2) {
+	       $('#configurationTypeDiv').hide();
+	       $('#sourceTypeDiv').hide();
+	   } 
+	   else {
+	       $('#configurationTypeDiv').show();
+	       $('#sourceTypeDiv').show();
+	   }
+	});
+	
+	$('.basedOffHELConfig').change(function(event) {
+	    
+	    if($(this).val() == 0) {
+		$('#askTargetQuestion2').hide();
+		$('#helRegistryConfigDiv').hide();
+		$('#messageTypeDiv').show();
+		$('#helRegistry').find('option').remove().end().append('<option value="">- Select Registry Configuration -</option>').val('');
+		$('#helRegistryConfigId').find('option').remove().end().append('<option value="">- Select Registry Configuration -</option>').val('');
+	    }
+	    else {
+		$('#messageTypeDiv').hide();
+		$('#askTargetQuestion2').show();
+		
+		$.ajax({
+		    url: '/administrator/organizations/getHELRegistries?tenantId=registries',
+		    type: "GET",
+		    data: {},
+		    dataType: 'json',
+		    success: function (data) {
+			
+			var helRegistrySelect = $('#helRegistry');
+
+			$.each(data, function(index) {
+			   helRegistrySelect.append($('<option></option>').val(data[index][0]+'-'+data[index][2]).html(data[index][1]));
+			});
+		    }
+		});
+	    }
+	});
+	
+	//Registry is selected we need to go get the organizations set up for that organization
+	$(document).on('change','#helRegistry', function() {
+	    var helRegistryId = $(this).val().split("-")[0];
+	    var helRegistrySchemaName = $(this).val().split("-")[1];
+	    
+	    populateHELRegistryConfigs(helRegistryId,helRegistrySchemaName);
+	});
+	
+	var helRegistryId = $('option:selected', '#organization').attr('helRegistryId');
+	var helRegistrySchemaName = $('option:selected', '#organization').attr('helRegistrySchemaName');
+	
+	if(helRegistryId > 0 && helRegistrySchemaName !== '') {
+	     populateHELRegistryConfigs(helRegistryId,helRegistrySchemaName);
+	}
+	
+	$('#helRegistryOrgId').change(function(event) {
+	    populateHELRegistryConfigs($(this).val(),$('#helRegistry').val());
+	});
+	
+	$('#organization').change(function(event) {
+	    $('#askTargetQuestion1').hide();
+	    $('#askTargetQuestion2').hide();
+	    $('#helRegistryConfigDiv').hide();
+	   
+	    var helRegistryId = $('option:selected', this).attr('helRegistryId');
+	    var helRegistrySchemaName = $('option:selected', this).attr('helRegistrySchemaName');
+	    
+	    //If the selected organization is a health-e-link registtry
+	    //then we need to get hte list of configurations set up
+	    //for this registry
+	    if(helRegistryId > 0 && helRegistrySchemaName !== '') {
+		populateHELRegistryConfigs(helRegistryId,helRegistrySchemaName);
+	    }
+	    else {
+		
+		if($('.type:checked').val() == 2) {
+		    $('#askTargetQuestion1').show();
+		}
+		else {
+		    $('#helRegistryConfigDiv').hide();
+		    $('#helRegistryConfigId').find('option').remove().end().append('<option value="">- Select Registry Configuration -</option>').val('');
+		    $('#messageTypeDiv').show();
+		}
+		
+	    }
+	});
+	
+	
+	/*//get the configuration type value
 	var configTypeVal = $(".configurationType:checked").val();
 	
 	//If passThru hide the message type value, it is not needed for a passthru configuration
 	if(configTypeVal == 2) {
-	    $('#messageTypeDiv').hide();
+	    $('#messageTypeOuterDiv').hide();
+	    $('#helRegistryConfigOuterDiv').hide();
 	}
 	else {
-	    $('#messageTypeDiv').show();
+	    $('#messageTypeOuterDiv').show();
+	    $('#helRegistryConfigOuterDiv').hide();
 	}
 	
 	
         $('.configurationType').change(function (event) {
 	    $("#messageTypeId").val($("#messageTypeId option:first").val());
             if ($(this).val() == 2) {
-                $('#messageTypeDiv').hide();
+		$('#messageTypeOuterDiv').hide();
+		$('#helRegistryConfigOuterDiv').hide();
             } else {
-                $('#messageTypeDiv').show();
+                $('#messageTypeOuterDiv').show();
+		$('#helRegistryConfigOuterDiv').show();
             }
-        });
+        });*/
 
         $('#saveDetails').click(function (event) {
             $('#action').val('save');
@@ -49,33 +149,36 @@ require(['./main'], function () {
             }
         });
 
-        //When the Configuration type changes need to show the
-        //source type field only if the config type is a source
-        $('.type').change(function (event) {
-
-            if ($(this).val() == 2) {
-                $('#sourceTypeDiv').hide();
-                $('input:radio[id="sourceType"]').get(0).checked = true;
-            } else {
-                $('#sourceTypeDiv').show();
-                $('input:radio[id="sourceType"]').get(0).checked = true;
-            }
-        });
-
-
-        //When the source type changes need to show the
-        //associated message type field only if the source type is feedback report
-        $('.sourceType').change(function (event) {
-
-            if ($(this).val() == 1) {
-                $('#associatedmessageTypeTopDiv').hide();
-            } else {
-                $('#associatedmessageTypeTopDiv').show();
-            }
-        });
-
     });
 });
+
+function populateHELRegistryConfigs(helRegistryId,helRegistrySchemaName) {
+    $('#messageTypeDiv').hide();
+		
+    $.ajax({
+	url: 'getHELRegistryConfigurations?tenantId='+helRegistrySchemaName,
+	type: "GET",
+	data: {},
+	dataType: 'json',
+	success: function (data) {
+	    $('#helRegistryConfigDiv').show();
+	    $('#helRegistryConfigId').find('option').remove().end().append('<option value="">- Select Registry Configuration -</option>').val('');
+
+	    var selHELRegistryConfigId = $('#helRegistryConfigId').attr('rel');
+
+	    var helRegistryConfigSelect = $('#helRegistryConfigId');
+
+	    $.each(data, function(index) {
+	       if(data[index].id == selHELRegistryConfigId) {
+		   helRegistryConfigSelect.append($('<option selected></option>').val(data[index].id).html(data[index].name));
+	       }
+	       else {
+		   helRegistryConfigSelect.append($('<option></option>').val(data[index].id).html(data[index].name));
+	       }
+	    });
+	}
+    });
+}
 
 
 function checkform() {
@@ -88,14 +191,27 @@ function checkform() {
         $('#configOrgMsg').html('The organization is a required field.');
         errorFound = 1;
     }
-
+    
+    var helRegistryId = $('option:selected','#organization').attr('helRegistryId');
+    
     //Check to make sure a message type is selected
-    if ($('#messageTypeId').val() === '') {
-        $('#messageTypeDiv').addClass("has-error");
-        $('#configMessageTypeMsg').addClass("has-error");
-        $('#configMessageTypeMsg').html('The message type is a required field.');
-        errorFound = 1;
+    if(helRegistryId > 0) {
+	if($('#helRegistryConfigId').val() === '') {
+	    $('#helRegistryConfigDiv').addClass("has-error");
+	    $('#helRegistryConfigIdMsg').addClass("has-error");
+	    $('#helRegistryConfigIdMsg').html('The HEL registry configuration is a required field.');
+	    errorFound = 1;
+	}
     }
+    else {
+	if ($('#messageTypeId').val() === '') {
+	    $('#messageTypeDiv').addClass("has-error");
+	    $('#configMessageTypeMsg').addClass("has-error");
+	    $('#configMessageTypeMsg').html('The message type is a required field.');
+	    errorFound = 1;
+	}
+    }
+    
 
     //Check to make sure a configuration name is entered
     if ($('#configName').val() === '') {

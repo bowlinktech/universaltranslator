@@ -55,9 +55,6 @@ public interface messageTypeDAO {
     @SuppressWarnings("rawtypes")
     List getDelimiters();
 
-    @SuppressWarnings("rawtypes")
-    List getFieldTypes();
-
     Long getTotalFields(int messageTypeId);
 
     List<Crosswalks> getCrosswalks(int page, int maxResults, int orgId);

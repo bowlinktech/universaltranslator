@@ -23,14 +23,14 @@ import com.hel.ut.model.configurationTransport;
 import com.hel.ut.model.messageType;
 import com.hel.ut.reference.CountryList;
 import com.hel.ut.reference.USStateList;
-import com.hel.ut.service.configurationManager;
-import com.hel.ut.service.configurationTransportManager;
 import com.hel.ut.service.messageTypeManager;
 import com.registryKit.registry.helRegistry;
 import com.registryKit.registry.helRegistryManager;
 import com.registryKit.registry.tiers.tierManager;
 import com.registryKit.registry.tiers.tierOrganizationDetails;
 import com.registryKit.registry.tiers.tiers;
+import com.hel.ut.service.utConfigurationManager;
+import com.hel.ut.service.utConfigurationTransportManager;
 
 
 /**
@@ -49,13 +49,13 @@ public class adminOrgContoller {
     private organizationManager organizationManager;
 
     @Autowired
-    private configurationManager configurationmanager;
+    private utConfigurationManager configurationmanager;
 
     @Autowired
     private messageTypeManager messagetypemanager;
 
     @Autowired
-    private configurationTransportManager configurationTransportManager;
+    private utConfigurationTransportManager configurationTransportManager;
     
     @Autowired
     private helRegistryManager helregistrymanager;

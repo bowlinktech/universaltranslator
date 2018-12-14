@@ -32,8 +32,6 @@ import com.hel.ut.reference.fileSystem;
 import com.hel.ut.restAPI.restfulManager;
 import com.hel.ut.security.decryptObject;
 import com.hel.ut.security.encryptObject;
-import com.hel.ut.service.configurationManager;
-import com.hel.ut.service.configurationTransportManager;
 import com.hel.ut.service.fileManager;
 import com.hel.ut.service.messageTypeManager;
 import com.hel.ut.service.organizationManager;
@@ -82,6 +80,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.servlet.view.RedirectView;
+import com.hel.ut.service.utConfigurationManager;
+import com.hel.ut.service.utConfigurationTransportManager;
 
 /**
  *
@@ -104,13 +104,13 @@ public class adminProcessingActivity {
     private organizationManager organizationmanager;
 
     @Autowired
-    private configurationTransportManager configurationTransportManager;
+    private utConfigurationTransportManager configurationTransportManager;
 
     @Autowired
     private messageTypeManager messagetypemanager;
 
     @Autowired
-    private configurationManager configurationManager;
+    private utConfigurationManager configurationManager;
 
     @Autowired
     private userManager usermanager;

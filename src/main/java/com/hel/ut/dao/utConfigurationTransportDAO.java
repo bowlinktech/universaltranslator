@@ -17,7 +17,7 @@ import org.springframework.stereotype.Repository;
 import com.hel.ut.model.configurationWebServiceFields;
 
 @Repository
-public interface configurationTransportDAO {
+public interface utConfigurationTransportDAO {
 
     configurationTransport getTransportDetails(int configId) throws Exception;
 
@@ -33,10 +33,9 @@ public interface configurationTransportDAO {
 
     void updateConfigurationFormFields(configurationFormFields formField);
 
-    @SuppressWarnings("rawtypes")
     List getTransportMethods();
-
-    void setupOnlineForm(int transportId, int configId, int messageTypeId);
+    
+    List getTransportMethodsByType(Integer configurationType);
 
     List<configurationFTPFields> getTransportFTPDetails(int transportDetailId) throws Exception;
 
@@ -53,8 +52,6 @@ public interface configurationTransportDAO {
     void deleteTransportMessageTypes(int configTransportId);
 
     void saveTransportMessageTypes(configurationTransportMessageTypes messageType);
-
-    void copyExistingTransportMethod(int configTransportId, int configId);
 
     List<configurationFormFields> getRequiredFieldsForConfig(Integer configId);
 

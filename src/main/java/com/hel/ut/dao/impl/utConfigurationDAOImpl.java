@@ -14,7 +14,6 @@ import org.hibernate.type.StandardBasicTypes;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.hel.ut.dao.configurationDAO;
 import com.hel.ut.model.CrosswalkData;
 import com.hel.ut.model.HL7Details;
 import com.hel.ut.model.HL7ElementComponents;
@@ -48,9 +47,10 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import org.springframework.stereotype.Repository;
+import com.hel.ut.dao.utConfigurationDAO;
 
 @Repository
-public class configurationDAOImpl implements configurationDAO {
+public class utConfigurationDAOImpl implements utConfigurationDAO {
 
     @Autowired
     private SessionFactory sessionFactory;

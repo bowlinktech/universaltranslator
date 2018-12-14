@@ -18,7 +18,6 @@ import com.hel.ut.model.configurationTransport;
 import com.hel.ut.model.custom.ConfigOutboundForInsert;
 import com.hel.ut.model.targetOutputRunLogs;
 import com.hel.ut.model.transactionOutRecords;
-import com.hel.ut.service.configurationTransportManager;
 import com.hel.ut.service.sysAdminManager;
 import com.hel.ut.service.transactionInManager;
 import com.hel.ut.service.userManager;
@@ -40,6 +39,7 @@ import org.hibernate.type.StandardBasicTypes;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
+import com.hel.ut.service.utConfigurationTransportManager;
 
 /**
  *
@@ -61,7 +61,7 @@ public class transactionOutDAOImpl implements transactionOutDAO {
     private transactionInManager transactionInManager;
     
     @Autowired
-    private configurationTransportManager configurationTransportManager;
+    private utConfigurationTransportManager configurationTransportManager;
 
     //list of final status - these records we skip
     private List<Integer> transRELId = Arrays.asList(11, 12, 13, 16, 18, 20);

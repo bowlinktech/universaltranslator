@@ -33,8 +33,6 @@ import com.hel.ut.model.transactionOutRecords;
 import com.hel.ut.model.custom.ConfigOutboundForInsert;
 import com.hel.ut.reference.fileSystem;
 import com.hel.ut.restAPI.restfulManager;
-import com.hel.ut.service.configurationManager;
-import com.hel.ut.service.configurationTransportManager;
 import com.hel.ut.service.fileManager;
 import com.hel.ut.service.organizationManager;
 import com.hel.ut.service.transactionInManager;
@@ -89,6 +87,8 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import com.hel.ut.service.utConfigurationManager;
+import com.hel.ut.service.utConfigurationTransportManager;
 
 /**
  *
@@ -107,10 +107,10 @@ public class transactionOutManagerImpl implements transactionOutManager {
     private transactionInDAO transactionInDAO;
 
     @Autowired
-    private configurationManager configurationManager;
+    private utConfigurationManager configurationManager;
 
     @Autowired
-    private configurationTransportManager configurationTransportManager;
+    private utConfigurationTransportManager configurationTransportManager;
 
     @Autowired
     private transactionInManager transactionInManager;
@@ -924,7 +924,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
 		    updateTargetTransasctionStatus(target.getbatchDLId(), 37);
 
 		    //check inbound for clearing options
-		    if (configurationTransportManager.getTransportDetails(transactionInManager.getTransactionDetails(target.gettransactionInId()).getconfigId()).getclearRecords()) {
+		    if (utConfigurationTransportManager.getTransportDetails(transactionInManager.getTransactionDetails(target.gettransactionInId()).getconfigId()).getclearRecords()) {
 			//we insert into clearAfterDelivery
 			batchClearAfterDelivery cad = new batchClearAfterDelivery();
 			cad.setBatchDLId(batchId);
@@ -948,7 +948,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
 	    batchDownloads batchFTPFileInfo = transactionOutDAO.getBatchDetails(batchId);
 
 	    // Get the FTP Details
-	    configurationFTPFields ftpDetails = configurationTransportManager.getTransportFTPDetailsPush(transportDetails.getId());
+	    configurationFTPFields ftpDetails = utConfigurationTransportManager.getTransportFTPDetailsPush(transportDetails.getId());
 
 	    if ("SFTP".equals(ftpDetails.getprotocol())) {
 
@@ -961,7 +961,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
 		int port = ftpDetails.getport();
 		String host = ftpDetails.getip();
 
-		Organization orgDetails = organizationManager.getOrganizationById(configurationManager.getConfigurationById(transportDetails.getconfigId()).getorgId());
+		Organization orgDetails = organizationManager.getOrganizationById(utConfigurationManager.getConfigurationById(transportDetails.getconfigId()).getorgId());
 
 		if (ftpDetails.getcertification() != null && !"".equals(ftpDetails.getcertification())) {
 
@@ -1305,7 +1305,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
 		    updateTargetTransasctionStatus(target.getbatchDLId(), 37);
 
 		    //check inbound for clearing options
-		    if (configurationTransportManager.getTransportDetails(transactionInManager.getTransactionDetails(target.gettransactionInId()).getconfigId()).getclearRecords()) {
+		    if (utConfigurationTransportManager.getTransportDetails(transactionInManager.getTransactionDetails(target.gettransactionInId()).getconfigId()).getclearRecords()) {
 			//we insert into clearAfterDelivery
 			batchClearAfterDelivery cad = new batchClearAfterDelivery();
 			cad.setBatchDLId(batchId);
@@ -1328,7 +1328,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
 	    batchDownloads batchDetails = transactionOutDAO.getBatchDetails(batchId);
 
 	    // Get the Rhapsody Details 
-	    configurationRhapsodyFields rhapsodyDetails = configurationTransportManager.getTransRhapsodyDetailsPush(transportDetails.getId());
+	    configurationRhapsodyFields rhapsodyDetails = utConfigurationTransportManager.getTransRhapsodyDetailsPush(transportDetails.getId());
 
 	    // the file is in output folder already, we need to rebuild path and move it
 	    fileSystem dir = new fileSystem();
@@ -1402,7 +1402,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
 		    updateTargetTransasctionStatus(target.getbatchDLId(), 37);
 
 		    //check inbound for clearing options
-		    if (configurationTransportManager.getTransportDetails(transactionInManager.getTransactionDetails(target.gettransactionInId()).getconfigId()).getclearRecords()) {
+		    if (utConfigurationTransportManager.getTransportDetails(transactionInManager.getTransactionDetails(target.gettransactionInId()).getconfigId()).getclearRecords()) {
 			//we insert into clearAfterDelivery
 			batchClearAfterDelivery cad = new batchClearAfterDelivery();
 			cad.setBatchDLId(batchId);
@@ -1425,7 +1425,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
 	    batchDownloads batchDetails = transactionOutDAO.getBatchDetails(batchId);
 
 	    // Get the WS Details  - do we need this? 
-	    configurationWebServiceFields wsDetails = configurationTransportManager.getTransWSDetailsPush(transportDetails.getId());
+	    configurationWebServiceFields wsDetails = utConfigurationTransportManager.getTransWSDetailsPush(transportDetails.getId());
 
 	    // the file is in output folder already, we need to encrypt it and populate soap message
 	    //1. we read file

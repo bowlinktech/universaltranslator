@@ -42,21 +42,18 @@
                             </div>
                         </div>
                         <div class="form-group">
-                            <label for="orgType">Organization Type *</label>
-                            <div>
-				<label class="radio-inline">
-                                    <form:radiobutton id="orgType" path="orgType" value="2"/> Community Based Organization 
-                                </label>
-				<label class="radio-inline">
-                                    <form:radiobutton id="orgType" path="orgType" value="4"/> Data Warehouse 
-                                </label>
-                                <label class="radio-inline">
-                                    <form:radiobutton id="orgType" path="orgType" value="1"/> Health Care Provider
-                                </label>
-                                <label class="radio-inline">
-                                    <form:radiobutton id="orgType" path="orgType" value="3"/> Health Management Information System
-                                </label>
-                            </div>
+			    <div class="form-group ${status.error ? 'has-error' : '' }">
+				<label class="control-label" for="orgType">Organization Type *</label>
+				<form:select id="orgType" path="orgType" cssClass="form-control half">
+				    <option value="" label=" - Select - ">- Select Organization Type - </option>
+				    <option value="2" <c:if test="${organization.orgType == 2}">selected</c:if>>Community Based Organization</option>
+				    <option value="4" <c:if test="${organization.orgType == 4}">selected</c:if>>Data Warehouse</option>
+				    <option value="1" <c:if test="${organization.orgType == 1}">selected</c:if>>Health Care Provider</option>
+				    <option value="3" <c:if test="${organization.orgType == 3}">selected</c:if>>Health Management Information System</option>
+				    <option value="5" <c:if test="${organization.orgType == 5}">selected</c:if>>Internal Health-e-Link Registry</option>
+				</form:select>
+				<form:errors path="orgType" cssClass="control-label" element="label" />
+			    </div>
                         </div>  
 			<div class="form-group">
 			    <label for="orgType">Is this organization from a Health-e-Link Registry?</label>
@@ -79,7 +76,7 @@
 				    <div id="helRegistryOrgIdDiv" class="form-group ${status.error ? 'has-error' : '' }">
 					<label class="control-label" for="helRegistryOrgId">Select the Registry Organization</label>
 					<form:select path="helRegistryOrgId" id="helRegistryOrgId" schema="" rel="${organization.helRegistryOrgId}" class="form-control half">
-					    <option value="0">- Select -</option>
+					    <option value="0">N/A </option>
 					</form:select>
 					<span id="helRegistryOrgIdMsg" class="control-label"></span>
 				    </div>

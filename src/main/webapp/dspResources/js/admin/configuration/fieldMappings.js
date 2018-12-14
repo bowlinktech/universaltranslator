@@ -14,19 +14,18 @@ require(['./main'], function () {
         $(document).on('change', '.formField', function () {
             $('#saveMsgDiv').show();
         });
+	
+	var isHELConfiguration = $('.templateFields').attr('rel');
+	
+	if(isHELConfiguration) {
+	    loadHELConfigurationFields();
+	}
+	
+	$('#loadConfigurationFields').click(function(event) {
+	   loadHELConfigurationFields();
+	});
 
-        //function that will get the field mappings for the selected transport method
-        $('.changeTransportMethod').click(function () {
-            var selTransportMethod = $('#transportMethod').val();
-
-            if (selTransportMethod == "") {
-                $('#transportMethodDiv').addClass("has-error");
-            } else {
-                window.location.href = 'mappings?i=' + selTransportMethod;
-            }
-        });
-
-
+       
         //This function will save the messgae type field mappings
         $('#saveDetails').click(function (event) {
             $('#action').val('save');
@@ -137,24 +136,12 @@ require(['./main'], function () {
         });
 
 
-        //When a matching field changes we need to get the selected field savetotable and savetocol
-        $(document).on('change', '.matchingField', function () {
-
-            var indexVal = $(this).attr('rel');
-            var tableName = $('#tableName_' + $(this).val()).val();
-            var tableCol = $('#tableCol_' + $(this).val()).val();
-            var valType = $('#validationType_' + $(this).val()).val();
-
-            $('#saveToTableName_' + indexVal).val(tableName);
-            $('#saveToTableCol_' + indexVal).val(tableCol);
-            $('#validationType_' + indexVal).val(valType);
-
-
-        });
-
-
     });
 });
 
-
+function loadHELConfigurationFields() {
+    var HELRegistrySchemaName = $('#loadConfigurationFields').attr('schemaname');
+    
+    
+}
 

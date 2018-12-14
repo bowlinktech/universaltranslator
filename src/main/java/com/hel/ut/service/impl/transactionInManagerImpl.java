@@ -43,8 +43,6 @@ import com.hel.ut.model.systemSummary;
 import com.hel.ut.reference.fileSystem;
 import com.hel.ut.service.CCDtoTxt;
 import com.hel.ut.service.JSONtoTxt;
-import com.hel.ut.service.configurationManager;
-import com.hel.ut.service.configurationTransportManager;
 import com.hel.ut.service.emailMessageManager;
 import com.hel.ut.service.fileManager;
 import com.hel.ut.service.hl7toTxt;
@@ -96,6 +94,8 @@ import org.apache.commons.io.filefilter.HiddenFileFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
+import com.hel.ut.service.utConfigurationManager;
+import com.hel.ut.service.utConfigurationTransportManager;
 
 /**
  *
@@ -114,10 +114,10 @@ public class transactionInManagerImpl implements transactionInManager {
     private messageTypeDAO messageTypeDAO;
 
     @Autowired
-    private configurationManager configurationManager;
+    private utConfigurationManager configurationManager;
 
     @Autowired
-    private configurationTransportManager configurationtransportmanager;
+    private utConfigurationTransportManager configurationtransportmanager;
 
     @Autowired
     private messageTypeManager messagetypemanager;
@@ -1964,7 +1964,7 @@ public class transactionInManagerImpl implements transactionInManager {
 				configurationTransport transportDetails = configurationtransportmanager.getTransportDetails(batchInfo.getConfigId());
 
 				if (configDetails != null && transportDetails != null) {
-				    if (transportDetails.getRrProgramId() > 0 && transportDetails.getRrprogramuploadtypeid() > 0) {
+				    //if (transportDetails.getRrProgramId() > 0 && transportDetails.getRrprogramuploadtypeid() > 0) {
 
 					/* Need to check to see if uploaded file exists in RR program uploads */
 					/*programImport existingProgramImport = importmanager.getProgramImportByAssignedName(batchInfo.getoriginalFileName().substring(0, batchInfo.getoriginalFileName().lastIndexOf('.')), 0);
@@ -1997,7 +1997,7 @@ public class transactionInManagerImpl implements transactionInManager {
 
 					    importmanager.submitImport(newProgramImport);
 					}*/
-				    }
+				   // }
 				}
 			    }
 			}

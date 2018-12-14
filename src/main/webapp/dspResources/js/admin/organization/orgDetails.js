@@ -35,11 +35,6 @@ require(['./main'], function () {
 	    populateHELRegistryOrgs($(this).val());
 	});
 	
-	var helRegistryOrg = $('#helRegistryOrgId').attr('rel');
-	
-	if(helRegistryOrg != 0) {
-	   $('#orgDetails').show();
-	}
 	
 	//A registry organization was selected need to get the details to populate the fields
 	$(document).on('change','#helRegistryOrgId', function() {
@@ -96,7 +91,7 @@ require(['./main'], function () {
 		});
 	    }
 	    else {
-		$('#orgDetails').hide();
+		$('#orgDetails').show();
 	    }
 	});
 	
@@ -220,6 +215,7 @@ function populateHELRegistryOrgs(selRegistry) {
 		data: {},
 		dataType: 'json',
 		success: function (data) {
+		    $('#orgDetails').show();
 		    $('#HELRegistryOrgsDiv').show();
 		    $('#helRegistryOrgId').attr('schema', selRegistrySchemaName);
 

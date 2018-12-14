@@ -71,7 +71,7 @@ public class configurationTransport {
     private boolean appendDateTime = false;
 
     @Column(name = "MAXFILESIZE", nullable = false)
-    private int maxFileSize = 0;
+    private int maxFileSize = 10;
 
     @Column(name = "CLEARRECORDS", nullable = false)
     private boolean clearRecords = true;
@@ -106,12 +106,6 @@ public class configurationTransport {
 
     @Column(name = "HL7PDFSampleTemplate", nullable = true)
     private String HL7PDFSampleTemplate = null;
-    
-    @Column(name = "rrProgramId", nullable = true)
-    private int rrProgramId = 0;
-    
-    @Column(name = "rrprogramuploadtypeid", nullable = true)
-    private int rrprogramuploadtypeid = 0;
     
     @Column(name = "ZIPPED", nullable = false)
     private boolean zipped = false;
@@ -374,22 +368,6 @@ public class configurationTransport {
 
     public void setMassTranslation(boolean massTranslation) {
         this.massTranslation = massTranslation;
-    }
-
-    public int getRrProgramId() {
-	return rrProgramId;
-    }
-
-    public void setRrProgramId(int rrProgramId) {
-	this.rrProgramId = rrProgramId;
-    }
-
-    public int getRrprogramuploadtypeid() {
-	return rrprogramuploadtypeid;
-    }
-
-    public void setRrprogramuploadtypeid(int rrprogramuploadtypeid) {
-	this.rrprogramuploadtypeid = rrprogramuploadtypeid;
     }
 
     public boolean isZipped() {

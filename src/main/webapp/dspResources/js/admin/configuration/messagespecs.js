@@ -69,7 +69,7 @@ function checkFormFields() {
     }
 
     //Make sure at least one reportable field is selected
-    var rptField1 = $('#rptField1').val();
+    /*var rptField1 = $('#rptField1').val();
     var rptField2 = $('#rptField2').val();
     var rptField3 = $('#rptField3').val();
     var rptField4 = $('#rptField4').val();
@@ -81,7 +81,7 @@ function checkFormFields() {
         hasErrors = 1;
     }
 
-    /* Check to make sure there are different selected fields */
+    // Check to make sure there are different selected fields 
     if (hasErrors == 0 && rptField1 > 0 && (rptField1 == rptField2 || rptField1 == rptField3 || rptField1 == rptField4)) {
         $('.rtpField').addClass("has-error");
         $('#rptFieldMsg').addClass("has-error");
@@ -99,7 +99,7 @@ function checkFormFields() {
         $('#rptFieldMsg').addClass("has-error");
         $('#rptFieldMsg').html('All reportable fields must be different.<br />');
         hasErrors = 1;
-    }
+    }*/
 
     return hasErrors;
 }

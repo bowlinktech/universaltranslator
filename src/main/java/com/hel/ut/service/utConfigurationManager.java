@@ -21,7 +21,7 @@ import com.hel.ut.model.watchlist;
 import com.hel.ut.model.watchlistEntry;
 import java.util.Date;
 
-public interface configurationManager {
+public interface utConfigurationManager {
 
     Integer createConfiguration(utConfiguration configuration);
 

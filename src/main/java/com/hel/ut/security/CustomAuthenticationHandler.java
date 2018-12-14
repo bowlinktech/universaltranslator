@@ -5,7 +5,6 @@ import com.hel.ut.model.utUser;
 import com.hel.ut.model.utUserActivity;
 import com.hel.ut.model.utConfiguration;
 import com.hel.ut.model.custom.searchParameters;
-import com.hel.ut.service.configurationManager;
 import com.hel.ut.service.organizationManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
@@ -22,6 +21,7 @@ import java.util.Set;
 import com.hel.ut.service.userManager;
 import java.util.List;
 import javax.servlet.http.HttpSession;
+import com.hel.ut.service.utConfigurationManager;
 
 public class CustomAuthenticationHandler extends SimpleUrlAuthenticationSuccessHandler {
 
@@ -32,7 +32,7 @@ public class CustomAuthenticationHandler extends SimpleUrlAuthenticationSuccessH
     private organizationManager organizationManager;
     
     @Autowired
-    private configurationManager configurationManager;
+    private utConfigurationManager configurationManager;
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws ServletException, IOException {

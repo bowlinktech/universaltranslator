@@ -204,12 +204,6 @@ public class messageTypeManagerImpl implements messageTypeManager {
 
     @SuppressWarnings("rawtypes")
     @Override
-    public List getFieldTypes() {
-        return messageTypeDAO.getFieldTypes();
-    }
-
-    @SuppressWarnings("rawtypes")
-    @Override
     public List getDelimiters() {
         return messageTypeDAO.getDelimiters();
     }

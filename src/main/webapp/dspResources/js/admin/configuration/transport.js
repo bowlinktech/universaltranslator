@@ -4,6 +4,11 @@ require(['./main'], function () {
     require(['jquery'], function ($) {
 
         $("input:text,form").attr("autocomplete", "off");
+	
+	//Fade out the updated/created message after being displayed.
+        if ($('.alert').length > 0) {
+            $('.alert').delay(2000).fadeOut(1000);
+        }
 
         /** modal for WS to add sender domains **/
         $('#addEditDomain').click(function () {
@@ -17,113 +22,14 @@ require(['./main'], function () {
                 }
             });
         });
-
-
+	
         var selMethodId = $('#transportMethod').val();
-        //Show file/download/FTP fields
-        if (selMethodId ==="1" 
-		|| selMethodId === "3" 
-		|| selMethodId === "5" 
-		|| selMethodId === "6" 
-		|| selMethodId === "8"
-		|| selMethodId === "9") {
-            $('#upload-downloadDiv').show();
-        }
+        showCorrectFieldsByTransportMethod(selMethodId);
 
-        if (selMethodId === "3") {
-            $('#additionalFTPDiv').show();
-	    getRegistryUploadTypes();
-        }
-
-        if (selMethodId === "5") {
-            $('#rhapsodyDiv').show();
-	    
-	    getRegistryUploadTypes();
-	   
-        }
-
-        if (selMethodId === "6") {
-            $('#wsDiv').show();
-        }
-	
-	
-	
-	if (selMethodId === "9") {
-            $('#apiDiv').show();
-        }
-
-        if (selMethodId !== "2" && selMethodId !== "") {
-            $('.assocMessageTypes').hide();
-        }
-	
-	var selFileType = $('#fileType').val();
-	
-	if(selFileType === "12") {
-	    $('#jsonWrapperElementDiv').show();
-	}
-
-        //Fade out the updated/created message after being displayed.
-        if ($('.alert').length > 0) {
-            $('.alert').delay(2000).fadeOut(1000);
-        }
-
+        
         $('#transportMethod').change(function () {
             var methodId = $(this).val();
-	    
-            //hide all section divs
-            $('.methodDiv').hide();
-	    $('#rrProgramDiv').hide();
-	    $('#rrprogramuploadtypeDiv').hide();
-	    $('#fileLocation').val($('#fileLocation').attr('origVal'));
-	    $('#fileLocation').attr('readonly', false);
-	    $('#fileType').attr('readonly', false);
-	    $('#fileExt').val("");
-	    $('#fileExt').attr('readonly', false);
-	    $('#fileDelimiter').attr('readonly', false);
-	    $('#appendDateTimeDiv').show();
-	    $('#mergeBatchesDiv').show();
-	    $('#useSourceFileName').show();
-	    $('#encodingId option[value=1]').attr("selected", "selected");
-	    $('#encodingId').attr('readonly', false);
-	    $('#targetFileName').attr('readonly', false);
-	    $('#rrprogramuploadtypeid').find('option').remove().end().append('<option value="">- Select -</option>').val('');
-	    $("#rrProgramId").val($("#rrProgramId option:first").val());
-	    $('#targetFileName').val("");
-
-            //Show file/download/FTP fields
-            if (methodId === "1" || methodId === "3" || methodId === "5" || methodId === "6" || methodId === "8" || methodId === "9") {
-                $('#upload-downloadDiv').show();
-            }
-
-            if (methodId === "3") {
-                $('#additionalFTPDiv').show();
-            }
-
-            if (methodId === "5") {
-                $('#rhapsodyDiv').show();
-            }
-
-            if (methodId === "6") {
-                $('#wsDiv').show();
-            }
-	    
-	    if(methodId === "5") {
-		$('#rrProgramDiv').show();
-		$('#rrprogramuploadtypeDiv').show();
-	    }
-	    
-	    
-	    
-	    if (methodId === "9") {
-		$('#apiDiv').show();
-	    }
-
-            if (methodId !== "2" && methodId !== "") {
-                $('.assocMessageTypes').hide();
-            } else {
-                $('.assocMessageTypes').hide();
-            }
-
+	    showCorrectFieldsByTransportMethod(methodId);
         });
 
         $('#useSource').click(function () {
@@ -133,8 +39,6 @@ require(['./main'], function () {
                 $('#targetFileName').val("");
             }
         });
-
-
 
         //This function will save the messgae type field mappings
         $('#saveDetails').click(function () {
@@ -154,65 +58,15 @@ require(['./main'], function () {
 
             var hasErrors = 0;
             hasErrors = checkFormFields();
+	    
+	    alert(hasErrors);
 
             if (hasErrors == 0) {
                 $('#transportDetails').submit();
             }
         });
 
-        $('#existingtransportMethod').change(function () {
-            var detailId = $(this).val();
-            var configId = $('#configId').val();
-
-            if (detailId > 0) {
-                $.ajax({
-                    url: 'copyExistingTransportMethod.do',
-                    type: "POST",
-                    data: {'detailId': detailId, 'configId': configId},
-                    success: function (data) {
-                        window.location.href = "transport";
-                    }
-                });
-            }
-
-        });
 	
-	//Registry is selected we need to go get the program upload set ups
-	$('#rrProgramId').change(function () {
-	    var selRegistry = $(this).val();
-	    
-	    if(selRegistry !== "") {
-		$.ajax({
-                    url: 'getRegistryProgramUploadTypes.do',
-                    type: "GET",
-                    data: {'registryId': selRegistry},
-		    dataType: 'json',
-                    success: function (data) {
-		       var uploadTypeSelect = $('#rrprogramuploadtypeid');
-                       $.each(data, function(index) {
-			   uploadTypeSelect.append($('<option></option>').val(data[index].id).html(data[index].name));
-			});
-                    }
-                });
-	    }
-	    else {
-		$('#rrprogramuploadtypeid').find('option').remove().end().append('<option value="">- Select -</option>').val('');
-		$('#targetFileName').val("");
-	    }
-	});
-	
-	$('#rrprogramuploadtypeid').change(function () {
-	    var selUploadTypeVal = $("#rrprogramuploadtypeid option:selected").val();
-	    
-	    if(selUploadTypeVal === "") {
-		$('#targetFileName').val("");
-	    }
-	    else {
-		var selUploadTypeName = $("#rrprogramuploadtypeid option:selected").text().replace(/ /g, '~').toLowerCase();
-		var selRegistryName = $("#rrProgramId option:selected").text().replace(/ /g, '~').toLowerCase();
-		$('#targetFileName').val(selUploadTypeName+"_"+selRegistryName);
-	    }
-	});
 	
 
         //Set the default file extension when the file type is selected
@@ -247,7 +101,7 @@ require(['./main'], function () {
                 $('#fileExt').val('xml');
 
                 if ($('#configType').attr('rel') == 2) {
-                    $('#ccdSampleDiv').show();
+                    $('#ccdDetailsDiv').show();
                 }
 
 
@@ -261,107 +115,59 @@ require(['./main'], function () {
                 $('#fileExt').val('json');
 		
 		if ($('#configType').attr('rel') == 2) {
-                    $('#ccdSampleDiv').show();
+                    $('#ccdDetailsDiv').show();
                 }
             }
 
         });
 
-        //Test the FTP Push Connection
-        $(document).on('click', '.testFTPPush', function () {
-
-            var ftpSettingsId = $('#id').val();
-	    var configId = $('#configId').val();
-
-            $.ajax({
-                url: 'testFTPConnection.do',
-                type: "GET",
-                data: {'method': 2, 'id': ftpSettingsId, 'configId': configId},
-                success: function (data) {
-                    alert(data);
-                }
-            });
-        });
-
-        //Test the FTP Get Connection
-        $(document).on('click', '.testFTPGet', function () {
-
-            var ftpSettingsId = $('#id').val();
-            var configId = $('#configId').val();
-
-            $.ajax({
-                url: 'testFTPConnection.do',
-                type: "GET",
-                data: {'method': 1, 'id': ftpSettingsId, 'configId': configId},
-                success: function (data) {
-                    alert(data);
-                }
-            });
-        });
-
-        $(document).on('change', '.ftpProtocol', function () {
-
-            if ($(this).val() == "SFTP") {
-                $('#certificationfileDiv' + $(this).attr('rel')).show();
-                if ($(this).attr('rel') == 1) {
-                    $('.testFTPGet').hide();
-                } else {
-                    $('.testFTPPush').hide();
-                }
-            } else {
-                $('#certificationfileDiv' + $(this).attr('rel')).hide();
-                $('#file' + $(this).attr('rel')).val("");
-                if ($(this).attr('rel') == 1) {
-                    $('.testFTPGet').show();
-                } else {
-                    $('.testFTPPush').show();
-                }
-            }
-
-        });
-	
-	 $('.zipped').change(function () {
-	    if($(this).val() == 1) {
-		$('#zipTypeTopDiv').show();
-	    }
-	    else {
-		$('#zipTypeTopDiv').hide();
-	    }
-	     
-	 });
+	$('.zipped').change(function () {
+	   if($(this).val() == 1) {
+	       $('#zipTypeTopDiv').show();
+	   }
+	   else {
+	       $('#zipTypeTopDiv').hide();
+	   }
+	});
 
     });
 });
 
-function getRegistryUploadTypes() {
-    var selRegistry = $('#rrProgramId').val();
-    var selUploadType = $('#rrprogramuploadtypeDiv').attr('val');
 
-    if(selRegistry !== "") {
-
-	$.ajax({
-	    url: 'getRegistryProgramUploadTypes.do',
-	    type: "GET",
-	    data: {'registryId': selRegistry},
-	    dataType: 'json',
-	    success: function (data) {
-	       var uploadTypeSelect = $('#rrprogramuploadtypeid');
-	       $.each(data, function(index) {
-		   if(data[index].id == selUploadType) {
-		       uploadTypeSelect.append($('<option selected></option>').val(data[index].id).html(data[index].name));
-		   }
-		   else {
-		       uploadTypeSelect.append($('<option></option>').val(data[index].id).html(data[index].name));
-		   }
-		});
-	    }
-	});
+function showCorrectFieldsByTransportMethod(transportMethod) {
+    $('#fileDetailsDiv').show();
+   
+    $('#ftpDetailsDiv').hide();
+    $('#webserviceDetailsDiv').hide();
+    $('#restDetailsDiv').hide();
+    
+    
+    //FTP Details Section
+    if(transportMethod == 3) {
+	$('#ftpDetailsDiv').show();
     }
     else {
-	$('#rrprogramuploadtypeid').find('option').remove().end().append('<option value="">- Select -</option>').val('');
-	$('#targetFileName').val("");
+	$('#ftpDetailsDiv').hide();
     }
+    
+    //Web Service Details Section
+    if(transportMethod == 6) {
+	$('#webserviceDetailsDiv').show();
+    }
+    else {
+	$('#webserviceDetailsDiv').hide();
+    }
+    
+    //REST API Details Section
+    if(transportMethod == 9) {
+	$('#restDetailsDiv').show();
+    }
+    else {
+	$('#restDetailsDiv').hide();
+    }
+    
 }
+
 
 function checkFormFields() {
     var hasErrors = 0;
@@ -386,7 +192,7 @@ function checkFormFields() {
     }
     
     
-    if (selMethodId !== "8" && type !== "2") {
+    if (selMethodId != 8 && type != 2) {
 	//Make sure the error threshold is numeric and greater than 0
         if ($('#threshold').val() > 100 || !$.isNumeric($('#threshold').val())) {
             $('#thresholdDiv').addClass("has-error");
@@ -396,7 +202,7 @@ function checkFormFields() {
         }
     }
 
-    if (selMethodId === "1" || selMethodId === "3" || selMethodId === "5" || selMethodId === "6" || selMethodId === "8" || selMethodId === "9") {
+    if (selMethodId == 1 || selMethodId == 3 || selMethodId == 6 || selMethodId == 8 || selMethodId == 9 || selMethodId == 10) {
 
 	//Make sure the file size is numeric and greate than 0
         if ($('#maxFileSize').val() <= 0 || !$.isNumeric($('#maxFileSize').val())) {
@@ -438,7 +244,8 @@ function checkFormFields() {
             $('#encodingMsg').addClass("has-error");
             $('#encodingMsg').html('Encoding is a required field.');
             hasErrors = 1;
-        } else {
+        } 
+	else {
             //Remove any '.' in the extension
             $('#fileExt').val($('#fileExt').val().replace('.', ''));
         }
@@ -451,22 +258,8 @@ function checkFormFields() {
             hasErrors = 1;
         }
 	
-	if(selMethodId === "8") {
-	    if ($('#rrProgramId').val() === "") {
-		$('#rrProgramDiv').addClass("has-error");
-		$('#rrProgramMsg').addClass("has-error");
-		$('#rrProgramMsg').html('The registry is a required field.');
-		hasErrors = 1;
-	    }
-	    if ($('#targetFileName').val() === "") {
-		$('#targetFileNameDiv').addClass("has-error");
-		$('#targetFileNameMsg').addClass("has-error");
-		$('#targetFileNameMsg').html('The target file name is a required field.');
-		hasErrors = 1;
-	    }
-	}
 
-        if (selMethodId === "3") {
+        if (selMethodId == 3) {
             var IPReg = /^(\d\d?)|(1\d\d)|(0\d\d)|(2[0-4]\d)|(2[0-5])\.(\d\d?)|(1\d\d)|(0\d\d)|(2[0-4]\d)|(2[0-5])\.(\d\d?)|(1\d\d)|(0\d\d)|(2[0-4]\d)|(2[0-5])$/;
 
             //Check FTP Get Fields
@@ -575,35 +368,11 @@ function checkFormFields() {
 
         }
 
-        if (selMethodId == "5") {
-            //Check rhapsody get Fields
-            if ($('#rDirectory1').val() == "") {
-                $('#rDirectory1Div').addClass("has-error");
-                $('#rDirectory1Msg').addClass("has-error");
-                $('#rDirectory1Msg').html('The directory is a required field.');
-                hasErrors = 1;
-            }
 
-            //Check rhapsody push Fields
-
-            if ($('#rDirectory2').val() == "") {
-                $('#rDirectory2Div').addClass("has-error");
-                $('#rDirectory2Msg').addClass("has-error");
-                $('#rDirectory2Msg').html('The directory is a required field.');
-                hasErrors = 1;
-            }
-
-            if (hasErrors == 1) {
-                $('#rhapsodyDanger').show();
-                hasErrors = 1;
-            }
-
-        }
-
-        if (selMethodId == "6") {
+        if (selMethodId == 6) {
             //Check ws get Fields
             /** domain 1 is a required field is configurationDetails.type == 1 **/
-            if ($('#configurationDetailsType').val() == "1") {
+            if ($('#configurationDetailsType').val() == 1) {
 
                 if ($('#domain1').val() == "") {
                     $('#wsDomain1Div').addClass("has-error");
@@ -615,7 +384,7 @@ function checkFormFields() {
             }
 
             //Check ws push Fields
-            if ($('#configurationDetailsType').val() == "2") {
+            if ($('#configurationDetailsType').val() == 2) {
                 if ($('#email2').val() == "") {
                     $('#wsEmail2Div').addClass("has-error");
                     $('#wsEmail2Msg').addClass("has-error");
@@ -725,7 +494,6 @@ function checkFormFields() {
 	    }
 	    
 	}
-	
     }
     else {
 	if(selMethodId == 9) {
@@ -780,14 +548,6 @@ function checkFormFields() {
 	    }
 	    
 	}
-    }
-
-    //Make sure at least one message type is selected
-    var $messageTypes = $('#transportDetails').find('input[class="availMessageTypes"]:checked');
-
-    if (!$messageTypes.length) {
-        $('#messageTypeDanger').show();
-        hasErrors = 1;
     }
 
     return hasErrors;

@@ -46,6 +46,7 @@
                                                     <c:when test="${org.orgType == 2}">Community Based Organization</c:when>
                                                     <c:when test="${org.orgType == 3}">Health Management Information System</c:when>
                                                     <c:when test="${org.orgType == 4}">Data Warehouse</c:when>
+						    <c:when test="${org.orgType == 5}">Internal Health-e-Link Registry</c:when>
                                                 </c:choose>
 					    </td>
                                             <td>

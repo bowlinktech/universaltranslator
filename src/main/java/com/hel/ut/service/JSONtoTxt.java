@@ -32,10 +32,10 @@ public class JSONtoTxt {
     private organizationManager organizationmanager;
     
     @Autowired
-    private configurationManager configurationManager;
+    private utConfigurationManager configurationManager;
 
     @Autowired
-    private configurationTransportManager configurationTransportManager;
+    private utConfigurationTransportManager configurationTransportManager;
 
     public String TranslateJSONtoTxt(String fileLocation, String fileName, int orgId, int configId) throws Exception {
 

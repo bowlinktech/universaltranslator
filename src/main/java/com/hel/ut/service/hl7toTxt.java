@@ -31,10 +31,10 @@ public class hl7toTxt {
     private organizationManager organizationmanager;
     
     @Autowired
-    private configurationManager configurationManager;
+    private utConfigurationManager configurationManager;
 
     @Autowired
-    private configurationTransportManager configurationtransportmanager;
+    private utConfigurationTransportManager configurationtransportmanager;
 
     public String TranslateHl7toTxt(String fileLocation, String fileName, int orgId, int configId) throws Exception {
 

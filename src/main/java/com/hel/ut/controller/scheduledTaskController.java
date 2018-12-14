@@ -5,7 +5,6 @@
  */
 package com.hel.ut.controller;
 
-import com.hel.ut.service.configurationManager;
 import com.hel.ut.service.transactionInManager;
 import com.hel.ut.service.transactionOutManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +12,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import com.hel.ut.service.utConfigurationManager;
 
 /**
  *
@@ -26,7 +26,7 @@ public class scheduledTaskController {
     private transactionOutManager transactionOutManager;
 
     @Autowired
-    private configurationManager configurationManager;
+    private utConfigurationManager configurationManager;
 
     @Autowired
     private transactionInManager transactionInManager;

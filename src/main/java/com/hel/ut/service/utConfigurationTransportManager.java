@@ -13,7 +13,7 @@ import com.hel.ut.model.configurationTransportMessageTypes;
 import com.hel.ut.model.configurationWebServiceFields;
 import com.hel.ut.model.configurationWebServiceSenders;
 
-public interface configurationTransportManager {
+public interface utConfigurationTransportManager {
 
     configurationTransport getTransportDetails(int configId) throws Exception;
 
@@ -29,10 +29,9 @@ public interface configurationTransportManager {
 
     void updateConfigurationFormFields(configurationFormFields formField);
 
-    @SuppressWarnings("rawtypes")
     List getTransportMethods();
-
-    void setupOnlineForm(int transportId, int configId, int messageTypeId);
+    
+    List getTransportMethodsByType(Integer configurationType);
 
     List<configurationFTPFields> getTransportFTPDetails(int transportDetailId) throws Exception;
 
@@ -49,8 +48,6 @@ public interface configurationTransportManager {
     void deleteTransportMessageTypes(int configTransportId);
 
     void saveTransportMessageTypes(configurationTransportMessageTypes messageType);
-
-    void copyExistingTransportMethod(int configTransportId, int configId);
 
     List<configurationFormFields> getRequiredFieldsForConfig(Integer configId);
 

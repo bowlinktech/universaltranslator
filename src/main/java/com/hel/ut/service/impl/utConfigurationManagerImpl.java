@@ -5,7 +5,6 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.hel.ut.dao.configurationDAO;
 import com.hel.ut.dao.organizationDAO;
 import com.hel.ut.model.CrosswalkData;
 import com.hel.ut.model.HL7Details;
@@ -26,7 +25,6 @@ import com.hel.ut.model.configurationSchedules;
 import com.hel.ut.model.watchlist;
 import com.hel.ut.model.watchlistEntry;
 import com.hel.ut.reference.fileSystem;
-import com.hel.ut.service.configurationManager;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -37,15 +35,17 @@ import java.util.Calendar;
 import java.util.Date;
 import org.hibernate.SessionFactory;
 import org.springframework.web.multipart.MultipartFile;
+import com.hel.ut.service.utConfigurationManager;
+import com.hel.ut.dao.utConfigurationDAO;
 
 @Service
-public class configurationManagerImpl implements configurationManager {
+public class utConfigurationManagerImpl implements utConfigurationManager {
 
     @Autowired
     private SessionFactory sessionFactory;
 
     @Autowired
-    private configurationDAO configurationDAO;
+    private utConfigurationDAO utConfigurationDAO;
 
     @Autowired
     private organizationDAO organizationDAO;
@@ -53,188 +53,188 @@ public class configurationManagerImpl implements configurationManager {
     @Override
     public Integer createConfiguration(utConfiguration configuration) {
 	configuration.setstepsCompleted(1);
-	return configurationDAO.createConfiguration(configuration);
+	return utConfigurationDAO.createConfiguration(configuration);
     }
 
     @Override
     public void updateConfiguration(utConfiguration configuration) {
-	configurationDAO.updateConfiguration(configuration);
+	utConfigurationDAO.updateConfiguration(configuration);
     }
 
     @Override
     public utConfiguration getConfigurationById(int configId) {
-	return configurationDAO.getConfigurationById(configId);
+	return utConfigurationDAO.getConfigurationById(configId);
     }
 
     @Override
     public List<utConfiguration> getConfigurationsByOrgId(int configId, String searchTerm) {
-	return configurationDAO.getConfigurationsByOrgId(configId, searchTerm);
+	return utConfigurationDAO.getConfigurationsByOrgId(configId, searchTerm);
     }
 
     @Override
     public List<utConfiguration> getActiveConfigurationsByOrgId(int configId) {
-	return configurationDAO.getActiveConfigurationsByOrgId(configId);
+	return utConfigurationDAO.getActiveConfigurationsByOrgId(configId);
     }
 
     @Override
     public utConfiguration getConfigurationByName(String configName, int orgId) {
-	return configurationDAO.getConfigurationByName(configName, orgId);
+	return utConfigurationDAO.getConfigurationByName(configName, orgId);
     }
 
     @Override
     public List<utConfiguration> getConfigurations() {
-	return configurationDAO.getConfigurations();
+	return utConfigurationDAO.getConfigurations();
     }
 
     @Override
     public List<utConfiguration> getLatestConfigurations(int maxResults) {
-	return configurationDAO.getLatestConfigurations(maxResults);
+	return utConfigurationDAO.getLatestConfigurations(maxResults);
     }
 
     @Override
     public Long findTotalConfigs() {
-	return configurationDAO.findTotalConfigs();
+	return utConfigurationDAO.findTotalConfigs();
     }
 
     @Override
     public Long getTotalConnections(int configId) {
-	return configurationDAO.getTotalConnections(configId);
+	return utConfigurationDAO.getTotalConnections(configId);
     }
 
     @Override
     public void updateCompletedSteps(int configId, int stepCompleted) {
-	configurationDAO.updateCompletedSteps(configId, stepCompleted);
+	utConfigurationDAO.updateCompletedSteps(configId, stepCompleted);
     }
 
     @SuppressWarnings("rawtypes")
     @Override
     public List getFileTypes() {
-	return configurationDAO.getFileTypes();
+	return utConfigurationDAO.getFileTypes();
     }
 
     @Override
     public String getFileTypesById(int id) {
-	return configurationDAO.getFileTypesById(id);
+	return utConfigurationDAO.getFileTypesById(id);
     }
 
     @Override
     public List<configurationDataTranslations> getDataTranslations(int configId) {
-	return configurationDAO.getDataTranslations(configId);
+	return utConfigurationDAO.getDataTranslations(configId);
     }
 
     @Override
     public String getFieldName(int fieldId) {
-	return configurationDAO.getFieldName(fieldId);
+	return utConfigurationDAO.getFieldName(fieldId);
     }
 
     @Override
     public void deleteDataTranslations(int configId, int categoryId) {
-	configurationDAO.deleteDataTranslations(configId, categoryId);
+	utConfigurationDAO.deleteDataTranslations(configId, categoryId);
     }
 
     @Override
     public void saveDataTranslations(configurationDataTranslations translations) {
-	configurationDAO.saveDataTranslations(translations);
+	utConfigurationDAO.saveDataTranslations(translations);
     }
 
     @Override
     public List<Macros> getMacros() {
-	return configurationDAO.getMacros();
+	return utConfigurationDAO.getMacros();
     }
 
     @Override
     public List<Macros> getMacrosByCategory(int categoryId) {
-	return configurationDAO.getMacrosByCategory(categoryId);
+	return utConfigurationDAO.getMacrosByCategory(categoryId);
     }
 
     @Override
     public Macros getMacroById(int macroId) {
-	return configurationDAO.getMacroById(macroId);
+	return utConfigurationDAO.getMacroById(macroId);
     }
 
     @Override
     public List<configurationConnection> getAllConnections() {
-	return configurationDAO.getAllConnections();
+	return utConfigurationDAO.getAllConnections();
     }
 
     @Override
     public List<configurationConnection> getLatestConnections(int maxResults) {
-	return configurationDAO.getLatestConnections(maxResults);
+	return utConfigurationDAO.getLatestConnections(maxResults);
     }
 
     @Override
     public List<configurationConnection> getConnectionsByConfiguration(int configId, int userId) {
-	return configurationDAO.getConnectionsByConfiguration(configId, userId);
+	return utConfigurationDAO.getConnectionsByConfiguration(configId, userId);
     }
 
     @Override
     public List<configurationConnection> getConnectionsByTargetConfiguration(int configId) {
-	return configurationDAO.getConnectionsByTargetConfiguration(configId);
+	return utConfigurationDAO.getConnectionsByTargetConfiguration(configId);
     }
 
     @Override
     public Integer saveConnection(configurationConnection connection) {
-	return configurationDAO.saveConnection(connection);
+	return utConfigurationDAO.saveConnection(connection);
     }
 
     @Override
     public configurationConnection getConnection(int connectionId) {
-	return configurationDAO.getConnection(connectionId);
+	return utConfigurationDAO.getConnection(connectionId);
     }
 
     @Override
     public void updateConnection(configurationConnection connection) {
-	configurationDAO.updateConnection(connection);
+	utConfigurationDAO.updateConnection(connection);
     }
 
     @Override
     public configurationSchedules getScheduleDetails(int configId) {
-	return configurationDAO.getScheduleDetails(configId);
+	return utConfigurationDAO.getScheduleDetails(configId);
     }
 
     @Override
     public void saveSchedule(configurationSchedules scheduleDetails) {
-	configurationDAO.saveSchedule(scheduleDetails);
+	utConfigurationDAO.saveSchedule(scheduleDetails);
     }
 
     @Override
     public configurationMessageSpecs getMessageSpecs(int configId) {
-	return configurationDAO.getMessageSpecs(configId);
+	return utConfigurationDAO.getMessageSpecs(configId);
     }
 
     @Override
     public List<utConfiguration> getActiveConfigurationsByUserId(int userId, int transportMethod) throws Exception {
-	return configurationDAO.getActiveConfigurationsByUserId(userId, transportMethod);
+	return utConfigurationDAO.getActiveConfigurationsByUserId(userId, transportMethod);
     }
 
     @Override
     public List<configurationConnectionSenders> getConnectionSenders(int connectionId) {
-	return configurationDAO.getConnectionSenders(connectionId);
+	return utConfigurationDAO.getConnectionSenders(connectionId);
     }
 
     @Override
     public List<configurationConnectionReceivers> getConnectionReceivers(int connectionId) {
-	return configurationDAO.getConnectionReceivers(connectionId);
+	return utConfigurationDAO.getConnectionReceivers(connectionId);
     }
 
     @Override
     public void saveConnectionSenders(configurationConnectionSenders senders) {
-	configurationDAO.saveConnectionSenders(senders);
+	utConfigurationDAO.saveConnectionSenders(senders);
     }
 
     @Override
     public void saveConnectionReceivers(configurationConnectionReceivers receivers) {
-	configurationDAO.saveConnectionReceivers(receivers);
+	utConfigurationDAO.saveConnectionReceivers(receivers);
     }
 
     @Override
     public void removeConnectionSenders(int connectionId) {
-	configurationDAO.removeConnectionSenders(connectionId);
+	utConfigurationDAO.removeConnectionSenders(connectionId);
     }
 
     @Override
     public void removeConnectionReceivers(int connectionId) {
-	configurationDAO.removeConnectionReceivers(connectionId);
+	utConfigurationDAO.removeConnectionReceivers(connectionId);
     }
 
     @Override
@@ -249,7 +249,7 @@ public class configurationManagerImpl implements configurationManager {
 	MultipartFile file = messageSpecs.getFile();
 
 	//Need to get the selected organization clean url
-	utConfiguration configDetails = configurationDAO.getConfigurationById(messageSpecs.getconfigId());
+	utConfiguration configDetails = utConfigurationDAO.getConfigurationById(messageSpecs.getconfigId());
 	Organization orgDetails = organizationDAO.getOrganizationById(configDetails.getorgId());
 	cleanURL = orgDetails.getcleanURL();
 
@@ -348,7 +348,7 @@ public class configurationManagerImpl implements configurationManager {
 	    }
 	}
 
-	configurationDAO.updateMessageSpecs(messageSpecs, transportDetailId, clearFields);
+	utConfigurationDAO.updateMessageSpecs(messageSpecs, transportDetailId, clearFields);
 
 	if (processFile == true) {
 	    try {
@@ -371,194 +371,194 @@ public class configurationManagerImpl implements configurationManager {
      *
      */
     public void loadExcelContents(int id, int transportDetailId, String fileName, fileSystem dir) throws Exception {
-	configurationDAO.loadExcelContents(id, transportDetailId, fileName, dir);
+	utConfigurationDAO.loadExcelContents(id, transportDetailId, fileName, dir);
     }
 
     @Override
     public List<configurationDataTranslations> getDataTranslationsWithFieldNo(
 	    int configId, int categoryId) {
-	return configurationDAO.getDataTranslationsWithFieldNo(configId, categoryId);
+	return utConfigurationDAO.getDataTranslationsWithFieldNo(configId, categoryId);
     }
 
     @Override
     public List<CrosswalkData> getCrosswalkData(int cwId) {
-	return configurationDAO.getCrosswalkData(cwId);
+	return utConfigurationDAO.getCrosswalkData(cwId);
     }
 
     @Override
     public HL7Details getHL7Details(int configId) {
-	return configurationDAO.getHL7Details(configId);
+	return utConfigurationDAO.getHL7Details(configId);
     }
 
     @Override
     public List<HL7Segments> getHL7Segments(int hl7Id) {
-	return configurationDAO.getHL7Segments(hl7Id);
+	return utConfigurationDAO.getHL7Segments(hl7Id);
     }
 
     @Override
     public List<HL7Elements> getHL7Elements(int hl7Id, int segmentId) {
-	return configurationDAO.getHL7Elements(hl7Id, segmentId);
+	return utConfigurationDAO.getHL7Elements(hl7Id, segmentId);
     }
 
     @Override
     public List<HL7ElementComponents> getHL7ElementComponents(int elementId) {
-	return configurationDAO.getHL7ElementComponents(elementId);
+	return utConfigurationDAO.getHL7ElementComponents(elementId);
     }
 
     @Override
     public void updateHL7Details(HL7Details details) {
-	configurationDAO.updateHL7Details(details);
+	utConfigurationDAO.updateHL7Details(details);
     }
 
     @Override
     public void updateHL7Segments(HL7Segments segment) {
-	configurationDAO.updateHL7Segments(segment);
+	utConfigurationDAO.updateHL7Segments(segment);
     }
 
     @Override
     public void updateHL7Elements(HL7Elements element) {
-	configurationDAO.updateHL7Elements(element);
+	utConfigurationDAO.updateHL7Elements(element);
     }
 
     @Override
     public void updateHL7ElementComponent(HL7ElementComponents component) {
-	configurationDAO.updateHL7ElementComponent(component);
+	utConfigurationDAO.updateHL7ElementComponent(component);
     }
 
     @Override
     public int saveHL7Details(HL7Details details) {
-	return configurationDAO.saveHL7Details(details);
+	return utConfigurationDAO.saveHL7Details(details);
     }
 
     @Override
     public int saveHL7Segment(HL7Segments newSegment) {
-	return configurationDAO.saveHL7Segment(newSegment);
+	return utConfigurationDAO.saveHL7Segment(newSegment);
     }
 
     @Override
     public int saveHL7Element(HL7Elements newElement) {
-	return configurationDAO.saveHL7Element(newElement);
+	return utConfigurationDAO.saveHL7Element(newElement);
     }
 
     @Override
     public void saveHL7Component(HL7ElementComponents newcomponent) {
-	configurationDAO.saveHL7Component(newcomponent);
+	utConfigurationDAO.saveHL7Component(newcomponent);
     }
 
     @Override
     public String getMessageTypeNameByConfigId(Integer configId) {
-	return configurationDAO.getMessageTypeNameByConfigId(configId);
+	return utConfigurationDAO.getMessageTypeNameByConfigId(configId);
     }
 
     @SuppressWarnings("rawtypes")
     @Override
     public List getEncodings() {
-	return configurationDAO.getEncodings();
+	return utConfigurationDAO.getEncodings();
     }
 
     @Override
     public void removeHL7ElementComponent(Integer componentId) {
-	configurationDAO.removeHL7ElementComponent(componentId);
+	utConfigurationDAO.removeHL7ElementComponent(componentId);
     }
 
     @Override
     public void removeHL7Element(Integer elementId) {
-	configurationDAO.removeHL7Element(elementId);
+	utConfigurationDAO.removeHL7Element(elementId);
     }
 
     @Override
     public void removeHL7Segment(Integer segmentId) {
-	configurationDAO.removeHL7Segment(segmentId);
+	utConfigurationDAO.removeHL7Segment(segmentId);
     }
 
     @Override
     public List<configurationCCDElements> getCCDElements(Integer configId) throws Exception {
-	return configurationDAO.getCCDElements(configId);
+	return utConfigurationDAO.getCCDElements(configId);
     }
 
     @Override
     public void saveCCDElement(configurationCCDElements ccdElement) throws Exception {
-	configurationDAO.saveCCDElement(ccdElement);
+	utConfigurationDAO.saveCCDElement(ccdElement);
     }
 
     @Override
     public configurationCCDElements getCCDElement(Integer elementId) throws Exception {
-	return configurationDAO.getCCDElement(elementId);
+	return utConfigurationDAO.getCCDElement(elementId);
     }
 
     @Override
     public configurationExcelDetails getExcelDetails(Integer configId, Integer orgId)
 	    throws Exception {
-	return configurationDAO.getExcelDetails(configId, orgId);
+	return utConfigurationDAO.getExcelDetails(configId, orgId);
     }
 
     @Override
     public void updateExcelConfigDetails(Integer orgId, configurationMessageSpecs messageSpecs) throws Exception {
-	configurationDAO.updateExcelConfigDetails(orgId, messageSpecs);
+	utConfigurationDAO.updateExcelConfigDetails(orgId, messageSpecs);
     }
 
     @Override
     public Integer getFieldCrosswalkIdByFieldName(int configId, String fieldName) throws Exception {
-	return configurationDAO.getFieldCrosswalkIdByFieldName(configId, fieldName);
+	return utConfigurationDAO.getFieldCrosswalkIdByFieldName(configId, fieldName);
     }
 
     @Override
     public List<utConfiguration> getActiveConfigurationsByTransportType(int userId, List<Integer> transportMethods) throws Exception {
-	return configurationDAO.getActiveConfigurationsByTransportType(userId, transportMethods);
+	return utConfigurationDAO.getActiveConfigurationsByTransportType(userId, transportMethods);
     }
 
     @SuppressWarnings("rawtypes")
     @Override
     public List getZipTypes() {
-	return configurationDAO.getZipTypes();
+	return utConfigurationDAO.getZipTypes();
     }
 
     @SuppressWarnings("rawtypes")
     public List getrestAPITypes() {
-	return configurationDAO.getrestAPITypes();
+	return utConfigurationDAO.getrestAPITypes();
     }
 
     @Override
     public List<configurationConnection> getConnectionsBySrcAndTargetConfigurations(
 	    int sourceConfigId, int targetConfigId) {
-	return configurationDAO.getConnectionsBySrcAndTargetConfigurations(sourceConfigId, targetConfigId);
+	return utConfigurationDAO.getConnectionsBySrcAndTargetConfigurations(sourceConfigId, targetConfigId);
     }
     
     @SuppressWarnings("rawtypes")
     public List getrestAPIFunctions(Integer orgId) {
-	return configurationDAO.getrestAPIFunctions(orgId);
+	return utConfigurationDAO.getrestAPIFunctions(orgId);
     }
     
     
     @Override
     public List<watchlist> getDashboardWatchList() throws Exception {
-	return configurationDAO.getDashboardWatchList();
+	return utConfigurationDAO.getDashboardWatchList();
     }
     
     @Override
     public watchlist getDashboardWatchListById(int watchId) throws Exception {
-	return configurationDAO.getDashboardWatchListById(watchId);
+	return utConfigurationDAO.getDashboardWatchListById(watchId);
     }
     
     @Override
     public Integer saveDashboardWatchListEntry(watchlist watchListEntry) {
-	return configurationDAO.saveDashboardWatchListEntry(watchListEntry);
+	return utConfigurationDAO.saveDashboardWatchListEntry(watchListEntry);
     }
 
     @Override
     public void updateDashboardWatchListEntry(watchlist watchListEntry) {
-	configurationDAO.updateDashboardWatchListEntry(watchListEntry);
+	utConfigurationDAO.updateDashboardWatchListEntry(watchListEntry);
     }
     
     @Override
     public List<watchlistEntry> getWatchListEntries(Date fromDate, Date toDate) throws Exception  {
-	return configurationDAO.getWatchListEntries(fromDate,toDate);
+	return utConfigurationDAO.getWatchListEntries(fromDate,toDate);
     }
     
     @Override
     public void CheckDashboardWatchList() throws Exception {
 	
-	List<watchlist> watchListEntries = configurationDAO.getDashboardWatchListToInsert();
+	List<watchlist> watchListEntries = utConfigurationDAO.getDashboardWatchListToInsert();
 	
 	if(watchListEntries != null) {
 	    if(!watchListEntries.isEmpty()) {
@@ -571,7 +571,7 @@ public class configurationManagerImpl implements configurationManager {
 		    newEntry.setOrgId(entries.getOrgId());
 		    newEntry.setMessageTypeId(entries.getMessageTypeId());
 		   
-		    configurationDAO.insertDashboardWatchListEntry(newEntry);
+		    utConfigurationDAO.insertDashboardWatchListEntry(newEntry);
 		    
 		    Calendar c = Calendar.getInstance();
 		    String dateParts[] = entries.getNextInsertDate().toString().split("\\s+");
@@ -621,7 +621,7 @@ public class configurationManagerImpl implements configurationManager {
 		    
 		    entries.setNextInsertDate(c.getTime());
 		    
-		    configurationDAO.updateDashboardWatchListEntry(entries);
+		    utConfigurationDAO.updateDashboardWatchListEntry(entries);
  		}
 	    }
 	}
@@ -629,26 +629,26 @@ public class configurationManagerImpl implements configurationManager {
     
     @Override
     public void updateMessageSpecs(configurationMessageSpecs messageSpecs) throws Exception {
-	configurationDAO.updateMessageSpecs(messageSpecs, 0, 0);
+	utConfigurationDAO.updateMessageSpecs(messageSpecs, 0, 0);
     }
     
     @Override
     public void deleteWatchEntry(Integer watchId) throws Exception {
-	configurationDAO.deleteWatchEntry(watchId);
+	utConfigurationDAO.deleteWatchEntry(watchId);
     }
     
     @Override
     public List<watchlistEntry> getGenericWatchListEntries(Date fromDate, Date toDate) throws Exception  {
-	return configurationDAO.getGenericWatchListEntries(fromDate,toDate);
+	return utConfigurationDAO.getGenericWatchListEntries(fromDate,toDate);
     }
     
     @Override
     public void insertDashboardWatchListEntry(watchlistEntry watchListEntry) {
-	configurationDAO.insertDashboardWatchListEntry(watchListEntry);
+	utConfigurationDAO.insertDashboardWatchListEntry(watchListEntry);
     }
     
     @Override
     public watchlistEntry getWatchListEntry(Integer entryId) throws Exception {
-	return configurationDAO.getWatchListEntry(entryId);
+	return utConfigurationDAO.getWatchListEntry(entryId);
     }
 }

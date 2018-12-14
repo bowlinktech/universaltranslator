@@ -31,7 +31,7 @@ public class xlsToTxt {
     private organizationManager organizationmanager;
 
     @Autowired
-    private configurationTransportManager configurationTransportManager;
+    private utConfigurationTransportManager configurationTransportManager;
 
     @Autowired
     private transactionInManager transactioninmanager;

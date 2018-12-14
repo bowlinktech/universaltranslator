@@ -22,8 +22,6 @@ import com.hel.ut.model.systemSummary;
 import com.hel.ut.model.watchlist;
 import com.hel.ut.service.messageTypeManager;
 import com.hel.ut.service.organizationManager;
-import com.hel.ut.service.configurationManager;
-import com.hel.ut.service.configurationTransportManager;
 import com.hel.ut.service.transactionOutManager;
 import com.hel.ut.service.userManager;
 import java.text.DateFormat;
@@ -39,6 +37,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.servlet.view.RedirectView;
+import com.hel.ut.service.utConfigurationManager;
+import com.hel.ut.service.utConfigurationTransportManager;
 
 /**
  * The adminController class will handle administrator page requests that fall outside specific sections.
@@ -57,10 +57,10 @@ public class adminController {
     private messageTypeManager messagetypemanager;
 
     @Autowired
-    private configurationManager configurationmanager;
+    private utConfigurationManager configurationmanager;
 
     @Autowired
-    private configurationTransportManager configurationTransportManager;
+    private utConfigurationTransportManager configurationTransportManager;
 
     @Autowired
     private userManager userManager;

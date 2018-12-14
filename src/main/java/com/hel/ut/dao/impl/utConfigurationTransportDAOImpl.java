@@ -11,7 +11,6 @@ import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
 import org.hibernate.transform.Transformers;
 
-import com.hel.ut.dao.configurationTransportDAO;
 import com.hel.ut.model.TransportMethod;
 import com.hel.ut.model.configurationFTPFields;
 import com.hel.ut.model.configurationFormFields;
@@ -25,9 +24,10 @@ import com.hel.ut.model.configurationWebServiceSenders;
 import java.util.Iterator;
 
 import org.springframework.stereotype.Repository;
+import com.hel.ut.dao.utConfigurationTransportDAO;
 
 @Repository
-public class configurationTransportDAOImpl implements configurationTransportDAO {
+public class utConfigurationTransportDAOImpl implements utConfigurationTransportDAO {
 
     @Autowired
     private SessionFactory sessionFactory;
@@ -65,19 +65,6 @@ public class configurationTransportDAOImpl implements configurationTransportDAO 
         return (configurationTransport) query.uniqueResult();
     }
 
-    /**
-     * The 'setupOnlineForm' function will complete the set up for the online form for the new configuration. Every configuration will have an associated online form.
-     *
-     * @param	configId	Holds the id of the new configuration
-     * @param	messageTypeid	Holds the id of the selected message type
-     *
-     * @Return	This function does not return anything
-     */
-    @Override
-    @Transactional(readOnly = false)
-    public void setupOnlineForm(int transportId, int configId, int messageTypeId) {
-        copyMessageTypeFields(transportId, configId, messageTypeId);
-    }
 
     /**
      * The 'updateTransportDetails' function will update the configuration transport details
@@ -105,13 +92,36 @@ public class configurationTransportDAOImpl implements configurationTransportDAO 
      *
      */
     @Override
-    @SuppressWarnings("rawtypes")
     @Transactional(readOnly = true)
     public List getTransportMethods() {
         Query query = sessionFactory.getCurrentSession().createSQLQuery("SELECT id, transportMethod FROM ref_transportMethods where active = 1 order by transportMethod asc");
 
         return query.list();
     }
+    
+    /**
+     * The 'getTransportMethodsByType' function will return a list of available transport methods
+     *
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public List getTransportMethodsByType(Integer configurationType) {
+	
+	 Query query;
+	 
+	//Source configuration
+	if(configurationType == 1) {
+	    query = sessionFactory.getCurrentSession().createSQLQuery("SELECT id, transportMethod FROM ref_transportMethods where active = 1 and id in (1,3,4,6,9,10) order by transportMethod asc");
+	}
+	
+	//Target configuration
+	else {
+	    query = sessionFactory.getCurrentSession().createSQLQuery("SELECT id, transportMethod FROM ref_transportMethods where active = 1 and id in (3,6,8,9) order by transportMethod asc");
+	}
+	
+        return query.list();
+    }
+    
 
     /**
      * The 'copyMessageTypeFields' function will copy the form fields for the selected message type for the selected configuration.
@@ -125,12 +135,12 @@ public class configurationTransportDAOImpl implements configurationTransportDAO 
     @Transactional(readOnly = false)
     public void copyMessageTypeFields(int transportId, int configId, int messageTypeId) {
 
-        /* Check to see if there are any data translations for the passed in message type */
+        // Check to see if there are any data translations for the passed in message type
         Query translationQuery = sessionFactory.getCurrentSession().createSQLQuery("SELECT id FROM rel_messageTypeDataTranslations where messageTypeId = :messageTypeId");
         translationQuery.setParameter("messageTypeId", messageTypeId);
 
         if (translationQuery.list().size() > 0) {
-            /* Get all the message type fields */
+            // Get all the message type fields
             Query messageTypeFields = sessionFactory.getCurrentSession().createSQLQuery("SELECT id, messageTypeId FROM messageTypeFormFields where messageTypeId = :messageTypeId");
             messageTypeFields.setParameter("messageTypeId", messageTypeId);
             List fieldList = messageTypeFields.list();
@@ -148,7 +158,7 @@ public class configurationTransportDAOImpl implements configurationTransportDAO 
                 query.setParameter("id", id);
                 query.executeUpdate();
 
-                /*Get the max id */
+                //Get the max id
                 Query maxId = sessionFactory.getCurrentSession().createSQLQuery("SELECT max(id), configId FROM configurationFormFields");
                 List queryList = maxId.list();
                 Iterator maxIt = queryList.iterator();
@@ -374,25 +384,6 @@ public class configurationTransportDAOImpl implements configurationTransportDAO 
     @Transactional(readOnly = false)
     public void saveTransportMessageTypes(configurationTransportMessageTypes messageType) {
         sessionFactory.getCurrentSession().save(messageType);
-    }
-
-    /**
-     * The 'copyExistingTransportMethod' function will copy the existing transport settings from the passed in transportId to the new configuration.
-     *
-     * @param configTransportId The id for the existing transport method to copy from
-     * @param configId The id for the new configuration to copy to
-     *
-     * @return This function does not return anything.
-     */
-    @Transactional(readOnly = false)
-    public void copyExistingTransportMethod(int configTransportId, int configId) {
-
-        Query query = sessionFactory.getCurrentSession().createSQLQuery("INSERT INTO configurationTransportDetails (configId, transportMethodId, fileType, fileDelimiter, status, targetFileName, appendDateTime, maxFileSize, clearRecords, fileLocation, autoRelease, errorHandling, mergeBatches, copiedTransportId, fileExt, encodingId) select :configId, transportMethodId, fileType, fileDelimiter, status, targetFileName, appendDateTime, maxFileSize, clearRecords, fileLocation, autoRelease, errorHandling, mergeBatches, :configTransportId, fileExt, encodingId FROM configurationTransportDetails where id = :configTransportId");
-        query.setParameter("configId", configId);
-        query.setParameter("configTransportId", configTransportId);
-
-        query.executeUpdate();
-
     }
 
     /**

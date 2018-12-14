@@ -16,8 +16,6 @@ import com.hel.ut.model.configurationConnection;
 import com.hel.ut.model.configurationTransport;
 import com.hel.ut.model.mailMessage;
 import com.hel.ut.reference.fileSystem;
-import com.hel.ut.service.configurationManager;
-import com.hel.ut.service.configurationTransportManager;
 import com.hel.ut.service.emailMessageManager;
 import com.hel.ut.service.organizationManager;
 import com.hel.ut.service.transactionInManager;
@@ -61,6 +59,8 @@ import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+import com.hel.ut.service.utConfigurationManager;
+import com.hel.ut.service.utConfigurationTransportManager;
 
 /**
  *
@@ -79,7 +79,7 @@ public class restfulManager {
     private transactionInManager transactionInManager;
 
     @Autowired
-    private configurationTransportManager configurationTransportManager;
+    private utConfigurationTransportManager configurationTransportManager;
 
     @Autowired
     private zipFileManager zipFileManager;
@@ -88,7 +88,7 @@ public class restfulManager {
     private RestAPIDAO RestAPIDAO;
 
     @Autowired
-    private configurationManager configurationmanager;
+    private utConfigurationManager configurationmanager;
 
     @Autowired
     private emailMessageManager emailManager;

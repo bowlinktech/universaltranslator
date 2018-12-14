@@ -392,18 +392,6 @@ public class messageTypeDAOImpl implements messageTypeDAO {
     }
 
     /**
-     * The 'getFieldTypes' function will return a list of available field types
-     */
-    @Override
-    @SuppressWarnings("rawtypes")
-    @Transactional(readOnly = true)
-    public List getFieldTypes() {
-        Query query = sessionFactory.getCurrentSession().createSQLQuery("SELECT id, fieldType FROM ref_fieldTypes order by id asc");
-
-        return query.list();
-    }
-
-    /**
      * The 'getValidationById' function will return a validation by the passed in Id.
      *
      */

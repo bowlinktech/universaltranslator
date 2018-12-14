@@ -36,7 +36,7 @@ public class excelToTxt {
     private organizationManager organizationmanager;
 
     @Autowired
-    private configurationTransportManager configurationTransportManager;
+    private utConfigurationTransportManager configurationTransportManager;
 
     @Autowired
     private transactionInManager transactioninmanager;
