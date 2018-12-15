@@ -16,18 +16,18 @@ import org.hibernate.validator.constraints.NotEmpty;
 public class configurationFormFields {
 
     @Transient
-    private String fieldValue = null;
+    private String fieldValue = null, associatedFieldDetails;
     
     @Transient
-    private int copiedId = 0, mappedToField = 0;
+    private Integer copiedId = 0, mappedToField = 0;
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "ID", nullable = false)
     private int id;
 
-    @Column(name = "MESSAGETYPEFIELDID", nullable = false)
-    private int messageTypeFieldId = 0;
+    @Column(name = "associatedFieldId", nullable = false)
+    private int associatedFieldId = 0;
 
     @Column(name = "CONFIGID", nullable = false)
     private int configId;
@@ -50,6 +50,9 @@ public class configurationFormFields {
 
     @Column(name = "USEFIELD", nullable = false)
     private boolean useField = false;
+    
+    @Column(name="associatedFieldNo", nullable = false)
+    private Integer associatedFieldNo = 0;
 
 
     public int getId() {
@@ -60,12 +63,12 @@ public class configurationFormFields {
         this.id = id;
     }
 
-    public int getmessageTypeFieldId() {
-        return messageTypeFieldId;
+    public int getAssociatedFieldId() {
+	return associatedFieldId;
     }
 
-    public void setmessageTypeFieldId(int messageTypeFieldId) {
-        this.messageTypeFieldId = messageTypeFieldId;
+    public void setAssociatedFieldId(int associatedFieldId) {
+	this.associatedFieldId = associatedFieldId;
     }
 
     public int getconfigId() {
@@ -148,4 +151,21 @@ public class configurationFormFields {
 	this.mappedToField = mappedToField;
     }
 
+    public Integer getAssociatedFieldNo() {
+	return associatedFieldNo;
+    }
+
+    public void setAssociatedFieldNo(Integer associatedFieldNo) {
+	this.associatedFieldNo = associatedFieldNo;
+    }
+
+    public String getAssociatedFieldDetails() {
+	return associatedFieldDetails;
+    }
+
+    public void setAssociatedFieldDetails(String associatedFieldDetails) {
+	this.associatedFieldDetails = associatedFieldDetails;
+    }
+
+    
 }

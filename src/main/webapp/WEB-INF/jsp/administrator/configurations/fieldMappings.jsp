@@ -60,27 +60,28 @@
 						<input type="hidden" name="fields[${field.index}].transportDetailId" value="${mappings.transportDetailId}" />
 						<input type="hidden" name="fields[${field.index}].fieldNo" value="${mappings.fieldNo}" />
 						<input type="hidden" name="fields[${field.index}].fieldDesc" value="${mappings.fieldDesc}" />
+						<input type="hidden" name="fields[${field.index}].associatedFieldNo" value="${mappings.associatedFieldNo}" />
 						${mappings.fieldNo}
 					    </td>
 					    <td>${mappings.fieldDesc}</td>
 					    <td class="center-text">
-						<input type="checkbox" name="fields[${field.index}].useField" <c:if test="${mappings.useField == true}">checked</c:if> />
+						<input type="checkbox" class="useField" fieldNo="${mappings.fieldNo}" name="fields[${field.index}].useField" <c:if test="${mappings.useField == true}">checked</c:if> />
 					    </td>
 					    <td class="center-text">
 						<input type="checkbox" name="fields[${field.index}].required"  <c:if test="${mappings.required == true}">checked</c:if>  />
 					    </td>
 					    <td class="center-text">
-						<select name="fields[${field.index}].validationType" class="formField">
+						<select name="fields[${field.index}].validationType" id="validation_${mappings.fieldNo}" class="formField">
 						    <c:forEach items="${validationTypes}"  var="fieldvalidationtypes" varStatus="vtype">
 							<option value="${validationTypes[vtype.index][0]}" <c:if test="${mappings.validationType == validationTypes[vtype.index][0]}">selected</c:if>>${validationTypes[vtype.index][1]}</option>
 						    </c:forEach>
 						</select>    
 					    </td>
 					    <td class="center-text">
-						<select name="fields[${field.index}].messageTypeFieldId" id="matchingField_${mappings.fieldNo}" rel="${field.index}" class="formField matchingField">
+						<select name="fields[${field.index}].associatedFieldDetails" id="match_${mappings.fieldNo}" currval="${mappings.associatedFieldId}" fieldNo="${mappings.fieldNo}" rel="${field.index}" class="formField matchingField">
 						    <option value="0">-</option>
 						    <c:forEach var="tField" items="${templateFields}">
-							<option value="${tField.id}" <c:if test="${mappings.messageTypeFieldId == tField.id}">selected</c:if>>${tField.fieldDesc} - ${tField.fieldNo}</option>
+							<option value="${tField.id}" <c:if test="${mappings.associatedFieldId == tField.id}">selected</c:if>>${tField.fieldDesc} - ${tField.fieldNo}</option>
 						    </c:forEach>
 						</select>
 					    </td>
@@ -98,7 +99,7 @@
                 <div class="panel-heading templateFields" rel="${HELRegistryConfiguration}">
 		    <c:if test="${HELRegistryConfiguration}">
 			<div class="pull-right">
-			    <a class="btn btn-primary btn-xs" schemaname="${HELRegistrySchemaName}" id="loadConfigurationFields" data-toggle="tooltip" data-original-title="Click here to load the configuration fields.">Load Configuration Fields</a>
+			    <a class="btn btn-primary btn-xs" helConfigId="${configurationDetails.helRegistryConfigId}" schemaname="${HELRegistrySchemaName}" id="loadConfigurationFields" data-toggle="tooltip" data-original-title="Click here to load the configuration fields.">Load Configuration Fields</a>
 			</div>
 		    </c:if>
                     <h3 class="panel-title">
@@ -109,7 +110,7 @@
 		    </h3>
                 </div>
                 <div class="panel-body">
-                    <div class="form-container scrollable">
+                    <div class="form-container scrollable" id="availableFields">
                         <table class="table table-striped table-hover table-default">
                             <thead>
                                 <tr>

@@ -73,6 +73,7 @@ import javax.servlet.http.HttpSession;
 import com.hel.ut.service.utConfigurationManager;
 import com.hel.ut.service.utConfigurationTransportManager;
 import com.registryKit.registry.configurations.configuration;
+import com.registryKit.registry.configurations.configurationDataElement;
 import com.registryKit.registry.configurations.configurationManager;
 
 @Controller
@@ -1033,9 +1034,15 @@ public class adminConfigController {
     /**
      * The 'saveFields' POST method will submit the changes to the form field settings for the selected utConfiguration. This method is only for configurations set for 'Online Form' as the data transportation method.
      *
+     * @param session
      * @param	transportDetails	The field details from the form action	The field that will hold which button was pressed "Save" or "Next Step"
+     * @param redirectAttr
+     * @param transportMethod
+     * @param action
+     * @param errorHandling
      *
      * @return	This method will either redirect back to the Choose Fields page or redirect to the next step data translations page.
+     * @throws java.lang.Exception
      */
     @RequestMapping(value = "/saveFields", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
     public @ResponseBody
@@ -1052,17 +1059,31 @@ public class adminConfigController {
 	
         //Get the list of fields
         List<configurationFormFields> fields = transportDetails.getFields();
-
-        if (null != fields && fields.size() > 0) {
-            for (configurationFormFields formfield : fields) {
-                if (formfield.getmessageTypeFieldId() == 0) {
-                    formfield.setUseField(false);
-                } else {
-                    formfield.setUseField(formfield.getUseField());
-                }
-                utconfigurationTransportManager.updateConfigurationFormFields(formfield);
-            }
-        }
+	
+	if(fields != null) {
+	    if(!fields.isEmpty()) {
+		fields.stream().map((formField) -> {
+		    if(formField.getAssociatedFieldDetails().contains("-")) {
+			String[] associatedFieldValues = formField.getAssociatedFieldDetails().split("-");
+			Integer associatedFieldId = Integer.parseInt(associatedFieldValues[0]);
+			Integer associatedFieldNo = Integer.parseInt(associatedFieldValues[1]);
+			formField.setAssociatedFieldId(associatedFieldId);
+			formField.setAssociatedFieldNo(associatedFieldNo);
+		    }
+		    return formField;		    
+		}).map((formField) -> {
+		    if(formField.getAssociatedFieldId() == 0) {
+			formField.setUseField(false);
+		    }
+		    else {
+			formField.setUseField(formField.getUseField());
+		    }
+		    return formField;		    
+		}).forEachOrdered((formField) -> {
+		    utconfigurationTransportManager.updateConfigurationFormFields(formField);
+		});
+	    }
+	}
 
         //If the "Save" button was pressed 
         if (action.equals("save")) {
@@ -2916,7 +2937,7 @@ public class adminConfigController {
 		    
 		    configurationFormFields newFormField = new configurationFormFields();
 		    newFormField.setconfigId(id);
-		    newFormField.setmessageTypeFieldId(field.getmessageTypeFieldId());
+		    newFormField.setAssociatedFieldId(field.getAssociatedFieldId());
 		    newFormField.settransportDetailId(transportDetailId);
 		    newFormField.setFieldNo(field.getFieldNo());
 		    newFormField.setFieldDesc(field.getFieldDesc());
@@ -2971,7 +2992,6 @@ public class adminConfigController {
      * @return The function will return a list of active registry configurations
      * @throws java.lang.Exception
      */
-    @SuppressWarnings("rawtypes")
     @RequestMapping(value = "/getHELRegistryConfigurations", method = RequestMethod.GET)
     public @ResponseBody List<configuration> getHELRegistryOrganizations() throws Exception {
 	
@@ -2979,4 +2999,26 @@ public class adminConfigController {
 	
 	return registryConfigurations;
     }
+    
+    
+    /**
+     * The '/getHELRegistryConfigurationFields' GET request will return a list of available fields for the 
+     * passed in HEL registry configuration
+     *
+     * @param helConfigId
+     * @return The function will return a list of available fields for the passed in registry configurations
+     * @throws java.lang.Exception
+     */
+    @RequestMapping(value = "/getHELRegistryConfigurationFields", method = RequestMethod.GET)
+    public @ResponseBody ModelAndView getHELRegistryConfigurationFields(@RequestParam Integer helConfigId) throws Exception {
+	
+	ModelAndView mav = new ModelAndView();
+        mav.setViewName("/administrator/configurations/helConfigurationFields");
+	
+	List<configurationDataElement> helConfigurationFields = registryconfigurationmanager.getConfigurationDataElements(helConfigId);
+	mav.addObject("helConfigurationFields",helConfigurationFields);
+	
+	return mav;
+    }
+    
 }
