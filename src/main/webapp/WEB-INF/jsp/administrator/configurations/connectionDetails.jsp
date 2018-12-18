@@ -36,7 +36,7 @@
                         <div class="form-container scrollable">
                             <div id="srcorgDiv" class="form-group ${status.error ? 'has-error' : '' }">
                                 <label class="control-label" for="organization">Organization *</label>
-                                <select id="organization" class="form-control selsrcOrganization" <c:if test="${connectionDetails.id > 0}">disabled="true"</c:if>>
+                                <select id="organization" class="form-control selSendingOrganization" <c:if test="${connectionDetails.id > 0}">disabled="true"</c:if>>
                                         <option value="">- Select -</option>
                                     <c:forEach items="${organizations}" var="org" varStatus="oStatus">
                                         <option value="${organizations[oStatus.index].id}" <c:if test="${organizations[oStatus.index].id == connectionDetails.srcConfigDetails.getorgId()}">selected</c:if>>${organizations[oStatus.index].orgName} </option>
@@ -54,10 +54,10 @@
                                         <span id="srcConfigMsg" class="control-label"></span>
                                     </div>  
                             </spring:bind>
-                            <div id="srcUsersDiv" class="form-group ${status.error ? 'has-error' : '' }">
-                                <label class="control-label" for="srcUsers">Authorized User(s) <span id="srcUsersFound"></span> *</label>
-                                <div id="srcUsersTable" style="max-height:200px; overflow: auto"></div>
-                                <span id="srcUsersMsg" class="control-label"></span>
+                            <div id="srcContactsDiv" class="form-group ${status.error ? 'has-error' : '' }">
+                                <label class="control-label" for="srcUsers">Organization Contacts</label>
+                                <div id="srcContactsTable" style="max-height:200px; overflow: auto"></div>
+                                <span id="srcContactsMsg" class="control-label"></span>
                             </div>         
                         </div>
                     </div>
@@ -89,9 +89,9 @@
                                     </div> 
                             </spring:bind>
                             <div id="tgtUsersDiv" class="form-group ${status.error ? 'has-error' : '' }">
-                                <label class="control-label" for="tgtUsers">Authorized User(s) <span id="tgtUsersFound"></span> *</label>
-                                <div id="tgtUsersTable" style="max-height:200px; overflow: auto"></div>
-                                <span id="tgtUsersMsg" class="control-label"></span>
+                                <label class="control-label" for="tgtUsers">Organization Contacts</label>
+                                <div id="tgtContactsTable" style="max-height:200px; overflow: auto"></div>
+                                <span id="tgtContactsMsg" class="control-label"></span>
                             </div>      
                         </div>
                     </div>
@@ -106,17 +106,17 @@
 
 <script>
     $(function () {
-        var srcOrg = $('.selsrcOrganization').val();
+        var srcOrg = $('.selSendingOrganization').val();
         var tgtOrg = $('.seltgtOrganization').val();
         var connectionId = $('#connectionId').val();
 
         if (srcOrg > 0) {
             populateConfigurations(srcOrg, 'srcConfig');
-            populateUsers(srcOrg, 'srcUsersTable', connectionId);
+            populateUsers(srcOrg, 'srcContactsTable', connectionId);
         }
         if (tgtOrg > 0) {
             populateConfigurations(tgtOrg, 'tgtConfig');
-            populateUsers(tgtOrg, 'tgtUsersTable', connectionId);
+            populateUsers(tgtOrg, 'tgtContactsTable', connectionId);
         }
 
     });

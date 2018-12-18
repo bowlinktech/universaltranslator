@@ -61,15 +61,51 @@ require(['./main'], function () {
 	$(document).on('change','#helRegistry', function() {
 	    var helRegistryId = $(this).val().split("-")[0];
 	    var helRegistrySchemaName = $(this).val().split("-")[1];
-	    
+	    $('#savedhelRegistryId').val(helRegistryId);
+	    $('#savedhelSchemaName').val(helRegistrySchemaName);
 	    populateHELRegistryConfigs(helRegistryId,helRegistrySchemaName);
 	});
 	
 	var helRegistryId = $('option:selected', '#organization').attr('helRegistryId');
 	var helRegistrySchemaName = $('option:selected', '#organization').attr('helRegistrySchemaName');
 	
-	if(helRegistryId > 0 && helRegistrySchemaName !== '') {
-	     populateHELRegistryConfigs(helRegistryId,helRegistrySchemaName);
+	var helRegistryIdOnConfig = $('.savedOrgId').attr('helRegistryId');
+	var helRegistrySchemaNameOnConfig = $('.savedOrgId').attr('helRegistrySchemaName');
+	
+	if((helRegistryId > 0 && helRegistrySchemaName !== '') || (helRegistryIdOnConfig > 0 && helRegistrySchemaNameOnConfig !== '')) {
+	     if(helRegistryId > 0 && helRegistrySchemaName !== '') {
+		$('#savedhelRegistryId').val(helRegistryId);
+		$('#savedhelSchemaName').val(helRegistrySchemaName);
+		populateHELRegistryConfigs(helRegistryId,helRegistrySchemaName);
+	     }
+	     else {
+		 $('#savedhelRegistryId').val(helRegistryIdOnConfig);
+		 $('#savedhelSchemaName').val(helRegistrySchemaNameOnConfig);
+		 $('#askTargetQuestion1').show();
+		 $('#basedOffHELConfig_1').attr('checked',true);
+		 $('#askTargetQuestion2').show();
+		 
+		 populateHELRegistryConfigs(helRegistryIdOnConfig,helRegistrySchemaNameOnConfig);
+		 $.ajax({
+		    url: '/administrator/organizations/getHELRegistries?tenantId=registries',
+		    type: "GET",
+		    data: {},
+		    dataType: 'json',
+		    success: function (data) {
+			
+			var helRegistrySelect = $('#helRegistry');
+
+			$.each(data, function(index) {
+			   if(helRegistryIdOnConfig == data[index][0]) {
+			       helRegistrySelect.append($('<option selected></option>').val(data[index][0]+'-'+data[index][2]).html(data[index][1]));
+			   }
+			   else {
+			       helRegistrySelect.append($('<option></option>').val(data[index][0]+'-'+data[index][2]).html(data[index][1]));
+			   }
+			});
+		    }
+		});
+	     }
 	}
 	
 	$('#helRegistryOrgId').change(function(event) {
@@ -200,15 +236,25 @@ function checkform() {
 	    $('#helRegistryConfigDiv').addClass("has-error");
 	    $('#helRegistryConfigIdMsg').addClass("has-error");
 	    $('#helRegistryConfigIdMsg').html('The HEL registry configuration is a required field.');
-	    errorFound = 1;
 	}
     }
     else {
-	if ($('#messageTypeId').val() === '') {
-	    $('#messageTypeDiv').addClass("has-error");
-	    $('#configMessageTypeMsg').addClass("has-error");
-	    $('#configMessageTypeMsg').html('The message type is a required field.');
-	    errorFound = 1;
+	
+	if($('#helRegistry').val() != 0) {
+	    if ($('#helRegistryConfigId').val() === '') {
+		$('#helRegistryConfigDiv').addClass("has-error");
+		$('#helRegistryConfigIdMsg').addClass("has-error");
+		$('#helRegistryConfigIdMsg').html('The HEL registry configuration is a required field.');
+		errorFound = 1;
+	    }
+	}
+	else {
+	    if ($('#messageTypeId').val() === '') {
+		$('#messageTypeDiv').addClass("has-error");
+		$('#configMessageTypeMsg').addClass("has-error");
+		$('#configMessageTypeMsg').html('The message type is a required field.');
+		errorFound = 1;
+	    }
 	}
     }
     
@@ -220,14 +266,7 @@ function checkform() {
         $('#configNameMsg').html('The configuration name is a required field.');
         errorFound = 1;
     }
-    //Make sure an associated message type is selected if it is a Feedback report configuration
-    if ($('#sourceTypeVal').val() == 2 && $('#associatedmessageTypeId').val() === '') {
-        $('#associatedmessageTypeDiv').addClass("has-error");
-        $('#associatedmessageTypeMsg').addClass("has-error");
-        $('#associatedmessageTypeMsg').html('The associated message type is a required field.');
-        errorFound = 1;
-    }
-
+    
     return errorFound;
 
 }

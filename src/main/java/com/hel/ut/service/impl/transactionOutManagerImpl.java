@@ -23,7 +23,7 @@ import com.hel.ut.model.utConfiguration;
 import com.hel.ut.model.configurationCCDElements;
 import com.hel.ut.model.configurationDataTranslations;
 import com.hel.ut.model.configurationFormFields;
-import com.hel.ut.model.configurationRhapsodyFields;
+import com.hel.ut.model.configurationFileDropFields;
 import com.hel.ut.model.configurationTransport;
 import com.hel.ut.service.emailMessageManager;
 import com.hel.ut.model.mailMessage;
@@ -1281,11 +1281,11 @@ public class transactionOutManagerImpl implements transactionOutManager {
 
 
     /**
-     * The 'RhapsodyTargetFile' function will get the Rhapsody details and move the file to the output folder defined in
+     * The 'FileDropTargetFile' function will get the file drop details and move the file to the output folder defined in
      *
-     * @param batchId The id of the batch to move to Rhapsody folder
+     * @param batchId The id of the batch to move to file drop folder
      */
-    private void RhapsodyTargetFile(int batchId, configurationTransport transportDetails) {
+    private void FileDropTargetFile(int batchId, configurationTransport transportDetails) {
 	/*
 	try {
 
@@ -1327,8 +1327,8 @@ public class transactionOutManagerImpl implements transactionOutManager {
 	    // get the batch details 
 	    batchDownloads batchDetails = transactionOutDAO.getBatchDetails(batchId);
 
-	    // Get the Rhapsody Details 
-	    configurationRhapsodyFields rhapsodyDetails = utConfigurationTransportManager.getTransRhapsodyDetailsPush(transportDetails.getId());
+	    // Get the File Drop Details 
+	   configurationFileDropFields fileDropDetails = utConfigurationTransportManager.getTransFileDropDetailsPush(transportDetails.getId());
 
 	    // the file is in output folder already, we need to rebuild path and move it
 	    fileSystem dir = new fileSystem();
@@ -1337,7 +1337,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
 	    dir.setDirByName(filelocation);
 
 	    File sourceFile = new File(dir.getDir() + batchDetails.getoutputFIleName());
-	    File targetFile = new File(directoryPath + rhapsodyDetails.getDirectory() + batchDetails.getoutputFIleName());
+	    File targetFile = new File(directoryPath + fileDropDetails.getDirectory() + batchDetails.getoutputFIleName());
 	    //move the file over and update the status to complete
 	    Files.move(sourceFile.toPath(), targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
 
@@ -1355,13 +1355,13 @@ public class transactionOutManagerImpl implements transactionOutManager {
 
 	} catch (Exception ex) {
 	    try {
-		transactionInManager.sendEmailToAdmin(("RhapsodyTargetFile - Error occurred trying to move a batch target. batchId: " + batchId + "<br/>" + ex.toString() + "<br/>" + Arrays.toString(ex.getStackTrace())), " RhapsodyTargetFile Error ");
+		transactionInManager.sendEmailToAdmin(("FileDropTargetFile - Error occurred trying to move a batch target. batchId: " + batchId + "<br/>" + ex.toString() + "<br/>" + Arrays.toString(ex.getStackTrace())), " FileDropTargetFile Error ");
 	    } catch (Exception e) {
 		ex.printStackTrace();
-		System.err.println("RhapsodyTargetFile - Error occurred trying to move a batch target. batchId: " + batchId);
+		System.err.println("FileDropTargetFile - Error occurred trying to move a batch target. batchId: " + batchId);
 	    }
 	    ex.printStackTrace();
-	    System.err.println("RhapsodyTargetFile - Error occurred trying to move a batch target. batchId: " + batchId);
+	    System.err.println("FileDropTargetFile - Error occurred trying to move a batch target. batchId: " + batchId);
 	}
 	*/
     }
@@ -1978,8 +1978,8 @@ public class transactionOutManagerImpl implements transactionOutManager {
 
 	    //we have file already, we just need to move it
 	    if (transportDetails.gettransportMethodId() == 5) {
-		/* Get the Rhapsody Details */
-		configurationRhapsodyFields rhapsodyDetails = configurationTransportManager.getTransRhapsodyDetailsPush(transportDetails.getId());
+		/* Get the File Drop Details */
+		configurationFileDropFields fileDropDetails = configurationTransportManager.getTransFileDropDetailsPush(transportDetails.getId());
 
 		// the file is in output folder already, we need to rebuild path and move it
 		fileSystem dir = new fileSystem();
@@ -1987,7 +1987,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
 		filelocation = filelocation.replace("/HELProductSuite/universalTranslator/", "");
 		dir.setDirByName(filelocation);
 
-		File targetFile = new File(directoryPath + rhapsodyDetails.getDirectory() + batchDownload.getoutputFIleName());
+		File targetFile = new File(directoryPath + fileDropDetails.getDirectory() + batchDownload.getoutputFIleName());
 		Files.copy(archiveFile.toPath(), targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
 	    } 
 	    // REST API 
@@ -2119,8 +2119,8 @@ public class transactionOutManagerImpl implements transactionOutManager {
 	
 	//we have file already, we just need to move it
 	if (transportDetails.gettransportMethodId() == 5) {
-	    /* Get the Rhapsody Details */
-	    configurationRhapsodyFields rhapsodyDetails = configurationTransportManager.getTransRhapsodyDetailsPush(transportDetails.getId());
+	    /* Get the File Drop Details */
+	   configurationFileDropFields fileDropDetails = configurationTransportManager.getTransFileDropDetailsPush(transportDetails.getId());
 
 	    // the file is in output folder already, we need to rebuild path and move it
 	    fileSystem dir = new fileSystem();
@@ -2128,7 +2128,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
 	    filelocation = filelocation.replace("/HELProductSuite/universalTranslator/", "");
 	    dir.setDirByName(filelocation);
 
-	    File targetFile = new File(directoryPath + rhapsodyDetails.getDirectory() + batchDLDetails.getoutputFIleName());
+	    File targetFile = new File(directoryPath + fileDropDetails.getDirectory() + batchDLDetails.getoutputFIleName());
 	    Files.copy(archiveFile.toPath(), targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
 	} 
 	// REST API 

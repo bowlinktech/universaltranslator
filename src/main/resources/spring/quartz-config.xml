@@ -63,18 +63,20 @@
             </cron>
         </trigger>
     </schedule>
+    
+    
     <schedule>
         <job>
-            <name>MoveRRFiles</name>
+            <name>MoveDroppedFiles</name>
             <group>processGroup</group>
-            <description>This process will run every minute starting at 8 mins of the hour to check if any Rhapsody file will need to be moved and logged</description>
-            <job-class>com.hel.ut.jobs.MoveRRFiles</job-class>
+            <description>This process will run every minute starting at 8 mins of the hour to check if any files have been dropped at the UT doorstep that will need to be moved and logged</description>
+            <job-class>com.hel.ut.jobs.MoveFileDroppedFiles</job-class>
         </job>
  
         <trigger>
             <cron>
-                <name>moveRRTrigger</name>
-                <job-name>MoveRRFiles</job-name>
+                <name>moveDroppedFilesTrigger</name>
+                <job-name>MoveDroppedFiles</job-name>
                 <job-group>processGroup</job-group>
                 <cron-expression>0 0/1 * 1/1 * ? *</cron-expression>
             </cron>
@@ -100,6 +102,7 @@
         </trigger>
     </schedule>
     
+    <!--
     <schedule>
         <job>
             <name>ProcessMassInBoundBatches</name>
@@ -169,6 +172,6 @@
 		<cron-expression>0 0/1 * 1/1 * ? *</cron-expression>
 	    </cron>
 	</trigger>
-    </schedule>
+    </schedule>-->
     
 </job-scheduling-data>

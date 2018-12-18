@@ -11,6 +11,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 /**
  *
@@ -19,6 +20,9 @@ import javax.persistence.Table;
 @Entity
 @Table(name = "CONFIGURATIONCONNECTIONRECEIVERS")
 public class configurationConnectionReceivers {
+    
+    @Transient
+    private String contactType;
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -28,11 +32,11 @@ public class configurationConnectionReceivers {
     @Column(name = "CONNECTIONID", nullable = false)
     private int connectionId;
 
-    @Column(name = "USERID", nullable = false)
-    private int userId;
+    @Column(name = "emailAddress", nullable = false)
+    private String emailAddress;
 
-    @Column(name = "SENDEMAILALERT", nullable = false)
-    private Boolean sendEmailAlert = false;
+    @Column(name = "sendEmailNotifications", nullable = false)
+    private Boolean sendEmailNotifications = false;
 
     public int getId() {
         return id;
@@ -42,28 +46,37 @@ public class configurationConnectionReceivers {
         this.id = id;
     }
 
-    public int getconnectionId() {
-        return connectionId;
+    public int getConnectionId() {
+	return connectionId;
     }
 
-    public void setconnectionId(int connectionId) {
-        this.connectionId = connectionId;
+    public void setConnectionId(int connectionId) {
+	this.connectionId = connectionId;
     }
 
-    public int getuserId() {
-        return userId;
+    public String getEmailAddress() {
+	return emailAddress;
     }
 
-    public void setuserId(int userId) {
-        this.userId = userId;
+    public void setEmailAddress(String emailAddress) {
+	this.emailAddress = emailAddress;
     }
 
-    public Boolean getSendEmailAlert() {
-        return sendEmailAlert;
+    public Boolean getSendEmailNotifications() {
+	return sendEmailNotifications;
     }
 
-    public void setSendEmailAlert(Boolean sendEmailAlert) {
-        this.sendEmailAlert = sendEmailAlert;
+    public void setSendEmailNotifications(Boolean sendEmailNotifications) {
+	this.sendEmailNotifications = sendEmailNotifications;
     }
 
+    public String getContactType() {
+	return contactType;
+    }
+
+    public void setContactType(String contactType) {
+	this.contactType = contactType;
+    }
+
+    
 }

@@ -23,7 +23,7 @@ public class configurationTransport {
     private List<configurationFTPFields> FTPfields = null;
 
     @Transient
-    private List<configurationRhapsodyFields> rhapsodyFields = null;
+    private List<configurationFileDropFields> fileDropFields = null;
 
     @Transient
     private List<configurationWebServiceFields> webServiceFields = null;
@@ -313,12 +313,12 @@ public class configurationTransport {
         this.encodingId = encodingId;
     }
 
-    public List<configurationRhapsodyFields> getRhapsodyFields() {
-        return rhapsodyFields;
+    public List<configurationFileDropFields> getFileDropFields() {
+        return fileDropFields;
     }
 
-    public void setRhapsodyFields(List<configurationRhapsodyFields> rhapsodyFields) {
-        this.rhapsodyFields = rhapsodyFields;
+    public void setFileDropFields(List<configurationFileDropFields> fileDropFields) {
+        this.fileDropFields = fileDropFields;
     }
 
     public List<configurationWebServiceFields> getWebServiceFields() {

@@ -22,7 +22,7 @@ import com.hel.ut.model.configurationDataTranslations;
 import com.hel.ut.model.configurationFTPFields;
 import com.hel.ut.model.configurationFormFields;
 import com.hel.ut.model.configurationMessageSpecs;
-import com.hel.ut.model.configurationRhapsodyFields;
+import com.hel.ut.model.configurationFileDropFields;
 import com.hel.ut.model.configurationTransport;
 import com.hel.ut.model.fieldSelectOptions;
 import com.hel.ut.model.custom.ConfigErrorInfo;
@@ -134,7 +134,7 @@ public interface transactionInDAO {
 
     List<configurationFTPFields> getFTPInfoForJob(Integer method);
 
-    List<configurationRhapsodyFields> getRhapsodyInfoForJob(Integer method);
+    List<configurationFileDropFields> getFileDropInfoForJob(Integer method);
 
     List<Integer> checkCWFieldForList(Integer configId, Integer batchId, configurationDataTranslations cdt, boolean foroutboundProcessing);
 

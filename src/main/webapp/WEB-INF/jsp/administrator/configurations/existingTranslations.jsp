@@ -23,7 +23,7 @@
                 <c:forEach items="${dataTranslations}" var="trans" varStatus="tStatus">
                     <tr>
                         <td scope="row">
-                            ${dataTranslations[tStatus.index].fieldName} - F${dataTranslations[tStatus.index].fieldNo} 
+                            ${dataTranslations[tStatus.index].fieldName} <c:if test="${dataTranslations[tStatus.index].fieldNo > 0}">- F${dataTranslations[tStatus.index].fieldNo}</c:if>
                         </td>
                         <td>
                             ${dataTranslations[tStatus.index].macroName} 

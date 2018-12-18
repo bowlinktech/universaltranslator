@@ -7,7 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.hel.ut.model.TransportMethod;
 import com.hel.ut.model.configurationFormFields;
 import com.hel.ut.model.configurationMessageSpecs;
-import com.hel.ut.model.configurationRhapsodyFields;
+import com.hel.ut.model.configurationFileDropFields;
 import com.hel.ut.model.configurationTransport;
 import com.hel.ut.model.configurationWebServiceFields;
 import com.hel.ut.model.configurationWebServiceSenders;
@@ -259,13 +259,13 @@ public class utConfigurationTransportManagerImpl implements utConfigurationTrans
     }
 
     @Override
-    public List<configurationTransport> getConfigTransportForFileExtAndPath(String fileExt, Integer transportMethodId, Integer status, String inputPath) {
-        return configurationTransportDAO.getConfigTransportForFileExtAndPath(fileExt, transportMethodId, status, inputPath);
+    public List<configurationTransport> getConfigTransportForFileExtAndPath(String fileExt, Integer transportMethodId, Integer status,Integer transportDetailsId) {
+        return configurationTransportDAO.getConfigTransportForFileExtAndPath(fileExt, transportMethodId, status, transportDetailsId);
     }
 
     @Override
-    public List<configurationTransport> getTransportListForFileExtAndPath(String fileExt, Integer transportMethodId, Integer status, String inputPath) {
-        return configurationTransportDAO.getTransportListForFileExtAndPath(fileExt, transportMethodId, status, inputPath);
+    public List<configurationTransport> getTransportListForFileExtAndPath(String fileExt, Integer transportMethodId, Integer status, Integer transportDetailsId) {
+        return configurationTransportDAO.getTransportListForFileExtAndPath(fileExt, transportMethodId, status, transportDetailsId);
     }
 
     @Override
@@ -302,27 +302,27 @@ public class utConfigurationTransportManagerImpl implements utConfigurationTrans
     }
 
     @Override
-    public void saveTransportRhapsody(configurationRhapsodyFields rhapsodyFields) throws Exception {
-        configurationTransportDAO.saveTransportRhapsody(rhapsodyFields);
+    public void saveTransportFileDrop(configurationFileDropFields fileDropFields) throws Exception {
+        configurationTransportDAO.saveTransportFileDrop(fileDropFields);
 	//Makes sure the directory is created
         fileSystem dir = new fileSystem();
-	dir.creatFTPDirectory(rhapsodyFields.getDirectory());
+	dir.creatFTPDirectory(fileDropFields.getDirectory());
 	
     }
 
     @Override
-    public List<configurationRhapsodyFields> getTransRhapsodyDetails(int transportDetailId) throws Exception {
-        return configurationTransportDAO.getTransRhapsodyDetails(transportDetailId);
+    public List<configurationFileDropFields> getTransFileDropDetails(int transportDetailId) throws Exception {
+        return configurationTransportDAO.getTransFileDropDetails(transportDetailId);
     }
 
     @Override
-    public configurationRhapsodyFields getTransRhapsodyDetailsPush(int transportDetailId) throws Exception {
-        return configurationTransportDAO.getTransRhapsodyDetailsPush(transportDetailId);
+    public configurationFileDropFields getTransFileDropDetailsPush(int transportDetailId) throws Exception {
+        return configurationTransportDAO.getTransFileDropDetailsPush(transportDetailId);
     }
 
     @Override
-    public configurationRhapsodyFields getTransRhapsodyDetailsPull(int transportDetailId) throws Exception {
-        return configurationTransportDAO.getTransRhapsodyDetailsPull(transportDetailId);
+    public configurationFileDropFields getTransFileDropDetailsPull(int transportDetailId) throws Exception {
+        return configurationTransportDAO.getTransFileDropDetailsPull(transportDetailId);
     }
 
     @Override
@@ -331,9 +331,9 @@ public class utConfigurationTransportManagerImpl implements utConfigurationTrans
     }
 
     @Override
-    public Integer getOrgIdForRhapsodyPath(
-            configurationRhapsodyFields rhapsodyInfo) throws Exception {
-        return configurationTransportDAO.getOrgIdForRhapsodyPath(rhapsodyInfo);
+    public Integer getOrgIdForFileDropPath(
+           configurationFileDropFields fileDropInfo) throws Exception {
+        return configurationTransportDAO.getOrgIdForFileDropPath(fileDropInfo);
     }
 
     @Override

@@ -7,7 +7,7 @@ import java.util.List;
 import com.hel.ut.model.TransportMethod;
 import com.hel.ut.model.configurationFormFields;
 import com.hel.ut.model.configurationMessageSpecs;
-import com.hel.ut.model.configurationRhapsodyFields;
+import com.hel.ut.model.configurationFileDropFields;
 import com.hel.ut.model.configurationTransport;
 import com.hel.ut.model.configurationTransportMessageTypes;
 import com.hel.ut.model.configurationWebServiceFields;
@@ -61,9 +61,9 @@ public interface utConfigurationTransportManager {
 
     List<configurationMessageSpecs> getConfigurationMessageSpecsForOrgTransport(Integer orgId, Integer transportMethodId, boolean getZeroMessageTypeCol);
 
-    List<configurationTransport> getConfigTransportForFileExtAndPath(String fileExt, Integer transportMethodId, Integer status, String inputPath);
+    List<configurationTransport> getConfigTransportForFileExtAndPath(String fileExt, Integer transportMethodId, Integer status, Integer transportId);
 
-    List<configurationTransport> getTransportListForFileExtAndPath(String fileExt, Integer transportMethodId, Integer status, String inputPath);
+    List<configurationTransport> getTransportListForFileExtAndPath(String fileExt, Integer transportMethodId, Integer status, Integer transportId);
 
     configurationTransport getTransportDetailsByTransportId(Integer transportId);
 
@@ -77,17 +77,17 @@ public interface utConfigurationTransportManager {
 
     List<configurationTransport> getDistinctDelimCharForFileExt(String fileExt, Integer transportMethodId);
 
-    void saveTransportRhapsody(configurationRhapsodyFields rhapsodyFields) throws Exception;
+    void saveTransportFileDrop(configurationFileDropFields fileDropFields) throws Exception;
 
-    List<configurationRhapsodyFields> getTransRhapsodyDetails(int transportDetailId) throws Exception;
+    List<configurationFileDropFields> getTransFileDropDetails(int transportDetailId) throws Exception;
 
-    configurationRhapsodyFields getTransRhapsodyDetailsPush(int transportDetailId) throws Exception;
+   configurationFileDropFields getTransFileDropDetailsPush(int transportDetailId) throws Exception;
 
-    configurationRhapsodyFields getTransRhapsodyDetailsPull(int transportDetailId) throws Exception;
+   configurationFileDropFields getTransFileDropDetailsPull(int transportDetailId) throws Exception;
 
     List<configurationTransport> getTransportEncoding(String fileExt, Integer transportMethodId);
 
-    Integer getOrgIdForRhapsodyPath(configurationRhapsodyFields rhapsodyInfo) throws Exception;
+    Integer getOrgIdForFileDropPath(configurationFileDropFields fileDropInfo) throws Exception;
 
     List<TransportMethod> getTransportMethods(List<Integer> statusIds);
 

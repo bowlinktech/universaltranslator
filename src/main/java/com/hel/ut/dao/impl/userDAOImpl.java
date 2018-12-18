@@ -460,7 +460,7 @@ public class userDAOImpl implements userDAO {
         } else {
             for (configurationConnectionSenders userConnection : connections) {
                 Criteria connection = sessionFactory.getCurrentSession().createCriteria(configurationConnection.class);
-                connection.add(Restrictions.eq("id", userConnection.getconnectionId()));
+                connection.add(Restrictions.eq("id", userConnection.getConnectionId()));
 
                 configurationConnection connectionInfo = (configurationConnection) connection.uniqueResult();
 
@@ -488,7 +488,7 @@ public class userDAOImpl implements userDAO {
         } else {
             for (configurationConnectionSenders userConnection : connections) {
                 Criteria connection = sessionFactory.getCurrentSession().createCriteria(configurationConnection.class);
-                connection.add(Restrictions.eq("id", userConnection.getconnectionId()));
+                connection.add(Restrictions.eq("id", userConnection.getConnectionId()));
 
                 configurationConnection connectionInfo = (configurationConnection) connection.uniqueResult();
 

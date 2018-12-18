@@ -18,6 +18,8 @@
             <form:hidden path="id" id="id" />
             <form:hidden path="dateCreated" />
             <form:hidden path="stepsCompleted" />
+	    <form:hidden path="helRegistryId" id="savedhelRegistryId" />
+	    <form:hidden path="helSchemaName"  id="savedhelSchemaName"/>
 
             <section class="panel panel-default">
 
@@ -81,7 +83,8 @@
                                         <option helRegistryId="${organizations[oStatus.index].helRegistryId}" helRegistrySchemaName="${organizations[oStatus.index].helRegistrySchemaName}" value="${organizations[oStatus.index].id}" <c:if test="${configurationDetails.orgId == organizations[oStatus.index].id}">selected</c:if>>${organizations[oStatus.index].orgName} </option>
                                     </c:forEach>
                                 </form:select>
-                                <c:if test="${configurationDetails.id > 0}"><form:hidden id="organization" path="orgId"/></c:if>  
+                                <c:if test="${configurationDetails.id > 0}">
+				    <form:hidden id="organization" class="savedOrgId" helRegistryId="${configurationDetails.helRegistryId}" helRegistrySchemaName="${configurationDetails.helSchemaName}" path="orgId"/></c:if>  
                                     <span id="configOrgMsg" class="control-label"></span>
                                 </div>
                         </spring:bind>
@@ -89,10 +92,10 @@
 			    <label class="control-label">Will this configuration be based off a Health-e-Link Registry Configuration?</label>
 			    <div>
 			       <label class="radio-inline">
-				   <input type="radio" name="basedOffHELConfig" class="basedOffHELConfig" value="1" /> Yes
+				   <input type="radio" id="basedOffHELConfig_1" name="basedOffHELConfig" class="basedOffHELConfig" value="1" /> Yes
 			       </label>
 			       <label class="radio-inline">
-				   <input type="radio" name="basedOffHELConfig" class="basedOffHELConfig" value="0" /> No
+				   <input type="radio" id="basedOffHELConfig_2" name="basedOffHELConfig" class="basedOffHELConfig" value="0" /> No
 			       </label>
 			   </div>
 			</div>
@@ -120,7 +123,9 @@
 			    <div id="helRegistryConfigDiv" class="form-group ${status.error ? 'has-error' : '' }"  style="display:none">
 				<label class="control-label" for="helRegistryConfigId">Health-e-Link Registry Configuration *</label>
 				<form:select path="helRegistryConfigId" id="helRegistryConfigId" rel="${configurationDetails.helRegistryConfigId}" class="form-control half" disabled="${configurationDetails.id == 0 ? 'false' : 'true' }"></form:select>
-				<c:if test="${configurationDetails.id > 0}"><form:hidden path="helRegistryConfigId"/></c:if> 
+				<c:if test="${configurationDetails.id > 0}">
+				    <form:hidden path="helRegistryConfigId"/>
+				</c:if> 
 				<span id="helRegistryConfigIdMsg" class="control-label"></span>
 			    </div>
 			</spring:bind>

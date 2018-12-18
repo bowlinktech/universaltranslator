@@ -763,7 +763,7 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
             /* Search the connections by connectionId to pull the sourceConfigId */
             for (configurationConnectionSenders connection : senderConnections) {
                 Criteria findConnectionDetails = sessionFactory.getCurrentSession().createCriteria(configurationConnection.class);
-                findConnectionDetails.add(Restrictions.eq("id", connection.getconnectionId()));
+                findConnectionDetails.add(Restrictions.eq("id", connection.getConnectionId()));
                 configurationConnection connectionDetails = (configurationConnection) findConnectionDetails.uniqueResult();
 
                 /* Add the sourceConfigId to the array */
@@ -1353,7 +1353,7 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
             /* Search the connections by connectionId to pull the sourceConfigId */
             for (configurationConnectionSenders connection : senderConnections) {
                 Criteria findConnectionDetails = sessionFactory.getCurrentSession().createCriteria(configurationConnection.class);
-                findConnectionDetails.add(Restrictions.eq("id", connection.getconnectionId()));
+                findConnectionDetails.add(Restrictions.eq("id", connection.getConnectionId()));
                 configurationConnection connectionDetails = (configurationConnection) findConnectionDetails.uniqueResult();
 
                 /* Add the sourceConfigId to the array */

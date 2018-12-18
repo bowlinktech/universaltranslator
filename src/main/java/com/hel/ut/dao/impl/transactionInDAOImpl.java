@@ -25,7 +25,7 @@ import com.hel.ut.model.configurationDataTranslations;
 import com.hel.ut.model.configurationFTPFields;
 import com.hel.ut.model.configurationFormFields;
 import com.hel.ut.model.configurationMessageSpecs;
-import com.hel.ut.model.configurationRhapsodyFields;
+import com.hel.ut.model.configurationFileDropFields;
 import com.hel.ut.model.configurationTransport;
 import com.hel.ut.model.fieldSelectOptions;
 import com.hel.ut.model.custom.ConfigErrorInfo;
@@ -267,7 +267,7 @@ public class transactionInDAOImpl implements transactionInDAO {
 
 	    for (configurationConnectionSenders userConnection : userConnections) {
 		Criteria connection = sessionFactory.getCurrentSession().createCriteria(configurationConnection.class);
-		connection.add(Restrictions.eq("id", userConnection.getconnectionId()));
+		connection.add(Restrictions.eq("id", userConnection.getConnectionId()));
 
 		configurationConnection connectionInfo = (configurationConnection) connection.uniqueResult();
 
@@ -416,7 +416,7 @@ public class transactionInDAOImpl implements transactionInDAO {
 	    for (configurationConnectionSenders userConnection : userConnections) {
 
 		Criteria connection = sessionFactory.getCurrentSession().createCriteria(configurationConnection.class);
-		connection.add(Restrictions.eq("id", userConnection.getconnectionId()));
+		connection.add(Restrictions.eq("id", userConnection.getConnectionId()));
 
 		configurationConnection connectionInfo = (configurationConnection) connection.uniqueResult();
 
@@ -1125,22 +1125,22 @@ public class transactionInDAOImpl implements transactionInDAO {
 		totalFields = configFormFields.size() + 10;
 	    }
 	}
+	
+	StringBuilder insertFields = new StringBuilder();
+	StringBuilder selectFields = new StringBuilder();
+	
+	configFormFields.forEach(field -> {
+	    if(field.getUseField()) {
+		insertFields.append("F").append(field.getAssociatedFieldNo()).append(",");
+		selectFields.append("F").append(field.getFieldNo()).append(",");
+	    }
+	});
 
 	try {
 	    String sql = "insert into transactiontranslatedin_"+batchId+" "
-	    + "(statusId, configId, transactionInRecordsId,";
+	    + "(statusId, configId, transactionInRecordsId,"+insertFields+"batchUploadId)";
 
-	    for (int i = 1; i <= totalFields; i++) {
-		sql += "F" + i + ",";
-	    }
-
-	    sql+= "batchUploadId)";
-
-	    sql+= "select 9, configId, id, ";
-
-	    for (int i = 1; i <= totalFields; i++) {
-		sql += "F" + i + ",";
-	    }
+	    sql+= "select 9, configId, id, "+selectFields;
 
 	    sql+= "batchUploadId from transactioninrecords_"+batchId+" "
 	    + "where configId is not null;";
@@ -1411,25 +1411,25 @@ public class transactionInDAOImpl implements transactionInDAO {
     @Override
     @Transactional(readOnly = true)
     @SuppressWarnings("unchecked")
-    public List<configurationRhapsodyFields> getRhapsodyInfoForJob(
+    public List<configurationFileDropFields> getFileDropInfoForJob(
 	    Integer method) {
 	try {
-	    String sql = ("select rel_TransportRhapsodyDetails.id, directory, method, transportId "
-		    + " from configurationTransportDetails, rel_TransportRhapsodyDetails "
-		    + " where method = :method and configurationTransportDetails.id = rel_TransportRhapsodyDetails.transportId "
+	    String sql = ("select rel_transportfiledropdetails.id, directory, method, transportId "
+		    + " from configurationTransportDetails, rel_transportfiledropdetails "
+		    + " where method = :method and configurationTransportDetails.id = rel_transportfiledropdetails.transportId "
 		    + " and configId in (select id from configurations where status = 1 and type = 1) and  "
 		    + " directory not in (select folderPath from moveFilesLog where statusId = 1 and method = :method) "
 		    + " group by directory order by configId;");
 
 	    Query query = sessionFactory.getCurrentSession().createSQLQuery(sql)
-		    .setResultTransformer(Transformers.aliasToBean(configurationRhapsodyFields.class))
+		    .setResultTransformer(Transformers.aliasToBean(configurationFileDropFields.class))
 		    .setParameter("method", method);
 
-	    List<configurationRhapsodyFields> directories = query.list();
+	    List<configurationFileDropFields> directories = query.list();
 
 	    return directories;
 	} catch (Exception ex) {
-	    System.err.println("getRhapsodyInfoForJob " + ex.getCause());
+	    System.err.println("getFileDropInfoForJob " + ex.getCause());
 	    ex.printStackTrace();
 	    return null;
 	}

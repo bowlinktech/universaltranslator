@@ -70,6 +70,13 @@ public class utConfiguration {
     
     @Column(name = "helRegistryConfigId", nullable = false)
     private Integer helRegistryConfigId = 0;
+    
+    @Column(name = "helSchemaName", nullable = false)
+    private String helSchemaName = "";
+    
+    @Column(name = "helRegistryId", nullable = false)
+    private Integer helRegistryId = 0;
+    
 
     public int getId() {
         return id;
@@ -221,6 +228,22 @@ public class utConfiguration {
 
     public void setHelRegistryConfigId(Integer helRegistryConfigId) {
 	this.helRegistryConfigId = helRegistryConfigId;
+    }
+
+    public String getHelSchemaName() {
+	return helSchemaName;
+    }
+
+    public void setHelSchemaName(String helSchemaName) {
+	this.helSchemaName = helSchemaName;
+    }
+
+    public Integer getHelRegistryId() {
+	return helRegistryId;
+    }
+
+    public void setHelRegistryId(Integer helRegistryId) {
+	this.helRegistryId = helRegistryId;
     }
 
     

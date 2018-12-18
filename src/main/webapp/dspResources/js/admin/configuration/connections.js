@@ -56,7 +56,7 @@ require(['./main'], function () {
         });
 
         //Go get the existing message types for the selected organization'
-        $(document).on('change', '.selsrcOrganization', function () {
+        $(document).on('change', '.selSendingOrganization', function () {
             var selOrg = $(this).val();
             var connectionId = $('#connectionId').val();
 
@@ -64,10 +64,9 @@ require(['./main'], function () {
                 $('#srcorgDiv').addClass("has-error");
             } else {
                 populateConfigurations(selOrg, 'srcConfig');
-                populateUsers(selOrg, 'srcUsersTable', connectionId);
+                populateUsers(selOrg, 'srcContactsTable', connectionId);
             }
         });
-
 
         //Go get the existing message types for the selected organization
         $(document).on('change', '.seltgtOrganization', function () {
@@ -78,18 +77,15 @@ require(['./main'], function () {
                 $('#tgtorgDiv').addClass("has-error");
             } else {
                 populateConfigurations(selOrg, 'tgtConfig');
-                populateUsers(selOrg, 'tgtUsersTable', connectionId);
+                populateUsers(selOrg, 'tgtContactsTable', connectionId);
             }
         });
-
 
         //This function will save the messgae type field mappings
         $(document).on('click', '#submitButton', function () {
             var hasErrors = 0;
             var srcConfig = $('#srcConfig').val();
             var tgtConfig = $('#tgtConfig').val();
-            var srcUsers = $('#srcUsers').val();
-            var tgtUsers = $('#tgtUsers').val();
 
             $('div.form-group').removeClass("has-error");
             $('span.control-label').removeClass("has-error");
@@ -106,16 +102,6 @@ require(['./main'], function () {
                 hasErrors = 1;
             }
 
-            if (srcUsers === '' || srcUsers == null) {
-                $('#srcUsersDiv').addClass("has-error");
-                hasErrors = 1;
-            }
-
-            if (tgtUsers === '' || tgtUsers == null) {
-                $('#tgtUsersDiv').addClass("has-error");
-                hasErrors = 1;
-            }
-
             if (hasErrors == 0) {
 
                 $('#connectionForm').submit();
@@ -123,67 +109,29 @@ require(['./main'], function () {
 
         });
 
-        $(document).on('change', '#selectAllSrcUsers', function () {
+        $(document).on('change', '#sendAllSourceContacts', function () {
+	   
             if ($(this).is(":checked")) {
-                $('.srcUsers').each(function () {
+                $('.srcEmailNotifications').each(function () {
                     $(this).prop('checked', true);
                 });
-            } else {
-                $('.srcUsers').each(function () {
-                    $(this).prop('checked', false);
-                });
-                $('.srcUsersSendEmail').each(function () {
+            }
+	    else {
+                $('.srcEmailNotifications').each(function () {
                     $(this).prop('checked', false);
                 });
             }
         });
 
-        $(document).on('change', '#sendAllSrcUsers', function () {
+        $(document).on('change', '#sendAllTargetContacts', function () {
+	   
             if ($(this).is(":checked")) {
-                $('.srcUsers').each(function () {
+                $('.tgtEmailNotifications').each(function () {
                     $(this).prop('checked', true);
                 });
-                $('.srcUsersSendEmail').each(function () {
-                    $(this).prop('checked', true);
-                });
-            } else {
-                $('.srcUsers').each(function () {
-                    $(this).prop('checked', false);
-                });
-                $('.srcUsersSendEmail').each(function () {
-                    $(this).prop('checked', false);
-                });
-            }
-        });
-
-        $(document).on('change', '#selectAllTgtUsers', function () {
-            if ($(this).is(":checked")) {
-                $('.tgtUsers').each(function () {
-                    $(this).prop('checked', true);
-                });
-            } else {
-                $('.tgtUsers').each(function () {
-                    $(this).prop('checked', false);
-                });
-                $('.tgtUsersSendEmail').each(function () {
-                    $(this).prop('checked', false);
-                });
-            }
-        });
-
-        $(document).on('change', '#sendAllTgtUsers', function () {
-            if ($(this).is(":checked")) {
-                $('.tgtUsers').each(function () {
-                    $(this).prop('checked', true);
-                });
-                $('.tgtUsersSendEmail').each(function () {
-                    $(this).prop('checked', true);
-                });
-            } else {
-                $('.tgtUsers').each(function () {
-                    $(this).prop('checked', false);
-                });
-                $('.tgtUsersSendEmail').each(function () {
+            } 
+	    else {
+                $('.tgtEmailNotifications').each(function () {
                     $(this).prop('checked', false);
                 });
             }
@@ -221,49 +169,21 @@ function populateUsers(orgId, selectBoxId, connectionId) {
     var users = $('#' + selectBoxId).attr('rel');
 
     var url = "";
-
-    if (selectBoxId === "srcUsersTable") {
-        url = "getAvailableSendingUsers.do";
+    
+    if (selectBoxId === "srcContactsTable") {
+        url = "getAvailableSendingContacts.do";
     } else {
-        url = "getAvailableReceivingUsers.do";
+        url = "getAvailableReceivingContacts.do";
     }
 
-    // 'getAvailableUsers.do'
     $.ajax({
         url: url,
         type: "GET",
-        data: {'orgId': orgId, 'connectionId': connectionId},
+        data: {
+	    'orgId': orgId, 
+	    'connectionId': connectionId
+	},
         success: function (data) {
-            //get value of preselected col
-            /*var html = '<option value="">- Select - </option>';
-             var len = data.length;
-             
-             if(len > 1) {
-             $('#'+selectBoxId+'Found').html("(" + len + " users found)");
-             }
-             else {
-             $('#'+selectBoxId+'Found').html("(" + len + " user found)"); 
-             }
-             
-             for (var i = 0; i < len; i++) {
-             
-             if(users != '' && users.indexOf(data[i].id) != -1) {
-             if(data[i].userType == 1) {
-             html += '<option value="' + data[i].id+ '" selected>' + data[i].firstName + ' ' + data[i].lastName +' (Manager) - ' + data[i].orgName + ' </option>';
-             }
-             else {
-             html += '<option value="' + data[i].id + '" selected>' + data[i].firstName + ' ' + data[i].lastName +' (Staff Member) - ' + data[i].orgName + ' </option>'; 
-             }
-             }
-             else {
-             if(data[i].userType == 1) {
-             html += '<option value="' + data[i].id + '">' + data[i].firstName + ' ' + data[i].lastName +' (Manager) - ' + data[i].orgName + ' </option>';
-             }
-             else {
-             html += '<option value="' + data[i].id + '">' + data[i].firstName + ' ' + data[i].lastName +' (Staff Member) - ' + data[i].orgName + ' </option>'; 
-             }
-             }
-             }*/
             $('#' + selectBoxId).html(data);
         }
     });

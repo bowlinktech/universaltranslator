@@ -22,7 +22,7 @@ import org.springframework.web.context.support.SpringBeanAutowiringSupport;
  *
  * @author gchan
  */
-public class MoveRRFiles implements Job {
+public class MoveFileDroppedFiles implements Job {
 
     @Autowired
     private transactionInManager transactionInManager;
@@ -36,7 +36,7 @@ public class MoveRRFiles implements Job {
 
         try {
             SpringBeanAutowiringSupport.processInjectionBasedOnCurrentContext(this);
-            transactionInManager.moveRRFiles();
+            transactionInManager.moveFileDroppedFiles();
         } catch (Exception ex) {
         	try {
             	try {
@@ -49,12 +49,12 @@ public class MoveRRFiles implements Job {
                     emailmanager.sendEmail(messageDetails);
                 	throw new Exception("Error occurred for MoveRRFiles  - schedule task",ex);
                 } catch (Exception ex1) {
-                    Logger.getLogger(MoveRRFiles.class.getName()).log(Level.SEVERE, null, ex1);
+                    Logger.getLogger(MoveFileDroppedFiles.class.getName()).log(Level.SEVERE, null, ex1);
                 }
             	
             	throw new Exception("Error occurred for MoveRRFiles job  - new type schedule task",ex);
             } catch (Exception ex1) {
-                Logger.getLogger(MoveRRFiles.class.getName()).log(Level.SEVERE, null, ex1);
+                Logger.getLogger(MoveFileDroppedFiles.class.getName()).log(Level.SEVERE, null, ex1);
             }
         }
     }

@@ -166,7 +166,39 @@ public class fileSystem {
             e.printStackTrace();
         }
     }
-
+    
+    public void createFileDroppedDirectory(String folderName) {
+	try {
+            //Windows
+            if (os.indexOf("win") >= 0) {
+                //C:/BowLink/
+                String dir = directoryPath + folderName.replace("/", "\\");
+                File directory = new File(dir);
+                if (!directory.exists()) {
+                    directory.mkdir();
+                }
+            } //Mac
+            else if (os.indexOf("mac") >= 0) {
+                String dir = directoryPath + folderName;
+                File directory = new File(dir);
+                if (!directory.exists()) {
+                    directory.mkdir();
+                }
+            } //Unix or Linux or Solarix
+            else if (os.indexOf("nix") >= 0 || os.indexOf("nux") >= 0 || os.indexOf("aix") >= 0 || os.indexOf("sunos") >= 0) {
+                String dir = directoryPath + folderName;
+                File directory = new File(dir);
+                if (!directory.exists()) {
+                    directory.mkdir();
+                }
+            } else {
+                System.out.println("Your OS is not support!!");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    
     public void createOrgDirectory(String orgName, String dirName) {
         try {
             //Windows

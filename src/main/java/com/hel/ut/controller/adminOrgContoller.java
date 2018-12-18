@@ -346,9 +346,15 @@ public class adminOrgContoller {
         configurationTransport transportDetails;
 
         for (utConfiguration config : configurations) {
-            messagetype = messagetypemanager.getMessageTypeById(config.getMessageTypeId());
-            config.setMessageTypeName(messagetype.getName());
-
+	    
+	    if(config.getMessageTypeId() > 0) {
+		messagetype = messagetypemanager.getMessageTypeById(config.getMessageTypeId());
+		config.setMessageTypeName(messagetype.getName());
+	    }
+	    else {
+		config.setMessageTypeName("N/A");
+	    }
+            
             transportDetails = configurationTransportManager.getTransportDetails(config.getId());
             if (transportDetails != null) {
                 config.settransportMethod(configurationTransportManager.getTransportMethodById(transportDetails.gettransportMethodId()));

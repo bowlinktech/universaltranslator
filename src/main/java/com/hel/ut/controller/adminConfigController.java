@@ -35,7 +35,7 @@ import com.hel.ut.model.Macros;
 import com.hel.ut.model.utConfiguration;
 import com.hel.ut.model.configurationDataTranslations;
 import com.hel.ut.model.configurationFormFields;
-import com.hel.ut.model.configurationRhapsodyFields;
+import com.hel.ut.model.configurationFileDropFields;
 import com.hel.ut.model.configurationWebServiceSenders;
 import com.hel.ut.model.messageTypeFormFields;
 import com.hel.ut.model.Organization;
@@ -101,7 +101,7 @@ public class adminConfigController {
     
     @Autowired
     private configurationManager registryconfigurationmanager;
-
+    
     @InitBinder
     public void initBinder(WebDataBinder binder) {
         binder.setAutoGrowCollectionLimit(1024);
@@ -481,11 +481,11 @@ public class adminConfigController {
             List<configurationFTPFields> emptyFTPFields = new ArrayList<configurationFTPFields>();
             configurationFTPFields pushFTPFields = new configurationFTPFields();
             pushFTPFields.setmethod(1);
-            pushFTPFields.setdirectory("/UTSFTP/" + orgDetails.getcleanURL() + "/input/");
+            pushFTPFields.setdirectory("/HELProductSuite/universalTranslator/" + orgDetails.getcleanURL() + "/input files/");
 
             configurationFTPFields getFTPFields = new configurationFTPFields();
             getFTPFields.setmethod(2);
-            getFTPFields.setdirectory("/UTSFTP/" + orgDetails.getcleanURL() + "/output/");
+            getFTPFields.setdirectory("/HELProductSuite/universalTranslator/" + orgDetails.getcleanURL() + "/output files/");
 
             emptyFTPFields.add(pushFTPFields);
             emptyFTPFields.add(getFTPFields);
@@ -495,26 +495,26 @@ public class adminConfigController {
             transportDetails.setFTPFields(ftpFields);
         }
 
-        //get rhaposody fields
-        List<configurationRhapsodyFields> rhapsodyFields = utconfigurationTransportManager.getTransRhapsodyDetails(transportDetails.getId());
+        //get file drop fields
+        List<configurationFileDropFields> fileDropFields = utconfigurationTransportManager.getTransFileDropDetails(transportDetails.getId());
 
-        if (rhapsodyFields.isEmpty()) {
+        if (fileDropFields.isEmpty()) {
 
-            List<configurationRhapsodyFields> emptyRhapsodyFields = new ArrayList<configurationRhapsodyFields>();
-            configurationRhapsodyFields pushRFields = new configurationRhapsodyFields();
+            List<configurationFileDropFields> emptyFileDropFields = new ArrayList<>();
+            configurationFileDropFields pushRFields = new configurationFileDropFields();
             pushRFields.setMethod(1);
-            pushRFields.setDirectory("/UT/" + orgDetails.getcleanURL() + "/input/");
+            pushRFields.setDirectory("/HELProductSuite/universalTranslator/" + orgDetails.getcleanURL() + "/input files/");
 
-            configurationRhapsodyFields getRFields = new configurationRhapsodyFields();
+           configurationFileDropFields getRFields = new configurationFileDropFields();
             getRFields.setMethod(2);
-            getRFields.setDirectory("/UT/" + orgDetails.getcleanURL() + "/output/");
+            getRFields.setDirectory("/HELProductSuite/universalTranslator/" + orgDetails.getcleanURL() + "/output files/");
 
-            emptyRhapsodyFields.add(pushRFields);
-            emptyRhapsodyFields.add(getRFields);
+            emptyFileDropFields.add(pushRFields);
+            emptyFileDropFields.add(getRFields);
 
-            transportDetails.setRhapsodyFields(emptyRhapsodyFields);
+            transportDetails.setFileDropFields(emptyFileDropFields);
         } else {
-            transportDetails.setRhapsodyFields(rhapsodyFields);
+            transportDetails.setFileDropFields(fileDropFields);
         }
 
         //get WS fields
@@ -717,12 +717,17 @@ public class adminConfigController {
         }
 	
         /**
-         * need to get rhapsody info if any has been entered *
+         * need to get file drop info if any has been entered *
          */
-	if (transportDetails.gettransportMethodId() == 5 && !transportDetails.getRhapsodyFields().isEmpty()) {
-	    for (configurationRhapsodyFields rhapsodyFields : transportDetails.getRhapsodyFields()) {
-                rhapsodyFields.setTransportId(transportId);
-                utconfigurationTransportManager.saveTransportRhapsody(rhapsodyFields);
+	if (transportDetails.gettransportMethodId() == 10 && !transportDetails.getFileDropFields().isEmpty()) {
+	    fileSystem dir = new fileSystem();
+	    
+	     for (configurationFileDropFields fileDropFields : transportDetails.getFileDropFields()) {
+		
+		dir.createFileDroppedDirectory(fileDropFields.getDirectory().replace("/HELProductSuite/universalTranslator/",""));
+		
+                fileDropFields.setTransportId(transportId);
+                utconfigurationTransportManager.saveTransportFileDrop(fileDropFields);
             }
         }
 	
@@ -1010,7 +1015,12 @@ public class adminConfigController {
         //Need to see if the configuration is attached to a UT message type or a HEL Registry configuration
 	if(configurationDetails.getHelRegistryConfigId() > 0) {
 	    mav.addObject("HELRegistryConfiguration", true);
-	    mav.addObject("HELRegistrySchemaName", orgDetails.getHelRegistrySchemaName());
+	    if(!"".equals(orgDetails.getHelRegistrySchemaName())) {
+		mav.addObject("HELRegistrySchemaName", orgDetails.getHelRegistrySchemaName());
+	    }
+	    else {
+		mav.addObject("HELRegistrySchemaName", configurationDetails.getHelSchemaName());
+	    }
 	}
 	else {
 	    //Need to get the template fields
@@ -1102,13 +1112,16 @@ public class adminConfigController {
 
     /**
      * The '/translations' GET request will display the data translations page for the selected transport Method
+     * @param session
+     * @return 
+     * @throws java.lang.Exception
      */
     @SuppressWarnings("rawtypes")
     @RequestMapping(value = "/translations", method = RequestMethod.GET)
     public ModelAndView getConfigurationTranslations(HttpSession session) throws Exception {
 
         //Set the data translations array to get ready to hold data=
-        List<configurationDataTranslations> translations = new CopyOnWriteArrayList<configurationDataTranslations>();
+        List<configurationDataTranslations> translations = new CopyOnWriteArrayList<>();
 	session.setAttribute("confgirationDataTranslastions", translations);
 	
 	Integer configId = 0;
@@ -1137,7 +1150,14 @@ public class adminConfigController {
         configurationTransport transportDetails = utconfigurationTransportManager.getTransportDetails(configId);
 
         configurationDetails.setOrgName(organizationmanager.getOrganizationById(configurationDetails.getorgId()).getOrgName());
-        configurationDetails.setMessageTypeName(messagetypemanager.getMessageTypeById(configurationDetails.getMessageTypeId()).getName());
+	
+	if(configurationDetails.getMessageTypeId() > 0) {
+	    configurationDetails.setMessageTypeName(messagetypemanager.getMessageTypeById(configurationDetails.getMessageTypeId()).getName());
+	}
+	else {
+	    configurationDetails.setMessageTypeName("N/A");
+	}
+        
         configurationDetails.settransportMethod(utconfigurationTransportManager.getTransportMethodById(transportDetails.gettransportMethodId()));
 
         //pass the utConfiguration detail object back to the page.
@@ -1476,6 +1496,9 @@ public class adminConfigController {
     /**
      * The '/connections' function will handle displaying the utConfiguration connections screen. The function will pass the existing connection objects for the selected utConfiguration.
      *
+     * @param session
+     * @return 
+     * @throws java.lang.Exception 
      * @Return the connection view and the following objects.
      *
      * organizations - list of available active organizations to connect to this list will not contain any currently associated organizations.
@@ -1487,17 +1510,10 @@ public class adminConfigController {
 	
 	Integer configId = 0;
 	
-	 ModelAndView mav = new ModelAndView();
-	
-	if(session.getAttribute("manageconfigId") == null){  
-	    mav = new ModelAndView(new RedirectView("list"));
-            return mav;
-	}
-	else {
-	    configId = (Integer) session.getAttribute("manageconfigId");
-	}
+	ModelAndView mav = new ModelAndView();
 	
         mav.setViewName("/administrator/configurations/connections");
+	
         mav.addObject("id", configId);
         mav.addObject("mappings", session.getAttribute("configmappings"));
         mav.addObject("HL7", session.getAttribute("configHL7"));
@@ -1511,6 +1527,7 @@ public class adminConfigController {
 
         /* Loop over the connections to get the utConfiguration details */
         if (connections != null) {
+	    
             for (configurationConnection connection : connections) {
                 /* Array to holder the users */
                 List<utUser> connectionSenders = new ArrayList<utUser>();
@@ -1555,24 +1572,6 @@ public class adminConfigController {
                     tgtconfigDetails.settransportMethod(utconfigurationTransportManager.getTransportMethodById(tgttransportDetails.gettransportMethodId()));
                 }
 
-                /* Get the list of connection senders */
- /*List<configurationConnectionSenders> senders = utconfigurationmanager.getConnectionSenders(connection.getId());
-                
-                for(configurationConnectionSenders sender : senders) {
-                    utUser userDetail = userManager.getUserById(sender.getuserId());
-                    userDetail.setOrgName(organizationmanager.getOrganizationById(userDetail.getOrgId()).getOrgName());
-                    connectionSenders.add(userDetail);
-                }
-                connection.setconnectionSenders(connectionSenders);*/
- /* Get the list of connection receivers */
- /*List<configurationConnectionReceivers> receivers = utconfigurationmanager.getConnectionReceivers(connection.getId());
-                
-                for(configurationConnectionReceivers receiver : receivers) {
-                    utUser userDetail = userManager.getUserById(receiver.getuserId());
-                    userDetail.setOrgName(organizationmanager.getOrganizationById(userDetail.getOrgId()).getOrgName());
-                    connectonReceivers.add(userDetail);
-                }
-                connection.setconnectionReceivers(connectonReceivers);*/
                 connection.settgtConfigDetails(tgtconfigDetails);
             }
 
@@ -1634,29 +1633,7 @@ public class adminConfigController {
         tgtconfigDetails.setorgId(organizationmanager.getOrganizationById(tgtconfigDetails.getorgId()).getId());
         connectionDetails.settgtConfigDetails(tgtconfigDetails);
 
-        /*List<configurationConnectionSenders> senders = utconfigurationmanager.getConnectionSenders(connectionId);
         
-        // Array to holder the users 
-        List<User> connectionSenders = new ArrayList<User>();
-        List<User> connectonReceivers = new ArrayList<User>();
-                
-        for(configurationConnectionSenders sender : senders) {
-            utUser userDetail = userManager.getUserById(sender.getuserId());
-            userDetail.setOrgName(organizationmanager.getOrganizationById(userDetail.getOrgId()).getOrgName());
-            connectionSenders.add(userDetail);
-        }
-        connectionDetails.setconnectionSenders(connectionSenders);
-
-        // Get the list of connection receivers 
-        List<configurationConnectionReceivers> receivers = utconfigurationmanager.getConnectionReceivers(connectionId);
-
-        for(configurationConnectionReceivers receiver : receivers) {
-            utUser userDetail = userManager.getUserById(receiver.getuserId());
-            userDetail.setOrgName(organizationmanager.getOrganizationById(userDetail.getOrgId()).getOrgName());
-            connectonReceivers.add(userDetail);
-        }
-        connectionDetails.setconnectionReceivers(connectonReceivers);
-         */
         mav.addObject("connectionDetails", connectionDetails);
 
         //Need to get a list of active organizations.
@@ -1667,103 +1644,148 @@ public class adminConfigController {
     }
 
     /**
-     * The '/getAvailableSendingUsers.do' function will return a list of users that are associated to the selected organization.
+     * The '/getAvailableSendingContacts.do' function will return a list of users that are associated to the selected organization.
      *
      * @param orgId The organization selected in the drop down
      *
      * @return users The available users
      */
     @SuppressWarnings("rawtypes")
-    @RequestMapping(value = "/getAvailableSendingUsers.do", method = RequestMethod.GET)
-    public @ResponseBody
-    ModelAndView getAvailableSendingUsers(
-            @RequestParam(value = "orgId", required = true) int orgId,
-            @RequestParam(value = "connectionId", required = true) int connectionId) {
+    @RequestMapping(value = "/getAvailableSendingContacts.do", method = RequestMethod.GET)
+    public @ResponseBody ModelAndView getAvailableSendingContacts(@RequestParam(value = "orgId", required = true) int orgId, @RequestParam(value = "connectionId", required = true) int connectionId) {
 
         ModelAndView mav = new ModelAndView();
-        mav.setViewName("/administrator/configurations/connectionSendingUsers");
+        mav.setViewName("/administrator/configurations/connectionSendingContacts");
 
-        List<utUser> users = userManager.getUsersByOrganization(orgId);
-
-        List<configurationConnectionSenders> senders = utconfigurationmanager.getConnectionSenders(connectionId);
-
-        List<utUser> connectionSenders = new ArrayList<utUser>();
-
-        for (utUser user : users) {
-            boolean associated = false;
-            boolean sendSentEmail = false;
-            boolean sendReceivedEmail = false;
-            if (senders != null && senders.size() > 0) {
-                for (configurationConnectionSenders sender : senders) {
-                    if (sender.getuserId() == user.getId()) {
-                        associated = true;
-
-                        if (sender.getSendEmailAlert() == true) {
-                            sendSentEmail = true;
-                        }
-                    }
-                }
-            }
-            user.setOrgName(organizationmanager.getOrganizationById(user.getOrgId()).getOrgName());
-            user.setConnectionAssociated(associated);
-            user.setSendSentEmail(sendSentEmail);
-            user.setSendReceivedEmail(sendReceivedEmail);
-
-            connectionSenders.add(user);
-        }
-
-        mav.addObject("connectionSenders", connectionSenders);
+        Organization organizationDetails = organizationmanager.getOrganizationById(orgId);
+	
+	List<configurationConnectionSenders> sendingContacts = new ArrayList<>();
+	
+	//Get a list of saved sending contacts
+	List<configurationConnectionSenders> savedSendingContacts = utconfigurationmanager.getConnectionSenders(connectionId);
+	
+	if(!"".equals(organizationDetails.getPrimaryContactEmail())) {
+	    if(savedSendingContacts != null) {
+		if(!savedSendingContacts.isEmpty()) {
+		    boolean primaryEmailFound = false;
+		    configurationConnectionSenders primarySendingContact = null;
+		    
+		    for(configurationConnectionSenders savedSendingContact : savedSendingContacts) {
+			if(savedSendingContact.getEmailAddress().equals(organizationDetails.getPrimaryContactEmail())) {
+			    primaryEmailFound = true;
+			    savedSendingContact.setContactType("Primary");
+			    primarySendingContact = savedSendingContact;
+			}
+		    }
+		    
+		    if(!primaryEmailFound) {
+			configurationConnectionSenders sendingContact = new configurationConnectionSenders();
+			sendingContact.setContactType("Primary");
+			sendingContact.setConnectionId(connectionId);
+			sendingContact.setEmailAddress(organizationDetails.getPrimaryContactEmail());
+			sendingContact.setSendEmailNotifications(false);
+			sendingContacts.add(sendingContact);
+		    }
+		    else {
+			if(primarySendingContact != null) {
+			    sendingContacts.add(primarySendingContact);
+			}
+		    }
+		}
+		else {
+		    configurationConnectionSenders sendingContact = new configurationConnectionSenders();
+		    sendingContact.setContactType("Primary");
+		    sendingContact.setConnectionId(connectionId);
+		    sendingContact.setEmailAddress(organizationDetails.getPrimaryContactEmail());
+		    sendingContact.setSendEmailNotifications(false);
+		    sendingContacts.add(sendingContact);
+		}
+	    }
+	    else {
+		configurationConnectionSenders sendingContact = new configurationConnectionSenders();
+		sendingContact.setContactType("Primary");
+		sendingContact.setConnectionId(connectionId);
+		sendingContact.setEmailAddress(organizationDetails.getPrimaryContactEmail());
+		sendingContact.setSendEmailNotifications(false);
+		sendingContacts.add(sendingContact);
+	    }
+	}
+	
+	
+        mav.addObject("sendingContacts", sendingContacts);
 
         return mav;
     }
 
     /**
-     * The '/getAvailableReceivingUsers.do' function will return a list of users that are associated to the selected organization.
+     * The '/getAvailableReceivingContacts.do' function will return a list of users that are associated to the selected organization.
      *
      * @param orgId The organization selected in the drop down
      *
      * @return users The available users
      */
     @SuppressWarnings("rawtypes")
-    @RequestMapping(value = "/getAvailableReceivingUsers.do", method = RequestMethod.GET)
-    public @ResponseBody
-    ModelAndView getAvailableReceivingUsers(
-            @RequestParam(value = "orgId", required = true) int orgId,
-            @RequestParam(value = "connectionId", required = true) int connectionId) {
+    @RequestMapping(value = "/getAvailableReceivingContacts.do", method = RequestMethod.GET)
+    public @ResponseBody ModelAndView getAvailableReceivingContacts(@RequestParam(value = "orgId", required = true) int orgId,@RequestParam(value = "connectionId", required = true) int connectionId) {
 
         ModelAndView mav = new ModelAndView();
-        mav.setViewName("/administrator/configurations/connectionReceivingUsers");
+        mav.setViewName("/administrator/configurations/connectionReceivingContacts");
 
-        List<utUser> users = userManager.getUsersByOrganization(orgId);
-
-        List<configurationConnectionReceivers> receivers = utconfigurationmanager.getConnectionReceivers(connectionId);
-
-        List<utUser> connectonReceivers = new ArrayList<utUser>();
-
-        for (utUser user : users) {
-            boolean associated = false;
-            boolean sendSentEmail = false;
-            boolean sendReceivedEmail = false;
-            if (receivers != null && receivers.size() > 0) {
-                for (configurationConnectionReceivers receiver : receivers) {
-                    if (receiver.getuserId() == user.getId()) {
-                        associated = true;
-
-                        if (receiver.getSendEmailAlert() == true) {
-                            sendReceivedEmail = true;
-                        }
-                    }
-                }
-            }
-            user.setOrgName(organizationmanager.getOrganizationById(user.getOrgId()).getOrgName());
-            user.setConnectionAssociated(associated);
-            user.setSendSentEmail(sendSentEmail);
-            user.setSendReceivedEmail(sendReceivedEmail);
-
-            connectonReceivers.add(user);
-        }
-
-        mav.addObject("connectonReceivers", connectonReceivers);
+        Organization organizationDetails = organizationmanager.getOrganizationById(orgId);
+	
+	List<configurationConnectionReceivers> receivingContacts = new ArrayList<>();
+	
+	//Get a list of saved receiving contacts
+	List<configurationConnectionReceivers> savedReceivingContacts = utconfigurationmanager.getConnectionReceivers(connectionId);
+	
+	if(!"".equals(organizationDetails.getPrimaryContactEmail())) {
+	    if(savedReceivingContacts != null) {
+		if(!savedReceivingContacts.isEmpty()) {
+		    boolean primaryEmailFound = false;
+		    configurationConnectionReceivers primaryReceivingContact = null;
+		    
+		    for(configurationConnectionReceivers savedReceivingContact : savedReceivingContacts) {
+			if(savedReceivingContact.getEmailAddress().equals(organizationDetails.getPrimaryContactEmail())) {
+			    primaryEmailFound = true;
+			    savedReceivingContact.setContactType("Primary");
+			    primaryReceivingContact = savedReceivingContact;
+			}
+		    }
+		    
+		    if(!primaryEmailFound) {
+			configurationConnectionReceivers receivingContact = new configurationConnectionReceivers();
+			receivingContact.setContactType("Primary");
+			receivingContact.setConnectionId(connectionId);
+			receivingContact.setEmailAddress(organizationDetails.getPrimaryContactEmail());
+			receivingContact.setSendEmailNotifications(false);
+			receivingContacts.add(receivingContact);
+		    }
+		    else {
+			if(primaryReceivingContact != null) {
+			    receivingContacts.add(primaryReceivingContact);
+			}
+		    }
+		}
+		else {
+		    configurationConnectionReceivers receivingContact = new configurationConnectionReceivers();
+		    receivingContact.setContactType("Primary");
+		    receivingContact.setConnectionId(connectionId);
+		    receivingContact.setEmailAddress(organizationDetails.getPrimaryContactEmail());
+		    receivingContact.setSendEmailNotifications(false);
+		    receivingContacts.add(receivingContact);
+		}
+	    }
+	    else {
+		configurationConnectionReceivers receivingContact = new configurationConnectionReceivers();
+		receivingContact.setContactType("Primary");
+		receivingContact.setConnectionId(connectionId);
+		receivingContact.setEmailAddress(organizationDetails.getPrimaryContactEmail());
+		receivingContact.setSendEmailNotifications(false);
+		receivingContacts.add(receivingContact);
+	    }
+	}
+	
+        mav.addObject("receivingContacts", receivingContacts);
 
         return mav;
     }
@@ -1806,18 +1828,19 @@ public class adminConfigController {
     /**
      * The '/addConnection.do' POST request will create the connection between the passed in organization and the utConfiguration.
      *
-     * @param	srcConfig The selected source utConfiguration
-     * @param tgtConfig The selected target utConfiguration
+     * @param connectionDetails
+     * @param srcEmailNotifications
+     * @param tgtEmailNotifications
+     * @param redirectAttr
      *
      * @return	The method will return a 1 back to the calling ajax function which will handle the page load.
+     * @throws java.lang.Exception
      */
     @RequestMapping(value = "/addConnection.do", method = RequestMethod.POST)
     public ModelAndView addConnection(
             @ModelAttribute(value = "connectionDetails") configurationConnection connectionDetails,
-            @RequestParam List<Integer> srcUsers,
-            @RequestParam(value = "srcUsersSendEmail", required = false) List<Integer> srcUsersSendEmail,
-            @RequestParam List<Integer> tgtUsers,
-            @RequestParam(value = "tgtUsersSendEmail", required = false) List<Integer> tgtUsersSendEmail,
+            @RequestParam(value = "srcEmailNotifications", required = false) List<String> srcEmailNotifications,
+            @RequestParam(value = "tgtEmailNotifications", required = false) List<String> tgtEmailNotifications,
             RedirectAttributes redirectAttr) throws Exception {
 
         Integer connectionId;
@@ -1826,7 +1849,8 @@ public class adminConfigController {
             connectionDetails.setStatus(true);
             connectionId = utconfigurationmanager.saveConnection(connectionDetails);
             redirectAttr.addFlashAttribute("savedStatus", "created");
-        } else {
+        } 
+	else {
             connectionId = connectionDetails.getId();
             utconfigurationmanager.updateConnection(connectionDetails);
 
@@ -1835,38 +1859,31 @@ public class adminConfigController {
             utconfigurationmanager.removeConnectionReceivers(connectionId);
             redirectAttr.addFlashAttribute("savedStatus", "updated");
         }
-
-        for (Integer sender : srcUsers) {
-            configurationConnectionSenders senderInfo = new configurationConnectionSenders();
-            senderInfo.setconnectionId(connectionId);
-            senderInfo.setuserId(sender);
-            boolean sendEmail = false;
-            if (srcUsersSendEmail != null && srcUsersSendEmail.size() > 0) {
-                for (Integer sendEmailForUser : srcUsersSendEmail) {
-                    if (Objects.equals(sendEmailForUser, sender)) {
-                        sendEmail = true;
-                    }
-                }
-            }
-            senderInfo.setSendEmailAlert(sendEmail);
-            utconfigurationmanager.saveConnectionSenders(senderInfo);
-        }
-
-        for (Integer receiver : tgtUsers) {
-            configurationConnectionReceivers receiverInfo = new configurationConnectionReceivers();
-            receiverInfo.setconnectionId(connectionId);
-            receiverInfo.setuserId(receiver);
-            boolean sendEmail = false;
-            if (tgtUsersSendEmail != null && tgtUsersSendEmail.size() > 0) {
-                for (Integer sendEmailForUser : tgtUsersSendEmail) {
-                    if (Objects.equals(sendEmailForUser, receiver)) {
-                        sendEmail = true;
-                    }
-                }
-            }
-            receiverInfo.setSendEmailAlert(sendEmail);
-            utconfigurationmanager.saveConnectionReceivers(receiverInfo);
-        }
+	
+	if(srcEmailNotifications != null) {
+	    if(!srcEmailNotifications.isEmpty()) {
+		for (String srcEmail : srcEmailNotifications) {
+		    configurationConnectionSenders senderInfo = new configurationConnectionSenders();
+		    senderInfo.setConnectionId(connectionId);
+		    senderInfo.setEmailAddress(srcEmail);
+		    senderInfo.setSendEmailNotifications(true);
+		    utconfigurationmanager.saveConnectionSenders(senderInfo);
+		}
+	    }
+	}
+	
+	
+	if(tgtEmailNotifications != null) {
+	    if(!tgtEmailNotifications.isEmpty()) {
+		for (String tgtEmail : tgtEmailNotifications) {
+		    configurationConnectionReceivers receiverInfo = new configurationConnectionReceivers();
+		    receiverInfo.setConnectionId(connectionId);
+		    receiverInfo.setEmailAddress(tgtEmail);
+		    receiverInfo.setSendEmailNotifications(true);
+		    utconfigurationmanager.saveConnectionReceivers(receiverInfo);
+		}
+	    }
+	}
 
         ModelAndView mav = new ModelAndView(new RedirectView("connections"));
 
@@ -2505,7 +2522,14 @@ public class adminConfigController {
         configurationTransport transportDetails = utconfigurationTransportManager.getTransportDetails(configId);
 
         configurationDetails.setOrgName(organizationmanager.getOrganizationById(configurationDetails.getorgId()).getOrgName());
-        configurationDetails.setMessageTypeName(messagetypemanager.getMessageTypeById(configurationDetails.getMessageTypeId()).getName());
+	
+	if(configurationDetails.getMessageTypeId() > 0) {
+	    configurationDetails.setMessageTypeName(messagetypemanager.getMessageTypeById(configurationDetails.getMessageTypeId()).getName());
+	}
+	else {
+	    configurationDetails.setMessageTypeName("N/A");
+	}
+	
         configurationDetails.settransportMethod(utconfigurationTransportManager.getTransportMethodById(transportDetails.gettransportMethodId()));
 
         //pass the utConfiguration detail object back to the page.
@@ -2575,7 +2599,13 @@ public class adminConfigController {
         configurationTransport transportDetails = utconfigurationTransportManager.getTransportDetails(configId);
 
         configurationDetails.setOrgName(organizationmanager.getOrganizationById(configurationDetails.getorgId()).getOrgName());
-        configurationDetails.setMessageTypeName(messagetypemanager.getMessageTypeById(configurationDetails.getMessageTypeId()).getName());
+	
+	if(configurationDetails.getMessageTypeId() > 0) {
+	    configurationDetails.setMessageTypeName(messagetypemanager.getMessageTypeById(configurationDetails.getMessageTypeId()).getName());
+	}
+	else {
+	    configurationDetails.setMessageTypeName("N/A");
+	}
         configurationDetails.settransportMethod(utconfigurationTransportManager.getTransportMethodById(transportDetails.gettransportMethodId()));
 
         //pass the utConfiguration detail object back to the page.

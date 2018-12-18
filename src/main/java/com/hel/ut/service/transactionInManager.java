@@ -22,7 +22,7 @@ import com.hel.ut.model.configurationDataTranslations;
 import com.hel.ut.model.configurationFTPFields;
 import com.hel.ut.model.configurationFormFields;
 import com.hel.ut.model.configurationMessageSpecs;
-import com.hel.ut.model.configurationRhapsodyFields;
+import com.hel.ut.model.configurationFileDropFields;
 import com.hel.ut.model.configurationTransport;
 import com.hel.ut.model.fieldSelectOptions;
 import com.hel.ut.model.custom.ConfigErrorInfo;
@@ -37,6 +37,7 @@ import java.math.BigInteger;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import javax.servlet.http.HttpSession;
 
 import org.springframework.web.multipart.MultipartFile;
 
@@ -178,9 +179,9 @@ public interface transactionInManager {
 
     Map<String, String> chkUploadBatchFile(configurationTransport transportDetails, File uploadedFile) throws Exception;
 
-    Integer moveRRFiles();
+    Integer moveFileDroppedFiles();
 
-    List<configurationRhapsodyFields> getRhapsodyInfoForJob(Integer method);
+    List<configurationFileDropFields> getFileDropInfoForJob(Integer method);
 
     List<Integer> checkCWFieldForList(Integer configId, Integer batchId,configurationDataTranslations cdt, boolean foroutboundProcessing);
 

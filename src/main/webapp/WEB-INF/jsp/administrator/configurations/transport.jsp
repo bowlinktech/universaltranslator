@@ -314,6 +314,38 @@
 			</div>
 		    </section>
 		</c:if>
+				    
+		<%-- FILE DROP Details --%>	
+		<section id="fileDropDetailsDiv" class="panel panel-default" style="display:none">
+		    <div class="panel-heading">
+			<h3 class="panel-title">File Drop Details</h3>
+		    </div>
+		    <div class="panel-body">
+			<div class="form-container">
+			    <div class="row">
+				<c:forEach items="${transportDetails.fileDropFields}" var="fileDropFields" varStatus="field">
+				    <div class="form-group col-md-6">
+					<div class="form-group">
+					    <input name="fileDropFields[${field.index}].method" class="form-control" type="hidden" value="${fileDropFields.method}"  />
+					    <input name="fileDropFields[${field.index}].id" id="id${fileDropFields.method}" class="form-control" type="hidden" value="${fileDropFields.id}"  />
+					    <c:if test="${fileDropFields.method == 2}">
+					      <input name="fileDropFields[${field.index}].directory" id="directory${fileDropFields.method}" class="form-control" type="hidden" maxLength="255" value="${fileDropFields.directory}"  />
+					    </c:if>
+					</div>
+					<c:if test="${fileDropFields.method == 1}">
+					    <div id="rDirectory${fileDropFields.method}Div" class="form-group">
+						<label class="control-label" for="directory${fileDropFields.method}">Location on the UT where files will be dropped</label>
+						<p>Make sure to add a sub folder after "/input files"</p>
+						<input name="fileDropFields[${field.index}].directory" id="directory${fileDropFields.method}" class="form-control" type="text" maxLength="255" value="${fileDropFields.directory}"  />
+						<span id="rDirectory${fileDropFields.method}Msg" class="control-label"></span>
+					    </div>           
+					</c:if>           
+				    </div>
+				</c:forEach>
+			    </div>
+			</div>
+		    </div>
+		</section>
 		
 		<%-- REST Details --%>	
 		<section id="restDetailsDiv" class="panel panel-default" style="display:none">

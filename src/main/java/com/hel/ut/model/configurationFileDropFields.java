@@ -9,8 +9,8 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 @Entity
-@Table(name = "rel_TransportRhapsodyDetails")
-public class configurationRhapsodyFields {
+@Table(name = "rel_transportfiledropdetails")
+public class configurationFileDropFields {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

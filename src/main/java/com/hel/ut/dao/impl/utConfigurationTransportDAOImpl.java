@@ -15,7 +15,7 @@ import com.hel.ut.model.TransportMethod;
 import com.hel.ut.model.configurationFTPFields;
 import com.hel.ut.model.configurationFormFields;
 import com.hel.ut.model.configurationMessageSpecs;
-import com.hel.ut.model.configurationRhapsodyFields;
+import com.hel.ut.model.configurationFileDropFields;
 import com.hel.ut.model.configurationTransport;
 import com.hel.ut.model.configurationTransportMessageTypes;
 import com.hel.ut.model.configurationWebServiceFields;
@@ -527,27 +527,22 @@ public class utConfigurationTransportDAOImpl implements utConfigurationTransport
     @Override
     @Transactional(readOnly = true)
     @SuppressWarnings("unchecked")
-    public List<configurationTransport> getConfigTransportForFileExtAndPath(String fileExt, Integer transportMethodId, Integer status, String inPath) {
+    public List<configurationTransport> getConfigTransportForFileExtAndPath(String fileExt, Integer transportMethodId, Integer status, Integer transportDetailsId) {
         try {
 	    
-            String sql = ("select distinct delimChar, containsHeaderRow , fileDelimiter, fileLocation, encodingId "
-		    + "from configurationTransportDetails, ref_delimiters , configurationMessageSpecs "
-                    + "where ref_delimiters.id = configurationTransportDetails.fileDelimiter "
-                    + "and configurationMessageSpecs.configId = configurationTransportDetails.configId "
-                    + "and fileext = :fileExt and transportmethodId = :transportMethodId "
-                    + "and configurationTransportDetails.configId in (select id from configurations where type = 1 and status = :status)");
-            if (transportMethodId == 5) {
-                sql = sql + " and configurationTransportDetails.id in (select transportId from rel_TransportRhapsodyDetails where directory  = :inputPath and method = 1) ";
-            } else if (transportMethodId == 3) {
-                sql = sql + " and configurationTransportDetails.id in (select transportId from rel_transportftpdetails where directory  = :inputPath and method = 1) ";
-            }
-
-            Query query = sessionFactory.getCurrentSession().createSQLQuery(sql).setResultTransformer(
-                    Transformers.aliasToBean(configurationTransport.class));
+	    String sql = "select b.delimChar, c.containsHeaderRow , a.fileDelimiter, a.fileLocation, a.encodingId "
+		    + "from configurationTransportDetails a inner join "
+		    + "ref_delimiters b on b.id = a.fileDelimiter inner join "
+		    + "configurationMessageSpecs c on c.configId = a.configId inner join "
+		    + "configurations d on d.id = a.configId "
+		    + "where a.id = :transportDetailId and a.fileExt = :fileExt and a.transportMethodId = :transportMethodId "
+		    + "and d.type = 1 and d.status = :status";
+	  
+            Query query = sessionFactory.getCurrentSession().createSQLQuery(sql).setResultTransformer(Transformers.aliasToBean(configurationTransport.class));
             query.setParameter("fileExt", fileExt);
             query.setParameter("transportMethodId", transportMethodId);
             query.setParameter("status", status);
-            query.setParameter("inputPath", inPath);
+            query.setParameter("transportDetailId", transportDetailsId);
 
             List<configurationTransport> configurationTransports = query.list();
 
@@ -564,25 +559,20 @@ public class utConfigurationTransportDAOImpl implements utConfigurationTransport
     @Override
     @Transactional(readOnly = true)
     @SuppressWarnings("unchecked")
-    public List<configurationTransport> getTransportListForFileExtAndPath(String fileExt, Integer transportMethodId, Integer status, String inputPath) {
-        try {
+    public List<configurationTransport> getTransportListForFileExtAndPath(String fileExt, Integer transportMethodId, Integer status, Integer transportDetailsId) {
+       
+	try {
 
-            String sql = ("select * "
-                    + " from configurationTransportDetails "
-                    + " where fileext = :fileExt and transportmethodId = :transportMethodId and status = :status "
-                    + " and configId in (select id from configurations where type = 1) ");
-            if (transportMethodId == 5) {
-                sql = sql + " and id in (select transportId from rel_TransportRhapsodyDetails where directory  = :inputPath and method = 1);";
-            } else if (transportMethodId == 3) {
-                sql = sql + " and id in (select transportId from rel_TransportFTPDetails where directory  = :inputPath and method = 1);";
-            }
-
-            Query query = sessionFactory.getCurrentSession().createSQLQuery(sql).setResultTransformer(
-                    Transformers.aliasToBean(configurationTransport.class));
+            String sql = "select a.* "
+		    + "from configurationtransportdetails a inner join "
+		    + "configurations b on b.id = a.configId "
+		    + "where a.id = :transportDetailsId and a.fileExt = :fileExt and a.transportMethodId = :transportMethodId and a.status = :status and b.type = 1";
+	    
+            Query query = sessionFactory.getCurrentSession().createSQLQuery(sql).setResultTransformer(Transformers.aliasToBean(configurationTransport.class));
             query.setParameter("fileExt", fileExt);
             query.setParameter("transportMethodId", transportMethodId);
             query.setParameter("status", status);
-            query.setParameter("inputPath", inputPath);
+            query.setParameter("transportDetailsId", transportDetailsId);
 
             List<configurationTransport> transportList = query.list();
 
@@ -611,14 +601,16 @@ public class utConfigurationTransportDAOImpl implements utConfigurationTransport
 
     @Override
     @Transactional(readOnly = true)
-    public Integer getOrgIdForFTPPath(configurationFTPFields ftpInfo)
-            throws Exception {
+    public Integer getOrgIdForFTPPath(configurationFTPFields ftpInfo) throws Exception {
         try {
-            String sql = ("select distinct orgId from configurations where id in (select configId from configurationTransportDetails where id in (select transportId from"
-                    + " rel_TransportFTPDetails where method = :method and directory = :directory));");
+	    
+	    String sql = ("select b.orgId "
+		    + "from configurationtransportdetails a inner join "
+		    + "configurations b on b.id = a.configId "
+		    + "where a.id = :transportId");
+	    
             Query query = sessionFactory.getCurrentSession().createSQLQuery(sql);
-            query.setParameter("method", ftpInfo.getmethod());
-            query.setParameter("directory", ftpInfo.getdirectory());
+            query.setParameter("transportId", ftpInfo.gettransportId());
 
             Integer orgId = (Integer) query.list().get(0);
 
@@ -732,72 +724,70 @@ public class utConfigurationTransportDAOImpl implements utConfigurationTransport
     }
 
     /**
-     * The 'saveTransportRhapsody' function will save the transport Rhapsody information into the DB.
+     * The 'saveTransportFileDrop' function will save the transport file drop information into the DB.
      *
-     * @param RhapsodyFields The Rhapsody form fields
+     * @param fileDropFields The file drop form fields
      *
      * @return this function will not return anything.
      */
     @Override
     @Transactional(readOnly = false)
-    public void saveTransportRhapsody(configurationRhapsodyFields RhapsodyFields) throws Exception {
+    public void saveTransportFileDrop(configurationFileDropFields fileDropFields) throws Exception {
         try {
-            sessionFactory.getCurrentSession().saveOrUpdate(RhapsodyFields);
+            sessionFactory.getCurrentSession().saveOrUpdate(fileDropFields);
         } catch (Exception ex) {
             ex.printStackTrace();
-            System.err.println("saveTransportRhapsody " + ex.getCause());
+            System.err.println("saveTransportFileDrop " + ex.getCause());
         }
     }
 
     /**
-     * The 'getTransRhapsodyDetails' function will return the Rhapsody information for the passed in transportDetailId.
+     * The 'getTransFileDropDetails' function will return the file drop information for the passed in transportDetailId.
      *
-     * @param transportDetailsId the id of the selected transport method
      *
      * @return This function will return a list of Rhapsody details
      */
     @Override
     @Transactional(readOnly = true)
-    public List<configurationRhapsodyFields> getTransRhapsodyDetails(int transportDetailId) throws Exception {
-        Criteria criteria = sessionFactory.getCurrentSession().createCriteria(configurationRhapsodyFields.class)
+    public List<configurationFileDropFields> getTransFileDropDetails(int transportDetailId) throws Exception {
+        Criteria criteria = sessionFactory.getCurrentSession().createCriteria(configurationFileDropFields.class)
                 .add(Restrictions.eq("transportId", transportDetailId));
 
         return criteria.list();
     }
 
     /**
-     * The 'getTransRhapsodyDetailsPush' function will return the PUSH Rhapsody details for the passed in transportDetailsId.
+     * The 'getTransFileDropDetailsPush' function will return the PUSH file drop details for the passed in transportDetailsId.
      *
-     * @param transportDetailsId The id of the selected transport method
      *
-     * @return This function will return the PUSH Rhapsody details
+     * @return This function will return the PUSH file drop details
      */
     @Override
     @Transactional(readOnly = true)
-    public configurationRhapsodyFields getTransRhapsodyDetailsPush(int transportDetailId) throws Exception {
-        Criteria criteria = sessionFactory.getCurrentSession().createCriteria(configurationRhapsodyFields.class)
+    public configurationFileDropFields getTransFileDropDetailsPush(int transportDetailId) throws Exception {
+        Criteria criteria = sessionFactory.getCurrentSession().createCriteria(configurationFileDropFields.class)
                 .add(Restrictions.eq("transportId", transportDetailId))
                 .add(Restrictions.eq("method", 2));
 
-        return (configurationRhapsodyFields) criteria.uniqueResult();
+        return (configurationFileDropFields) criteria.uniqueResult();
 
     }
 
     /**
-     * The 'configurationRhapsodyFields' function will return the PULL Rhapsody details for the passed in transportDetailsId.
+     * The 'configurationFileDropFields' function will return the PULL file drop details for the passed in transportDetailsId.
      *
      * @param transportDetailsId The id of the selected transport method
      *
-     * @return This function will return the PULL Rhapsody details
+     * @return This function will return the PULL file drop details
      */
     @Override
     @Transactional(readOnly = true)
-    public configurationRhapsodyFields getTransRhapsodyDetailsPull(int transportDetailId) throws Exception {
-        Criteria criteria = sessionFactory.getCurrentSession().createCriteria(configurationRhapsodyFields.class)
+    public configurationFileDropFields getTransFileDropDetailsPull(int transportDetailId) throws Exception {
+        Criteria criteria = sessionFactory.getCurrentSession().createCriteria(configurationFileDropFields.class)
                 .add(Restrictions.eq("transportId", transportDetailId))
                 .add(Restrictions.eq("method", 1));
 
-        return (configurationRhapsodyFields) criteria.uniqueResult();
+        return (configurationFileDropFields) criteria.uniqueResult();
 
     }
 
@@ -825,22 +815,32 @@ public class utConfigurationTransportDAOImpl implements utConfigurationTransport
         }
     }
 
+    /**
+     * The 'getOrgIdForFileDropPath' method will try and find the organization tied to the passed in file drop details
+     * 
+     * @param fileDropInfo
+     * @return
+     * @throws Exception 
+     */
     @Override
     @Transactional(readOnly = true)
-    public Integer getOrgIdForRhapsodyPath(configurationRhapsodyFields RhapsodyInfo) throws Exception {
+    public Integer getOrgIdForFileDropPath(configurationFileDropFields fileDropInfo) throws Exception {
+	
         try {
-            String sql = ("select distinct orgId from configurations where id in (select configId from configurationTransportDetails where id in (select transportId from"
-                    + " rel_TransportRhapsodyDetails where method = :method and directory = :directory));");
+             String sql = ("select b.orgId "
+		    + "from configurationtransportdetails a inner join "
+		    + "configurations b on b.id = a.configId "
+		    + "where a.id = :transportId");
+	    
             Query query = sessionFactory.getCurrentSession().createSQLQuery(sql);
-            query.setParameter("method", RhapsodyInfo.getMethod());
-            query.setParameter("directory", RhapsodyInfo.getDirectory());
-
+            query.setParameter("transportId", fileDropInfo.getTransportId());
+	    
             Integer orgId = (Integer) query.list().get(0);
 
             return orgId;
 
         } catch (Exception ex) {
-            System.err.println("getOrgIdForRhapsodyPath  " + ex.getCause());
+            System.err.println("getOrgIdForFileDropPath  " + ex.getCause());
             ex.printStackTrace();
             return null;
         }
@@ -939,7 +939,7 @@ public class utConfigurationTransportDAOImpl implements utConfigurationTransport
                     + " and transportmethodId = :transportMethodId"
                     + " and configurationTransportDetails.configId in (select id from configurations where type = 1 and status = :status and orgId = :orgId)");
             if (transportMethodId == 5) {
-                sql = sql + " and configurationTransportDetails.id in (select transportId from rel_TransportRhapsodyDetails where method = 1) ";
+                sql = sql + " and configurationTransportDetails.id in (select transportId from rel_configurationFileDropFields where method = 1) ";
             } else if (transportMethodId == 3) {
                 sql = sql + " and configurationTransportDetails.id in (select transportId from rel_transportftpdetails where method = 1) ";
             } else if (transportMethodId == 6) {
@@ -977,7 +977,7 @@ public class utConfigurationTransportDAOImpl implements utConfigurationTransport
                     + " and transportmethodId = :transportMethodId"
                     + " and configurationTransportDetails.configId in (select id from configurations where type = 1 and status = :status and orgId = :orgId)");
             if (transportMethodId == 5) {
-                sql = sql + " and configurationTransportDetails.id in (select transportId from rel_TransportRhapsodyDetails where method = 1) ";
+                sql = sql + " and configurationTransportDetails.id in (select transportId from rel_configurationFileDropFields where method = 1) ";
             } else if (transportMethodId == 3) {
                 sql = sql + " and configurationTransportDetails.id in (select transportId from rel_transportftpdetails where method = 1) ";
             } else if (transportMethodId == 6) {
@@ -1003,11 +1003,11 @@ public class utConfigurationTransportDAOImpl implements utConfigurationTransport
     }
 
     /**
-     * The 'getTransRhapsodyDetailsPush' function will return the PUSH Rhapsody details for the passed in transportDetailsId.
+     * The 'getTransWSDetailsPush' function will return the PUSH web service details for the passed in transportDetailsId.
      *
      * @param transportDetailsId The id of the selected transport method
      *
-     * @return This function will return the PUSH Rhapsody details
+     * @return This function will return the PUSH web service details
      */
     @Override
     @Transactional(readOnly = true)
@@ -1021,11 +1021,11 @@ public class utConfigurationTransportDAOImpl implements utConfigurationTransport
     }
 
     /**
-     * The 'configurationRhapsodyFields' function will return the PULL Rhapsody details for the passed in transportDetailsId.
+     * The 'getTransWSDetailsPull' function will return the PULL web service details for the passed in transportDetailsId.
      *
      * @param transportDetailsId The id of the selected transport method
      *
-     * @return This function will return the PULL Rhapsody details
+     * @return This function will return the PULL web service details
      */
     @Override
     @Transactional(readOnly = true)
@@ -1192,8 +1192,7 @@ public class utConfigurationTransportDAOImpl implements utConfigurationTransport
 	    + "where configId = " + configId + " "
 	    + "order by a.fieldNo asc";
 	
-	Query query = sessionFactory.getCurrentSession().createSQLQuery(sql).setResultTransformer(
-                    Transformers.aliasToBean(configurationFormFields.class));
+	Query query = sessionFactory.getCurrentSession().createSQLQuery(sql).setResultTransformer(Transformers.aliasToBean(configurationFormFields.class));
            
         return query.list();
     }

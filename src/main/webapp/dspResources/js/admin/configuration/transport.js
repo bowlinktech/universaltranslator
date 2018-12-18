@@ -59,15 +59,10 @@ require(['./main'], function () {
             var hasErrors = 0;
             hasErrors = checkFormFields();
 	    
-	    alert(hasErrors);
-
             if (hasErrors == 0) {
                 $('#transportDetails').submit();
             }
         });
-
-	
-	
 
         //Set the default file extension when the file type is selected
         $('#fileType').change(function () {
@@ -166,6 +161,13 @@ function showCorrectFieldsByTransportMethod(transportMethod) {
 	$('#restDetailsDiv').hide();
     }
     
+    if (transportMethod == 10) {
+	$('#fileDropDetailsDiv').show();
+    }
+    else {
+	$('#fileDropDetailsDiv').hide();
+    }
+    
 }
 
 
@@ -178,7 +180,7 @@ function checkFormFields() {
     $('span.control-label').html("");
     $('.alert-danger').hide();
     
-    var type = $('#configtype').attr('rel');
+    var type = $('#configType').attr('rel');
     
     var selMethodId = $('#transportMethod').val();
     var fileType = $('#fileType').val();
@@ -191,7 +193,6 @@ function checkFormFields() {
         hasErrors = 1;
     }
     
-    
     if (selMethodId != 8 && type != 2) {
 	//Make sure the error threshold is numeric and greater than 0
         if ($('#threshold').val() > 100 || !$.isNumeric($('#threshold').val())) {
@@ -201,6 +202,7 @@ function checkFormFields() {
             hasErrors = 1;
         }
     }
+    
 
     if (selMethodId == 1 || selMethodId == 3 || selMethodId == 6 || selMethodId == 8 || selMethodId == 9 || selMethodId == 10) {
 
@@ -319,6 +321,7 @@ function checkFormFields() {
             if ($('#ip2').val() !== "" || $('#username2').val() !== "" || $('#password2').val() !== "" || $('#directory2').val() !== "") {
                 pushFieldsEntered = 1;
             }
+	    
 
             if (pushFieldsEntered == 1) {
                 if ($('#ip2').val() === "") {
