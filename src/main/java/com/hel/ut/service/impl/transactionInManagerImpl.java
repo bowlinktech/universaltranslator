@@ -1927,32 +1927,26 @@ public class transactionInManagerImpl implements transactionInManager {
 
 					if (configDetails != null) {
 					    if (configDetails.getHelRegistryId() > 0 && configDetails.getHelRegistryConfigId() > 0 && !"".equals(configDetails.getHelSchemaName())) {
-						/*
-						//Need to set the DBSchema session variable to hold the registry schema.
-						session.setAttribute("tenantId", configDetails.getHelSchemaName());
-
-						//Need to check to see if uploaded file exists in RR program uploads
-						submittedMessage existingRegistrySubmittedMessage = submittedmessagemanager.getSubmittedMessageByAssignedName(batchInfo.getoriginalFileName().substring(0, batchInfo.getoriginalFileName().lastIndexOf('.')));
+						
+						submittedMessage existingRegistrySubmittedMessage = submittedmessagemanager.getSubmittedMessageBySQL(configDetails.getHelSchemaName(),batchInfo.getutBatchName());
 						
 						if (existingRegistrySubmittedMessage != null) {
-						    existingRegistrySubmittedMessage.setStatusId(23);
-						    existingRegistrySubmittedMessage.setUtBatchUploadId(batchId);
-						    submittedmessagemanager.updateSubmittedMessage(existingRegistrySubmittedMessage);
-						} 
+						    submittedmessagemanager.updateSubmittedMessage(configDetails.getHelSchemaName(),existingRegistrySubmittedMessage.getId(),23,batchId);
+						}
 						else {
 						    submittedMessage newSubmittedMessage = new submittedMessage();
 						    newSubmittedMessage.setUtBatchUploadId(batchId);
 						    newSubmittedMessage.setRegistryConfigId(configDetails.getHelRegistryConfigId());
 						    newSubmittedMessage.setUploadedFileName(batchInfo.getoriginalFileName());
+						    newSubmittedMessage.setAssignedFileName(batchInfo.getutBatchName());
+						    newSubmittedMessage.setInFileExt(FilenameUtils.getExtension(batchInfo.getoriginalFileName()));
 						    newSubmittedMessage.setStatusId(23);
 						    newSubmittedMessage.setTransportId(1);
 						    newSubmittedMessage.setSystemUserId(0);
 
-						    submittedmessagemanager.submitSubmittedMessage(newSubmittedMessage);
+						    submittedmessagemanager.submitSubmittedMessage(configDetails.getHelSchemaName(),newSubmittedMessage);
 						}
 						
-						//Clear the DBSchema session variables
-						session.removeAttribute("tenantId");*/
 					    }
 					}
 				    }
@@ -2115,6 +2109,7 @@ public class transactionInManagerImpl implements transactionInManager {
 
 	    /* Make sure file is the correct file type : ERROR CODE 3 */
 	    String ext = FilenameUtils.getExtension(uploadedFile.getAbsolutePath());
+	   
 
 	    String fileType = (String) configurationManager.getFileTypesById(transportDetails.getfileType());
 
