@@ -13,15 +13,15 @@
 	</tr>
     </thead>
     <tbody>
-	<c:forEach var="tField" items="${helConfigurationFields}">
-	    <tr class="fieldRow" rel="${tField.id}-${tField.dspPos}-${tField.dataElementName}-${tField.validationId}">
-		<td scope="row" class="center-text">${tField.dspPos}</td>
+	<c:forEach var="tField" items="${sourceConfigurationFields}">
+	    <tr class="fieldRow" rel="${tField.id}-${tField.fieldNo}-${tField.fieldDesc}-${tField.validationType}">
+		<td scope="row" class="center-text">${tField.fieldNo}</td>
 		<td>
-		    ${tField.dataElementName}
-		    <input type="hidden" id="validationType_${tField.id}" value="${tField.validationName}" />
+		    ${tField.fieldDesc}
+		    <input type="hidden" id="validationType_${tField.id}" value="${tField.validationType}" />
 		</td>
 		<td class="center-text">
-		    <input type="checkbox" disabled="disabled" <c:if test="${tField.requiredField == true}">checked</c:if>  />
+		    <input type="checkbox" disabled="disabled" <c:if test="${tField.required == true}">checked</c:if>  />
 		</td>
 	    </tr>
 	</c:forEach>

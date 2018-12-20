@@ -22,6 +22,7 @@ import com.hel.ut.model.batchUploads;
 import com.hel.ut.model.utConfiguration;
 import com.hel.ut.model.configurationCCDElements;
 import com.hel.ut.model.configurationDataTranslations;
+import com.hel.ut.model.configurationFTPFields;
 import com.hel.ut.model.configurationFormFields;
 import com.hel.ut.model.configurationFileDropFields;
 import com.hel.ut.model.configurationTransport;
@@ -89,6 +90,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import com.hel.ut.service.utConfigurationManager;
 import com.hel.ut.service.utConfigurationTransportManager;
+import com.registryKit.registry.helRegistry;
+import com.registryKit.registry.helRegistryManager;
+import com.registryKit.registry.submittedMessages.submittedMessageManager;
 
 /**
  *
@@ -144,6 +148,12 @@ public class transactionOutManagerImpl implements transactionOutManager {
 
     @Autowired
     private convertTextToPDF txtToPDF;
+    
+    @Autowired
+    private helRegistryManager helregistrymanager;
+    
+    @Autowired
+    private submittedMessageManager submittedmessagemanager;
 
     private int processingSysErrorId = 5;
 
@@ -154,6 +164,8 @@ public class transactionOutManagerImpl implements transactionOutManager {
     private String massOutPutPath = (directoryPath + "massoutputfiles/");
 
     private String massOutPutPathMysqlPath = System.getProperty("directory.massOutputPath");
+    
+   private String registrydirectoryPath = System.getProperty("directory.registryRootDir");
 
     //list of final status - these records we skip
     private List<Integer> transRELId = Arrays.asList(11, 12, 13, 16, 18, 20, 9);
@@ -1976,10 +1988,37 @@ public class transactionOutManagerImpl implements transactionOutManager {
 		Files.copy(archiveFile.toPath(), generatedFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
 	    }
 
-	    //we have file already, we just need to move it
-	    if (transportDetails.gettransportMethodId() == 5) {
+	    
+	    //If the transport method is Move to a health-e-link registry website (ID:8)
+	    if(transportDetails.gettransportMethodId() == 8) {
+		
+		//Need to get the health-e-link registry details
+		Organization utOrgDetails = organizationManager.getOrganizationById(batchDownload.getOrgId());
+		
+		if(utOrgDetails.getHelRegistryId() > 0 && !utOrgDetails.getHelRegistrySchemaName().equals("")) {
+		    helRegistry registryDetails = helregistrymanager.getRegistryDetails("registries",utOrgDetails.getHelRegistryId());
+		    
+		    if(!registryDetails.getRegistryName().equals("")) {
+			String registryFolderName = registryDetails.getRegistryName().toLowerCase().replaceAll(" ","-");
+			
+			fileSystem dir = new fileSystem();
+			File targetFile = new File(registrydirectoryPath + "/" + registryFolderName + "/loadFiles/" + batchDownload.getutBatchName() + "." + fileExt);
+			Files.copy(archiveFile.toPath(), targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+			
+			//Need to update the Registry submitted message entry to capture the created file name
+			submittedmessagemanager.updateSubmittedMessage(registryDetails.getDbschemaname(),batchDownload.getBatchUploadId(),batchDownload.getutBatchName() + "." + fileExt);
+		    }
+		    
+		}
+		else {
+		    //Insert a processing error
+		}
+	    }
+
+	    //Secure FTP Transport Method
+	    else if (transportDetails.gettransportMethodId() == 3) {
 		/* Get the File Drop Details */
-		configurationFileDropFields fileDropDetails = configurationTransportManager.getTransFileDropDetailsPush(transportDetails.getId());
+		configurationFTPFields FTPPushDetails = configurationTransportManager.getTransportFTPDetailsPush(transportDetails.getId());
 
 		// the file is in output folder already, we need to rebuild path and move it
 		fileSystem dir = new fileSystem();
@@ -1987,8 +2026,9 @@ public class transactionOutManagerImpl implements transactionOutManager {
 		filelocation = filelocation.replace("/HELProductSuite/universalTranslator/", "");
 		dir.setDirByName(filelocation);
 
-		File targetFile = new File(directoryPath + fileDropDetails.getDirectory() + batchDownload.getoutputFIleName());
+		File targetFile = new File(directoryPath + FTPPushDetails.getdirectory()+ batchDownload.getoutputFIleName());
 		Files.copy(archiveFile.toPath(), targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+		
 	    } 
 	    // REST API 
 	    else if (transportDetails.gettransportMethodId() == 9) {
@@ -2024,7 +2064,6 @@ public class transactionOutManagerImpl implements transactionOutManager {
 	
 	if(downloadBatchDetails.getstatusId() == 28) {
 	    //Delete all transaction target tables
-	    transactionInManager.deleteBatchTransactionTables(batchDownload.getBatchUploadId());
 	    transactionOutDAO.deleteBatchDownloadTables(batchDownload.getId());
 	}
 	

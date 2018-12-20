@@ -9,6 +9,19 @@ require(['./main'], function () {
         if ($('.alert').length > 0) {
             $('.alert').delay(2000).fadeOut(1000);
         }
+	
+	
+	//Selected transport method
+	var transportMethod = $('#transportMethod').val();
+	var helRegistryId = $('#helRegistryId').val();
+	var helSchemaName = $('#helSchemaName').val();
+	
+	//if the selected transport method is From a Health-e-Link Registry or going to a Health-e-Link registry
+	//show the conifguration box
+	if((transportMethod == 8 || transportMethod == 10) && helRegistryId > 0 && helSchemaName != "") {
+	    populateHELRegistryConfigs(helRegistryId,helSchemaName);
+	}
+	
 
         /** modal for WS to add sender domains **/
         $('#addEditDomain').click(function () {
@@ -29,6 +42,15 @@ require(['./main'], function () {
         
         $('#transportMethod').change(function () {
             var methodId = $(this).val();
+	    
+	    if((methodId == 8 || methodId == 10) && helRegistryId > 0 && helSchemaName != "") {
+		populateHELRegistryConfigs(helRegistryId,helSchemaName);
+	    }
+	    else {
+		$('#helRegistryConfigDiv').hide();
+		$('#helRegistryConfigId').find('option').remove().end().append('<option value="">- Select Registry Configuration -</option>').val('');
+	    }
+	    
 	    showCorrectFieldsByTransportMethod(methodId);
         });
 
@@ -556,4 +578,28 @@ function checkFormFields() {
     return hasErrors;
 }
 
+function populateHELRegistryConfigs(helRegistryId,helRegistrySchemaName) {
+    $.ajax({
+	url: '/administrator/configurations/getHELRegistryConfigurations?tenantId='+helRegistrySchemaName,
+	type: "GET",
+	data: {},
+	dataType: 'json',
+	success: function (data) {
+	    $('#helRegistryConfigDiv').show();
+	    $('#helRegistryConfigId').find('option').remove().end().append('<option value="">- Select Registry Configuration -</option>').val('');
 
+	    var selHELRegistryConfigId = $('#helRegistryConfigId').attr('rel');
+
+	    var helRegistryConfigSelect = $('#helRegistryConfigId');
+
+	    $.each(data, function(index) {
+	       if(data[index].id == selHELRegistryConfigId) {
+		   helRegistryConfigSelect.append($('<option selected></option>').val(data[index].id).html(data[index].name));
+	       }
+	       else {
+		   helRegistryConfigSelect.append($('<option></option>').val(data[index].id).html(data[index].name));
+	       }
+	    });
+	}
+    });
+}

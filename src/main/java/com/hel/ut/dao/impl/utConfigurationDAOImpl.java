@@ -100,9 +100,7 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
     @Override
     @Transactional(readOnly = true)
     public utConfiguration getConfigurationById(int configId) {
-        return (utConfiguration) sessionFactory.
-                getCurrentSession().
-                get(utConfiguration.class, configId);
+        return (utConfiguration) sessionFactory.getCurrentSession().get(utConfiguration.class, configId);
     }
 
     /**
@@ -809,14 +807,17 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
     @Override
     @Transactional(readOnly = true)
     @SuppressWarnings("unchecked")
-    public List<configurationDataTranslations> getDataTranslationsWithFieldNo(
-            int configId, int categoryId) {
+    public List<configurationDataTranslations> getDataTranslationsWithFieldNo(int configId, int categoryId) {
+	
         Query query = sessionFactory
 	    .getCurrentSession()
 	    .createSQLQuery(
-		    "select configurationDataTranslations.*, fieldNo from configurationDataTranslations, configurationFormFields"
-		    + " where configurationDataTranslations.fieldId = configurationFormFields.id "
-		    + " and configurationDataTranslations.configId = :configId and categoryId = :categoryId order by processorder asc;")
+		    "select configurationDataTranslations.*, configurationFormFields.associatedFieldNo as fieldNo "
+		    + "from configurationDataTranslations inner join "
+		    + "configurationFormFields on configurationFormFields.id = configurationDataTranslations.fieldId " 
+		    + "where configurationDataTranslations.configId = :configId "
+		    + "and configurationDataTranslations.categoryId = :categoryId "
+		    + "order by configurationDataTranslations.processorder asc;")
 	    .setResultTransformer(
 		    Transformers.aliasToBean(configurationDataTranslations.class))
 	    .setParameter("categoryId", categoryId).setParameter("configId", configId);
@@ -1615,5 +1616,20 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
         criteria.add(Restrictions.eq("id", entryId));
 	
 	return (watchlistEntry) criteria.uniqueResult();
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public List<utConfiguration>  getAllActiveSourceConfigurations() throws Exception {
+	
+	String sql = "select a.id, a.configName, b.orgName "
+		+ "from configurations a inner join "
+		+ "organizations b on b.id = a.orgId "
+		+ "where a.type = 1 and a.status = 1";
+	
+	Query query = sessionFactory.getCurrentSession().createSQLQuery(sql)
+		.setResultTransformer(Transformers.aliasToBean(utConfiguration.class));
+	
+        return query.list();
     }
 }

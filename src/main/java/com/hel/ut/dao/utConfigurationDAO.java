@@ -189,4 +189,6 @@ public interface utConfigurationDAO {
     List<watchlistEntry> getGenericWatchListEntries(Date fromDate, Date toDate) throws Exception;
     
     watchlistEntry getWatchListEntry(Integer entryId) throws Exception;
+    
+    List<utConfiguration> getAllActiveSourceConfigurations() throws Exception;
 }

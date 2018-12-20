@@ -1186,11 +1186,10 @@ public class utConfigurationTransportDAOImpl implements utConfigurationTransport
     @Transactional(readOnly = true)
     public List<configurationFormFields> getConfigurationFieldsToCopy(int configId) {
         
-	String sql = "select a.*, b.fieldNo as mappedToField "
-	    + "from configurationformfields a inner join " 
-	    + "messagetypeformfields b on a.messageTypeFieldId = b.id "
+	String sql = "select * "
+	    + "from configurationformfields "
 	    + "where configId = " + configId + " "
-	    + "order by a.fieldNo asc";
+	    + "order by fieldNo asc";
 	
 	Query query = sessionFactory.getCurrentSession().createSQLQuery(sql).setResultTransformer(Transformers.aliasToBean(configurationFormFields.class));
            

@@ -185,4 +185,6 @@ public interface utConfigurationManager {
     void insertDashboardWatchListEntry(watchlistEntry watchListEntry);
     
     watchlistEntry getWatchListEntry(Integer entryId) throws Exception;
+    
+    List<utConfiguration>  getAllActiveSourceConfigurations() throws Exception;
 }

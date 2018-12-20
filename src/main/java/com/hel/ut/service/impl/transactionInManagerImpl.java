@@ -382,20 +382,31 @@ public class transactionInManagerImpl implements transactionInManager {
 	    //3. validate 
 	    // 1. grab the configurationDataTranslations and run cw/macros
 	    List<configurationDataTranslations> dataTranslations = configurationManager.getDataTranslationsWithFieldNo(batch.getConfigId(), 1);
-	    for (configurationDataTranslations cdt : dataTranslations) {
-		if (cdt.getCrosswalkId() != 0) {
-		    systemErrorCount = systemErrorCount + processCrosswalk(batch.getConfigId(), batchUploadId, cdt, false);
-		} else if (cdt.getMacroId() != 0) {
-		    systemErrorCount = systemErrorCount + processMacro(batch.getConfigId(), batchUploadId, cdt, false);
+	    
+	    if(dataTranslations != null) {
+		if(!dataTranslations.isEmpty()) {
+		    for (configurationDataTranslations cdt : dataTranslations) {
+			if (cdt.getCrosswalkId() != 0) {
+			    systemErrorCount = systemErrorCount + processCrosswalk(batch.getConfigId(), batchUploadId, cdt, false);
+			} else if (cdt.getMacroId() != 0) {
+			    systemErrorCount = systemErrorCount + processMacro(batch.getConfigId(), batchUploadId, cdt, false);
+			}
+		    }
 		}
 	    }
 
 	    //check R/O
 	    List<configurationFormFields> reqFields = getRequiredFieldsForConfig(batch.getConfigId());
-
-	    for (configurationFormFields cff : reqFields) {
-		systemErrorCount = systemErrorCount + insertFailedRequiredFields(cff, batchUploadId);
+	    
+	    if(reqFields != null) {
+		if(!reqFields.isEmpty()) {
+		    for (configurationFormFields cff : reqFields) {
+			systemErrorCount = systemErrorCount + insertFailedRequiredFields(cff, batchUploadId);
+		    }
+		}
 	    }
+
+	    
 	    // update status of the failed records to ERR - 14
 	    updateStatusForErrorTrans(batchUploadId, 14, false);
 
@@ -446,10 +457,16 @@ public class transactionInManagerImpl implements transactionInManager {
 	     * we apply post processing rules here - categoryId 3 *
 	     */
 	    //1. we loop it by config
-	    List<configurationDataTranslations> postDataTranslations = configurationManager.getDataTranslationsWithFieldNo(batch.getConfigId(), 3); //while processing
-	    for (configurationDataTranslations cdt : postDataTranslations) {
-		systemErrorCount = systemErrorCount + processMacro(batch.getConfigId(), batchUploadId, cdt, false);
+	    List<configurationDataTranslations> postDataTranslations = configurationManager.getDataTranslationsWithFieldNo(batch.getConfigId(), 3);
+	    
+	    if(postDataTranslations != null) {
+		if(!postDataTranslations.isEmpty()) {
+		    for (configurationDataTranslations cdt : postDataTranslations) {
+			systemErrorCount = systemErrorCount + processMacro(batch.getConfigId(), batchUploadId, cdt, false);
+		    }
+		}
 	    }
+	    
 
 	    /**
 	     * if there are errors, those are system errors, they will be logged we get errorId 5 and email to admin, update batch to 29 *
@@ -460,8 +477,9 @@ public class transactionInManagerImpl implements transactionInManager {
 	    }
 
 	    /**
-	     * batches get processed again when user hits release button, maybe have separate method call for those that are just going from pending release to release, have to think about scenario when upload file is huge *
-	     */
+	     * batches get processed again when user hits release button, maybe have separate method call for those that are just going 
+	     * from pending release to release, have to think about scenario when upload file is huge 
+	    */
 	    List<configurationTransport> handlingDetails = getHandlingDetailsByBatch(batchUploadId);
 
 	    //1 = Post errors to ERG 
@@ -483,8 +501,7 @@ public class transactionInManagerImpl implements transactionInManager {
 		    || handlingDetails.get(0).geterrorHandling() == 4
 		    || handlingDetails.get(0).geterrorHandling() == 1))) {
 
-		if (handlingDetails.get(0).getautoRelease() && handlingDetails.get(0).geterrorHandling() == 1
-			&& getRecordCounts(batchUploadId, finalStatusIds, false, false) > 0) {
+		if (handlingDetails.get(0).getautoRelease() && handlingDetails.get(0).geterrorHandling() == 1 && getRecordCounts(batchUploadId, finalStatusIds, false, false) > 0) {
 		    //post records to ERG
 		    batch.setstatusId(5);
 		    batchStatusId = 5;
@@ -656,6 +673,7 @@ public class transactionInManagerImpl implements transactionInManager {
 
     @Override
     public Integer runValidations(Integer batchUploadId, Integer configId) {
+	
 	Integer errorCount = 0;
 	//1. we get validation types
 	//2. we skip 1 as that is not necessary
@@ -671,42 +689,47 @@ public class transactionInManagerImpl implements transactionInManager {
 	//validate date - doing this in java
 	//TODO was hoping to have one SP but concat in SP not setting and not catching errors correctly. Need to recheck
 	List<configurationFormFields> configurationFormFields = configurationtransportmanager.getCffByValidationType(configId, 0);
+	
+	if(configurationFormFields != null) {
+	    if(!configurationFormFields.isEmpty()) {
+		for (configurationFormFields cff : configurationFormFields) {
+		    String regEx = "";
 
-	for (configurationFormFields cff : configurationFormFields) {
-	    String regEx = "";
+		    Integer validationTypeId = cff.getValidationType();
+		    switch (cff.getValidationType()) {
+			// no validation
+			case 1:
+			    break;
+			//email calling SQL to validation and insert - one statement
+			case 2:
+			    errorCount = errorCount + genericValidation(cff, validationTypeId, batchUploadId, regEx);
+			    break;
+			//phone  calling SP to validation and insert - one statement 
+			case 3:
+			    errorCount = errorCount + genericValidation(cff, validationTypeId, batchUploadId, regEx);
+			    break;
+			// need to loop through each record / each field
+			case 4:
+			    errorCount = errorCount + genericValidation(cff, validationTypeId, batchUploadId, regEx);
+			    break;
+			//numeric   calling SQL to validation and insert - one statement      
+			case 5:
+			    errorCount = errorCount + genericValidation(cff, validationTypeId, batchUploadId, regEx);
+			    break;
+			//url - need to rethink as regExp is not validating correctly
+			case 6:
+			    errorCount = errorCount + genericValidation(cff, validationTypeId, batchUploadId, regEx);
+			    break;
+			//anything new we hope to only have to modify sp
+			default:
+			    errorCount = errorCount + genericValidation(cff, validationTypeId, batchUploadId, regEx);
+			    break;
+		    }
 
-	    Integer validationTypeId = cff.getValidationType();
-	    switch (cff.getValidationType()) {
-		// no validation
-		case 1:
-		    break;
-		//email calling SQL to validation and insert - one statement
-		case 2:
-		    errorCount = errorCount + genericValidation(cff, validationTypeId, batchUploadId, regEx);
-		    break;
-		//phone  calling SP to validation and insert - one statement 
-		case 3:
-		    errorCount = errorCount + genericValidation(cff, validationTypeId, batchUploadId, regEx);
-		    break;
-		// need to loop through each record / each field
-		case 4:
-		    errorCount = errorCount + genericValidation(cff, validationTypeId, batchUploadId, regEx);
-		    break;
-		//numeric   calling SQL to validation and insert - one statement      
-		case 5:
-		    errorCount = errorCount + genericValidation(cff, validationTypeId, batchUploadId, regEx);
-		    break;
-		//url - need to rethink as regExp is not validating correctly
-		case 6:
-		    errorCount = errorCount + genericValidation(cff, validationTypeId, batchUploadId, regEx);
-		    break;
-		//anything new we hope to only have to modify sp
-		default:
-		    errorCount = errorCount + genericValidation(cff, validationTypeId, batchUploadId, regEx);
-		    break;
+		}
 	    }
-
 	}
+
 
 	return errorCount;
     }
@@ -1924,19 +1947,20 @@ public class transactionInManagerImpl implements transactionInManager {
 				if (batchInfo.getConfigId() != null) {
 				    if (batchInfo.getConfigId() > 0) {
 					utConfiguration configDetails = configurationManager.getConfigurationById(batchInfo.getConfigId());
+					configurationTransport transportDetails = configurationtransportmanager.getTransportDetails(batchInfo.getConfigId());
 
-					if (configDetails != null) {
-					    if (configDetails.getHelRegistryId() > 0 && configDetails.getHelRegistryConfigId() > 0 && !"".equals(configDetails.getHelSchemaName())) {
+					if (transportDetails != null) {
+					    if (transportDetails.getHelRegistryId() > 0 && transportDetails.getHelRegistryConfigId() > 0 && !"".equals(transportDetails.getHelSchemaName())) {
 						
-						submittedMessage existingRegistrySubmittedMessage = submittedmessagemanager.getSubmittedMessageBySQL(configDetails.getHelSchemaName(),batchInfo.getutBatchName());
+						submittedMessage existingRegistrySubmittedMessage = submittedmessagemanager.getSubmittedMessageBySQL(transportDetails.getHelSchemaName(),batchInfo.getutBatchName());
 						
 						if (existingRegistrySubmittedMessage != null) {
-						    submittedmessagemanager.updateSubmittedMessage(configDetails.getHelSchemaName(),existingRegistrySubmittedMessage.getId(),23,batchId);
+						    submittedmessagemanager.updateSubmittedMessage(transportDetails.getHelSchemaName(),existingRegistrySubmittedMessage.getId(),23,batchId);
 						}
 						else {
 						    submittedMessage newSubmittedMessage = new submittedMessage();
 						    newSubmittedMessage.setUtBatchUploadId(batchId);
-						    newSubmittedMessage.setRegistryConfigId(configDetails.getHelRegistryConfigId());
+						    newSubmittedMessage.setRegistryConfigId(transportDetails.getHelRegistryConfigId());
 						    newSubmittedMessage.setUploadedFileName(batchInfo.getoriginalFileName());
 						    newSubmittedMessage.setAssignedFileName(batchInfo.getutBatchName());
 						    newSubmittedMessage.setInFileExt(FilenameUtils.getExtension(batchInfo.getoriginalFileName()));
@@ -1944,7 +1968,7 @@ public class transactionInManagerImpl implements transactionInManager {
 						    newSubmittedMessage.setTransportId(1);
 						    newSubmittedMessage.setSystemUserId(0);
 
-						    submittedmessagemanager.submitSubmittedMessage(configDetails.getHelSchemaName(),newSubmittedMessage);
+						    submittedmessagemanager.submitSubmittedMessage(transportDetails.getHelSchemaName(),newSubmittedMessage);
 						}
 						
 					    }
@@ -3778,6 +3802,7 @@ public class transactionInManagerImpl implements transactionInManager {
 
 	if (batchesToCleanup != null) {
 	    if (!batchesToCleanup.isEmpty()) {
+		System.out.println("Clean up batch:");
 		transactionInDAO.batchUploadTableCleanUp(batchesToCleanup);
 	    }
 	}

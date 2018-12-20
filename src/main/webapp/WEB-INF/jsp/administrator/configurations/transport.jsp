@@ -21,7 +21,6 @@
                     <dd><strong>Organization:</strong> ${configurationDetails.orgName}</span></dd>
                     <dd><strong>Configuration Type:</strong> <span id="configType" rel="${configurationDetails.type}"><c:choose><c:when test="${configurationDetails.type == 1}">Source</c:when><c:otherwise>Target</c:otherwise></c:choose></span></dd>
                     <dd><strong>Configuration Name:</strong> ${configurationDetails.configName}</dd>
-                    <dd><strong>Message Type:</strong> ${configurationDetails.messageTypeName}</dd>
                     <dd><strong>Transport Method:</strong> <c:choose><c:when test="${configurationDetails.transportMethod == 'File Upload'}"><c:choose><c:when test="${configurationDetails.type == 1}">File Upload</c:when><c:otherwise>File Download</c:otherwise></c:choose></c:when><c:otherwise>${configurationDetails.transportMethod}</c:otherwise></c:choose></dd>
                     </dt>
                 </div>
@@ -36,6 +35,8 @@
 		<form:hidden path="autoRelease" value="1" />
 		<form:hidden path="clearRecords" value="1" />
 		<form:hidden path="massTranslation" value="true" />
+		<form:hidden path="helRegistryId" id="helRegistryId" />
+		<form:hidden path="helSchemaName" id="helSchemaName" />
 		
 		<section class="panel panel-default">
 		    <div class="panel-heading">
@@ -53,7 +54,14 @@
                                     <form:select path="transportMethodId" id="transportMethod" class="form-control" disabled="${transportDetails.id > 0 && transportDetails.transportMethodId > 0 ? 'true' : 'false'}">
                                         <option value="">- Select -</option>
                                         <c:forEach items="${transportMethods}" var="transMethod" varStatus="tStatus">
-                                            <option value="${transportMethods[tStatus.index][0]}" <c:if test="${transportDetails.transportMethodId == transportMethods[tStatus.index][0]}">selected</c:if>><c:choose><c:when test="${transportMethods[tStatus.index][0] == 1}"><c:choose><c:when test="${configurationDetails.type == 1}">File Upload</c:when><c:otherwise>File Download</c:otherwise></c:choose></c:when><c:otherwise>${transportMethods[tStatus.index][1]}</c:otherwise></c:choose></option>
+					    <c:choose>
+						<c:when test="${transportMethods[tStatus.index][0] != 8 && transportMethods[tStatus.index][0] != 10}">
+						    <option value="${transportMethods[tStatus.index][0]}" <c:if test="${transportDetails.transportMethodId == transportMethods[tStatus.index][0]}">selected</c:if>><c:choose><c:when test="${transportMethods[tStatus.index][0] == 1}"><c:choose><c:when test="${configurationDetails.type == 1}">File Upload</c:when><c:otherwise>File Download</c:otherwise></c:choose></c:when><c:otherwise>${transportMethods[tStatus.index][1]}</c:otherwise></c:choose></option>
+						</c:when>
+						<c:when test="${(transportMethods[tStatus.index][0] == 8 || transportMethods[tStatus.index][0] == 10) && transportDetails.helRegistryId > 0}">
+						    <option value="${transportMethods[tStatus.index][0]}" <c:if test="${transportDetails.transportMethodId == transportMethods[tStatus.index][0]}">selected</c:if>><c:choose><c:when test="${transportMethods[tStatus.index][0] == 1}"><c:choose><c:when test="${configurationDetails.type == 1}">File Upload</c:when><c:otherwise>File Download</c:otherwise></c:choose></c:when><c:otherwise>${transportMethods[tStatus.index][1]}</c:otherwise></c:choose></option>
+						</c:when>
+					    </c:choose>
                                         </c:forEach>
                                     </form:select>
                                     <span id="transportMethodMsg" class="control-label"></span>
@@ -63,6 +71,16 @@
                                 </div>
                             </spring:bind>
 			</div>
+			<spring:bind path="helRegistryConfigId">
+			    <div id="helRegistryConfigDiv" class="form-group ${status.error ? 'has-error' : '' }"  style="display:none">
+				<label class="control-label" for="helRegistryConfigId">Health-e-Link Registry Configuration *</label>
+				<form:select path="helRegistryConfigId" id="helRegistryConfigId" rel="${transportDetails.helRegistryConfigId}" class="form-control half" disabled="${transportDetails.id == 0 ? 'false' : 'true' }"></form:select>
+				<c:if test="${transportDetails.id > 0}">
+				    <form:hidden path="helRegistryConfigId"/>
+				</c:if> 
+				<span id="helRegistryConfigIdMsg" class="control-label"></span>
+			    </div>
+			</spring:bind>
 		    </div>
 		</section>
 		

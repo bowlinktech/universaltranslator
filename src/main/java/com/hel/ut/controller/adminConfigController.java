@@ -37,7 +37,6 @@ import com.hel.ut.model.configurationDataTranslations;
 import com.hel.ut.model.configurationFormFields;
 import com.hel.ut.model.configurationFileDropFields;
 import com.hel.ut.model.configurationWebServiceSenders;
-import com.hel.ut.model.messageTypeFormFields;
 import com.hel.ut.model.Organization;
 import com.hel.ut.model.utUser;
 import com.hel.ut.model.configurationCCDElements;
@@ -68,7 +67,6 @@ import com.hel.ut.model.configurationWebServiceFields;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 import javax.servlet.http.HttpSession;
 import com.hel.ut.service.utConfigurationManager;
 import com.hel.ut.service.utConfigurationTransportManager;
@@ -137,15 +135,7 @@ public class adminConfigController {
         for (utConfiguration config : configurations) {
             org = organizationmanager.getOrganizationById(config.getorgId());
             config.setOrgName(org.getOrgName());
-	    
-	    if(config.getMessageTypeId() > 0) {
-		messagetype = messagetypemanager.getMessageTypeById(config.getMessageTypeId());
-		config.setMessageTypeName(messagetype.getName());
-	    }
-	    else {
-		config.setMessageTypeName("N/A");
-	    }
-            
+	   
             transportDetails = utconfigurationTransportManager.getTransportDetails(config.getId());
             if (transportDetails != null) {
                 config.settransportMethod(utconfigurationTransportManager.getTransportMethodById(transportDetails.gettransportMethodId()));
@@ -181,9 +171,15 @@ public class adminConfigController {
         //Need to get a list of active message types
         List<messageType> messageTypes = messagetypemanager.getActiveMessageTypes();
         mav.addObject("messageTypes", messageTypes);
+	mav.addObject("mappings", 1);
 	
 	session.setAttribute("showAllConfigOptions",true);
 	mav.addObject("showAllConfigOptions", session.getAttribute("showAllConfigOptions"));
+	
+	//Get a list of other active sourceconfigurations
+	//These will show only for a target configuration
+	List<utConfiguration> sourceConfigurations = utconfigurationmanager.getAllActiveSourceConfigurations();
+	mav.addObject("sourceConfigurations", sourceConfigurations);
        
         return mav;
 
@@ -221,7 +217,7 @@ public class adminConfigController {
     @RequestMapping(value = "/create", method = RequestMethod.POST)
     public ModelAndView saveNewConfiguration(HttpSession session,@ModelAttribute(value = "configurationDetails") utConfiguration configurationDetails, BindingResult result, RedirectAttributes redirectAttr, @RequestParam String action) throws Exception {
 
-        /* Need to make sure the name isn't already taken for the org selected */
+        // Need to make sure the name isn't already taken for the org selected
         utConfiguration existing = utconfigurationmanager.getConfigurationByName(configurationDetails.getconfigName(), configurationDetails.getorgId());
 
         if (existing != null) {
@@ -245,15 +241,11 @@ public class adminConfigController {
 	if(configurationDetails.getMessageTypeId() == null) {
 	    configurationDetails.setMessageTypeId(0);
 	}
-	if(configurationDetails.getHelRegistryConfigId() == null) {
-	    configurationDetails.setHelRegistryConfigId(0);
-	}
-
+	configurationDetails.setstepsCompleted(1);
+	
         Integer id = (Integer) utconfigurationmanager.createConfiguration(configurationDetails);
 
         session.setAttribute("manageconfigId", id);
-
-        session.setAttribute("configStepsCompleted", 1);
 	
         //If the "Save" button was pressed 
         if (action.equals("save")) {
@@ -326,35 +318,19 @@ public class adminConfigController {
         if (transportDetails != null) {
             configurationDetails.settransportMethod(utconfigurationTransportManager.getTransportMethodById(transportDetails.gettransportMethodId()));
 
-	    //Need to set the mappings static variable
-            if (transportDetails.gettransportMethodId() == 2) {
-		session.setAttribute("configmappings", 2);
-            } else {
-                if (transportDetails.geterrorHandling() == 1) {
-                    session.setAttribute("configmappings", 3);
-                } else {
-                    session.setAttribute("configmappings", 1);
-                }
-            }
-            
-            if (transportDetails.getfileType() == 4 && configurationDetails.getType() == 2) {
-		session.setAttribute("configHL7", true);
-		session.setAttribute("configCCD", false);
-            } else if ((transportDetails.getfileType() == 9 || transportDetails.getfileType() == 12) && configurationDetails.getType() == 2) {
-                session.setAttribute("configHL7", false);
-		session.setAttribute("configCCD", true);
-            } else {
-		session.setAttribute("configHL7", false);
-		session.setAttribute("configCCD", false);
-            }
-	    
-	    if(transportDetails.getRestAPIType() == 2) {
-		session.setAttribute("showAllConfigOptions",false);
+	    //No mappings needed for source configurations
+	    if(configurationDetails.getType() == 1) {
+		session.setAttribute("configmappings", 0);
 	    }
 	    else {
-		session.setAttribute("showAllConfigOptions",true);
+		session.setAttribute("configmappings", 1);
 	    }
         }
+	
+	//Get a list of other active sourceconfigurations
+	//These will show only for a target configuration
+	List<utConfiguration> sourceConfigurations = utconfigurationmanager.getAllActiveSourceConfigurations();
+	mav.addObject("sourceConfigurations", sourceConfigurations);
 
         mav.addObject("mappings", session.getAttribute("configmappings"));
         mav.addObject("HL7", session.getAttribute("configHL7"));
@@ -388,17 +364,8 @@ public class adminConfigController {
         List<utUser> users = userManager.getUsersByOrganization(configurationDetails.getorgId());
 
         //submit the updates
-        utconfigurationmanager.updateConfiguration(configurationDetails);
-
-        /**
-         * Need to update the configuration completed step
-         *
-         */
-        if ((Integer) session.getAttribute("configStepsCompleted") < 1) {
-            utconfigurationmanager.updateCompletedSteps(configurationDetails.getId(), 1);
-	    session.setAttribute("configStepsCompleted", 1);
-        }
-	
+	utconfigurationmanager.updateConfiguration(configurationDetails);
+        
 
         //If the "Save" button was pressed 
         if (action.equals("save")) {
@@ -412,6 +379,11 @@ public class adminConfigController {
             mav.addObject("mappings", session.getAttribute("configmappings"));
             mav.addObject("savedStatus", "updated");
             mav.addObject("stepsCompleted", session.getAttribute("configStepsCompleted"));
+	    
+	    //Get a list of other active sourceconfigurations
+	    //These will show only for a target configuration
+	    List<utConfiguration> sourceConfigurations = utconfigurationmanager.getAllActiveSourceConfigurations();
+	    mav.addObject("sourceConfigurations", sourceConfigurations);
 	    
             return mav;
         } //If the "Next Step" button was pressed.
@@ -454,9 +426,9 @@ public class adminConfigController {
         //Get the utConfiguration details for the selected config
         utConfiguration configurationDetails = utconfigurationmanager.getConfigurationById(configId);
 
-        /* Get organization directory name */
+        // Get organization directory name
         Organization orgDetails = organizationmanager.getOrganizationById(configurationDetails.getorgId());
-
+	
         configurationTransport transportDetails = utconfigurationTransportManager.getTransportDetails(configId);
         if (transportDetails == null) {
             transportDetails = new configurationTransport();
@@ -470,10 +442,12 @@ public class adminConfigController {
             List<Integer> assocMessageTypes = new ArrayList<Integer>();
             assocMessageTypes.add(configurationDetails.getId());
             transportDetails.setmessageTypes(assocMessageTypes);
+        }
+	
+	transportDetails.setHelRegistryId(orgDetails.getHelRegistryId());
+	transportDetails.setHelSchemaName(orgDetails.getHelRegistrySchemaName());
 
-        } 
-
-        /* Need to get any FTP fields */
+        // Need to get any FTP fields
         List<configurationFTPFields> ftpFields = utconfigurationTransportManager.getTransportFTPDetails(transportDetails.getId());
 
         if (ftpFields.isEmpty()) {
@@ -481,11 +455,11 @@ public class adminConfigController {
             List<configurationFTPFields> emptyFTPFields = new ArrayList<configurationFTPFields>();
             configurationFTPFields pushFTPFields = new configurationFTPFields();
             pushFTPFields.setmethod(1);
-            pushFTPFields.setdirectory("/HELProductSuite/universalTranslator/" + orgDetails.getcleanURL() + "/input files/");
+            pushFTPFields.setdirectory("/" + orgDetails.getcleanURL() + "/input files/");
 
             configurationFTPFields getFTPFields = new configurationFTPFields();
             getFTPFields.setmethod(2);
-            getFTPFields.setdirectory("/HELProductSuite/universalTranslator/" + orgDetails.getcleanURL() + "/output files/");
+            getFTPFields.setdirectory("/" + orgDetails.getcleanURL() + "/output files/");
 
             emptyFTPFields.add(pushFTPFields);
             emptyFTPFields.add(getFTPFields);
@@ -526,6 +500,7 @@ public class adminConfigController {
             configurationWebServiceFields inboundWSFields = new configurationWebServiceFields();
             inboundWSFields.setMethod(1);
             List<configurationWebServiceSenders> inboundWSDomainList = new ArrayList<configurationWebServiceSenders>();
+	    
             //need to modify to set domain
             inboundWSFields.setSenderDomainList(inboundWSDomainList);
 
@@ -540,27 +515,7 @@ public class adminConfigController {
             transportDetails.setWebServiceFields(wsFields);
         }
 
-        //Need to get a list of all configurations for the current organization
-        List<utConfiguration> configurations = utconfigurationmanager.getConfigurationsByOrgId(configurationDetails.getorgId(), "");
-
-        for (utConfiguration config : configurations) {
-            configurationTransport transDetails = utconfigurationTransportManager.getTransportDetails(config.getId());
-	    
-	    if(config.getMessageTypeId() > 0) {
-		config.setMessageTypeName(messagetypemanager.getMessageTypeById(config.getMessageTypeId()).getName());
-	    }
-	    else {
-		config.setMessageTypeName("N/A");
-	    }
-
-            if (transDetails != null) {
-                config.settransportDetailId(transDetails.getId());
-                config.settransportMethod(utconfigurationTransportManager.getTransportMethodById(transDetails.gettransportMethodId()));
-            }
-
-        }
-        mav.addObject("availConfigurations", configurations);
-
+        
         transportDetails.setconfigId(configId);
 	transportDetails.setThreshold(configurationDetails.getThreshold());
         mav.addObject("transportDetails", transportDetails);
@@ -579,21 +534,10 @@ public class adminConfigController {
         mav.addObject("CCD", session.getAttribute("configCCD"));
 	mav.addObject("showAllConfigOptions", session.getAttribute("showAllConfigOptions"));
 	
-        configurationDetails.setOrgName(organizationmanager.getOrganizationById(configurationDetails.getorgId()).getOrgName());
-	if(configurationDetails.getMessageTypeId() > 0) {
-	     configurationDetails.setMessageTypeName(messagetypemanager.getMessageTypeById(configurationDetails.getMessageTypeId()).getName());
-	}
-	else {
-	    configurationDetails.setMessageTypeName("N/A");
-	}
-        
         configurationDetails.settransportMethod(utconfigurationTransportManager.getTransportMethodById(transportDetails.gettransportMethodId()));
 
         //pass the utConfiguration detail object back to the page.
         mav.addObject("configurationDetails", configurationDetails);
-
-        //Set the variable to hold the number of completed steps for this utConfiguration;
-	mav.addObject("stepsCompleted", session.getAttribute("configStepsCompleted"));
 
         //Get the list of available transport methods
         List transportMethods = utconfigurationTransportManager.getTransportMethodsByType(configurationDetails.getType());
@@ -657,7 +601,11 @@ public class adminConfigController {
         Integer currTransportId = transportDetails.getId();
 	
         utConfiguration configurationDetails = utconfigurationmanager.getConfigurationById(configId);
-
+	if(configurationDetails.getstepsCompleted() < 2) {
+	    configurationDetails.setstepsCompleted(2);
+	    utconfigurationmanager.updateConfiguration(configurationDetails);
+	}
+	
         /* submit the updates */
         Integer transportId = (Integer) utconfigurationTransportManager.updateTransportDetails(transportDetails);
 	
@@ -679,10 +627,11 @@ public class adminConfigController {
         }
 	
 	
-	//Need to set the mappings static variable
-	if (transportDetails.geterrorHandling() == 1) {
-	    session.setAttribute("configmappings", 3);
-	} else {
+	//No mappings needed for source configurations
+	if(configurationDetails.getType() == 1) {
+	    session.setAttribute("configmappings", 0);
+	}
+	else {
 	    session.setAttribute("configmappings", 1);
 	}
 	
@@ -768,14 +717,6 @@ public class adminConfigController {
 	
         //If the "Save" button was pressed 
         if (action.equals("save") || transportDetails.getRestAPIType() == 2) {
-            /**
-             * Need to update the configuration completed step
-             *
-             */
-            if ((Integer) session.getAttribute("configStepsCompleted") < 2) {
-                utconfigurationmanager.updateCompletedSteps(configId, 2);
-		session.setAttribute("configStepsCompleted", 2);
-            }
             ModelAndView mav = new ModelAndView(new RedirectView("transport"));
             return mav;
         } else {
@@ -784,16 +725,10 @@ public class adminConfigController {
                 
 		//Check if passthru
 		if(configurationDetails.getConfigurationType() == 2) {
-		    utconfigurationmanager.updateCompletedSteps(configId, 2);
-		    session.setAttribute("configStepsCompleted", 2);
 		    ModelAndView mav = new ModelAndView(new RedirectView("scheduling"));
 		    return mav;
 		}
 		else {
-		     if ((Integer) session.getAttribute("configStepsCompleted") < 2) {
-			utconfigurationmanager.updateCompletedSteps(configId, 2);
-			session.setAttribute("configStepsCompleted", 2);
-		    }
 		    ModelAndView mav = new ModelAndView(new RedirectView("messagespecs"));
 		    return mav;
 		}
@@ -801,16 +736,10 @@ public class adminConfigController {
             } else {
 		//Check if passthru
 		if(configurationDetails.getConfigurationType() == 2) {
-		    utconfigurationmanager.updateCompletedSteps(configId, 2);
-		    session.setAttribute("configStepsCompleted", 2);
 		    ModelAndView mav = new ModelAndView(new RedirectView("scheduling"));
 		    return mav;
 		}
 		else {
-		    if ((Integer) session.getAttribute("configStepsCompleted") < 2) {
-			utconfigurationmanager.updateCompletedSteps(configId, 2);
-			session.setAttribute("configStepsCompleted", 2);
-		    }
 		    ModelAndView mav = new ModelAndView(new RedirectView("messagespecs"));
 		    return mav;
 		}
@@ -869,16 +798,8 @@ public class adminConfigController {
 	
         //Get the utConfiguration details for the selected config
         utConfiguration configurationDetails = utconfigurationmanager.getConfigurationById(configId);
-
-        configurationDetails.setOrgName(organizationmanager.getOrganizationById(configurationDetails.getorgId()).getOrgName());
-	if(configurationDetails.getMessageTypeId() > 0) {
-	     configurationDetails.setMessageTypeName(messagetypemanager.getMessageTypeById(configurationDetails.getMessageTypeId()).getName());
-	}
-	else {
-	    configurationDetails.setMessageTypeName("N/A");
-	}
 	
-        configurationDetails.settransportMethod(utconfigurationTransportManager.getTransportMethodById(transportDetails.gettransportMethodId()));
+	configurationDetails.settransportMethod(utconfigurationTransportManager.getTransportMethodById(transportDetails.gettransportMethodId()));
 
         //pass the utConfiguration detail object back to the page.
         mav.addObject("configurationDetails", configurationDetails);
@@ -886,9 +807,6 @@ public class adminConfigController {
         //Need to get all available fields that can be used for the reportable fields
         List<configurationFormFields> fields = utconfigurationTransportManager.getConfigurationFields(configId, transportDetails.getId());
         mav.addObject("availableFields", fields);
-
-        //Set the variable to hold the number of completed steps for this utConfiguration;
-        mav.addObject("stepsCompleted", session.getAttribute("configStepsCompleted"));
 
         return mav;
     }
@@ -907,16 +825,7 @@ public class adminConfigController {
     @RequestMapping(value = "/messagespecs", method = RequestMethod.POST)
     public ModelAndView updateMessageSpecs(HttpSession session,@Valid @ModelAttribute(value = "messageSpecs") configurationMessageSpecs messageSpecs, BindingResult result, RedirectAttributes redirectAttr, @RequestParam String action) throws Exception {
 
-        /**
-         * Need to update the configuration completed step
-         *
-         */
-        if ((Integer) session.getAttribute("configStepsCompleted") < 3) {
-            utconfigurationmanager.updateCompletedSteps(messageSpecs.getconfigId(), 3);
-            session.setAttribute("configStepsCompleted", 3);
-        }
-	
-
+       
         /**
          * Need to pass the selected transport Type
          */
@@ -929,9 +838,14 @@ public class adminConfigController {
 
         redirectAttr.addFlashAttribute("savedStatus", "updated");
 	
+	utConfiguration configDetails = utconfigurationmanager.getConfigurationById(messageSpecs.getconfigId());
+	if(configDetails.getstepsCompleted() < 3) {
+	    configDetails.setstepsCompleted(3);
+	    utconfigurationmanager.updateConfiguration(configDetails);
+	}
+	
 	//If excel enter in the ref_configexceldetails
 	if(transportDetails.getfileType() == 11) {
-	    utConfiguration configDetails = utconfigurationmanager.getConfigurationById(messageSpecs.getconfigId());
 	    utconfigurationmanager.updateExcelConfigDetails(configDetails.getorgId(),messageSpecs);
 	}
 
@@ -942,20 +856,14 @@ public class adminConfigController {
             ModelAndView mav = new ModelAndView(new RedirectView("messagespecs"));
             return mav;
         } else {
-            /**
-             * If transport method is ERG send to the ERG Customization page
-             */
-            if (transportDetails.gettransportMethodId() == 2) {
-                ModelAndView mav = new ModelAndView(new RedirectView("ERGCustomize"));
+	    if(configDetails.getType() == 1) {
+		ModelAndView mav = new ModelAndView(new RedirectView("translations"));
                 return mav;
-            } /**
-             * Otherwise send to the field mappings page
-             */
-            else {
-                ModelAndView mav = new ModelAndView(new RedirectView("mappings"));
+	    }
+	    else {
+		ModelAndView mav = new ModelAndView(new RedirectView("mappings"));
                 return mav;
-            }
-
+	    }
         }
 
     }
@@ -988,55 +896,29 @@ public class adminConfigController {
 
         //Get the completed steps for the selected utConfiguration;
         utConfiguration configurationDetails = utconfigurationmanager.getConfigurationById(configId);
-
+	
         //Get the transport details by configid and selected transport method
         configurationTransport transportDetails = utconfigurationTransportManager.getTransportDetails(configId);
 
 	Organization orgDetails = organizationmanager.getOrganizationById(configurationDetails.getorgId());
         configurationDetails.setOrgName(orgDetails.getOrgName());
-        
-	if(configurationDetails.getMessageTypeId() > 0) {
-	     configurationDetails.setMessageTypeName(messagetypemanager.getMessageTypeById(configurationDetails.getMessageTypeId()).getName());
-	}
-	else {
-	    configurationDetails.setMessageTypeName("N/A");
-	}
+       
         configurationDetails.settransportMethod(utconfigurationTransportManager.getTransportMethodById(transportDetails.gettransportMethodId()));
+	mav.addObject("configurationDetails", configurationDetails);
 
-        //pass the utConfiguration detail object back to the page.
-        mav.addObject("configurationDetails", configurationDetails);
-
+	
         //Get the transport fields
         List<configurationFormFields> fields = utconfigurationTransportManager.getConfigurationFields(configId, transportDetails.getId());
         transportDetails.setFields(fields);
 
         mav.addObject("transportDetails", transportDetails);
 
-        //Need to see if the configuration is attached to a UT message type or a HEL Registry configuration
-	if(configurationDetails.getHelRegistryConfigId() > 0) {
-	    mav.addObject("HELRegistryConfiguration", true);
-	    if(!"".equals(orgDetails.getHelRegistrySchemaName())) {
-		mav.addObject("HELRegistrySchemaName", orgDetails.getHelRegistrySchemaName());
-	    }
-	    else {
-		mav.addObject("HELRegistrySchemaName", configurationDetails.getHelSchemaName());
-	    }
-	}
-	else {
-	    //Need to get the template fields
-	    List<messageTypeFormFields> templateFields = messagetypemanager.getMessageTypeFields(configurationDetails.getMessageTypeId());
-	    mav.addObject("templateFields", templateFields);
-	    mav.addObject("HELRegistryConfiguration", false);
-	}
         
-
         mav.addObject("selTransportMethod", transportDetails.gettransportMethodId());
 
         List validationTypes = messagetypemanager.getValidationTypes();
         mav.addObject("validationTypes", validationTypes);
 
-        //Set the variable to hold the number of completed steps for this utConfiguration;
-        mav.addObject("stepsCompleted", session.getAttribute("configStepsCompleted"));
 
         return mav;
     }
@@ -1056,16 +938,17 @@ public class adminConfigController {
      */
     @RequestMapping(value = "/saveFields", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
     public @ResponseBody
-    Integer saveFormFields(HttpSession session,@ModelAttribute(value = "transportDetails") configurationTransport transportDetails, RedirectAttributes redirectAttr, @RequestParam String action, @RequestParam int transportMethod, @RequestParam int errorHandling) throws Exception {
+    Integer saveFormFields(HttpSession session,
+	    @ModelAttribute(value = "transportDetails") configurationTransport transportDetails, 
+	    RedirectAttributes redirectAttr, @RequestParam String action, @RequestParam int transportMethod, @RequestParam int errorHandling) throws Exception {
 
-        /**
-         * Need to update the configuration completed step
-         *
-         */
-        if ((Integer) session.getAttribute("configStepsCompleted") < 4) {
-            utconfigurationmanager.updateCompletedSteps(transportDetails.getconfigId(), 4);
-            session.setAttribute("configStepsCompleted", 4);
-        }
+	Integer configId = (Integer) session.getAttribute("manageconfigId");
+	
+	utConfiguration configurationDetails = utconfigurationmanager.getConfigurationById(configId);
+	if(configurationDetails.getstepsCompleted() < 4) {
+	    configurationDetails.setstepsCompleted(4);
+	    utconfigurationmanager.updateConfiguration(configurationDetails);
+	}
 	
         //Get the list of fields
         List<configurationFormFields> fields = transportDetails.getFields();
@@ -1150,15 +1033,7 @@ public class adminConfigController {
         configurationTransport transportDetails = utconfigurationTransportManager.getTransportDetails(configId);
 
         configurationDetails.setOrgName(organizationmanager.getOrganizationById(configurationDetails.getorgId()).getOrgName());
-	
-	if(configurationDetails.getMessageTypeId() > 0) {
-	    configurationDetails.setMessageTypeName(messagetypemanager.getMessageTypeById(configurationDetails.getMessageTypeId()).getName());
-	}
-	else {
-	    configurationDetails.setMessageTypeName("N/A");
-	}
-        
-        configurationDetails.settransportMethod(utconfigurationTransportManager.getTransportMethodById(transportDetails.gettransportMethodId()));
+	configurationDetails.settransportMethod(utconfigurationTransportManager.getTransportMethodById(transportDetails.gettransportMethodId()));
 
         //pass the utConfiguration detail object back to the page.
         mav.addObject("configurationDetails", configurationDetails);
@@ -1187,9 +1062,6 @@ public class adminConfigController {
             }
         }
         mav.addObject("macroLookUpList", macroLookUpList);
-
-        //Set the variable to hold the number of completed steps for this utConfiguration;
-        mav.addObject("stepsCompleted", session.getAttribute("configStepsCompleted"));
 
         return mav;
     }
@@ -1230,14 +1102,25 @@ public class adminConfigController {
 	
 	configId = (Integer) session.getAttribute("manageconfigId");
 	
-	/**
-         * Need to update the configuration completed step
-         *
-         */
-        if ((Integer) session.getAttribute("configStepsCompleted") < 5) {
-            utconfigurationmanager.updateCompletedSteps(configId, 5);
-            session.setAttribute("configStepsCompleted", 5);
-        }
+	utConfiguration configurationDetails = utconfigurationmanager.getConfigurationById(configId);
+	if(categoryId == 2) {
+	    if(configurationDetails.getstepsCompleted() < 10) {
+		configurationDetails.setstepsCompleted(10);
+		utconfigurationmanager.updateConfiguration(configurationDetails);
+	    }
+	}
+	else if(categoryId == 3) {
+	    if(configurationDetails.getstepsCompleted() < 11) {
+		configurationDetails.setstepsCompleted(11);
+		utconfigurationmanager.updateConfiguration(configurationDetails);
+	    }
+	}
+	else {
+	    if(configurationDetails.getstepsCompleted() < 5) {
+		configurationDetails.setstepsCompleted(5);
+		utconfigurationmanager.updateConfiguration(configurationDetails);
+	    }
+	}
 	
         //Delete all the data translations before creating
         //This will help with the jquery removing translations
@@ -1333,9 +1216,22 @@ public class adminConfigController {
     /**
      * The '/setTranslations{params}' function will handle taking in a selected field and a selected crosswalk and add it to an array of translations. This array will be used when the form is submitted to associate to the existing utConfiguration / trasnort method combination.
      *
-     * @param f	This will hold the id of the selected field cw	This will hold the id of the selected crosswalk fText	This will hold the text value of the selected field (used for display purposes) CWText	This will hold the text value of the selected crosswalk (used for display purposes)
+     * @param session
+     * @param field
+     * @param cwId
+     * @param fieldText
+     * @param cwText
+     * @param macroId
+     * @param fieldA
+     * @param macroName
+     * @param fieldB
+     * @param passClear
+     * @param constant2
+     * @param constant1
+     * @param categoryId
+     * @return 
+     * @throws java.lang.Exception 
      *
-     * @Return	This function will return the existing translations view that will display the table of newly selected translations
      */
     @RequestMapping(value = "/setTranslations{params}", method = RequestMethod.GET)
     public @ResponseBody
@@ -1380,7 +1276,7 @@ public class adminConfigController {
         translation.setCategoryId(categoryId);
 
         if (cwId > 0) {
-            Map<String, String> defaultValues = new HashMap<>();;
+            Map<String, String> defaultValues = new HashMap<>();
             String optionDesc;
             String optionValue;
 
@@ -1442,8 +1338,11 @@ public class adminConfigController {
     /**
      * The 'updateTranslationProcessOrder{params}' function will handle removing a translation from translations array.
      *
-     * @param	fieldId This will hold the field that is being removed
-     * @param	processOrder	This will hold the process order of the field to be removed so we remove the correct field number as the same field could be in the list with different crosswalks
+     * @param session
+     * @param currProcessOrder
+     * @param newProcessOrder
+     * @return 
+     * @throws java.lang.Exception 
      *
      * @Return	1	The function will simply return a 1 back to the ajax call
      */
@@ -1470,10 +1369,12 @@ public class adminConfigController {
     /**
      * The 'updateDefaultValue{params}' function will handle setting the crosswalk default value.
      *
+     * @param session
      * @param	fieldId This will hold the field that is being set
      * @param	selValue	The selected default value
+     * @return 
+     * @throws java.lang.Exception 
      *
-     * @Return	1	The function will simply return a 1 back to the ajax call
      */
     @RequestMapping(value = "/updateDefaultValue{params}", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
     public @ResponseBody
@@ -1912,6 +1813,9 @@ public class adminConfigController {
 
     /**
      * The '/scheduling' GET request will display the scheduling page for the selected transport Method
+     * @param session
+     * @return 
+     * @throws java.lang.Exception
      */
     @SuppressWarnings("rawtypes")
     @RequestMapping(value = "/scheduling", method = RequestMethod.GET)
@@ -1943,15 +1847,7 @@ public class adminConfigController {
         configurationTransport transportDetails = utconfigurationTransportManager.getTransportDetails(configId);
 
         configurationDetails.setOrgName(organizationmanager.getOrganizationById(configurationDetails.getorgId()).getOrgName());
-	
-	if(configurationDetails.getMessageTypeId() > 0) {
-	    configurationDetails.setMessageTypeName(messagetypemanager.getMessageTypeById(configurationDetails.getMessageTypeId()).getName());
-	}
-	else {
-	    configurationDetails.setMessageTypeName("N/A");
-	}
-	
-        configurationDetails.settransportMethod(utconfigurationTransportManager.getTransportMethodById(transportDetails.gettransportMethodId()));
+	configurationDetails.settransportMethod(utconfigurationTransportManager.getTransportMethodById(transportDetails.gettransportMethodId()));
 
         //pass the utConfiguration detail object back to the page.
         mav.addObject("configurationDetails", configurationDetails);
@@ -1964,9 +1860,6 @@ public class adminConfigController {
             scheduleDetails.setconfigId(configId);
         }
         mav.addObject("scheduleDetails", scheduleDetails);
-
-        //Set the variable to hold the number of completed steps for this utConfiguration;
-        mav.addObject("stepsCompleted", session.getAttribute("configStepsCompleted"));
 
         return mav;
     }
@@ -1982,6 +1875,12 @@ public class adminConfigController {
     public ModelAndView submitConfigurationSchedules(HttpSession session,@ModelAttribute(value = "scheduleDetails") configurationSchedules scheduleDetails, RedirectAttributes redirectAttr, @RequestParam String action) throws Exception {
 
 	Integer configId = (Integer) session.getAttribute("manageconfigId");
+	
+	utConfiguration configurationDetails = utconfigurationmanager.getConfigurationById(configId);
+	if(configurationDetails.getstepsCompleted() < 6) {
+	    configurationDetails.setstepsCompleted(6);
+	    utconfigurationmanager.updateConfiguration(configurationDetails);
+	}
 	
 	//Set default values based on what schedule type is selected
         //This will help in case the user was switching around selecting
@@ -2012,12 +1911,6 @@ public class adminConfigController {
         }
 
         utconfigurationmanager.saveSchedule(scheduleDetails);
-
-        //Update the utConfiguration completed step
-        utConfiguration configurationDetails = utconfigurationmanager.getConfigurationById(configId);
-        if (configurationDetails.getstepsCompleted() < 6) {
-            utconfigurationmanager.updateCompletedSteps(configId, 6);
-        }
 
         redirectAttr.addFlashAttribute("savedStatus", "updated");
 	
@@ -2522,15 +2415,7 @@ public class adminConfigController {
         configurationTransport transportDetails = utconfigurationTransportManager.getTransportDetails(configId);
 
         configurationDetails.setOrgName(organizationmanager.getOrganizationById(configurationDetails.getorgId()).getOrgName());
-	
-	if(configurationDetails.getMessageTypeId() > 0) {
-	    configurationDetails.setMessageTypeName(messagetypemanager.getMessageTypeById(configurationDetails.getMessageTypeId()).getName());
-	}
-	else {
-	    configurationDetails.setMessageTypeName("N/A");
-	}
-	
-        configurationDetails.settransportMethod(utconfigurationTransportManager.getTransportMethodById(transportDetails.gettransportMethodId()));
+	configurationDetails.settransportMethod(utconfigurationTransportManager.getTransportMethodById(transportDetails.gettransportMethodId()));
 
         //pass the utConfiguration detail object back to the page.
         mav.addObject("configurationDetails", configurationDetails);
@@ -2555,9 +2440,6 @@ public class adminConfigController {
         }
         mav.addObject("macroLookUpList", macroLookUpList);
 
-        //Set the variable to hold the number of completed steps for this utConfiguration;
-        mav.addObject("stepsCompleted", session.getAttribute("configStepsCompleted"));
-	
 	if(transportDetails.getRestAPIType() == 2) {
 	    session.setAttribute("showAllConfigOptions", false);
 	}
@@ -2599,14 +2481,7 @@ public class adminConfigController {
         configurationTransport transportDetails = utconfigurationTransportManager.getTransportDetails(configId);
 
         configurationDetails.setOrgName(organizationmanager.getOrganizationById(configurationDetails.getorgId()).getOrgName());
-	
-	if(configurationDetails.getMessageTypeId() > 0) {
-	    configurationDetails.setMessageTypeName(messagetypemanager.getMessageTypeById(configurationDetails.getMessageTypeId()).getName());
-	}
-	else {
-	    configurationDetails.setMessageTypeName("N/A");
-	}
-        configurationDetails.settransportMethod(utconfigurationTransportManager.getTransportMethodById(transportDetails.gettransportMethodId()));
+	configurationDetails.settransportMethod(utconfigurationTransportManager.getTransportMethodById(transportDetails.gettransportMethodId()));
 
         //pass the utConfiguration detail object back to the page.
         mav.addObject("configurationDetails", configurationDetails);
@@ -2631,9 +2506,6 @@ public class adminConfigController {
         }
         mav.addObject("macroLookUpList", macroLookUpList);
 
-        //Set the variable to hold the number of completed steps for this utConfiguration;
-        mav.addObject("stepsCompleted", session.getAttribute("configStepsCompleted"));
-	
 	if(transportDetails.getRestAPIType() == 2) {
 	    session.setAttribute("showAllConfigOptions", false);
 	}
@@ -2905,7 +2777,6 @@ public class adminConfigController {
 	newConfig.setstepsCompleted(6);
 	newConfig.setconfigName(configDetails.getconfigName() + " (COPY)");
 	newConfig.setsourceType(configDetails.getsourceType());
-	newConfig.setassociatedMessageTypeId(configDetails.getassociatedMessageTypeId());
 	newConfig.setThreshold(configDetails.getThreshold());
 	
 	//Save new Configuration
@@ -3032,21 +2903,20 @@ public class adminConfigController {
     
     
     /**
-     * The '/getHELRegistryConfigurationFields' GET request will return a list of available fields for the 
+     * The '/getSourceConfigurationFields' GET request will return a list of available fields for the 
      * passed in HEL registry configuration
      *
      * @param helConfigId
      * @return The function will return a list of available fields for the passed in registry configurations
      * @throws java.lang.Exception
      */
-    @RequestMapping(value = "/getHELRegistryConfigurationFields", method = RequestMethod.GET)
-    public @ResponseBody ModelAndView getHELRegistryConfigurationFields(@RequestParam Integer helConfigId) throws Exception {
+    @RequestMapping(value = "/getSourceConfigurationFields", method = RequestMethod.GET)
+    public @ResponseBody ModelAndView getSourceConfigurationFields(@RequestParam Integer sourceConfigId) throws Exception {
 	
 	ModelAndView mav = new ModelAndView();
-        mav.setViewName("/administrator/configurations/helConfigurationFields");
-	
-	List<configurationDataElement> helConfigurationFields = registryconfigurationmanager.getConfigurationDataElements(helConfigId);
-	mav.addObject("helConfigurationFields",helConfigurationFields);
+        mav.setViewName("/administrator/configurations/sourceConfigurationFields");
+	List<configurationFormFields> sourceConfigurationFields = utconfigurationTransportManager.getConfigurationFieldsToCopy(sourceConfigId);
+	mav.addObject("sourceConfigurationFields",sourceConfigurationFields);
 	
 	return mav;
     }

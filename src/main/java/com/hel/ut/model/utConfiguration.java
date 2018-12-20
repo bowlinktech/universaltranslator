@@ -59,8 +59,8 @@ public class utConfiguration {
     @Column(name = "SOURCETYPE", nullable = false)
     private Integer sourceType = 1;
 
-    @Column(name = "ASSOCIATEDMESSAGETYPEID", nullable = false)
-    private Integer associatedMessageTypeId = 0;
+    @Column(name = "associatedSourceConfigId", nullable = false)
+    private Integer associatedSourceConfigId = 0;
     
     @Column(name = "THRESHOLD", nullable = false)
     private Integer threshold = 100;
@@ -68,16 +68,6 @@ public class utConfiguration {
     @Column(name = "configurationType", nullable = false)
     private Integer configurationType = 1;
     
-    @Column(name = "helRegistryConfigId", nullable = false)
-    private Integer helRegistryConfigId = 0;
-    
-    @Column(name = "helSchemaName", nullable = false)
-    private String helSchemaName = "";
-    
-    @Column(name = "helRegistryId", nullable = false)
-    private Integer helRegistryId = 0;
-    
-
     public int getId() {
         return id;
     }
@@ -190,14 +180,6 @@ public class utConfiguration {
         return sourceType;
     }
 
-    public void setassociatedMessageTypeId(Integer associatedMessageTypeId) {
-        this.associatedMessageTypeId = associatedMessageTypeId;
-    }
-
-    public Integer getassociatedMessageTypeId() {
-        return associatedMessageTypeId;
-    }
-
     public Integer getScheduleType() {
 	return scheduleType;
     }
@@ -222,28 +204,12 @@ public class utConfiguration {
 	this.configurationType = configurationType;
     }
 
-    public Integer getHelRegistryConfigId() {
-	return helRegistryConfigId;
+    public Integer getAssociatedSourceConfigId() {
+	return associatedSourceConfigId;
     }
 
-    public void setHelRegistryConfigId(Integer helRegistryConfigId) {
-	this.helRegistryConfigId = helRegistryConfigId;
-    }
-
-    public String getHelSchemaName() {
-	return helSchemaName;
-    }
-
-    public void setHelSchemaName(String helSchemaName) {
-	this.helSchemaName = helSchemaName;
-    }
-
-    public Integer getHelRegistryId() {
-	return helRegistryId;
-    }
-
-    public void setHelRegistryId(Integer helRegistryId) {
-	this.helRegistryId = helRegistryId;
+    public void setAssociatedSourceConfigId(Integer associatedSourceConfigId) {
+	this.associatedSourceConfigId = associatedSourceConfigId;
     }
 
     

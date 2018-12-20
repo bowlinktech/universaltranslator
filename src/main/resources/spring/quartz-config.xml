@@ -24,7 +24,7 @@
         </trigger>
     </schedule> 
     
-     <!--<schedule>
+    <schedule>
         <job>
             <name>BatchUploadTableCleanUp</name>
             <group>processGroup</group>
@@ -44,7 +44,7 @@
                 <cron-expression>0 0 7 1/1 * ? *</cron-expression>
             </cron>
         </trigger>
-    </schedule>-->
+    </schedule>
     
     <schedule>
         <job>
@@ -102,7 +102,7 @@
         </trigger>
     </schedule>
     
-    <!--
+    
     <schedule>
         <job>
             <name>ProcessMassInBoundBatches</name>
@@ -172,6 +172,6 @@
 		<cron-expression>0 0/1 * 1/1 * ? *</cron-expression>
 	    </cron>
 	</trigger>
-    </schedule>-->
+    </schedule>
     
 </job-scheduling-data>

@@ -651,4 +651,9 @@ public class utConfigurationManagerImpl implements utConfigurationManager {
     public watchlistEntry getWatchListEntry(Integer entryId) throws Exception {
 	return utConfigurationDAO.getWatchListEntry(entryId);
     }
+    
+    @Override
+    public List<utConfiguration>  getAllActiveSourceConfigurations() throws Exception {
+	return utConfigurationDAO.getAllActiveSourceConfigurations();
+    }
 }

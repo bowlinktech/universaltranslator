@@ -18,7 +18,6 @@
                     <dt>Configuration Summary:</dt>
 			<dd><strong>Organization:</strong> ${configurationDetails.orgName}&nbsp;<span id="configtype" rel="${configurationDetails.type}"><c:choose><c:when test="${configurationDetails.type == 1}">(Source)</c:when><c:otherwise>(Target)</c:otherwise></c:choose></span></dd>
 			<dd><strong>Configuration Name:</strong> ${configurationDetails.configName}</dd>
-			<dd><strong>Message Type:</strong> ${configurationDetails.messageTypeName}</dd>
 			<dd><strong>Transport Method:</strong> <c:choose><c:when test="${configurationDetails.transportMethod == 'File Upload'}"><c:choose><c:when test="${configurationDetails.type == 1}">File Upload</c:when><c:otherwise>File Download</c:otherwise></c:choose></c:when><c:otherwise>${configurationDetails.transportMethod}</c:otherwise></c:choose></dd>
 		    </dt>
 		</div>
@@ -96,17 +95,14 @@
         </div>
         <div class="col-md-6">
             <section class="panel panel-default">
-                <div class="panel-heading templateFields" rel="${HELRegistryConfiguration}">
-		    <c:if test="${HELRegistryConfiguration}">
+                <div class="panel-heading templateFields" rel="${configurationDetails.associatedSourceConfigId}">
+		    <c:if test="${configurationDetails.associatedSourceConfigId > 0}">
 			<div class="pull-right">
-			    <a class="btn btn-primary btn-xs" helConfigId="${configurationDetails.helRegistryConfigId}" schemaname="${HELRegistrySchemaName}" id="loadConfigurationFields" data-toggle="tooltip" data-original-title="Click here to load the configuration fields.">Load Configuration Fields</a>
+			    <a class="btn btn-primary btn-xs" sourceConfigId="${configurationDetails.associatedSourceConfigId}" id="loadConfigurationFields" data-toggle="tooltip" data-original-title="Click here to load the configuration fields.">Load Configuration Fields</a>
 			</div>
 		    </c:if>
                     <h3 class="panel-title">
-			<c:choose>
-			    <c:when test="${HELRegistryConfiguration}">Health-e-Link Configuration Fields</c:when>
-			    <c:otherwise>Message Template Fields</c:otherwise>
-			</c:choose>
+			Source Configuration Fields
 		    </h3>
                 </div>
                 <div class="panel-body">

@@ -15,24 +15,16 @@ require(['./main'], function () {
             $('#saveMsgDiv').show();
         });
 	
-	var isHELConfiguration = $('.templateFields').attr('rel');
+	var sourceConfigurationId = $('.templateFields').attr('rel');
 	
-	if(isHELConfiguration) {
-	    loadHELConfigurationFields();
+	if(sourceConfigurationId) {
+	    loadSourceConfigurationFields(sourceConfigurationId);
 	}
 	
 	$('#loadConfigurationFields').click(function(event) {
-	   loadHELConfigurationFields();
+	   loadSourceConfigurationFields($(this).attr('sourceConfigId'));
 	});
 	
-	/*$('.matchingField').change(function() {
-	   var fieldNo = $(this).attr('fieldNo');
-	   var validationId = $(this).val().split('-')[3];
-	   
-	   if((validationId*1) > 0) {
-	       $('#validation_'+fieldNo).val(validationId);
-	   }
-	});*/
 	
 	$('.useField').change(function() {
 	    if(!$(this).prop( "checked" )) {
@@ -40,7 +32,6 @@ require(['./main'], function () {
 		$('#validation_'+fieldNo).val(1);
 		$('#match_'+fieldNo).val(0);
 	    }
-	    
 	});
 
        
@@ -98,19 +89,17 @@ require(['./main'], function () {
     });
 });
 
-function loadHELConfigurationFields() {
-    var HELRegistrySchemaName = $('#loadConfigurationFields').attr('schemaname');
-    var helConfigId = $('#loadConfigurationFields').attr('helConfigId');
+function loadSourceConfigurationFields(sourceConfigId) {
     
     $('.matchingField').each(function() {
 	 $(this).find('option').remove().end().append('<option value="0">-</option>').val('');
     });
     
     $.ajax({
-	url: 'getHELRegistryConfigurationFields?tenantId='+HELRegistrySchemaName,
+	url: 'getSourceConfigurationFields',
 	type: "GET",
 	data: {
-	    'helConfigId': helConfigId
+	    'sourceConfigId': sourceConfigId
 	},
 	success: function (data) {
 	    //Load the available fields

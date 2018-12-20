@@ -18,8 +18,6 @@
             <form:hidden path="id" id="id" />
             <form:hidden path="dateCreated" />
             <form:hidden path="stepsCompleted" />
-	    <form:hidden path="helRegistryId" id="savedhelRegistryId" />
-	    <form:hidden path="helSchemaName"  id="savedhelSchemaName"/>
 
             <section class="panel panel-default">
 
@@ -80,70 +78,28 @@
                                 <form:select path="orgId" id="organization" class="form-control half" disabled="${configurationDetails.id == 0 ? 'false' : 'true' }">
                                     <option value="">- Select -</option>
                                     <c:forEach items="${organizations}" var="org" varStatus="oStatus">
-                                        <option helRegistryId="${organizations[oStatus.index].helRegistryId}" helRegistrySchemaName="${organizations[oStatus.index].helRegistrySchemaName}" value="${organizations[oStatus.index].id}" <c:if test="${configurationDetails.orgId == organizations[oStatus.index].id}">selected</c:if>>${organizations[oStatus.index].orgName} </option>
+                                        <option value="${organizations[oStatus.index].id}" <c:if test="${configurationDetails.orgId == organizations[oStatus.index].id}">selected</c:if>>${organizations[oStatus.index].orgName} </option>
                                     </c:forEach>
                                 </form:select>
                                 <c:if test="${configurationDetails.id > 0}">
-				    <form:hidden id="organization" class="savedOrgId" helRegistryId="${configurationDetails.helRegistryId}" helRegistrySchemaName="${configurationDetails.helSchemaName}" path="orgId"/></c:if>  
+				    <form:hidden id="organization" class="savedOrgId" path="orgId"/></c:if>  
                                     <span id="configOrgMsg" class="control-label"></span>
                                 </div>
                         </spring:bind>
-			<div id="askTargetQuestion1" class="form-group" style="display:none">
-			    <label class="control-label">Will this configuration be based off a Health-e-Link Registry Configuration?</label>
-			    <div>
-			       <label class="radio-inline">
-				   <input type="radio" id="basedOffHELConfig_1" name="basedOffHELConfig" class="basedOffHELConfig" value="1" /> Yes
-			       </label>
-			       <label class="radio-inline">
-				   <input type="radio" id="basedOffHELConfig_2" name="basedOffHELConfig" class="basedOffHELConfig" value="0" /> No
-			       </label>
-			   </div>
-			</div>
-			<div id="askTargetQuestion2" class="form-group" style="display:none">
-			    <label class="control-label" ">Select the Health-e-link Registry</label>
-			    <select id="helRegistry" class="form-control half">
-				<option value="0">- Select -</option>
-			    </select>
-			</div> 
-		     </div>
-			<spring:bind path="messageTypeId">
-			    <div id="messageTypeDiv" class="form-group ${status.error ? 'has-error' : '' }" style="display:none">
-				<label class="control-label" for="messageTypeId">Message Type *</label>
-				<form:select path="messageTypeId" id="messageTypeId" class="form-control half" disabled="${configurationDetails.id == 0 ? 'false' : 'true' }">
-				    <option value="">- Select -</option>
-				    <c:forEach items="${messageTypes}" var="messageType" varStatus="mStatus">
-					<option value="${messageType.id}" <c:if test="${messageType.id == configurationDetails.messageTypeId}">selected</c:if>>${messageType.name}</option>
-				    </c:forEach>
-				</form:select>
-				<c:if test="${configurationDetails.id > 0}"><form:hidden path="messageTypeId"/></c:if> 
-				<span id="configMessageTypeMsg" class="control-label"></span>
-			    </div>
-			</spring:bind>
-			<spring:bind path="helRegistryConfigId">
-			    <div id="helRegistryConfigDiv" class="form-group ${status.error ? 'has-error' : '' }"  style="display:none">
-				<label class="control-label" for="helRegistryConfigId">Health-e-Link Registry Configuration *</label>
-				<form:select path="helRegistryConfigId" id="helRegistryConfigId" rel="${configurationDetails.helRegistryConfigId}" class="form-control half" disabled="${configurationDetails.id == 0 ? 'false' : 'true' }"></form:select>
-				<c:if test="${configurationDetails.id > 0}">
-				    <form:hidden path="helRegistryConfigId"/>
-				</c:if> 
-				<span id="helRegistryConfigIdMsg" class="control-label"></span>
-			    </div>
-			</spring:bind>
-			<%--<div id="associatedmessageTypeTopDiv" class="form-group" style="display:${configurationDetails.sourceType == 2 ? 'block' : 'none'}">        
-                            <spring:bind path="associatedMessageTypeId">
-                                <div id="associatedmessageTypeDiv" class="form-group ${status.error ? 'has-error' : '' }">
-                                    <label class="control-label" for="associatedMessageTypeId">Associated Message Type *</label>
-                                    <form:select path="associatedMessageTypeId" id="associatedMessageTypeId" class="form-control half" disabled="${configurationDetails.id == 0 ? 'false' : 'true' }">
-                                        <option value="">- Select -</option>
-                                        <c:forEach items="${messageTypes}" var="messageType" varStatus="mStatus">
-                                            <option value="${messageType.id}" <c:if test="${messageType.id == configurationDetails.associatedMessageTypeId}">selected</c:if>>${messageType.name}</option>
-                                        </c:forEach>
-                                    </form:select>
-                                    <c:if test="${configurationDetails.id > 0}"><form:hidden path="associatedMessageTypeId"/></c:if> 
-                                        <span id="associatedmessageTypeMsg" class="control-label"></span>
-                                    </div>
-                            </spring:bind>
-                        </div>--%>
+			<spring:bind path="associatedSourceConfigId">
+                            <div id="associatedSourceConfigIdDiv" class="form-group ${status.error ? 'has-error' : '' }" style="display:none">
+                                <label class="control-label" for="associatedSourceConfigId">Associated Source Configuration *</label>
+                                <form:select path="associatedSourceConfigId" id="associatedSourceConfigId" class="form-control half" disabled="${configurationDetails.id == 0 ? 'false' : 'false' }">
+                                    <option value="">- Select -</option>
+                                    <c:forEach items="${sourceConfigurations}" var="sourceConfig">
+                                        <option value="${sourceConfig.id}" <c:if test="${configurationDetails.associatedSourceConfigId == sourceConfig.id}">selected</c:if>>${sourceConfig.orgName} - ${sourceConfig.configName} (ID:${sourceConfig.id})</option>
+                                    </c:forEach>
+                                </form:select>
+                                <c:if test="${configurationDetails.id > 0}">
+				    <form:hidden id="organization" class="savedOrgId" path="orgId"/></c:if>  
+                                    <span id="associatedSourceConfigMsg" class="control-label"></span>
+                                </div>
+                        </spring:bind>       
                         <spring:bind path="configName">
                             <div id="configNameDiv" class="form-group ${status.error ? 'has-error' : '' } ${not empty existingName ? 'has-error' : ''}">
                                 <label class="control-label" for="configName">Unique Configuration Name *</label>

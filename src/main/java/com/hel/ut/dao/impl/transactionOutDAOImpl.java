@@ -1018,27 +1018,21 @@ public class transactionOutDAOImpl implements transactionOutDAO {
 	
 	List<configurationFormFields> uploadconfigFormFields = configurationTransportManager.getConfigurationFieldsToCopy(uploadConfigId);
 
-	Integer totalFields = 50;
+	StringBuilder tableFields = new StringBuilder();
 	
-	if (uploadconfigFormFields != null) {
-	    if (!uploadconfigFormFields.isEmpty()) {
-		totalFields = uploadconfigFormFields.size() + 10;
-	    }
-	}
-        
+	configFormFields.forEach(field -> {
+	    tableFields.append("F").append(field.getFieldNo()).append(" text").append(",");
+	});
+	
         //Need to create the temp translated in table
-        String temptransactionTranslatedInTable = "DROP TABLE IF EXISTS `temp_transactiontranslatedin_" + batchUploadId + "`; CREATE TABLE `temp_transactiontranslatedin_" + batchUploadId + "` ("
+        String temptransactionTranslatedInTable = "DROP TABLE IF EXISTS `temp_transactiontranslatedin_" + batchUploadId + "_"+ batchDownloadId + "`; CREATE TABLE `temp_transactiontranslatedin_" + batchUploadId + "_"+ batchDownloadId + "` ("
             + "id int(11) NOT NULL AUTO_INCREMENT,"
             + "transactionInRecordsId int(11) NOT NULL,"
             + "configId int(11) NOT NULL,"
             + "batchUploadId int(11) DEFAULT NULL,"
             + "statusId int(11) DEFAULT NULL,"
             + "dateCreated datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,"
-            + "forCW text,";
-
-        for (int i = 1; i <= totalFields; i++) {
-            temptransactionTranslatedInTable += "F" + i + " text,";
-        }
+            + "forCW text," + tableFields;
 
         temptransactionTranslatedInTable += "PRIMARY KEY (`id`),"
                 + "UNIQUE KEY `temp_transactionInRecordsId_UNIQUE` (`transactionInRecordsId`)"
@@ -1046,104 +1040,56 @@ public class transactionOutDAOImpl implements transactionOutDAO {
 
         Query query = sessionFactory.getCurrentSession().createSQLQuery(temptransactionTranslatedInTable);
         query.executeUpdate();
-
+	
+	StringBuilder selectFields = new StringBuilder();
+	StringBuilder insertFields = new StringBuilder();
+	
+	configFormFields.forEach(configfield -> {
+	    uploadconfigFormFields.forEach(field -> {
+		if(configfield.getAssociatedFieldNo() == field.getAssociatedFieldNo()) {
+		    selectFields.append("F").append(field.getFieldNo()).append(",");
+		    insertFields.append("F").append(configfield.getFieldNo()).append(",");
+		}
+	    });
+	});
+	
 	//Need to copy transaction in tables into temp table
-	String sqlinsert = "INSERT INTO temp_transactiontranslatedin_"+batchUploadId+" "
-	+ "(id,transactionInRecordsId,configId,statusId,";
+	String sqlinsert = "INSERT INTO temp_transactiontranslatedin_"+batchUploadId+"_"+batchDownloadId+ " "
+	+ "(id,transactionInRecordsId,configId,statusId," + insertFields;
 
-	for (int i = 1; i <= totalFields; i++) {
-	    sqlinsert += "F" + i + ",";
-	}
-
-	sqlinsert += "batchUploadId) SELECT id,transactionInRecordsId,configId,statusId,";
-	for (int i = 1; i <= totalFields; i++) {
-	    sqlinsert += "F" + i + ",";
-	}
+	sqlinsert += "batchUploadId) SELECT id,transactionInRecordsId,configId,statusId,"+selectFields;
 	sqlinsert+= "batchUploadId from transactiontranslatedin_"+batchUploadId;
-        
+	
 	query = sessionFactory.getCurrentSession().createSQLQuery(sqlinsert);
 	query.executeUpdate();
 	
-	if(uploadconfigFormFields != null) {
-	    if(!uploadconfigFormFields.isEmpty()) {
-		boolean changesMade = false;
-
-		String sqlUpdateMapped = "";
-
-		for(configurationFormFields formFields : uploadconfigFormFields) {
-		    if(formFields.getFieldNo() != formFields.getMappedToField()) {
-			changesMade = true;
-			sqlUpdateMapped += "update temp_transactiontranslatedin_" + batchUploadId + " set F"+formFields.getMappedToField()+" = (select F"+formFields.getFieldNo()+" from transactiontranslatedin_"+batchUploadId+" where id = temp_transactiontranslatedin_"+batchUploadId+".id);";
-		    }
-		}
-
-		if(changesMade) {
-		    query = sessionFactory.getCurrentSession().createSQLQuery(sqlUpdateMapped);
-		    query.executeUpdate();
-		}
-	    }
-	}
-	    
-	totalFields = 50;
-	Integer extraFields = 10;
-
-	if (configFormFields != null) {
-	    if (!configFormFields.isEmpty()) {
-		totalFields = configFormFields.size() + extraFields;
-	    }
-	}
 	
-	Integer extraTargetFields = (totalFields-uploadconfigFormFields.size());
-
 	try {
 	    
 	    String sql = "insert into transactionoutrecords_"+batchDownloadId+" "
-	    + "(";
-
-	    for (int i = 1; i <= totalFields; i++) {
-		sql += "F" + i + ",";
-	    }
+	    + "("+insertFields;
 
 	    sql+= "batchDownloadId, configId) ";
 
-	    sql+= "select ";
-
-	    for(configurationFormFields formField : configFormFields) {
-		sql += "F" + formField.getMappedToField() + ",";
-	    }
-	    
-	    for (int i = 1; i <= extraFields; i++) {
-		sql += "null,";
-	    }
-
-	    sql+= batchDownloadId + ","+configId +" from temp_transactiontranslatedin_"+batchUploadId+" where statusId = 9;";
+	    sql+= "select "+insertFields;
+	    sql+= batchDownloadId + ","+configId +" from temp_transactiontranslatedin_"+batchUploadId+"_"+batchDownloadId+" where statusId = 9;";
 	    
 	    query = sessionFactory.getCurrentSession().createSQLQuery(sql);
 	    query.executeUpdate();
 	    
 	    
 	    sql = "insert into transactiontranslatedout_"+batchDownloadId+" "
-	    + "(statusId, configId, transactionOutRecordsId,";
-
-	    for (int i = 1; i <= totalFields; i++) {
-		sql += "F" + i + ",";
-	    }
+	    + "(statusId, configId, transactionOutRecordsId," + insertFields;
 
 	    sql+= "batchDownloadId)";
-
-	    sql+= "select 9, configId, id, ";
-
-	    for (int i = 1; i <= totalFields; i++) {
-		sql += "F" + i + ",";
-	    }
-
+	    sql+= "select 9, configId, id, " + insertFields;
 	    sql+= "batchDownloadId from transactionoutrecords_"+batchDownloadId+";";
 	    
 	    query = sessionFactory.getCurrentSession().createSQLQuery(sql);
 	    query.executeUpdate();
             
             //Delete the temp table
-            sql = "DROP TABLE IF EXISTS `temp_transactiontranslatedin_" + batchUploadId + "`;";
+            sql = "DROP TABLE IF EXISTS `temp_transactiontranslatedin_" + batchUploadId + "_" + batchDownloadId + "`;";
             query = sessionFactory.getCurrentSession().createSQLQuery(sql);
             query.executeUpdate();
 	    
