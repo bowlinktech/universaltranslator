@@ -9,11 +9,11 @@
                     </c:when>
                     <c:when test="${param['page'] == 'configDetails'}">
                         <a href="javascript:void(0);" title="Configuration Details" class="unstyled-link">
-                            Configuration - Initial Setup
+                            Configuration - Details
                         </a>
                     </c:when>
                     <c:when test="${param['page'] == 'transport'}">
-                        <a href="javascript:void(0);" title="Configuration Transport Details" class="unstyled-link">Configuration - Transport Details</a>
+                        <a href="javascript:void(0);" title="Configuration Transport Details" class="unstyled-link">Configuration - Transport Method</a>
                     </c:when>
                     <c:when test="${param['page'] == 'mappings'}">
                         <a href="javascript:void(0);" title="Configuration Field Mappings" class="unstyled-link">Configuration - Field Mappings</a>
@@ -64,7 +64,7 @@
 			<a href="javascript:void(0);" id="saveDetails" title="Save this Configuration initial setup" role="button"><span class="glyphicon glyphicon-ok icon-stacked"></span> Save </a>
 		    </li>
 		    <c:if test="${configurationDetails.configurationType == 1 || (configurationDetails.configurationType == 2 && param['page'] != 'schedule')}">
-			 <c:if test="${param['page'] != 'postprocessing' && showAllConfigOptions}">
+			 <c:if test="${param['page'] != 'postprocessing'}">
 			    <li><a href="javascript:void(0);" id="next" title="Save and Proceed to the Next Step"><span class="glyphicon glyphicon-forward icon-stacked" role="button"></span>Next Step</a></li>
 			</c:if>
 		    </c:if>

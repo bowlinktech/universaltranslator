@@ -273,7 +273,7 @@ require(['./main'], function () {
                 if ($(this).attr('rel') == newDspPos) {
                     //Need to update the saved process order
                     $.ajax({
-                        url: 'updateTranslationProcessOrder?currProcessOrder=' + currDspPos + '&newProcessOrder=' + newDspPos,
+                        url: 'updateTranslationProcessOrder?currProcessOrder=' + currDspPos + '&categoryId=1&newProcessOrder=' + newDspPos,
                         type: "POST",
                         success: function (data) {
                             $('#translationMsgDiv').show();
@@ -299,7 +299,7 @@ require(['./main'], function () {
 
             //Need to remove the translation
             $.ajax({
-                url: 'removeTranslations?fieldId=' + fieldId + '&processOrder=' + currPos,
+                url: 'removeTranslations?fieldId=' + fieldId + '&categoryId=1&processOrder=' + currPos,
                 type: "POST",
                 success: function (data) {
                     $('#translationMsgDiv').show();
@@ -308,25 +308,7 @@ require(['./main'], function () {
             });
 
         });
-
-        //Function that will handle setting a default value for a field
-        //selected crosswalk.
-        $(document).on('change', '.setDefaultValue', function () {
-            var id = $(this).attr('rel');
-            var value = $(this).val();
-
-            //Need to update the saved process order
-            $.ajax({
-                url: 'updateDefaultValue?fieldId=' + id + '&selValue=' + value,
-                type: "POST",
-                success: function (data) {
-                    $('#translationMsgDiv').show();
-                    populateExistingTranslations(1);
-                }
-            });
-
-        });
-
+        
     });
 });
 

@@ -143,7 +143,7 @@ require(['./main'], function () {
                 if ($(this).attr('rel') == newDspPos) {
                     //Need to update the saved process order
                     $.ajax({
-                        url: 'updateTranslationProcessOrder?currProcessOrder=' + currDspPos + '&newProcessOrder=' + newDspPos,
+                        url: 'updateTranslationProcessOrder?currProcessOrder=' + currDspPos + '&categoryId=2&newProcessOrder=' + newDspPos,
                         type: "POST",
                         success: function (data) {
                             $('#translationMsgDiv').show();
@@ -169,7 +169,7 @@ require(['./main'], function () {
 
             //Need to remove the translation
             $.ajax({
-                url: 'removeTranslations?fieldId=' + fieldId + '&processOrder=' + currPos,
+                url: 'removeTranslations?fieldId=' + fieldId + '&categoryId=2&processOrder=' + currPos,
                 type: "POST",
                 success: function (data) {
                     $('#translationMsgDiv').show();
@@ -220,7 +220,10 @@ function populateExistingMacros(reload) {
     $.ajax({
         url: 'getTranslations.do',
         type: "GET",
-        data: {'reload': reload, 'categoryId': 2},
+        data: {
+	    'reload': reload, 
+	    'categoryId': 2
+	},
         success: function (data) {
             $("#existingTranslations").html(data);
         }

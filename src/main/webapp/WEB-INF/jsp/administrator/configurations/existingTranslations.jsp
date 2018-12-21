@@ -30,14 +30,6 @@
                         </td>
                         <td>
                             ${dataTranslations[tStatus.index].crosswalkName}
-                            <c:if test="${dataTranslations[tStatus.index].crosswalkName != null}">
-                                <select rel="${dataTranslations[tStatus.index].id}" name="defaultValue" class="setDefaultValue form-control half">
-                                    <option value="">- Select Default Value -</option>
-                                    <c:forEach var="defaultValue" items="${dataTranslations[tStatus.index].defaultValues}">
-                                        <option value="${defaultValue['key']}" <c:if test="${dataTranslations[tStatus.index].defaultValue == defaultValue['key']}">selected="true"</c:if>>${defaultValue['value']}</option>
-                                    </c:forEach>
-                                </select>
-                            </c:if>
                         </td>
                         <td class="center-text">
                             <c:choose><c:when test="${dataTranslations[tStatus.index].passClear == 1}">Pass</c:when><c:otherwise>Clear</c:otherwise></c:choose>

@@ -37,6 +37,7 @@
 		<form:hidden path="massTranslation" value="true" />
 		<form:hidden path="helRegistryId" id="helRegistryId" />
 		<form:hidden path="helSchemaName" id="helSchemaName" />
+		<form:hidden path="mergeBatches" />
 		
 		<section class="panel panel-default">
 		    <div class="panel-heading">
@@ -101,7 +102,7 @@
                                 </spring:bind>
                                 <spring:bind path="maxFileSize">
                                     <div id="maxFileSizeDiv" class="form-group ${status.error ? 'has-error' : '' }">
-                                        <label class="control-label" for="maxFileSize">Max File Size (mb) *</label>
+                                        <label class="control-label" for="maxFileSize">Max Accepted File Size (mb) *</label>
                                         <form:input path="maxFileSize" id="maxFileSize" class="form-control sm-input" type="text" maxLength="11" disabled="${transportDetails.copiedTransportId > 0 ? 'true' : 'false'}" />
                                         <form:errors path="maxFileSize" cssClass="control-label" element="label" />
                                         <span id="maxFileSizeMsg" class="control-label"></span>
@@ -254,7 +255,7 @@
 					    </c:if>    
 					</div>
 				    </spring:bind>
-				    <spring:bind path="mergeBatches">
+				    <%--<spring:bind path="mergeBatches">
 					<div class="form-group" id="mergeBatchesDiv">
 					    <label class="control-label" for="mergeBatches">Merge Batches? <span class="badge badge-help" data-placement="top" title="" data-original-title="If multiple batches found should they be created all in one file?">?</span> *</label>
 					    <div>
@@ -269,7 +270,7 @@
 						<form:hidden path="mergeBatches" />
 					    </c:if>       
 					</div>
-				    </spring:bind>    
+				    </spring:bind> --%>   
 				 </c:if>   
                             </div>
                         </div>
@@ -343,20 +344,16 @@
 			    <div class="row">
 				<c:forEach items="${transportDetails.fileDropFields}" var="fileDropFields" varStatus="field">
 				    <div class="form-group col-md-6">
-					<div class="form-group">
-					    <input name="fileDropFields[${field.index}].method" class="form-control" type="hidden" value="${fileDropFields.method}"  />
-					    <input name="fileDropFields[${field.index}].id" id="id${fileDropFields.method}" class="form-control" type="hidden" value="${fileDropFields.id}"  />
-					    <c:if test="${fileDropFields.method == 2}">
-					      <input name="fileDropFields[${field.index}].directory" id="directory${fileDropFields.method}" class="form-control" type="hidden" maxLength="255" value="${fileDropFields.directory}"  />
-					    </c:if>
-					</div>
+					<input name="fileDropFields[${field.index}].method" class="form-control" type="hidden" value="${fileDropFields.method}"  />
+					<input name="fileDropFields[${field.index}].id" id="id${fileDropFields.method}" class="form-control" type="hidden" value="${fileDropFields.id}"  />
+					<c:if test="${fileDropFields.method == 2}">
+					  <input name="fileDropFields[${field.index}].directory" id="directory${fileDropFields.method}" class="form-control" type="hidden" maxLength="255" value="${fileDropFields.directory}"  />
+					</c:if>
 					<c:if test="${fileDropFields.method == 1}">
-					    <div id="rDirectory${fileDropFields.method}Div" class="form-group">
-						<label class="control-label" for="directory${fileDropFields.method}">Location on the UT where files will be dropped</label>
-						<p>Make sure to add a sub folder after "/input files"</p>
-						<input name="fileDropFields[${field.index}].directory" id="directory${fileDropFields.method}" class="form-control" type="text" maxLength="255" value="${fileDropFields.directory}"  />
-						<span id="rDirectory${fileDropFields.method}Msg" class="control-label"></span>
-					    </div>           
+					    <label class="control-label" for="directory${fileDropFields.method}">Location on the UT where files will be dropped</label>
+					    <p>Make sure to add a sub folder after "/input files"</p>
+					    <input name="fileDropFields[${field.index}].directory" id="directory${fileDropFields.method}" class="form-control" type="text" maxLength="255" value="${fileDropFields.directory}"  />
+					    <span id="rDirectory${fileDropFields.method}Msg" class="control-label"></span>
 					</c:if>           
 				    </div>
 				</c:forEach>

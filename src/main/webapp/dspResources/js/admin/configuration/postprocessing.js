@@ -143,7 +143,7 @@ require(['./main'], function () {
                 if ($(this).attr('rel') == newDspPos) {
                     //Need to update the saved process order
                     $.ajax({
-                        url: 'updateTranslationProcessOrder?currProcessOrder=' + currDspPos + '&newProcessOrder=' + newDspPos,
+                        url: 'updateTranslationProcessOrder?currProcessOrder=' + currDspPos + '&categoryId=3&newProcessOrder=' + newDspPos,
                         type: "POST",
                         success: function (data) {
                             $('#translationMsgDiv').show();
@@ -169,7 +169,7 @@ require(['./main'], function () {
 
             //Need to remove the translation
             $.ajax({
-                url: 'removeTranslations?fieldId=' + fieldId + '&processOrder=' + currPos,
+                url: 'removeTranslations?fieldId=' + fieldId + '&categoryId=3&processOrder=' + currPos,
                 type: "POST",
                 success: function (data) {
                     $('#translationMsgDiv').show();

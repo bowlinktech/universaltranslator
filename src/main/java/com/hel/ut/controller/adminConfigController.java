@@ -71,7 +71,6 @@ import javax.servlet.http.HttpSession;
 import com.hel.ut.service.utConfigurationManager;
 import com.hel.ut.service.utConfigurationTransportManager;
 import com.registryKit.registry.configurations.configuration;
-import com.registryKit.registry.configurations.configurationDataElement;
 import com.registryKit.registry.configurations.configurationManager;
 
 @Controller
@@ -331,10 +330,6 @@ public class adminConfigController {
 
         utConfiguration configurationDetails = utconfigurationmanager.getConfigurationById(configId);
         mav.addObject("configurationDetails", configurationDetails);
-
-        //Set the variable to hold the number of completed steps for this utConfiguration;
-	session.setAttribute("configStepsCompleted", configurationDetails.getstepsCompleted());
-        mav.addObject("stepsCompleted", session.getAttribute("configStepsCompleted"));
 
         //Need to get a list of active organizations.
         List<Organization> organizations = organizationmanager.getAllActiveOrganizations();
@@ -1043,6 +1038,12 @@ public class adminConfigController {
         List<configurationDataTranslations> translations = new CopyOnWriteArrayList<>();
 	session.setAttribute("confgirationDataTranslastions", translations);
 	
+	List<configurationDataTranslations> preProcessingTranslations = new CopyOnWriteArrayList<>();
+	session.setAttribute("confgirationDataPreProcessingTranslastions", preProcessingTranslations);
+	
+	List<configurationDataTranslations> postProcessingTranslations = new CopyOnWriteArrayList<>();
+	session.setAttribute("confgirationDataPostProcessingTranslastions", postProcessingTranslations);
+	
 	Integer configId = 0;
 	
 	ModelAndView mav = new ModelAndView();
@@ -1162,13 +1163,27 @@ public class adminConfigController {
         //This will help with the jquery removing translations
         utconfigurationmanager.deleteDataTranslations(configId, categoryId);
 	
-	List<configurationDataTranslations> translations = (List<configurationDataTranslations>) session.getAttribute("confgirationDataTranslastions");
-
-        //Loop through the list of translations
-        for (configurationDataTranslations translation : translations) {
-            utconfigurationmanager.saveDataTranslations(translation);
-        }
-
+	List<configurationDataTranslations> translations;
+	
+	if(categoryId == 1) {
+	    translations = (List<configurationDataTranslations>) session.getAttribute("confgirationDataTranslastions");
+	}
+	else if(categoryId == 2) {
+	    translations = (List<configurationDataTranslations>) session.getAttribute("confgirationDataPreProcessingTranslastions");
+	}
+	else {
+	    translations = (List<configurationDataTranslations>) session.getAttribute("confgirationDataPostProcessingTranslastions");
+	}
+	
+	if(translations != null) {
+	    if(!translations.isEmpty()) {
+		 //Loop through the list of translations
+		for (configurationDataTranslations translation : translations) {
+		    utconfigurationmanager.saveDataTranslations(translation);
+		}
+	    }
+	}
+       
         return 1;
     }
 
@@ -1184,11 +1199,20 @@ public class adminConfigController {
         ModelAndView mav = new ModelAndView();
 	
 	Integer configId = (Integer) session.getAttribute("manageconfigId");
-	
         mav.setViewName("/administrator/configurations/existingTranslations");
 	
-	List<configurationDataTranslations> translations = (List<configurationDataTranslations>) session.getAttribute("confgirationDataTranslastions");
-
+	
+	List<configurationDataTranslations> translations;
+	if(categoryId == 1) {
+	    translations = (List<configurationDataTranslations>) session.getAttribute("confgirationDataTranslastions");
+	}
+	else if(categoryId == 2) {
+	    translations = (List<configurationDataTranslations>) session.getAttribute("confgirationDataPreProcessingTranslastions");
+	}
+	else {
+	    translations = (List<configurationDataTranslations>) session.getAttribute("confgirationDataPostProcessingTranslastions");
+	}
+	
         //only get the saved translations if reload == 0
         //We only want to retrieve the saved ones on initial load
         if (reload == false) {
@@ -1201,7 +1225,7 @@ public class adminConfigController {
             Map<String, String> defaultValues;
             String optionDesc;
             String optionValue;
-
+	    
             for (configurationDataTranslations translation : existingTranslations) {
                 //Get the field name by id
                 fieldName = utconfigurationmanager.getFieldName(translation.getFieldId());
@@ -1242,7 +1266,7 @@ public class adminConfigController {
                 translations.add(translation);
             }
         }
-
+	
         mav.addObject("dataTranslations", translations);
 
         return mav;
@@ -1282,8 +1306,17 @@ public class adminConfigController {
 	
 	Integer configId = (Integer) session.getAttribute("manageconfigId");
 	
-	List<configurationDataTranslations> translations = (List<configurationDataTranslations>) session.getAttribute("confgirationDataTranslastions");
-
+	List<configurationDataTranslations> translations;
+	if(categoryId == 1) {
+	    translations = (List<configurationDataTranslations>) session.getAttribute("confgirationDataTranslastions");
+	}
+	else if(categoryId == 2) {
+	    translations = (List<configurationDataTranslations>) session.getAttribute("confgirationDataPreProcessingTranslastions");
+	}
+	else {
+	    translations = (List<configurationDataTranslations>) session.getAttribute("confgirationDataPostProcessingTranslastions");
+	}
+	
         int processOrder = translations.size() + 1;
 
         if (macroId == null) {
@@ -1344,16 +1377,31 @@ public class adminConfigController {
     /**
      * The 'removeTranslations{params}' function will handle removing a translation from translations array.
      *
+     * @param session
      * @param	fieldId This will hold the field that is being removed
      * @param	processOrder	This will hold the process order of the field to be removed so we remove the correct field number as the same field could be in the list with different crosswalks
-     *
-     * @Return	1	The function will simply return a 1 back to the ajax call
+     * @param categoryId
+      *
+     * @return	1	The function will simply return a 1 back to the ajax call
+     * @throws java.lang.Exception
      */
     @RequestMapping(value = "/removeTranslations{params}", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
     public @ResponseBody
-    Integer removeTranslation(HttpSession session, @RequestParam(value = "fieldId", required = true) Integer fieldId, @RequestParam(value = "processOrder", required = true) Integer processOrder) throws Exception {
+    Integer removeTranslation(HttpSession session,
+	    @RequestParam(value = "fieldId", required = true) Integer fieldId, 
+	    @RequestParam(value = "processOrder", required = true) Integer processOrder,
+	    @RequestParam(value = "categoryId", required = true) Integer categoryId) throws Exception {
 
-	List<configurationDataTranslations> translations = (List<configurationDataTranslations>) session.getAttribute("confgirationDataTranslastions");
+	List<configurationDataTranslations> translations;
+	if(categoryId == 1) {
+	    translations = (List<configurationDataTranslations>) session.getAttribute("confgirationDataTranslastions");
+	}
+	else if(categoryId == 2) {
+	    translations = (List<configurationDataTranslations>) session.getAttribute("confgirationDataPreProcessingTranslastions");
+	}
+	else {
+	    translations = (List<configurationDataTranslations>) session.getAttribute("confgirationDataPostProcessingTranslastions");
+	}
 	
         Iterator<configurationDataTranslations> it = translations.iterator();
         int currProcessOrder;
@@ -1384,9 +1432,21 @@ public class adminConfigController {
      */
     @RequestMapping(value = "/updateTranslationProcessOrder{params}", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
     public @ResponseBody
-    Integer updateTranslationProcessOrder(HttpSession session,@RequestParam(value = "currProcessOrder", required = true) Integer currProcessOrder, @RequestParam(value = "newProcessOrder", required = true) Integer newProcessOrder) throws Exception {
+    Integer updateTranslationProcessOrder(HttpSession session,
+	    @RequestParam(value = "currProcessOrder", required = true) Integer currProcessOrder, 
+	    @RequestParam(value = "newProcessOrder", required = true) Integer newProcessOrder,
+	    @RequestParam(value = "categoryId", required = true) Integer categoryId) throws Exception {
 
-        List<configurationDataTranslations> translations = (List<configurationDataTranslations>) session.getAttribute("confgirationDataTranslastions");
+        List<configurationDataTranslations> translations;
+	if(categoryId == 1) {
+	    translations = (List<configurationDataTranslations>) session.getAttribute("confgirationDataTranslastions");
+	}
+	else if(categoryId == 2) {
+	    translations = (List<configurationDataTranslations>) session.getAttribute("confgirationDataPreProcessingTranslastions");
+	}
+	else {
+	    translations = (List<configurationDataTranslations>) session.getAttribute("confgirationDataPostProcessingTranslastions");
+	}
 	
 	Iterator<configurationDataTranslations> it = translations.iterator();
 
@@ -1402,33 +1462,7 @@ public class adminConfigController {
         return 1;
     }
 
-    /**
-     * The 'updateDefaultValue{params}' function will handle setting the crosswalk default value.
-     *
-     * @param session
-     * @param	fieldId This will hold the field that is being set
-     * @param	selValue	The selected default value
-     * @return 
-     * @throws java.lang.Exception 
-     *
-     */
-    @RequestMapping(value = "/updateDefaultValue{params}", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody
-    Integer updateDefaultValue(HttpSession session,@RequestParam(value = "fieldId", required = true) Integer fieldId, @RequestParam(value = "selValue", required = true) String selValue) throws Exception {
-
-        List<configurationDataTranslations> translations = (List<configurationDataTranslations>) session.getAttribute("confgirationDataTranslastions");
-	
-	Iterator<configurationDataTranslations> it = translations.iterator();
-
-        while (it.hasNext()) {
-            configurationDataTranslations translation = it.next();
-            if (translation.getId() == fieldId) {
-                translation.setDefaultValue(selValue);
-            }
-        }
-
-        return 1;
-    }
+    
 
     /**
      * The '/connections' function will handle displaying the utConfiguration connections screen. The function will pass the existing connection objects for the selected utConfiguration.
