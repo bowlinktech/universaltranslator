@@ -1021,7 +1021,9 @@ public class transactionOutDAOImpl implements transactionOutDAO {
 	StringBuilder tableFields = new StringBuilder();
 	
 	configFormFields.forEach(field -> {
-	    tableFields.append("F").append(field.getFieldNo()).append(" text").append(",");
+	    if(field.getUseField()) {
+		tableFields.append("F").append(field.getFieldNo()).append(" text").append(",");
+	    }
 	});
 	
         //Need to create the temp translated in table
@@ -1045,12 +1047,10 @@ public class transactionOutDAOImpl implements transactionOutDAO {
 	StringBuilder insertFields = new StringBuilder();
 	
 	configFormFields.forEach(configfield -> {
-	    uploadconfigFormFields.forEach(field -> {
-		if(configfield.getAssociatedFieldNo() == field.getAssociatedFieldNo()) {
-		    selectFields.append("F").append(field.getFieldNo()).append(",");
+		if(configfield.getUseField()) {
+		    selectFields.append("F").append(configfield.getAssociatedFieldNo()).append(",");
 		    insertFields.append("F").append(configfield.getFieldNo()).append(",");
 		}
-	    });
 	});
 	
 	//Need to copy transaction in tables into temp table

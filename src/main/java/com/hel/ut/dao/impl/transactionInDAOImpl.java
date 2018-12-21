@@ -619,9 +619,9 @@ public class transactionInDAOImpl implements transactionInDAO {
 		+ " (batchUploadId, configId, transactionInRecordsId, fieldNo, errorid) "
 		+ "select " + batchUploadId + ", " + cff.getconfigId() + ", transactionInRecordsId, " + cff.getFieldNo()
 		+ ",1 from transactiontranslatedin_"+batchUploadId + " where configId = :configId "
-		+ "and (F" + cff.getAssociatedFieldNo()+" is null "
-		+ "or length(trim(F" + cff.getAssociatedFieldNo() + ")) = 0 "
-		+ "or length(REPLACE(REPLACE(F" + cff.getAssociatedFieldNo() + ", '\n', ''), '\r', '')) = 0) "
+		+ "and (F" + cff.getFieldNo()+" is null "
+		+ "or length(trim(F" + cff.getFieldNo() + ")) = 0 "
+		+ "or length(REPLACE(REPLACE(F" + cff.getFieldNo() + ", '\n', ''), '\r', '')) = 0) "
 		+ "and configId = :configId and (statusId is null or statusId not in (:transRELId));";
 	    
 	    Query insertData = sessionFactory.getCurrentSession().createSQLQuery(sql)
@@ -1120,9 +1120,7 @@ public class transactionInDAOImpl implements transactionInDAO {
 	StringBuilder selectFields = new StringBuilder();
 	
 	configFormFields.forEach(field -> {
-	    if(field.getUseField()) {
-		selectFields.append("F").append(field.getFieldNo()).append(",");
-	    }
+	    selectFields.append("F").append(field.getFieldNo()).append(",");
 	});
 
 	try {
@@ -1550,24 +1548,20 @@ public class transactionInDAOImpl implements transactionInDAO {
 	String sql = "";
 	
 	List<configurationFormFields> configFormFields = configurationtransportmanager.getConfigurationFields(configId, 0);
-
-	Integer totalFields = 50;
 	
+	StringBuilder tableFields = new StringBuilder();
+	
+	configFormFields.forEach(field -> {
+	    if(field.getUseField()) {
+		tableFields.append("F").append(field.getFieldNo()).append(" = LTRIM(RTRIM(F").append(field.getFieldNo()).append(")),");
+	    }
+	});
+
 	String tableName = "transactiontranslatedin_"+batchId;
 
-	if (configFormFields != null) {
-	    if (!configFormFields.isEmpty()) {
-		totalFields = configFormFields.size() + 10;
-	    }
-	}
 	
 	if(!foroutboundProcessing) {
-	    sql = "update "+tableName + " set ";
-	    
-	    for (int i = 1; i <= totalFields; i++) {
-		sql += "F" + i + " = LTRIM(RTRIM(F"+i+")),";
-	    }
-	    
+	    sql = "update "+tableName + " set " + tableFields;
 	    sql += "configId = LTRIM(RTRIM(configId))";
 	}
 	
@@ -2697,20 +2691,19 @@ public class transactionInDAOImpl implements transactionInDAO {
 
 	    List<configurationFormFields> configFormFields = configurationtransportmanager.getConfigurationFields(configId, 0);
 
-	    Integer totalFields = 50;
-
+	    StringBuilder tableFields = new StringBuilder();
+	
 	    if (configFormFields != null) {
 		if (!configFormFields.isEmpty()) {
-		    totalFields = configFormFields.size() + 10;
+		     configFormFields.forEach(field -> {
+			tableFields.append("F").append(field.getFieldNo()).append(" text").append(",");
+		    });
 		}
 	    }
 
 	    //Create the transactioninrecords_batchUploadId table
 	    String transactionInRecordsTable = "DROP TABLE IF EXISTS `transactioninrecords_" + batchUploadId + "`; CREATE TABLE `transactioninrecords_" + batchUploadId + "` (";
-		
-	    for (int i = 1; i <= totalFields; i++) {
-		transactionInRecordsTable += "F" + i + " text,";
-	    }
+	    transactionInRecordsTable += tableFields;
 
 	    transactionInRecordsTable += "id int(11) NOT NULL AUTO_INCREMENT," 
 		    + "batchUploadId int(11) DEFAULT NULL," 
@@ -2731,11 +2724,7 @@ public class transactionInDAOImpl implements transactionInDAO {
 		    + "batchUploadId int(11) DEFAULT NULL,"
 		    + "statusId int(11) DEFAULT NULL,"
 		    + "dateCreated datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,"
-		    + "forCW text,";
-
-	    for (int i = 1; i <= totalFields; i++) {
-		transactionTranslatedInTable += "F" + i + " text,";
-	    }
+		    + "forCW text," + tableFields;
 
 	    transactionTranslatedInTable += "PRIMARY KEY (`id`),"
 		    + "UNIQUE KEY `transactionInRecordsId_UNIQUE` (`transactionInRecordsId`),"

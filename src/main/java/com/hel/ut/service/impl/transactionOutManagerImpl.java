@@ -1734,7 +1734,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
 
     @Override
     public Integer processMassOutputBatch(batchDownloads batchDownload) throws Exception {
-
+	
 	try {
 	    //log user activity
 	    utUserActivity ua = new utUserActivity();
@@ -1998,10 +1998,12 @@ public class transactionOutManagerImpl implements transactionOutManager {
 		if(utOrgDetails.getHelRegistryId() > 0 && !utOrgDetails.getHelRegistrySchemaName().equals("")) {
 		    helRegistry registryDetails = helregistrymanager.getRegistryDetails("registries",utOrgDetails.getHelRegistryId());
 		    
+		   
+		    
 		    if(!registryDetails.getRegistryName().equals("")) {
 			String registryFolderName = registryDetails.getRegistryName().toLowerCase().replaceAll(" ","-");
 			
-			fileSystem dir = new fileSystem();
+			
 			File targetFile = new File(registrydirectoryPath + "/" + registryFolderName + "/loadFiles/" + batchDownload.getutBatchName() + "." + fileExt);
 			Files.copy(archiveFile.toPath(), targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
 			
@@ -2020,13 +2022,8 @@ public class transactionOutManagerImpl implements transactionOutManager {
 		/* Get the File Drop Details */
 		configurationFTPFields FTPPushDetails = configurationTransportManager.getTransportFTPDetailsPush(transportDetails.getId());
 
-		// the file is in output folder already, we need to rebuild path and move it
-		fileSystem dir = new fileSystem();
-		String filelocation = transportDetails.getfileLocation();
-		filelocation = filelocation.replace("/HELProductSuite/universalTranslator/", "");
-		dir.setDirByName(filelocation);
-
 		File targetFile = new File(directoryPath + FTPPushDetails.getdirectory()+ batchDownload.getoutputFIleName());
+		
 		Files.copy(archiveFile.toPath(), targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
 		
 	    } 
