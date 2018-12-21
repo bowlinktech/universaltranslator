@@ -247,6 +247,42 @@ public class adminConfigController {
 
         session.setAttribute("manageconfigId", id);
 	
+	//If configuration is a target then create the connection
+	if(id > 0 && configurationDetails.getType() == 2 && configurationDetails.getAssociatedSourceConfigId() > 0) {
+	    configurationConnection newConnection = new configurationConnection();
+	    newConnection.setsourceConfigId(configurationDetails.getAssociatedSourceConfigId());
+	    newConnection.settargetConfigId(id);
+	    newConnection.setStatus(true);
+	    
+	    Integer newConnectionId = utconfigurationmanager.saveConnection(newConnection);
+	    
+	    //Get the sending organization details
+	    utConfiguration sendingConfigDetails = utconfigurationmanager.getConfigurationById(configurationDetails.getAssociatedSourceConfigId());
+	    Organization sendingOrgDetails = organizationmanager.getOrganizationById(sendingConfigDetails.getorgId());
+	    
+	    if(!sendingOrgDetails.getPrimaryContactEmail().equals("")) {
+		configurationConnectionSenders newConnectionSender = new configurationConnectionSenders();
+		newConnectionSender.setConnectionId(newConnectionId);
+		newConnectionSender.setEmailAddress(sendingOrgDetails.getPrimaryContactEmail());
+		newConnectionSender.setSendEmailNotifications(false);
+		
+		utconfigurationmanager.saveConnectionSenders(newConnectionSender);
+	    }
+	    
+	    //Get the receiving organziation details
+	    Organization receivingOrgDetails = organizationmanager.getOrganizationById(configurationDetails.getorgId());
+	   
+	    if(!receivingOrgDetails.getPrimaryContactEmail().equals("")) {
+		configurationConnectionReceivers newConnectionReceiver = new configurationConnectionReceivers();
+		newConnectionReceiver.setConnectionId(newConnectionId);
+		newConnectionReceiver.setEmailAddress(receivingOrgDetails.getPrimaryContactEmail());
+		newConnectionReceiver.setSendEmailNotifications(false);
+		
+		utconfigurationmanager.saveConnectionReceivers(newConnectionReceiver);
+	    }
+	    
+	}
+	
         //If the "Save" button was pressed 
         if (action.equals("save")) {
             redirectAttr.addFlashAttribute("savedStatus", "created");
@@ -2921,4 +2957,19 @@ public class adminConfigController {
 	return mav;
     }
     
+    /**
+     * The 'deleteConfiguration.do' method will makke the passed in configuration as deleted.
+     */
+    @RequestMapping(value = "/deleteConfiguration.do", method = RequestMethod.POST)
+    public @ResponseBody
+    Integer deleteConfiguration(@RequestParam int configId) throws Exception {
+
+        utConfiguration configDetails = utconfigurationmanager.getConfigurationById(configId);
+	configDetails.setDeleted(true);
+	
+	utconfigurationmanager.updateConfiguration(configDetails);
+	
+        return 1;
+
+    }
 }

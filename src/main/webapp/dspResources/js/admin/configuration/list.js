@@ -23,7 +23,33 @@ require(['./main'], function () {
             window.location.href = "details?i=" + $(this).attr('rel');
         });
 	
-	 $(document).on('click', '.copyConfig', function() {
+	$(document).on('click', '.deleteConfig', function() {
+            
+            var configId = $(this).attr('rel');
+           
+            if(confirm("Are you sure you want to delelete this configuration?")) {
+                
+                $('body').overlay({
+                    glyphicon : 'floppy-disk',
+                    message : 'Deleting...'
+                });
+                
+                $.ajax({
+                    url: 'deleteConfiguration.do',
+                    data: {
+                        'configId': configId
+                    },
+                    type: 'POST',
+                    success: function(data) {
+                      window.location.href = "list?msg=deleted";
+                    }
+                });
+                
+            }
+            
+        });
+	
+	$(document).on('click', '.copyConfig', function() {
             
             var configId = $(this).attr('rel');
            

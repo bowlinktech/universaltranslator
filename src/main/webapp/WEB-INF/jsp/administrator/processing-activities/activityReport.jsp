@@ -33,82 +33,77 @@
                 <section class="panel panel-default panel-stats" role="widget" aria-labelleby="Messages Received">
                     <div class="panel-body">
                         <span class="stat-number"><a href="/administrator/processing-activity/inbound"><c:choose><c:when test="${totalMessagesReceived >= 0}"><fmt:formatNumber value = "${totalMessagesReceived}" type = "number"/></c:when><c:otherwise>0</c:otherwise></c:choose></a></span>
-                                <h3>Messages Received</h3>
-                            </div>
-                        </section>
-                    </div>
-                    <div class="col-md-3 col-sm-3 col-xs-6">
-                        <section class="panel panel-default panel-stats" role="widget" aria-labelleby="Messages Delivered">
-                            <div class="panel-body">
-                                <span class="stat-number"><a href="/administrator/processing-activity/outbound"><c:choose><c:when test="${totalMessagesDelivered >= 0}"><fmt:formatNumber value = "${totalMessagesDelivered}" type = "number"/></c:when><c:otherwise>0</c:otherwise></c:choose></a></span>
-                                <h3>Messages Delivered</h3>
-                            </div>
-                        </section>
-                    </div>   
-                    <div class="col-md-3 col-sm-3 col-xs-6">
-                        <section class="panel panel-default panel-stats" role="widget" aria-labelleby="Rejected Received">
-                            <div class="panel-body">
-                                    <span class="stat-number"><a href="/administrator/processing-activity/rejected"><c:choose><c:when test="${totalRejected >= 0}"><fmt:formatNumber value = "${totalRejected}" type = "number"/></c:when><c:otherwise>0</c:otherwise></c:choose></a></span>
-                                <h3>Rejected Transactions</h3>
-                            </div>
-                        </section>
-                    </div>  
-		    <div class="col-md-3 col-sm-3 col-xs-6">
-                        <section class="panel panel-default panel-stats" role="widget" aria-labelleby="Rejected Delivered">
-                            <div class="panel-body">
-                                    <span class="stat-number"><a href="/administrator/processing-activity/outbound"><c:choose><c:when test="${totalDeliveredRejected >= 0}"><fmt:formatNumber value = "${totalDeliveredRejected}" type = "number"/></c:when><c:otherwise>0</c:otherwise></c:choose></a></span>
-                                <h3>Rejected Delivered</h3>
-                            </div>
-                        </section>
-                    </div> 		
-                </div>
+			<h3>Message<c:if test="${totalMessagesReceived == 0 || totalMessagesReceived > 1}">s</c:if> Received</h3>
+		    </div>
+		</section>
+	    </div>
+	    <div class="col-md-3 col-sm-3 col-xs-6">
+		<section class="panel panel-default panel-stats" role="widget" aria-labelleby="Messages Delivered">
+		    <div class="panel-body">
+			<span class="stat-number"><a href="/administrator/processing-activity/outbound"><c:choose><c:when test="${totalMessagesDelivered >= 0}"><fmt:formatNumber value = "${totalMessagesDelivered}" type = "number"/></c:when><c:otherwise>0</c:otherwise></c:choose></a></span>
+			<h3>Message<c:if test="${totalMessagesDelivered == 0 || totalMessagesDelivered > 1}">s</c:if> Delivered</h3>
+		    </div>
+		</section>
+	    </div>   
+	    <div class="col-md-3 col-sm-3 col-xs-6">
+		<section class="panel panel-default panel-stats" role="widget" aria-labelleby="Rejected Received">
+		    <div class="panel-body">
+			    <span class="stat-number"><a href="/administrator/processing-activity/rejected"><c:choose><c:when test="${totalRejected >= 0}"><fmt:formatNumber value = "${totalRejected}" type = "number"/></c:when><c:otherwise>0</c:otherwise></c:choose></a></span>
+			<h3>Rejected Transaction<c:if test="${totalRejected == 0 || totalRejected > 1}">s</c:if></h3>
+		    </div>
+		</section>
+	    </div>  
+	    <div class="col-md-3 col-sm-3 col-xs-6">
+		<section class="panel panel-default panel-stats" role="widget" aria-labelleby="Rejected Delivered">
+		    <div class="panel-body">
+			    <span class="stat-number"><a href="/administrator/processing-activity/outbound"><c:choose><c:when test="${totalDeliveredRejected >= 0}"><fmt:formatNumber value = "${totalDeliveredRejected}" type = "number"/></c:when><c:otherwise>0</c:otherwise></c:choose></a></span>
+			<h3>Rejected Delivered</h3>
+		    </div>
+		</section>
+	    </div> 		
+	</div>
 
-                <section class="panel panel-default">
-                    <div class="panel-heading">
-                        <h3 class="panel-title">Messages Received</h3>
-                    </div>
-                    <div class="panel-body">
-                        <div class="form-container scrollable">
-                            <table class="table table-striped table-hover table-default">
-                                <thead>
-                                    <tr>
-                                        <th scope="col" style="width:350px;">Organization Name</th>
-                                        <th scope="col" style="width:350px;">Target Organization Name</th>
-                                        <th scope="col" style="width:350px;">Message Type</th>
-                                        <th scope="col" class="center-text">Total Received</th>
-                                    </tr>
-                            <c:choose>
-                                <c:when test="${not empty referralList}">
-                                    <c:forEach var="item" items="${referralList}">
-                                        <tr>
-                                            <td scope="row">
-                                                ${item.orgName}
-                                            </td>
-                                            <td scope="row">
-                                                ${item.tgtOrgName}
-                                            </td>
-                                            <td>
-                                                ${item.messageType}
-                                            </td>
-					    <td  class="center-text">
-                                                ${item.total}
-                                            </td>
-                                        </tr>
-                                    </c:forEach>
-                                </c:when>
-                                <c:otherwise>
-                                    <tr>
-                                        <td colspan="4">
-                                            There were no files submitted in the date range selected.
-                                        </td>
-                                    </tr>
-                                </c:otherwise>
-                            </c:choose>
-                        </thead>
-                    </table>
-                </div>
-            </div>
-        </section>
-
+	<section class="panel panel-default">
+	    <div class="panel-heading">
+		<h3 class="panel-title">Files Received into the Universal Translator</h3>
+	    </div>
+	    <div class="panel-body">
+		<div class="form-container scrollable">
+		    <table class="table table-striped table-hover table-default">
+			<thead>
+			    <tr>
+				<th scope="col" style="width:350px;">Organization Name</th>
+				<th scope="col" style="width:350px;">Configuration Name</th>
+				<th scope="col" class="center-text">Total Received</th>
+			    </tr>
+			    <c:choose>
+				<c:when test="${not empty referralList}">
+				    <c:forEach var="item" items="${referralList}">
+					<tr>
+					    <td scope="row">
+						${item.orgName}
+					    </td>
+					    <td>
+						${item.messageType}
+					    </td>
+					    <td class="center-text">
+						${item.total}
+					    </td>
+					</tr>
+				    </c:forEach>
+				</c:when>
+				<c:otherwise>
+				    <tr>
+					<td colspan="3" class="center-text">
+					    No files were received in the selected date range.
+					</td>
+				    </tr>
+				</c:otherwise>
+			    </c:choose>
+			</thead>
+		    </table>
+		</div>
+	    </div>
+	</section>
     </div>
 </div>

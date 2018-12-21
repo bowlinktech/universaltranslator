@@ -59,7 +59,6 @@
                                         <tr  style="cursor: pointer">
                                             <td scope="row">
                                                 ${batch.orgName}
-                                                <br />User: ${batch.usersName}
                                             </td>
                                             <td>
 						<strong>${batch.configName}</strong><br />
@@ -72,7 +71,7 @@
 						    batch.statusId == 30)}">
                                                     <br />
                                                     <a href="/FileDownload/downloadFile.do?filename=${batch.outputFIleName}&utBatchName=${batch.outputFIleName}&foldername=archivesOut&orgId=0" title="View Original File">
-                                                        Download Outbound File 
+                                                        Download Outbound File
                                                     </a>
                                                 </c:if>
                                             </td>

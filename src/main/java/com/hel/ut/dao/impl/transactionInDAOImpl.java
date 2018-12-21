@@ -484,7 +484,7 @@ public class transactionInDAOImpl implements transactionInDAO {
 
 
 	Criteria findBatches = sessionFactory.getCurrentSession().createCriteria(batchUploads.class);
-	findBatches.add(Restrictions.ne("totalRecordCount", 0));
+	findBatches.add(Restrictions.ne("errorRecordCount", 0));
 
 	if (fromDate != null) {
 	    if (!"".equals(fromDate)) {
@@ -512,6 +512,8 @@ public class transactionInDAOImpl implements transactionInDAO {
      *
      * @param fromDate
      * @param toDate
+     * @param fetchSize
+     * @param batchName
      * @return This function will return a list of batch uploads
      * @throws Exception
      */
@@ -523,17 +525,18 @@ public class transactionInDAOImpl implements transactionInDAO {
 
 	Criteria findBatches = sessionFactory.getCurrentSession().createCriteria(batchUploads.class);
 	findBatches.add(Restrictions.ge("totalRecordCount", 0));
-
-	if (!"".equals(fromDate)) {
-	    findBatches.add(Restrictions.ge("dateSubmitted", fromDate));
-	}
-
-	if (!"".equals(toDate)) {
-	    findBatches.add(Restrictions.lt("dateSubmitted", toDate));
-	}
-
+	
 	if (!"".equals(batchName)) {
 	    findBatches.add(Restrictions.eq("utBatchName", batchName));
+	}
+	else {
+	    if (!"".equals(fromDate)) {
+		findBatches.add(Restrictions.ge("dateSubmitted", fromDate));
+	    }
+
+	    if (!"".equals(toDate)) {
+		findBatches.add(Restrictions.lt("dateSubmitted", toDate));
+	    }
 	}
 
 	findBatches.addOrder(Order.desc("dateSubmitted"));
@@ -1824,27 +1827,20 @@ public class transactionInDAOImpl implements transactionInDAO {
     @Transactional(readOnly = true)
     public List<activityReportList> getReferralList(String fromDate, String toDate) throws Exception {
 
-	String sql = ("select a.configId, c.orgname as orgName, d.displayName as messageType, d.id as messageTypeId,"
-		+ "e.orgId as targetOrgId,f.orgname as tgtOrgName,"
+	String sql = ("select a.configId, c.orgname as orgName, b.configName as messageType,"
 		+ "(select count(Id) from batchuploads where configId = a.configId and dateSubmitted >= '" + fromDate + "' and dateSubmitted < '" + toDate + "') as total "
 		+ "from batchuploads a "
 		+ "inner join configurations b on b.id = a.configId "
 		+ "inner join organizations c on c.id = a.orgId "
-		+ "inner join messagetypes d on d.id = b.messageTypeId "
-		+ "left outer join batchdownloads e on a.id = e.batchUploadId "
-		+ "left outer join organizations f on e.orgId = f.id "
 		+ "where a.dateSubmitted >= '" + fromDate + "' and a.dateSubmitted < '" + toDate + "' "
-		+ "group by a.configId, e.orgId "
-		+ "order by orgName asc, messageType asc");
-
+		+ "group by a.configId "
+		+ "order by orgName asc");
+	
 	Query query = sessionFactory.getCurrentSession().createSQLQuery(sql)
 		.addScalar("configId", StandardBasicTypes.INTEGER)
 		.addScalar("orgName", StandardBasicTypes.STRING)
 		.addScalar("messageType", StandardBasicTypes.STRING)
-		.addScalar("messageTypeId", StandardBasicTypes.INTEGER)
-		.addScalar("targetOrgId", StandardBasicTypes.INTEGER)
 		.addScalar("total", StandardBasicTypes.BIG_INTEGER)
-		.addScalar("tgtOrgName", StandardBasicTypes.STRING)
 		.setResultTransformer(Transformers.aliasToBean(activityReportList.class));
 
 	List<activityReportList> activityList = query.list();

@@ -20,6 +20,7 @@
 		    <strong>Success!</strong> 
 		    <c:choose>
 			<c:when test="${param.msg == 'updated'}">The configuration has been successfully saved!</c:when>
+			<c:when test="${param.msg == 'deleted'}">The configuration has been successfully removed!</c:when>
 		    </c:choose>
 		</div>
 	    </c:when>
@@ -86,6 +87,12 @@
 							    <a href="javascript:void(0);" class="editConfig" rel="${config.id}" title="Edit this configuration">
 								<span class="glyphicon glyphicon-edit"></span>
 								Edit
+							    </a>
+							</li>
+							<li>
+							    <a href="javascript:void(0);" class="deleteConfig" rel="${config.id}" title="Delete this configuration">
+								<span class="glyphicon glyphicon-remove-circle"></span>
+								Delete
 							    </a>
 							</li>
 						    </ul>

@@ -125,7 +125,10 @@ require(['./main'], function () {
                 $("#actionRowTop").hide();
                 $.ajax({
                     url: '../../inboundBatchOptions',
-                    data: {'batchOption': $(this).attr('rel'), 'batchId': $(this).attr('rel2')},
+                    data: {
+			'batchOption': $(this).attr('rel'), 
+			'batchId': $(this).attr('rel2')
+		    },
                     type: "POST",
                     success: function (data) {
                          window.location.href = '/administrator/processing-activity/inbound';

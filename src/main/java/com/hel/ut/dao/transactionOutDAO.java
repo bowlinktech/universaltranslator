@@ -110,4 +110,5 @@ public interface transactionOutDAO {
     List<batchDownloads> getPendingResetBatches(Integer batchUploadId) throws Exception;
     
     void submitBatchDownloadChanges(batchDownloads batchDownload) throws Exception;
+    
 }

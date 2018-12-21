@@ -1258,4 +1258,5 @@ public class transactionOutDAOImpl implements transactionOutDAO {
     public void submitBatchDownloadChanges(batchDownloads batchDownload) throws Exception {
 	sessionFactory.getCurrentSession().update(batchDownload);
     }
+  
 }

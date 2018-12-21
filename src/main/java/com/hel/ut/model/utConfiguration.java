@@ -68,6 +68,10 @@ public class utConfiguration {
     @Column(name = "configurationType", nullable = false)
     private Integer configurationType = 1;
     
+    @Column(name = "deleted", nullable = false)
+    private boolean deleted = false;
+
+    
     public int getId() {
         return id;
     }
@@ -212,5 +216,12 @@ public class utConfiguration {
 	this.associatedSourceConfigId = associatedSourceConfigId;
     }
 
-    
+    public boolean isDeleted() {
+	return deleted;
+    }
+
+    public void setDeleted(boolean deleted) {
+	this.deleted = deleted;
+    }
+
 }

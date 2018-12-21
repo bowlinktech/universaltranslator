@@ -28,7 +28,10 @@ public class batchUploads {
     private Integer totalTransactions = 0,transTotalNotFinal = 10, totalOpen = 0, totalClosed = 0, threshold = 100, watchListEntryId = 0;
 
     @Transient
-    private String statusValue, usersName, tgtorgName, orgName, transportMethod, configName, uploadType = "",referringBatch = "", dashboardRowColor = "table-secondary", entryMessage = "";
+    private String statusValue, usersName, 
+	    tgtorgName, orgName, transportMethod, configName, uploadType = "",
+	    referringBatch = "", dashboardRowColor = "table-secondary", 
+	    entryMessage = "", relatedBatchDownloadIds;
 
     @Transient
     private boolean watchListCompleted = false;
@@ -404,6 +407,14 @@ public class batchUploads {
 
     public void setWatchListEntryId(Integer watchListEntryId) {
 	this.watchListEntryId = watchListEntryId;
+    }
+
+    public String getRelatedBatchDownloadIds() {
+	return relatedBatchDownloadIds;
+    }
+
+    public void setRelatedBatchDownloadIds(String relatedBatchDownloadIds) {
+	this.relatedBatchDownloadIds = relatedBatchDownloadIds;
     }
     
     

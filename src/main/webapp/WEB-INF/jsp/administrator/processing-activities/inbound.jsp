@@ -51,7 +51,7 @@
                                 <tr>
                                     <th scope="col">Sending Organization</th>
                                     <th scope="col" style="width:50px">Batch ID</th>
-                                    <th scope="col" class="center-text">Transport</th>
+                                    <th scope="col" class="center-text">Transport Method</th>
                                     <th scope="col" class="center-text">Status</th>
                                     <th scope="col">Transactions</th>
                                     <th scope="col" class="center-text">Date Created</th>
@@ -65,7 +65,6 @@
                                         <tr  style="cursor: pointer">
                                             <td scope="row">
                                                 ${batch.orgName}
-                                                <br />User: ${batch.usersName}
                                             </td>
                                             <td>
 						<strong>${batch.configName}</strong><br />
@@ -74,12 +73,12 @@
                                                     <c:set var="text" value="${fn:split(batch.originalFileName,'.')}" />
                                                     <c:set var="ext" value="${text[fn:length(text)-1]}" />
                                                     <br />
-                                                    <c:set var="hrefLink" value="/FileDownload/downloadFile.do?filename=${batch.utBatchName}.${ext}&foldername=archivesIn"/>
+                                                    <c:set var="hrefLink" value="/FileDownload/downloadFile.do?filename=archive_${batch.utBatchName}.${ext}&foldername=archivesIn"/>
 
                                                     <c:if test="${batch.transportMethodId == 6}">
                                                         <c:set var="hrefLink" value="/FileDownload/downloadFile.do?filename=${batch.utBatchName}_dec.${ext}&foldername=archivesIn"/>
                                                     </c:if>
-						    <c:if test="${batch.transportMethodId == 5 || batch.transportMethodId == 6 || batch.transportMethodId == 9}">
+						    <c:if test="${batch.transportMethodId == 10 || batch.transportMethodId == 6 || batch.transportMethodId == 9}">
 							<c:set var="hrefPipeLink" value="/FileDownload/downloadFile.do?filename=${batch.utBatchName}_dec.txt&foldername=archivesIn"/>
 						    </c:if>
 
@@ -87,7 +86,7 @@
                                                         ${batch.originalFileName}
                                                     </a>
 						    <br/>
-						    <c:if test="${(batch.transportMethodId == 5 || batch.transportMethodId == 6 || batch.transportMethodId == 9) && batch.statusId != 42}">
+						    <c:if test="${(batch.transportMethodId == 10 || batch.transportMethodId == 6 || batch.transportMethodId == 9) && batch.statusId != 42}">
 							<a href="${hrefPipeLink}" title="View Pipe File">
 							    Translated File - ${batch.utBatchName}
 							</a>

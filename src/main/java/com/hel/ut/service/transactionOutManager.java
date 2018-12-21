@@ -99,5 +99,7 @@ public interface transactionOutManager {
     void submitBatchDownloadChanges(batchDownloads batchDownload) throws Exception;
 	
     void sendPassThruFiles(batchUploads batchULDetails, batchDownloads batchDLDetails,configurationTransport transportDetails,File archiveFile) throws Exception;
+    
+    List<batchDownloads> getDownloadBatchesByBatchUploadId(Integer batchUploadId) throws Exception;
 
 }

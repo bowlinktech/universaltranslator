@@ -93,13 +93,35 @@
 				</p>
 			    </div>
 			    <div class="col-md-6">
-				<p><strong>Target Organization:</strong><br />${batchDetails.tgtorgName}</p>
-				<c:if test="${not empty batchDetails.originalFileName}">
-				    <c:set var="text" value="${fn:split(batchDetails.originalFileName,'.')}" />
-				    <c:set var="ext" value="${text[fn:length(text)-1]}" />
-				    <c:set var="hrefLink" value="/FileDownload/downloadFile.do?filename=${batchDetails.utBatchName}.${ext}&foldername=archivesIn"/>
-				    <p><strong>Uploaded File:</strong><br /><a href="${hrefLink}" title="View Original File">${batchDetails.originalFileName}</a></p>
-				</c:if>
+				<c:choose>
+				    <c:when test="${batchDownload}">
+					<c:if test="${not empty batchDetails.utBatchName}">
+					    <c:set var="text" value="${fn:split(batchDetails.outputFIleName,'.')}" />
+					    <c:set var="ext" value="${text[fn:length(text)-1]}" />
+					    <c:set var="hrefLink" value="/FileDownload/downloadFile.do?filename=${batchDetails.utBatchName}.${ext}&foldername=archivesOut"/>
+					    <p><strong>Generated Target File (Located in archivesOut):</strong><br /><a href="${hrefLink}" title="View Generated Target File">${batchDetails.utBatchName}.${ext}</a></p>
+					</c:if>
+				    </c:when>
+				    <c:otherwise>
+					<p>
+					    <strong>Related Outbound Batches</strong><br />
+					    <c:choose>
+						<c:when test="${not empty batchDetails.relatedBatchDownloadIds}">
+						    <c:forEach items="${batchDetails.relatedBatchDownloadIds}" var="batchDownloadId">
+							<a href="/administrator/processing-activity/outbound/auditReport/${batchDownloadId}">${batchDownloadId}</a><br />
+						    </c:forEach>
+						</c:when>
+					    </c:choose>
+					</p> 
+					<c:if test="${not empty batchDetails.originalFileName}">
+					    <c:set var="text" value="${fn:split(batchDetails.originalFileName,'.')}" />
+					    <c:set var="ext" value="${text[fn:length(text)-1]}" />
+					    <c:set var="hrefLink" value="/FileDownload/downloadFile.do?filename=archive_${batchDetails.utBatchName}.${ext}&foldername=archivesIn"/>
+					    <p><strong>Uploaded File:</strong><br /><a href="${hrefLink}" title="View Original File">${batchDetails.originalFileName}</a></p>
+					</c:if>
+				    </c:otherwise>
+				</c:choose>
+				
 				<p><strong>Batch Id:</strong><br />${batchDetails.utBatchName}</p>
 			    </div>
 			 </div>   

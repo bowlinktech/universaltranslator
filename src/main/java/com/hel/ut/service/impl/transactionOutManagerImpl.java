@@ -2179,4 +2179,9 @@ public class transactionOutManagerImpl implements transactionOutManager {
 
 	}
     }
+    
+    @Override
+    public List<batchDownloads> getDownloadBatchesByBatchUploadId(Integer batchUploadId) throws Exception {
+	return transactionOutDAO.getDLBatchesByBatchUploadId(batchUploadId);
+    }
 }

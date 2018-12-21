@@ -263,7 +263,8 @@ public class adminProcessingActivity {
     /**
      * The '/inbound' GET request will serve up the existing list of generated referrals and feedback reports
      *
-     * @param page	The page parameter will hold the page to view when pagination is built.
+     * @param pathVariables
+     * @param session
      * @return The list of inbound batch list
      *
      * @Objects	(1) An object containing all the found batches
@@ -581,15 +582,10 @@ public class adminProcessingActivity {
 
                 for (batchDownloads batch : Batches) {
 
-                    if (batch.gettransportMethodId() == 1 || batch.gettransportMethodId() == 5 || 
-			batch.gettransportMethodId() == 6 || batch.gettransportMethodId() == 8 || 
-			batch.gettransportMethodId() == 9) 
-		    {
-                        String fileDownloadExt = batch.getoutputFIleName().substring(batch.getoutputFIleName().lastIndexOf(".") + 1);
-                        String newfileName = new StringBuilder().append(batch.getutBatchName()).append(".").append(fileDownloadExt).toString();
-
-                        batch.setoutputFIleName(newfileName);
-                    }
+		    String fileDownloadExt = batch.getoutputFIleName().substring(batch.getoutputFIleName().lastIndexOf(".") + 1);
+		    String newfileName = new StringBuilder().append(batch.getutBatchName()).append(".").append(fileDownloadExt).toString();
+		    
+		    batch.setoutputFIleName(newfileName);
 
                     batch.setstatusValue(psMap.get(batch.getstatusId()));
 
@@ -661,7 +657,7 @@ public class adminProcessingActivity {
         /* Get system oubound summary */
         systemSummary summaryDetails = transactionOutManager.generateSystemOutboundSummary();
         mav.addObject("summaryDetails", summaryDetails);
-
+	
         /* Get all oubound transactions */
         try {
             /* Need to get a list of all uploaded batches */
@@ -706,15 +702,11 @@ public class adminProcessingActivity {
 
             if (!Batches.isEmpty()) {
                 for (batchDownloads batch : Batches) {
+		    String fileDownloadExt = batch.getoutputFIleName().substring(batch.getoutputFIleName().lastIndexOf(".") + 1);
+		    String newfileName = new StringBuilder().append(batch.getutBatchName()).append(".").append(fileDownloadExt).toString();
+		    
+		    batch.setoutputFIleName(newfileName);
 
-                    if (batch.gettransportMethodId() == 1 || batch.gettransportMethodId() == 5 || batch.gettransportMethodId() == 6) {
-                        String fileDownloadExt = batch.getoutputFIleName().substring(batch.getoutputFIleName().lastIndexOf(".") + 1);
-                        String newfileName = new StringBuilder().append(batch.getutBatchName()).append(".").append(fileDownloadExt).toString();
-
-                        batch.setoutputFIleName(newfileName);
-                    }
-
-                    //batch.settotalTransactions(transactionInManager.getRecordCounts(batch.getId(), statusIds, true, false));
                     batch.setstatusValue(psMap.get(batch.getstatusId()));
 
                     batch.setorgName(orgMap.get(batch.getOrgId()));
@@ -722,24 +714,17 @@ public class adminProcessingActivity {
                     batch.settransportMethod(tmMap.get(batch.gettransportMethodId()));
 
                     batch.setusersName(userMap.get(batch.getuserId()));
-
-                    /* Get from batch information */
-                    /*transactionTarget transactionTarget = transactionOutManager.getSingleTransactionsByBatchDLId(batch.getId());
 		    
-		    if(transactionTarget != null) {
-			batchUploads batchUploadDetails = transactionInManager.getBatchDetails(transactionTarget.getbatchUploadId());
-
-			batch.setFromBatchName(batchUploadDetails.getutBatchName());
-			if (batchUploadDetails.gettransportMethodId() == 5 || batchUploadDetails.gettransportMethodId() == 1) {
-			    String fileExt = batchUploadDetails.getoriginalFileName().substring(batchUploadDetails.getoriginalFileName().lastIndexOf(".") + 1);
-			    String newsrcfileName = new StringBuilder().append(batchUploadDetails.getutBatchName()).append(".").append(fileExt).toString();
-			    batch.setFromBatchFile(newsrcfileName);
-			}
-			batch.setFromOrgId(batchUploadDetails.getOrgId());
-
-			batch.setConfigName(cMap.get(transactionTarget.getconfigId()));
-		    }*/
-
+		    batch.setConfigName(cMap.get(batch.getConfigId()));
+		    
+		    batchUploads batchUploadDetails = transactionInManager.getBatchDetails(batch.getBatchUploadId());
+ 
+		    batch.setFromBatchName(batchUploadDetails.getutBatchName());
+		    if (batchUploadDetails.gettransportMethodId() == 5 || batchUploadDetails.gettransportMethodId() == 1) {
+			String fileExt = batchUploadDetails.getoriginalFileName().substring(batchUploadDetails.getoriginalFileName().lastIndexOf(".") + 1);
+			String newsrcfileName = new StringBuilder().append(batchUploadDetails.getutBatchName()).append(".").append(fileExt).toString();
+			batch.setFromBatchFile(newsrcfileName);
+		    }
                 }
             }
 
@@ -1011,6 +996,20 @@ public class adminProcessingActivity {
 	    Organization orgDetails = organizationmanager.getOrganizationById(batchDetails.getOrgId());
             batchDetails.setorgName(orgDetails.getOrgName());
 	    
+	    List<batchDownloads> associatedDownloadBatches = transactionOutManager.getDownloadBatchesByBatchUploadId(batchDetails.getId());
+	    
+	    if(associatedDownloadBatches != null) {
+		if(!associatedDownloadBatches.isEmpty()) {
+		    StringBuilder sbl = new StringBuilder(); 
+		    
+		    associatedDownloadBatches.forEach(batchDownload -> {
+			sbl.append(batchDownload.getutBatchName()).append(",");
+		    });
+		    
+		    batchDetails.setRelatedBatchDownloadIds(sbl.toString());
+		}
+	    }
+	    
             lu_ProcessStatus processStatus = sysAdminManager.getProcessStatusById(batchDetails.getstatusId());
             batchDetails.setstatusValue(processStatus.getDisplayCode());
 
@@ -1069,6 +1068,20 @@ public class adminProcessingActivity {
 	    
 	    if(orgDetails.getHelRegistryId()> 0) {
 		showButtons = false;
+	    }
+	    
+	    
+	    //If allowed to cancel check if the outbound targets have already been sent
+	    if(canCancel) {
+		if(associatedDownloadBatches != null) {
+		    if(!associatedDownloadBatches.isEmpty()) {
+			for(batchDownloads batchDownload : associatedDownloadBatches) {
+			    if(batchDownload.getstatusId() == 28) {
+			       canCancel = false;
+			   } 
+			}
+		    }
+		}
 	    }
 	    
 	    

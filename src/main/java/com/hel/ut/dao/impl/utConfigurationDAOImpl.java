@@ -146,6 +146,7 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
         } else {
             Criteria criteria = sessionFactory.getCurrentSession().createCriteria(utConfiguration.class);
             criteria.add(Restrictions.eq("orgId", orgId));
+	    criteria.add(Restrictions.eq("deleted", false));
             criteria.addOrder(Order.desc("dateCreated"));
             return criteria.list();
         }
@@ -167,6 +168,7 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
         Criteria criteria = sessionFactory.getCurrentSession().createCriteria(utConfiguration.class);
         criteria.add(Restrictions.eq("orgId", orgId));
         criteria.add(Restrictions.eq("status", true));
+	criteria.add(Restrictions.eq("deleted", false));
 
         return criteria.list();
     }
@@ -187,6 +189,7 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
         Criteria criteria = sessionFactory.getCurrentSession().createCriteria(utConfiguration.class);
         criteria.add(Restrictions.like("configName", configName));
         criteria.add(Restrictions.eq("orgId", orgId));
+	criteria.add(Restrictions.eq("deleted", false));
 
         return (utConfiguration) criteria.uniqueResult();
     }
@@ -196,13 +199,13 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
      *
      * @Table	configurations
      *
-     * @Return	This function will return a list of configuration objects
+     * @return	This function will return a list of configuration objects
      */
     @Override
     @Transactional(readOnly = true)
     @SuppressWarnings("unchecked")
     public List<utConfiguration> getConfigurations() {
-        Query query = sessionFactory.getCurrentSession().createQuery("from utConfiguration order by dateCreated desc");
+        Query query = sessionFactory.getCurrentSession().createQuery("from utConfiguration where deleted = 0 order by dateCreated desc");
 
         List<utConfiguration> configurationList = query.list();
         return configurationList;
@@ -212,7 +215,6 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
      * The 'getDataTranslations' function will return a list of data translations saved for the passed in utConfiguration/transport method.
      *
      * @param	configId	The id of the utConfiguration we want to return associated translations for.
-     * @param	transportMethod	The selected transport method for the utConfiguration
      *
      * @return	This function will return a list of translations
      */
@@ -236,7 +238,7 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
     @Override
     @Transactional(readOnly = true)
     public Long findTotalConfigs() {
-        Query query = sessionFactory.getCurrentSession().createQuery("select count(id) as totalConfigs from utConfiguration");
+        Query query = sessionFactory.getCurrentSession().createQuery("select count(id) as totalConfigs from utConfiguration where deleted = 0");
 
         Long totalConfigs = (Long) query.uniqueResult();
 
@@ -250,13 +252,13 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
      *
      * @param	maxResults	This will hold the value of the maximum number of results we want to send back to the page
      *
-     * @Return	This function will return a list of organization objects
+     * @return	This function will return a list of organization objects
      */
     @Override
     @Transactional(readOnly = true)
     @SuppressWarnings("unchecked")
     public List<utConfiguration> getLatestConfigurations(int maxResults) {
-        Query query = sessionFactory.getCurrentSession().createQuery("from utConfiguration order by dateCreated desc");
+        Query query = sessionFactory.getCurrentSession().createQuery("from utConfiguration where deleted = 0 order by dateCreated desc");
 
         //Set the max results to display
         query.setMaxResults(maxResults);
@@ -272,14 +274,14 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
      *
      * @param	configId The id of the utConfiguration to find connections for.
      *
-     * @Return	The total number of active connections set up for a configurations
+     * @return	The total number of active connections set up for a configurations
      *
      */
     @Override
     @Transactional(readOnly = true)
     public Long getTotalConnections(int configId) {
 
-        Query query = sessionFactory.getCurrentSession().createSQLQuery("SELECT count(id) FROM configurationConnections where configId = :configId and status = 1")
+        Query query = sessionFactory.getCurrentSession().createSQLQuery("SELECT count(id) FROM configurationConnections where deleted = 0 and configId = :configId and status = 1")
                 .setParameter("configId", configId);
 
         BigInteger totalCount = (BigInteger) query.uniqueResult();
@@ -293,6 +295,7 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
      * The 'updateCompletedSteps' function will update the steps completed for a passe in configurations. This column will be used to determine when you can activate a utConfiguration and when you can access certain steps in the utConfiguration creation process.
      *
      * @param	configId	This will hold the id of the utConfiguration to update stepCompleted	This will hold the completed step number
+     * @param stepCompleted
      */
     @Override
     @Transactional(readOnly = false)
@@ -308,6 +311,7 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
     /**
      * The 'getFileTypes' function will return a list of available file types
      *
+     * @return 
      */
     @SuppressWarnings("rawtypes")
     @Override
@@ -362,7 +366,6 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
      *
      * @param	configId	The id of the utConfiguration to remove associated translations
      * @param categoryId The id of the category
-     * @param	transportMethod	The transport method for the utConfiguration
      *
      */
     @Override
@@ -389,6 +392,7 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
     /**
      * The 'getMacrosByCategory' function will return a list of available Pre and Post macros.
      *
+     * @param categoryId
      * @return list of macros
      */
     @Override
@@ -423,6 +427,7 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
      * @return macros object
      */
     @Transactional(readOnly = true)
+    @Override
     public Macros getMacroById(int macroId) {
         return (Macros) sessionFactory.getCurrentSession().get(Macros.class, macroId);
     }
@@ -433,7 +438,7 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
      * @Table	configurationConnections
      *
      *
-     * @Return	This function will return a list of configurationConnection objects
+     * @return	This function will return a list of configurationConnection objects
      */
     @SuppressWarnings("unchecked")
     @Override
@@ -452,7 +457,7 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
      *
      * @param maxResults This will hold the value of the maximum number of results we want to send back to the list page
      *
-     * @Return	This function will return a list of configurationConnection objects
+     * @return	This function will return a list of configurationConnection objects
      */
     @SuppressWarnings("unchecked")
     @Override
@@ -471,6 +476,7 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
      * The 'getConnectionsByConfiguration' will return a list of target connections for a passed in utConfiguration;
      *
      * @param configId The id of the utConfiguration to search connections for.
+     * @param userId
      *
      * @return This function will return a list of configurationConnection objects
      */
@@ -527,8 +533,6 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
      * @table configurationConnectionSenders
      *
      * @param senders The configurationConnectionSenders object
-     *
-     * @return This function does not return anything
      */
     @Override
     @Transactional(readOnly = false)
@@ -542,8 +546,6 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
      * @table configurationConnectionReceivers
      *
      * @param receivers The configurationConnectionSenders object
-     *
-     * @return This function does not return anything
      */
     @Override
     @Transactional(readOnly = false)
@@ -554,9 +556,8 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
     /**
      * The 'getConnection' function will return a connection based on the id passed in.
      *
+     * @param connectionId
      * @Table configurationConnections
-     *
-     * @param	connectionid	This will hold the connection id to find
      *
      * @return	This function will return a single connection object
      */
@@ -602,8 +603,6 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
      * The 'removeConnectionSenders' function will remove the authorized senders for the passed in connectionId.
      *
      * @param connectionId The connection Id to remove senders for
-     *
-     * @return THis function does not return anything
      */
     @Override
     @Transactional(readOnly = false)
@@ -618,8 +617,6 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
      * The 'removeConnectionReceivers' function will remove the authorized receivers for the passed in connectionId.
      *
      * @param connectionId The connection Id to remove receivers for
-     *
-     * @return THis function does not return anything
      */
     @Override
     @Transactional(readOnly = false)
@@ -634,8 +631,6 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
      * The 'updateConnection' function will update the status of the passed in connection
      *
      * @param connection The object holding the connection
-     *
-     * @return This function does not return anything.
      */
     @Override
     @Transactional(readOnly = false)
@@ -651,6 +646,7 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
      * @return The function will return a configurationSchedules object containing the details for the schedule.
      */
     @Transactional(readOnly = true)
+    @Override
     public configurationSchedules getScheduleDetails(int configId) {
         Query query = sessionFactory.getCurrentSession().createQuery("from configurationSchedules where configId = :configId");
         query.setParameter("configId", configId);
@@ -673,10 +669,9 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
      * The 'saveSchedule' function will create or update the utConfiguration schedule passed in.
      *
      * @param scheduleDetails The object that holds the utConfiguration schedule
-     *
-     * @return This function does not return anything.
      */
     @Transactional(readOnly = false)
+    @Override
     public void saveSchedule(configurationSchedules scheduleDetails) {
         sessionFactory.getCurrentSession().saveOrUpdate(scheduleDetails);
     }
@@ -701,9 +696,8 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
      * The 'updateMessageSpecs' function will save/update the utConfiguration message specs.
      *
      * @param messageSpecs The object that will hold the values from the message spec form
-     * @param clearField The value that will determine to clear out existing form fields if a new file is uploaded.
-     *
-     * @return This function does not return anything.
+     * @param transportDetailId
+     * @param clearFields
      */
     @Override
     @Transactional(readOnly = false)
@@ -737,6 +731,7 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
      * @param transportMethod The id of the transport method to find configurations 1 = File Upload 2 = ERG
      *
      * @return This function will return a list of ERG configurations.
+     * @throws java.lang.Exception
      */
     @Override
     @Transactional(readOnly = true)
@@ -795,6 +790,7 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
          */
         Criteria criteria = sessionFactory.getCurrentSession().createCriteria(utConfiguration.class);
         criteria.add(Restrictions.eq("status", true));
+	criteria.add(Restrictions.eq("deleted", false));
         criteria.add(Restrictions.eq("sourceType", 1));
         criteria.add(Restrictions.and(
                 Restrictions.in("id", ergConfigList)
@@ -1388,6 +1384,7 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
          */
         Criteria criteria = sessionFactory.getCurrentSession().createCriteria(utConfiguration.class);
         criteria.add(Restrictions.eq("status", true));
+	criteria.add(Restrictions.eq("deleted", false));
         criteria.add(Restrictions.eq("sourceType", 1));
         criteria.add(Restrictions.and(
                 Restrictions.in("id", ergConfigList)
@@ -1425,14 +1422,14 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
 
     @Override
     @Transactional(readOnly = true)
-    public List<configurationConnection> getConnectionsBySrcAndTargetConfigurations(
-		    int sourceConfigId, int targetConfigId) {
-	    Query query = sessionFactory.getCurrentSession().createQuery("from configurationConnection where sourceConfigId = :sourceConfigId and targetConfigId = :targetConfigId and status = TRUE");
-    query.setParameter("sourceConfigId", sourceConfigId);
-    query.setParameter("targetConfigId", targetConfigId);
+    public List<configurationConnection> getConnectionsBySrcAndTargetConfigurations(int sourceConfigId, int targetConfigId) {
+	
+	Query query = sessionFactory.getCurrentSession().createQuery("from configurationConnection where sourceConfigId = :sourceConfigId and targetConfigId = :targetConfigId and status = TRUE");
+	query.setParameter("sourceConfigId", sourceConfigId);
+	query.setParameter("targetConfigId", targetConfigId);
 
-    List<configurationConnection> connections = query.list();
-    return connections;
+	List<configurationConnection> connections = query.list();
+	return connections;
     }
     
     /**
@@ -1625,7 +1622,7 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
 	String sql = "select a.id, a.configName, b.orgName "
 		+ "from configurations a inner join "
 		+ "organizations b on b.id = a.orgId "
-		+ "where a.type = 1 and a.status = 1";
+		+ "where a.type = 1 and a.deleted = 0 and a.status = 1";
 	
 	Query query = sessionFactory.getCurrentSession().createSQLQuery(sql)
 		.setResultTransformer(Transformers.aliasToBean(utConfiguration.class));
