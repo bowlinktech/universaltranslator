@@ -23,12 +23,14 @@ import com.hel.ut.model.batchRetry;
 import com.hel.ut.model.batchUploads;
 import com.hel.ut.model.utConfiguration;
 import com.hel.ut.model.configurationConnection;
+import com.hel.ut.model.configurationConnectionSenders;
 import com.hel.ut.model.configurationDataTranslations;
 import com.hel.ut.model.configurationExcelDetails;
 import com.hel.ut.model.configurationFTPFields;
 import com.hel.ut.model.configurationFormFields;
 import com.hel.ut.model.configurationMessageSpecs;
 import com.hel.ut.model.configurationFileDropFields;
+import com.hel.ut.model.configurationSchedules;
 import com.hel.ut.model.configurationTransport;
 import com.hel.ut.model.configurationWebServiceFields;
 import com.hel.ut.model.fieldSelectOptions;
@@ -331,7 +333,7 @@ public class transactionInManagerImpl implements transactionInManager {
 	utUserActivity ua = new utUserActivity();
 	Integer batchStatusId = 29;
 	List<Integer> errorStatusIds = Arrays.asList(11, 13, 14, 16);
-
+	
 	//get batch details
 	batchUploads batch = getBatchDetails(batchUploadId);
 
@@ -347,11 +349,20 @@ public class transactionInManagerImpl implements transactionInManager {
 	// Check to make sure the file is valid for processing, valid file is a batch with SSL (3) or SR (6)*
 
 	boolean insertTargets = false;
+	
+	/**
+	* batches get processed again when user hits release button, maybe have separate method call for those that are just going 
+	* from pending release to release, have to think about scenario when upload file is huge 
+	 */
+	List<configurationTransport> handlingDetails = getHandlingDetailsByBatch(batchUploadId);
 
 	// we should only insert for batches that are just loaded
 	if (batch.getstatusId() == 36 || batch.getstatusId() == 43) {
 	    insertTargets = true;
 	}
+	
+	batchUploads updatedBatchDetails = getBatchDetails(batchUploadId);
+	
 	if ((batch.getstatusId() == 3 || batch.getstatusId() == 6 || batch.getstatusId() == 36 || batch.getstatusId() == 43)) {
 
 	    //insert log
@@ -476,12 +487,6 @@ public class transactionInManagerImpl implements transactionInManager {
 		return false;
 	    }
 
-	    /**
-	     * batches get processed again when user hits release button, maybe have separate method call for those that are just going 
-	     * from pending release to release, have to think about scenario when upload file is huge 
-	    */
-	    List<configurationTransport> handlingDetails = getHandlingDetailsByBatch(batchUploadId);
-
 	    //1 = Post errors to ERG 
 	    //2 = Reject record on error 
 	    //3 = Reject submission on error 4 = Pass through errors
@@ -549,26 +554,67 @@ public class transactionInManagerImpl implements transactionInManager {
 	     * we check batch to see if the batch has any rejected records. if it does, we send an email to notify reject.email in properties file
 	     *
 	     */
-	    if (batch.geterrorRecordCount() > 0) {
-		sendRejectNotification(batch);
+	    updatedBatchDetails = getBatchDetails(batchUploadId);
+	    
+	    if (updatedBatchDetails.geterrorRecordCount() > 0) {
+		sendRejectNotification(updatedBatchDetails);
 	    }
 
 	} // end of single batch insert 
 
 	// Insert all Targets is batch status = 24
+	boolean targetsInserted = false;
 	if (batchStatusId == 24) {
-	    assignBatchDLId(batchUploadId, batch.getConfigId());
-	}
+	    
+	    //Need to get the schedule for the configuration to find out if the targets need to be processed automatically
+	    configurationSchedules configurationScheduleDetails = configurationManager.getScheduleDetails(updatedBatchDetails.getConfigId());
+	    
+	    Integer scheduleType = 1;
+	    boolean processTargets = false;
+	    
+	    if(configurationScheduleDetails != null) {
+		scheduleType = configurationScheduleDetails.gettype();
+	    }
+	    
+	    //Create the targets automatically after processing
+	    if(scheduleType == 5 || scheduleType == 0) {
+		processTargets = true;
+	    }
+	    
+	    if(processTargets) {
+		//If no errors found then create the batch download entries
+		if(updatedBatchDetails.geterrorRecordCount() == 0) {
+		    assignBatchDLId(batchUploadId, batch.getConfigId());
+		    targetsInserted = true;
+		}
 
+		//If errors are found and the error handling is set to send only non errored transactions
+		//and there are successful tranasctions to send create the batch download entries
+		else if(handlingDetails.get(0).geterrorHandling() == 2 && (updatedBatchDetails.geterrorRecordCount() < updatedBatchDetails.gettotalRecordCount())) {
+		    assignBatchDLId(batchUploadId, batch.getConfigId());
+		    targetsInserted = true;
+		}
+		//If the error handling is set to send all transactions errored or not
+		else if(handlingDetails.get(0).geterrorHandling() == 4) {
+		    assignBatchDLId(batchUploadId, batch.getConfigId());
+		    targetsInserted = true;
+		}
+	    }
+	}
+	
+	
 	//clean
 	cleanAuditErrorTable(batch.getId());
 
 	//populate
 	populateAuditReport(batch.getId(), configurationManager.getMessageSpecs(batch.getConfigId()));
+	
+	//If no target batches created delete upload tables
+	if(!targetsInserted) {
+	    transactionInDAO.deleteBatchTransactionTables(batchUploadId);
+	}
 
-	/**
-	 * update log with transactionInIds *
-	 */
+	//update log with transactionInIds 
 	try {
 	    if (ua != null) {
 		usermanager.updateUserActivity(ua);
@@ -987,7 +1033,7 @@ public class transactionInManagerImpl implements transactionInManager {
 		String decodedFileName = batch.getutBatchName();
 		String decodedFileExt = batch.getoriginalFileName().substring(batch.getoriginalFileName().lastIndexOf("."));
 		String decodedFile = decodedFilePath + decodedFileName + decodedFileExt;
-
+		
 		boolean fileDecoded = false;
 		try {
 		    filemanager.decode((encodedFilePath + encodedFileName), decodedFile);
@@ -2805,7 +2851,7 @@ public class transactionInManagerImpl implements transactionInManager {
 
     @Override
     public void sendRejectNotification(batchUploads batch) throws Exception {
-
+	
 	mailMessage mail = new mailMessage();
 	mail.setfromEmailAddress("support@health-e-link.net");
 
@@ -2814,24 +2860,40 @@ public class transactionInManagerImpl implements transactionInManager {
 	ccAddresses.add("chadmccue05@gmail.com");
 
 	//build message
-	String message = "Batch " + batch.getutBatchName() + " contains " + batch.geterrorRecordCount() + " rejected transaction(s).";
+	String message = "Uploaded File (Batch Id:" + batch.getutBatchName() + ") contains " + batch.geterrorRecordCount() + " rejected transaction(s).";
 
 	message = message + "<br/><br/>Environment: " + myProps.getProperty("server.identity");
 	message = message + "<br/><br/>Batch Id: " + batch.getutBatchName();
+	message = message + "<br/><br/>Total Transactions: " + batch.gettotalRecordCount();
+	message = message + "<br/>Total Errors: " + batch.geterrorRecordCount();
 	message += "<br /><br />Sending Organization: " + batch.getorgName();
 
 	List<Transaction> transactions = getTransactionsByStatusId(batch.getId(), rejectIds, 5);
-
-	List<utUser> orgUsers = usermanager.getOrganizationContact(batch.getOrgId(), 1);
-
-	if (orgUsers != null && orgUsers.size() > 0) {
-	    if (orgUsers.get(0).getStatus() == true && !"".equals(orgUsers.get(0).getEmail())) {
-		ccAddresses.add(orgUsers.get(0).getEmail());
+	
+	//Need to get the connection details
+	List<configurationConnection> connectionList = configurationManager.getConnectionsBySourceConfiguration(batch.getConfigId());
+	
+	if(connectionList != null) {
+	    
+	    configurationConnection connectionDetails = connectionList.get(0);
+	    
+	    if(connectionDetails != null) {
+		List<configurationConnectionSenders> connectionSenders = configurationManager.getConnectionSenders(connectionDetails.getId());
+		
+		if(connectionSenders != null) {
+		    if(!connectionSenders.isEmpty()) {
+			connectionSenders.forEach(sender -> {
+			    if(sender.getSendEmailNotifications()) {
+				ccAddresses.add(sender.getEmailAddress());
+			    }
+			});
+		    }
+		}
 	    }
 	}
 
 	mail.setmessageBody(message);
-	mail.setmessageSubject("Rejected Referral submitted on " + myProps.getProperty("server.identity") + " environment");
+	mail.setmessageSubject("Uploaded File submitted on " + myProps.getProperty("server.identity") + " environment contains rejected transactions");
 	mail.settoEmailAddress(myProps.getProperty("reject.email"));
 
 	if (ccAddresses.size() > 0) {
@@ -2848,9 +2910,6 @@ public class transactionInManagerImpl implements transactionInManager {
 
 	List<Transaction> transactions = setTransactionInInfoByStatusId(batchId, statusIds, howMany);
 
-	for (Transaction transaction : transactions) {
-	    transaction.setSrcOrgName(organizationmanager.getOrganizationById(transaction.getorgId()).getOrgName());
-	}
 	return transactions;
 
     }
@@ -2982,7 +3041,7 @@ public class transactionInManagerImpl implements transactionInManager {
 	//we check to see if anything is running first
 	boolean run = true;
 	List<batchUploads> batchInProcess = getBatchesByStatusIds(Arrays.asList(4));
-
+	
 	//we check time stamp to see how long that file has been processing get the details
 	if (!batchInProcess.isEmpty()) {
 	    LocalDateTime d1;
@@ -3071,7 +3130,7 @@ public class transactionInManagerImpl implements transactionInManager {
 	    try {
 
 		List<batchUploads> batches = getBatchesByStatusIds(Arrays.asList(43));
-
+		
 		if (batches != null && batches.size() != 0) {
 		    //Parallel processing of batches
 		    ExecutorService executor = Executors.newCachedThreadPool();
@@ -3802,7 +3861,6 @@ public class transactionInManagerImpl implements transactionInManager {
 
 	if (batchesToCleanup != null) {
 	    if (!batchesToCleanup.isEmpty()) {
-		System.out.println("Clean up batch:");
 		transactionInDAO.batchUploadTableCleanUp(batchesToCleanup);
 	    }
 	}
@@ -3947,4 +4005,10 @@ public class transactionInManagerImpl implements transactionInManager {
 	    }
 	}
     }
+    
+    @Override
+    public void resetTransactionCounts(Integer batchUploadId) throws Exception {
+	 transactionInDAO.resetTransactionCounts(batchUploadId);
+    }
+    
 }

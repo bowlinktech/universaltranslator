@@ -324,4 +324,6 @@ public interface transactionInManager {
     List<batchDownloads> findBatchesToCleanUp() throws Exception;
     
     void batchUploadTableCleanUp() throws Exception;
+    
+    void resetTransactionCounts(Integer batchUploadId) throws Exception;
 }

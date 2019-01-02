@@ -630,10 +630,10 @@
 					<label class="control-label" for="errorHandling">Error Handling *</label>
 					<div>
 					    <label class="radio-inline">
-						<form:radiobutton id="errorHandling" path="errorHandling" value="2" disabled="${transportDetails.copiedTransportId > 0 ? 'true' : 'false'}" /> Reject individual records on error
+						<form:radiobutton id="errorHandling" path="errorHandling" value="2" disabled="${transportDetails.copiedTransportId > 0 ? 'true' : 'false'}" /> Reject individual transactions on error
 					    </label>
 					    <label class="radio-inline">
-						<form:radiobutton id="errorHandling" path="errorHandling" value="3" disabled="${transportDetails.copiedTransportId > 0 ? 'true' : 'false'}" /> Reject entire file on an error
+						<form:radiobutton id="errorHandling" path="errorHandling" value="3" disabled="${transportDetails.copiedTransportId > 0 ? 'true' : 'false'}" /> Reject entire file on a single transaction error
 					    </label>
 					    <label class="radio-inline">
 						<form:radiobutton id="errorHandling" path="errorHandling" value="4" disabled="${transportDetails.copiedTransportId > 0 ? 'true' : 'false'}" /> Send errors through to the target file

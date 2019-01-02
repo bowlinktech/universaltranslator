@@ -32,6 +32,7 @@ import com.hel.ut.model.pendingDeliveryTargets;
 import com.hel.ut.model.systemSummary;
 import com.hel.ut.model.transactionOutRecords;
 import com.hel.ut.model.custom.ConfigOutboundForInsert;
+import com.hel.ut.model.custom.batchErrorSummary;
 import com.hel.ut.reference.fileSystem;
 import com.hel.ut.restAPI.restfulManager;
 import com.hel.ut.service.fileManager;
@@ -1787,18 +1788,21 @@ public class transactionOutManagerImpl implements transactionOutManager {
 	    updateTargetBatchStatus(batchDownload.getId(), 30, "endDateTime");
 	    return 1;
 	}
+	
+	Integer totalErrorCount = 0;
 
 	//check R/O
 	List<configurationFormFields> reqFields = transactionInManager.getRequiredFieldsForConfig(batchDownload.getConfigId());
 
 	for (configurationFormFields cff : reqFields) {
+	    totalErrorCount += 1;
 	    insertFailedRequiredFields(cff, batchDownload.getId());
 	}
 	
 	//run validation
 	runValidations(batchDownload.getId(), batchDownload.getConfigId());
 	
-	Integer totalErrorCount = transactionInManager.getRecordCounts(batchDownload.getId(), transRELId, true, false);
+	totalErrorCount = transactionInManager.getRecordCounts(batchDownload.getId(), transRELId, true, false);
 	
 	if (totalErrorCount > 0) {
 	    updateTargetBatchStatus(batchDownload.getId(), 41, "endDateTime");
@@ -2184,4 +2188,5 @@ public class transactionOutManagerImpl implements transactionOutManager {
     public List<batchDownloads> getDownloadBatchesByBatchUploadId(Integer batchUploadId) throws Exception {
 	return transactionOutDAO.getDLBatchesByBatchUploadId(batchUploadId);
     }
+    
 }

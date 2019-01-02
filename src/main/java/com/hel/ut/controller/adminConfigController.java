@@ -229,10 +229,6 @@ public class adminConfigController {
             List<Organization> organizations = organizationmanager.getAllActiveOrganizations();
             mav.addObject("organizations", organizations);
 
-            //Need to get a list of active message types
-            List<messageType> messageTypes = messagetypemanager.getActiveMessageTypes();
-            mav.addObject("messageTypes", messageTypes);
-
             mav.addObject("existingName", "The configuration name " + configurationDetails.getconfigName().trim() + " already exists.");
             return mav;
         }
@@ -335,10 +331,6 @@ public class adminConfigController {
         List<Organization> organizations = organizationmanager.getAllActiveOrganizations();
         mav.addObject("organizations", organizations);
 
-        //Need to get a list of active message types
-        List<messageType> messageTypes = messagetypemanager.getActiveMessageTypes();
-        mav.addObject("messageTypes", messageTypes);
-        
         //Need to get a list of organization users 
         List<utUser> users = userManager.getUsersByOrganization(configurationDetails.getorgId());
         mav.addObject("users", users);
@@ -348,14 +340,7 @@ public class adminConfigController {
         configurationTransport transportDetails = utconfigurationTransportManager.getTransportDetails(configId);
         if (transportDetails != null) {
             configurationDetails.settransportMethod(utconfigurationTransportManager.getTransportMethodById(transportDetails.gettransportMethodId()));
-
-	    //No mappings needed for source configurations
-	    if(configurationDetails.getType() == 1) {
-		session.setAttribute("configmappings", 0);
-	    }
-	    else {
-		session.setAttribute("configmappings", 1);
-	    }
+	    session.setAttribute("configmappings", 1);
         }
 	
 	//Get a list of other active sourceconfigurations
@@ -887,14 +872,8 @@ public class adminConfigController {
             ModelAndView mav = new ModelAndView(new RedirectView("messagespecs"));
             return mav;
         } else {
-	    if(configDetails.getType() == 1) {
-		ModelAndView mav = new ModelAndView(new RedirectView("translations"));
-                return mav;
-	    }
-	    else {
-		ModelAndView mav = new ModelAndView(new RedirectView("mappings"));
-                return mav;
-	    }
+	   ModelAndView mav = new ModelAndView(new RedirectView("mappings"));
+	   return mav;
         }
 
     }
@@ -987,21 +966,29 @@ public class adminConfigController {
 	if(fields != null) {
 	    if(!fields.isEmpty()) {
 		fields.stream().map((formField) -> {
-		    if(formField.getAssociatedFieldDetails().contains("-")) {
-			String[] associatedFieldValues = formField.getAssociatedFieldDetails().split("-");
-			Integer associatedFieldId = Integer.parseInt(associatedFieldValues[0]);
-			Integer associatedFieldNo = Integer.parseInt(associatedFieldValues[1]);
-			formField.setAssociatedFieldId(associatedFieldId);
-			formField.setAssociatedFieldNo(associatedFieldNo);
+		    if(formField.getAssociatedFieldDetails() != null) {
+			if(formField.getAssociatedFieldDetails().contains("-")) {
+			    String[] associatedFieldValues = formField.getAssociatedFieldDetails().split("-");
+			    Integer associatedFieldId = Integer.parseInt(associatedFieldValues[0]);
+			    Integer associatedFieldNo = Integer.parseInt(associatedFieldValues[1]);
+			    formField.setAssociatedFieldId(associatedFieldId);
+			    formField.setAssociatedFieldNo(associatedFieldNo);
+			}
 		    }
 		    return formField;		    
 		}).map((formField) -> {
-		    if(formField.getAssociatedFieldId() == 0) {
-			formField.setUseField(false);
+		    if(formField.getAssociatedFieldDetails() != null) {
+			if(formField.getAssociatedFieldId() == 0) {
+			    formField.setUseField(false);
+			}
+			else {
+			    formField.setUseField(formField.getUseField());
+			}
 		    }
 		    else {
 			formField.setUseField(formField.getUseField());
 		    }
+		    
 		    return formField;		    
 		}).forEachOrdered((formField) -> {
 		    utconfigurationTransportManager.updateConfigurationFormFields(formField);

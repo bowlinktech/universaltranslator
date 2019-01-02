@@ -35,7 +35,6 @@
 				    <th scope="col" class="center-text">Id</th>
                                     <th scope="col">Configuration Name</th>
                                     <th scope="col">Organization</th>
-				    <th scope="col">Message Type</th>
                                     <th scope="col" class="center-text">Type</th>
                                     <th scope="col" class="center-text">Transport Method</th>
                                     <th scope="col" class="center-text">Date Created</th>
@@ -55,9 +54,6 @@
                                             </td>
                                            <td>
                                                 ${config.orgName}
-                                            </td>
-					     <td>
-                                                ${config.messageTypeName}
                                             </td>
                                             <td class="center-text">
                                                 <c:choose><c:when test="${config.type == 1}">Source</c:when><c:otherwise>Target</c:otherwise></c:choose>
@@ -102,7 +98,7 @@
                                     </c:forEach>
                                 </c:when>
                                 <c:otherwise>
-                                    <tr><td colspan="8" class="center-text">There are currently no configurations set up.</td></tr>
+                                    <tr><td colspan="7" class="center-text">There are currently no configurations set up.</td></tr>
                                 </c:otherwise>
                             </c:choose>
                         </tbody>

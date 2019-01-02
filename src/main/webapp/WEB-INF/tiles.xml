@@ -676,8 +676,8 @@
         <put-attribute name="page-section" value="section-processing" />
         <put-attribute name="title" value="Administrator - Processing Activities" />
         <put-attribute name="header" value="/WEB-INF/jsp/common/adminHeader.jsp?sect=activity" />
-        <put-attribute name="actions" value="/WEB-INF/jsp/administrator/processing-activities/actionBar.jsp?page=invalid" />
-        <put-attribute name="menu" value="/WEB-INF/jsp/administrator/processing-activities/menu.jsp?page=invalid" />
+        <put-attribute name="actions" value="/WEB-INF/jsp/administrator/processing-activities/actionBar.jsp?page=invalidin" />
+        <put-attribute name="menu" value="/WEB-INF/jsp/administrator/processing-activities/menu.jsp?page=invalidin" />
         <put-attribute name="body" value="/WEB-INF/jsp/administrator/processing-activities/invalidIn.jsp" />
         <put-attribute name="jscript" value="/dspResources/js/admin/processing-activities/invalidIn.js" />
     </definition>
@@ -687,8 +687,8 @@
         <put-attribute name="page-section" value="section-processing" />
         <put-attribute name="title" value="Administrator - Processing Activities" />
         <put-attribute name="header" value="/WEB-INF/jsp/common/adminHeader.jsp?sect=activity" />
-        <put-attribute name="actions" value="/WEB-INF/jsp/administrator/processing-activities/actionBar.jsp?page=invalid" />
-        <put-attribute name="menu" value="/WEB-INF/jsp/administrator/processing-activities/menu.jsp?page=invalid" />
+        <put-attribute name="actions" value="/WEB-INF/jsp/administrator/processing-activities/actionBar.jsp?page=invalidout" />
+        <put-attribute name="menu" value="/WEB-INF/jsp/administrator/processing-activities/menu.jsp?page=invalidout" />
         <put-attribute name="body" value="/WEB-INF/jsp/administrator/processing-activities/invalidOut.jsp" />
         <put-attribute name="jscript" value="/dspResources/js/admin/processing-activities/invalidOut.js" />
     </definition>

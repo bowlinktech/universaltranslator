@@ -1629,4 +1629,21 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
 	
         return query.list();
     }
+    
+    /**
+     * The 'getConnectionsBySourceConfiguration' will return a list of source connections for a passed in utConfiguration;
+     *
+     * @param configId The id of the utConfiguration to search connections for.
+     *
+     * @return This function will return a list of configurationConnection objects
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public List<configurationConnection> getConnectionsBySourceConfiguration(Integer configId) {
+        Query query = sessionFactory.getCurrentSession().createQuery("from configurationConnection where sourceConfigId = :configId");
+        query.setParameter("configId", configId);
+
+        List<configurationConnection> connections = query.list();
+        return connections;
+    }
 }

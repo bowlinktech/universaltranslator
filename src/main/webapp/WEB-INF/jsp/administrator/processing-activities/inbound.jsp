@@ -49,12 +49,12 @@
                     <table class="table table-striped table-hover table-default"  <c:if test="${not empty batches}">id="dataTable"</c:if>>
                             <thead>
                                 <tr>
-                                    <th scope="col">Sending Organization</th>
-                                    <th scope="col" style="width:50px">Batch ID</th>
+                                    <th scope="col">Organization</th>
+                                    <th scope="col" style="width:50px">Batch Details</th>
                                     <th scope="col" class="center-text">Transport Method</th>
                                     <th scope="col" class="center-text">Status</th>
-                                    <th scope="col">Transactions</th>
-                                    <th scope="col" class="center-text">Date Created</th>
+                                    <th scope="col"># of Transactions</th>
+                                    <th scope="col" class="center-text">Date Received</th>
                                     <th scope="col"></th>
                                 </tr>
                             </thead>
@@ -67,7 +67,7 @@
                                                 ${batch.orgName}
                                             </td>
                                             <td>
-						<strong>${batch.configName}</strong><br />
+						<strong><c:choose><c:when test="${not empty batch.configName}">${batch.configName}</c:when><c:otherwise>Invalid File</c:otherwise></c:choose></strong><br />
                                                 ${batch.utBatchName}
                                                 <c:if test="${batch.transportMethodId != 2}">
                                                     <c:set var="text" value="${fn:split(batch.originalFileName,'.')}" />

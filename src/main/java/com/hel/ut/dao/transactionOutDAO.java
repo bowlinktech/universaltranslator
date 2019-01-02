@@ -14,6 +14,7 @@ import com.hel.ut.model.configurationTransport;
 import com.hel.ut.model.targetOutputRunLogs;
 import com.hel.ut.model.transactionOutRecords;
 import com.hel.ut.model.custom.ConfigOutboundForInsert;
+import com.hel.ut.model.custom.batchErrorSummary;
 
 import java.math.BigInteger;
 import java.util.Date;

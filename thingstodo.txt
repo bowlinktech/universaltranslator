@@ -1,21 +1,5 @@
-/** 7.24.17 **/
+/** 1.2.19 **/
 
-1. Need to modify massoutput and let it be one to many relationship.
-Currenlty it is one to one relationship but shoudl be one mass inbound to a few mass outbound targets
-Need to test what will break - Grace
+1. Need to review inbound messages that are not set to automatically process. I don't think the "Pending" section is activated and the inbound process just processes the file automatically without looking at the schedule.
 
-2. need to figure out when we clear out transactionTranslatedIn, transactionInRecords, transactionTranslatedOut, transactionOutRecords tables.
-- Grace
-
-3. I have two configurations for the same source org, same target org, different message type but when I drop the file it always 
-uses the first connection found.
-
-4. Couldn't process my second excel test when it had empty columns. The xlsxToTxt didn't recognize an entire empty column as null, 
-it just skipped it and screwed up the txt file, it was missing and entire column.
-
-
-/** 9.21.17 **/
-
-1. Need to set up IL front-end to review uploaded eLMIS and DHIS2 users.
-
-2. eLMIS to DHIS2 submissions, if error for a record to we pass that or not pass it to DHIS2?
+2. Need to review the outbound schedule. Right now everything is just processing automatically.

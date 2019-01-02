@@ -11,9 +11,10 @@
                 <div class="panel-body">
                     <dt>
                     <dt>System Summary:</dt>
-                    <dd><strong>Batches Sent out the Past Hour:</strong> <fmt:formatNumber value="${summaryDetails.batchesPastHour}" /></dd>
-                    <dd><strong>Batches Sent out today:</strong> <fmt:formatNumber value="${summaryDetails.batchesToday}" /></dd>
-                    <dd><strong>Batches Sent out This Week:</strong> <fmt:formatNumber value="${summaryDetails.batchesThisWeek}" /></dd>
+                    <dd><strong>Batches Received in the Past Hour:</strong> <fmt:formatNumber value="${summaryDetails.batchesPastHour}" /></dd>
+                    <dd><strong>Batches Received in today:</strong> <fmt:formatNumber value="${summaryDetails.batchesToday}" /></dd>
+                    <dd><strong>Batches Received in This Week:</strong> <fmt:formatNumber value="${summaryDetails.batchesThisWeek}" /></dd>
+                    <dd><strong>Total Batches in Error:</strong> <fmt:formatNumber value="${summaryDetails.batchesInError}" /></dd>
                     </dt>
                 </div>
             </section>
@@ -43,12 +44,12 @@
                             <thead>
                                 <tr>
                                     <th scope="col">Organization</th>
-                                    <th scope="col">Batch ID</th>
-                                    <th scope="col">Generated From Batch</th>
+                                    <th scope="col">Batch Details</th>
+                                    <th scope="col">Associated Inbound Batch</th>
                                     <th scope="col" class="center-text">Transport Method</th>
                                     <th scope="col" class="center-text">Status</th>
                                     <th scope="col" class="center-text"># of Transactions</th>
-                                    <th scope="col" class="center-text">Date Created</th>
+                                    <th scope="col" class="center-text">Date Delivered</th>
                                     <th scope="col"></th>
                                 </tr>
                             </thead>
@@ -104,12 +105,9 @@
                                                 <a href="#statusModal" data-toggle="modal" class="viewStatus" rel="${batch.statusId}" title="View this Status">${batch.statusValue}</a>
                                             </td>
                                             <td class="center-text">
-                                               <fmt:formatNumber value = "${batch.totalRecordCount}" type = "number"/>
-					       <c:if test="${fn:contains(batch.configName, 'Service Received')}">
-						   <a href="#" data-container="body" data-toggle="tooltip" data-placement="top" data-html="true" data-original-title="<p style='width:350px;'><p style='text-align:left'>This number is based on unique patients, multiple services received have been grouped togther under a single visit.</p><p style='text-align:left'>This only applies for service received message types.</p></p>">
-							<span class="glyphicon glyphicon-exclamation-sign" style="cursor:pointer"></span>
-						    </a>
-					       </c:if>
+                                                Total Transactions: <strong><fmt:formatNumber value = "${batch.totalRecordCount}" type = "number"/></strong>
+						<br />
+						Total Error Transactions: <strong><fmt:formatNumber value = "${batch.totalErrorCount}" type = "number"/></strong>
                                             </td>
                                             <td class="center-text"><fmt:formatDate value="${batch.dateCreated}" type="both" pattern="M/dd/yyyy h:mm:ss a" /></td>
                                             <td>

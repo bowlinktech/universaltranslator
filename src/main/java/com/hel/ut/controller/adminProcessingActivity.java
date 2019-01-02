@@ -1061,15 +1061,7 @@ public class adminProcessingActivity {
 		List<batchErrorSummary> batchErrorSummary = transactionInManager.getBatchErrorSummary(batchDetails.getId());
 		mav.addObject("batchErrorSummary", batchErrorSummary);
 	    }
-                 
-	    if(orgDetails.getHelRegistryOrgId()> 0) {
-		canReset = false;
-	    }
-	    
-	    if(orgDetails.getHelRegistryId()> 0) {
-		showButtons = false;
-	    }
-	    
+           
 	    
 	    //If allowed to cancel check if the outbound targets have already been sent
 	    if(canCancel) {
@@ -1152,6 +1144,12 @@ public class adminProcessingActivity {
             } 
 	    else if (batchOption.equalsIgnoreCase("reset")) {
                 strBatchOption = "Reset Batch";
+		
+		//Clear transaction counts
+		transactionInManager.resetTransactionCounts(batchId);
+		
+		//Delete batch transaction tables
+		transactionInManager.deleteBatchTransactionTables(batchId);
                 transactionInManager.updateBatchStatus(batchId, 42, "startDateTime");
             } 
 	    else if (batchOption.equalsIgnoreCase("releaseBatch")) {
@@ -1503,6 +1501,10 @@ public class adminProcessingActivity {
 
         ModelAndView mav = new ModelAndView();
         mav.setViewName("/administrator/processing-activity/rejected");
+	
+	/* Get system inbound summary */
+        systemSummary summaryDetails = transactionInManager.generateSystemInboundSummary();
+        mav.addObject("summaryDetails", summaryDetails);
 
         if ("".equals(searchParameters.getsection()) || !"rejected".equals(searchParameters.getsection())) {
             searchParameters.setfromDate(fromDate);
@@ -1516,12 +1518,12 @@ public class adminProcessingActivity {
         mav.addObject("fromDate", fromDate);
         mav.addObject("toDate", toDate);
         mav.addObject("originalDate", originalDate);
-
-        /* Get all inbound transactions */
-        try {
+	
+	try {
 
             Integer fetchCount = 0;
-            List<batchUploads> rejectedBatches = transactionInManager.getAllRejectedBatches(fromDate, toDate, fetchCount);
+	    
+	    List<batchUploads> rejectedBatches = transactionInManager.getAllRejectedBatches(fromDate, toDate, fetchCount);
 
             if (!rejectedBatches.isEmpty()) {
 		
@@ -1531,7 +1533,7 @@ public class adminProcessingActivity {
                 for (utConfiguration c : configurationList) {
                     cMap.put(c.getId(), c.getconfigName());
                 }
-
+		
                 //we can map the process status so we only have to query once
                 List<lu_ProcessStatus> processStatusList = sysAdminManager.getAllProcessStatus();
                 Map<Integer, String> psMap = new HashMap<Integer, String>();
@@ -1580,7 +1582,7 @@ public class adminProcessingActivity {
             mav.addObject("batches", rejectedBatches);
 
         } catch (Exception e) {
-            throw new Exception("Error occurred viewing the batches with rejected transactions", e);
+            throw new Exception("Error occurred viewing the all uploaded batches.", e);
         }
 
         return mav;
@@ -1618,14 +1620,21 @@ public class adminProcessingActivity {
         searchParameters.settoDate(toDate);
         searchParameters.setsection("rejected");
 
-        /* Get all inbound transactions */
         try {
 
             Integer fetchCount = 0;
-            /* Need to get a list of all uploaded batches */
-            List<batchUploads> rejectedBatches = transactionInManager.getAllRejectedBatches(fromDate, toDate, fetchCount);
+	    
+	    List<batchUploads> rejectedBatches = transactionInManager.getAllRejectedBatches(fromDate, toDate, fetchCount);
 
             if (!rejectedBatches.isEmpty()) {
+		
+		//we can map the process status so we only have to query once
+                List<utConfiguration> configurationList = configurationManager.getConfigurations();
+                Map<Integer, String> cMap = new HashMap<Integer, String>();
+                for (utConfiguration c : configurationList) {
+                    cMap.put(c.getId(), c.getconfigName());
+                }
+		
                 //we can map the process status so we only have to query once
                 List<lu_ProcessStatus> processStatusList = sysAdminManager.getAllProcessStatus();
                 Map<Integer, String> psMap = new HashMap<Integer, String>();
@@ -1656,6 +1665,8 @@ public class adminProcessingActivity {
 
                 for (batchUploads batch : rejectedBatches) {
 
+                    //the count is in totalRecordCount already, can skip re-count
+                    // batch.settotalTransactions(transactionInManager.getRecordCounts(batch.getId(), statusIds, false, false));
                     batch.setstatusValue(psMap.get(batch.getstatusId()));
 
                     batch.setorgName(orgMap.get(batch.getOrgId()));
@@ -1663,13 +1674,16 @@ public class adminProcessingActivity {
                     batch.settransportMethod(tmMap.get(batch.gettransportMethodId()));
 
                     batch.setusersName(userMap.get(batch.getuserId()));
+		    
+		    batch.setConfigName(cMap.get(batch.getConfigId()));
+
                 }
             }
 
             mav.addObject("batches", rejectedBatches);
 
         } catch (Exception e) {
-            throw new Exception("Error occurred viewing the batches with rejected transactions.", e);
+            throw new Exception("Error occurred viewing the all uploaded batches.", e);
         }
 
         return mav;
@@ -2413,12 +2427,78 @@ public class adminProcessingActivity {
         mav.addObject("fromDate", fromDate);
         mav.addObject("toDate", toDate);
         mav.addObject("originalDate", originalDate);
+	
+	/* Get system inbound summary */
+        systemSummary summaryDetails = transactionInManager.generateSystemInboundSummary();
+        mav.addObject("summaryDetails", summaryDetails);
 
-       Integer fetchCount = 0;
-       List<batchUploads> batchList = transactionInManager.getBatchesByStatusIdsAndDate(fromDate, toDate, fetchCount, Arrays.asList(1, 7, 25, 29, 30, 39));
-       mav.addObject("batchList", batchList);
+       
+       try {
 
-        
+            Integer fetchCount = 0;
+	    
+	    List<batchUploads> invalidInboundBatches = transactionInManager.getBatchesByStatusIdsAndDate(fromDate, toDate, fetchCount, Arrays.asList(1, 7, 25, 29, 30, 39));
+       
+            if (!invalidInboundBatches.isEmpty()) {
+		
+		//we can map the process status so we only have to query once
+                List<utConfiguration> configurationList = configurationManager.getConfigurations();
+                Map<Integer, String> cMap = new HashMap<Integer, String>();
+                for (utConfiguration c : configurationList) {
+                    cMap.put(c.getId(), c.getconfigName());
+                }
+		
+                //we can map the process status so we only have to query once
+                List<lu_ProcessStatus> processStatusList = sysAdminManager.getAllProcessStatus();
+                Map<Integer, String> psMap = new HashMap<Integer, String>();
+                for (lu_ProcessStatus ps : processStatusList) {
+                    psMap.put(ps.getId(), ps.getDisplayCode());
+                }
+
+                //same with transport method names
+                List<TransportMethod> transporthMethods = configurationTransportManager.getTransportMethods(Arrays.asList(0, 1));
+                Map<Integer, String> tmMap = new HashMap<Integer, String>();
+                for (TransportMethod tms : transporthMethods) {
+                    tmMap.put(tms.getId(), tms.getTransportMethod());
+                }
+
+                //if we have lots of organization in the future we can tweak this to narrow down to orgs with batches
+                List<Organization> organizations = organizationmanager.getOrganizations();
+                Map<Integer, String> orgMap = new HashMap<Integer, String>();
+                for (Organization org : organizations) {
+                    orgMap.put(org.getId(), org.getOrgName());
+                }
+
+                //same goes for users
+                List<utUser> users = usermanager.getAllUsers();
+                Map<Integer, String> userMap = new HashMap<Integer, String>();
+                for (utUser user : users) {
+                    userMap.put(user.getId(), (user.getFirstName() + " " + user.getLastName()));
+                }
+
+                for (batchUploads batch : invalidInboundBatches) {
+
+                    //the count is in totalRecordCount already, can skip re-count
+                    // batch.settotalTransactions(transactionInManager.getRecordCounts(batch.getId(), statusIds, false, false));
+                    batch.setstatusValue(psMap.get(batch.getstatusId()));
+
+                    batch.setorgName(orgMap.get(batch.getOrgId()));
+
+                    batch.settransportMethod(tmMap.get(batch.gettransportMethodId()));
+
+                    batch.setusersName(userMap.get(batch.getuserId()));
+		    
+		    batch.setConfigName(cMap.get(batch.getConfigId()));
+
+                }
+            }
+
+            mav.addObject("batches", invalidInboundBatches);
+
+        } catch (Exception e) {
+            throw new Exception("Error occurred viewing the invalid inbound batches.", e);
+        }
+       
         return mav;
 
     }
@@ -2427,6 +2507,12 @@ public class adminProcessingActivity {
      * The '/invalidOut' GET / Post request will serve up the list of inbound batches that errored
      *
      *
+     * @param fromDate
+     * @param toDate
+     * @param request
+     * @param response
+     * @param session
+     * @return 
      * @Objects	(1) An object containing all the found invalidIn
      *
      * @throws Exception
@@ -2459,11 +2545,89 @@ public class adminProcessingActivity {
         mav.addObject("fromDate", fromDate);
         mav.addObject("toDate", toDate);
         mav.addObject("originalDate", originalDate);
+	
+	/* Get system inbound summary */
+        systemSummary summaryDetails = transactionInManager.generateSystemInboundSummary();
+        mav.addObject("summaryDetails", summaryDetails);
+	
+	try {
+	    Integer fetchCount = 0;
+	    List<batchDownloads> invalidOutboundBatches = transactionOutManager.getBatchesByStatusIdsAndDate(fromDate, toDate, fetchCount, Arrays.asList(1, 7, 25, 29, 30, 39));
 
-       Integer fetchCount = 0;
-       List<batchDownloads> batchList = transactionOutManager.getBatchesByStatusIdsAndDate(fromDate, toDate, fetchCount, Arrays.asList(1, 7, 25, 29, 30, 39));
-       mav.addObject("batchList", batchList);
+	     List<Integer> statusIds = new ArrayList();
 
+            if (!invalidOutboundBatches.isEmpty()) {
+		
+		//we can map the process status so we only have to query once
+                List<utConfiguration> configurationList = configurationManager.getConfigurations();
+                Map<Integer, String> cMap = new HashMap<Integer, String>();
+                for (utConfiguration c : configurationList) {
+                    cMap.put(c.getId(), c.getconfigName());
+                }
+
+                //we can map the process status so we only have to query once
+                List<lu_ProcessStatus> processStatusList = sysAdminManager.getAllProcessStatus();
+                Map<Integer, String> psMap = new HashMap<Integer, String>();
+                for (lu_ProcessStatus ps : processStatusList) {
+                    psMap.put(ps.getId(), ps.getDisplayCode());
+                }
+
+                //same with transport method names
+                List<TransportMethod> transporthMethods = configurationTransportManager.getTransportMethods(Arrays.asList(0, 1));
+                Map<Integer, String> tmMap = new HashMap<Integer, String>();
+                for (TransportMethod tms : transporthMethods) {
+                    tmMap.put(tms.getId(), tms.getTransportMethod());
+                }
+
+                //if we have lots of organization in the future we can tweak this to narrow down to orgs with batches
+                List<Organization> organizations = organizationmanager.getOrganizations();
+                Map<Integer, String> orgMap = new HashMap<Integer, String>();
+                for (Organization org : organizations) {
+                    orgMap.put(org.getId(), org.getOrgName());
+                }
+
+                //same goes for users
+                List<utUser> users = usermanager.getAllUsers();
+                Map<Integer, String> userMap = new HashMap<Integer, String>();
+                for (utUser user : users) {
+                    userMap.put(user.getId(), (user.getFirstName() + " " + user.getLastName()));
+                }
+
+                for (batchDownloads batch : invalidOutboundBatches) {
+
+		    String fileDownloadExt = batch.getoutputFIleName().substring(batch.getoutputFIleName().lastIndexOf(".") + 1);
+		    String newfileName = new StringBuilder().append(batch.getutBatchName()).append(".").append(fileDownloadExt).toString();
+		    
+		    batch.setoutputFIleName(newfileName);
+
+                    batch.setstatusValue(psMap.get(batch.getstatusId()));
+
+                    batch.setorgName(orgMap.get(batch.getOrgId()));
+
+                    batch.settransportMethod(tmMap.get(batch.gettransportMethodId()));
+
+                    batch.setusersName(userMap.get(batch.getuserId()));
+		    
+		    batchUploads batchUploadDetails = transactionInManager.getBatchDetails(batch.getBatchUploadId());
+
+		    batch.setFromBatchName(batchUploadDetails.getutBatchName());
+		    if (batchUploadDetails.gettransportMethodId() == 5 || batchUploadDetails.gettransportMethodId() == 1) {
+			String fileExt = batchUploadDetails.getoriginalFileName().substring(batchUploadDetails.getoriginalFileName().lastIndexOf(".") + 1);
+			String newsrcfileName = new StringBuilder().append(batchUploadDetails.getutBatchName()).append(".").append(fileExt).toString();
+			batch.setFromBatchFile(newsrcfileName);
+		    }
+		    batch.setFromOrgId(batchUploadDetails.getOrgId());
+
+		    batch.setConfigName(cMap.get(batch.getConfigId()));
+                }
+            }
+
+            mav.addObject("batches", invalidOutboundBatches);
+
+        } catch (Exception e) {
+            throw new Exception("Error occurred viewing the all downloaded batches. Error:" + e.getMessage(), e);
+        }
+       
         
         return mav;
 
@@ -3351,9 +3515,9 @@ public class adminProcessingActivity {
             
             mav.addObject("batchDetails", batchDetails);
 	    
-	    //We should never have target errors
+	    
             if (batchDetails.gettotalErrorCount()> 0) {
-		//List<batchErrorSummary> batchErrorSummary = transactionInManager.getBatchErrorSummary(batchDetails.getId());
+		//List<batchErrorSummary> batchErrorSummary = transactionOutManager.getBatchErrorSummary(batchDetails.getId());
 		//mav.addObject("batchErrorSummary", batchErrorSummary);
 	    }
 	         

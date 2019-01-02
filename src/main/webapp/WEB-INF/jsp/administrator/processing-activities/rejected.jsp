@@ -5,6 +5,21 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
 
 <div class="main clearfix" role="main">
+    <div class="row-fluid">
+        <div class="col-md-12">
+            <section class="panel panel-default">
+                <div class="panel-body">
+                    <dt>
+                    <dt>System Summary:</dt>
+                    <dd><strong>Batches Received in the Past Hour:</strong> <fmt:formatNumber value="${summaryDetails.batchesPastHour}" /></dd>
+                    <dd><strong>Batches Received in today:</strong> <fmt:formatNumber value="${summaryDetails.batchesToday}" /></dd>
+                    <dd><strong>Batches Received in This Week:</strong> <fmt:formatNumber value="${summaryDetails.batchesThisWeek}" /></dd>
+                    <dd><strong>Total Batches in Error:</strong> <fmt:formatNumber value="${summaryDetails.batchesInError}" /></dd>
+                    </dt>
+                </div>
+            </section>
+        </div>
+    </div>
     <div class="col-md-12">
         <section class="panel panel-default">
             <div class="panel-body">
@@ -34,12 +49,12 @@
                     <table class="table table-striped table-hover table-default"  <c:if test="${not empty batches}">id="dataTable"</c:if>>
                             <thead>
                                 <tr>
-                                    <th scope="col">Sending Organization</th>
-                                    <th scope="col" style="width:50px">Batch ID</th>
-                                    <th scope="col" class="center-text">Transport</th>
+                                    <th scope="col">Organization</th>
+                                    <th scope="col" style="width:50px">Batch Details</th>
+                                    <th scope="col" class="center-text">Transport Method</th>
                                     <th scope="col" class="center-text">Status</th>
-                                    <th scope="col">Transactions</th>
-                                    <th scope="col" class="center-text">Date Created</th>
+                                    <th scope="col"># of Transactions</th>
+                                    <th scope="col" class="center-text">Date Received</th>
                                     <th scope="col"></th>
                                 </tr>
                             </thead>
@@ -50,31 +65,46 @@
                                         <tr  style="cursor: pointer">
                                             <td scope="row">
                                                 ${batch.orgName}
-                                                <br />User: ${batch.usersName}
                                             </td>
                                             <td>
-						<strong>${batch.configName}</strong><br />
-						<a href="<c:url value='/administrator/processing-activity/inbound/${batch.utBatchName}' />" title="View Inbound Batch" role="button">${batch.utBatchName}</a>
+						<strong><c:choose><c:when test="${not empty batch.configName}">${batch.configName}</c:when><c:otherwise>Invalid File</c:otherwise></c:choose></strong><br />
+                                                ${batch.utBatchName}
                                                 <c:if test="${batch.transportMethodId != 2}">
                                                     <c:set var="text" value="${fn:split(batch.originalFileName,'.')}" />
                                                     <c:set var="ext" value="${text[fn:length(text)-1]}" />
                                                     <br />
-                                                    <c:set var="hrefLink" value="/FileDownload/downloadFile.do?filename=${batch.utBatchName}.${ext}&foldername=archivesIn"/>
+                                                    <c:set var="hrefLink" value="/FileDownload/downloadFile.do?filename=archive_${batch.utBatchName}.${ext}&foldername=archivesIn"/>
 
-                                                    <c:if test="${batch.transportMethodId  == 6}">
+                                                    <c:if test="${batch.transportMethodId == 6}">
                                                         <c:set var="hrefLink" value="/FileDownload/downloadFile.do?filename=${batch.utBatchName}_dec.${ext}&foldername=archivesIn"/>
                                                     </c:if>
+						    <c:if test="${batch.transportMethodId == 10 || batch.transportMethodId == 6 || batch.transportMethodId == 9}">
+							<c:set var="hrefPipeLink" value="/FileDownload/downloadFile.do?filename=${batch.utBatchName}_dec.txt&foldername=archivesIn"/>
+						    </c:if>
 
                                                     <a href="${hrefLink}" title="View Original File">
                                                         ${batch.originalFileName}
                                                     </a>
+						    <br/>
+						    <c:if test="${(batch.transportMethodId == 10 || batch.transportMethodId == 6 || batch.transportMethodId == 9) && batch.statusId != 42}">
+							<a href="${hrefPipeLink}" title="View Pipe File">
+							    Translated File - ${batch.utBatchName}
+							</a>
+						    </c:if>
                                                 </c:if>
                                             </td>
                                             <td class="center-text">
-                                                ${batch.transportMethod}
+						<c:choose>
+						    <c:when test="${batch.transportMethod == 'Rest API'}">
+							<a href="/administrator/processing-activity/apimessages/${batch.utBatchName}" title="View Rest API Message">${batch.transportMethod}</a>
+						    </c:when>
+						    <c:otherwise>
+							${batch.transportMethod}
+						    </c:otherwise>
+                                                </c:choose>
                                             </td>
                                             <td class="center-text">
-                                                <a href="#statusModal" data-toggle="modal" class="viewStatus" rel="${batch.statusId}" title="View this Status">${batch.statusValue}</a>
+                                               <a href="#statusModal" data-toggle="modal" class="viewStatus" rel="${batch.statusId}" title="View this Status">${batch.statusValue}</a>
                                             </td>
                                             <td>
                                                 Total Transactions: <strong><fmt:formatNumber value = "${batch.totalRecordCount}" type = "number"/></strong>
@@ -103,6 +133,15 @@
 								</a>
 							    </li>
 							</c:if>
+							<c:if test="${sessionScope.userDetails.roleId == 1}">
+							    <li class="divider"></li>
+							    <li>
+								<a href="javascript:void(0);" rel="${batch.utBatchName}" class="deleteTransactions" title="Delete Batch Transactions">
+								    <span class="glyphicon glyphicon-remove"></span>
+								    Delete Batch
+								</a>
+							    </li>
+							</c:if>
 						    </ul>
 						</div>
                                             </td>
@@ -110,9 +149,9 @@
                                     </c:forEach>     
                                 </c:when>   
                                 <c:otherwise>
-                                    <tr><td colspan="7" class="center-text">There are currently no submitted batches with rejected transactions.</td></tr>
+                                    <tr><td colspan="7" class="center-text">There were no files submitted in the date range selected.</td></tr>
                                 </c:otherwise>
-                            </c:choose>           
+                            </c:choose>       
                         </tbody>
                     </table>
                 </div>

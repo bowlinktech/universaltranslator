@@ -45,8 +45,8 @@
                                 <tr>
 				    <th scope="col" class="center-text">Message Id</th>
 				    <th scope="col" class="center-text">Config Id</th>
-                                    <th scope="col">Send From Organization</th>
-                                    <th scope="col">Inbound Batch</th>
+                                    <th scope="col">Organization</th>
+                                    <th scope="col">Associated Inbound Batch</th>
                                     <th scope="col" class="center-text">Status</th>
                                     <th scope="col" class="center-text">Error<br/>(if any)</th>
                                     <th scope="col" class="center-text">Date Received</th>

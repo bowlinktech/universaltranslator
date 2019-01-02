@@ -16,7 +16,14 @@
                         <a href="javascript:void(0);" title="Configuration Transport Details" class="unstyled-link">Configuration - Transport Method</a>
                     </c:when>
                     <c:when test="${param['page'] == 'mappings'}">
-                        <a href="javascript:void(0);" title="Configuration Field Mappings" class="unstyled-link">Configuration - Field Mappings</a>
+			<c:choose>
+			    <c:when test="${configurationDetails.type == 1}">
+				<a href="javascript:void(0);" title="Configuration Field Mappings" class="unstyled-link">Configuration - Field Settings</a>
+			    </c:when>
+			    <c:otherwise>
+				<a href="javascript:void(0);" title="Configuration Field Mappings" class="unstyled-link">Configuration - Field Mappings</a>
+			    </c:otherwise>
+			</c:choose>
                     </c:when>
                     <c:when test="${param['page'] == 'ERGCustomize'}">
                         <a href="javascript:void(0);" title="Configuration ERG Customization" class="unstyled-link">Configuration - ERG Customization</a>

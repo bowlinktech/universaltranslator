@@ -191,4 +191,6 @@ public interface utConfigurationDAO {
     watchlistEntry getWatchListEntry(Integer entryId) throws Exception;
     
     List<utConfiguration> getAllActiveSourceConfigurations() throws Exception;
+    
+    List<configurationConnection> getConnectionsBySourceConfiguration(Integer configId);
 }

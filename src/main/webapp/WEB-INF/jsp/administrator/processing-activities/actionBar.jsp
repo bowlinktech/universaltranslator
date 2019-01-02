@@ -11,7 +11,7 @@
                         <a href="javascript:void(0);" title="Inbound Batches" class="unstyled-link">Inbound Batches</a>
                     </c:when>
                     <c:when test="${param['page'] == 'rejected' || page == 'rejected'}">
-                        <a href="javascript:void(0);" title="Rejected Batches" class="unstyled-link">Batches with Rejected Transactions</a>
+                        <a href="javascript:void(0);" title="Rejected Batches" class="unstyled-link">Inbound Batches with Rejected Transactions</a>
                     </c:when>    
                     <c:when test="${param['page'] == 'outbound'}">
                         <a href="javascript:void(0);" title="Outbound Batches" class="unstyled-link">Outbound Batches</a>
@@ -34,8 +34,11 @@
 		    <c:when test="${param['page'] == 'report'}">
                         <a href="javascript:void(0);" title="Activity Report" class="unstyled-link">Activity Report</a>
                     </c:when>
-		    <c:when test="${param['page'] == 'invalid'}">
-                        <a href="javascript:void(0);" title="Invalid Batches" class="unstyled-link">Invalid Batches</a>
+		    <c:when test="${param['page'] == 'invalidin'}">
+                        <a href="javascript:void(0);" title="Invalid Inbound Batches" class="unstyled-link">Invalid Inbound Batches</a>
+                    </c:when>
+		    <c:when test="${param['page'] == 'invalidout'}">
+                        <a href="javascript:void(0);" title="Invalid Outbound Batches" class="unstyled-link">Invalid Outbound Batches</a>
                     </c:when>
                 </c:choose>
             </h1>

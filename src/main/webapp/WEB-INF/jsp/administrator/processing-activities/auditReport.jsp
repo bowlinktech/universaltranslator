@@ -25,7 +25,19 @@
 			    <div class="${showButtons ? 'col-md-4' : 'col-md-6'}">
 				<section class="panel panel-default panel-stats" role="widget" aria-labelleby="Messages Delivered">
 				    <div class="panel-body">
-					<span class="stat-number"><a href="javascript:void(0);"><c:choose><c:when test="${batchDetails.errorRecordCount >= 0}"><fmt:formatNumber value = "${batchDetails.errorRecordCount}" type = "number"/></c:when><c:otherwise>0</c:otherwise></c:choose></a></span>
+					<span class="stat-number">
+					    <a href="javascript:void(0);">
+						<c:choose>
+						    <c:when test="${!batchDownload && batchDetails.errorRecordCount >= 0}">
+							<fmt:formatNumber value = "${batchDetails.errorRecordCount}" type = "number"/>
+						    </c:when>
+						    <c:when test="${batchDownload && batchDetails.totalErrorCount >= 0}">
+							<fmt:formatNumber value = "${batchDetails.totalErrorCount}" type = "number"/>
+						    </c:when>
+						    <c:otherwise>0</c:otherwise>
+						</c:choose>
+					    </a>
+					</span>
 					<h3>Rejected Transactions</h3>
 				    </div>
 				</section>
@@ -36,24 +48,24 @@
 					<div class="panel-body">
 					    <div class="btn-group-vertical">
 						<c:if test="${canSend == true}">
-						    <input type="button" id="release" class="btn btn-success btn-small releaseBatch" rel="releaseBatch" rel2="${batchDetails.id}"  value="Release" />
+						    <input type="button" id="release" class="btn btn-success btn-small releaseBatch" rel="releaseBatch" rel2="${batchDetails.id}"  value="Release" /><br />
 						</c:if>
 						<c:if test="${canEdit}">
-						    <input type="button" id="rejectMessages" class="btn btn-danger btn-small rejectMessages" value="Reject All Errors" />
+						    <input type="button" id="rejectMessages" class="btn btn-danger btn-small rejectMessages" value="Reject All Errors" /><br />
 						</c:if>
 						<c:if test="${batchDetails.statusId == 2}">
-						    <input type="button" id="processBatch" class="btn btn-success btn-small processBatch" rel="processBatch" rel2="${batchDetails.id}" value="Load Batch" />
+						    <input type="button" id="processBatch" class="btn btn-success btn-small processBatch" rel="processBatch" rel2="${batchDetails.id}" value="Load Batch" /><br />
 						</c:if>
 						<c:if test="${batchDetails.statusId == 3 || batchDetails.statusId == 36}">
-						    <input type="button" id="processBatch" class="btn btn-success btn-small processBatch" rel="processBatch" rel2="${batchDetails.id}" value="Process Batch" />
+						    <input type="button" id="processBatch" class="btn btn-success btn-small processBatch" rel="processBatch" rel2="${batchDetails.id}" value="Process Batch" /><br />
 						</c:if>
 						<c:if test="${canCancel && batchDetails.statusId != 4}">
 						    <c:choose>
 							<c:when test="${batchDownload}">
-							     <input type="button" id="cancel" class="btn btn-danger btn-small cancelOutboundBatch" rel="cancel"  rel2="${batchDetails.id}" value="Cancel" />
+							     <input type="button" id="cancel" class="btn btn-danger btn-small cancelOutboundBatch" rel="cancel"  rel2="${batchDetails.id}" value="Cancel" /><br />
 							</c:when>
 							<c:otherwise>
-							     <input type="button" id="cancel" class="btn btn-danger btn-small cancelBatch" rel="cancel"  rel2="${batchDetails.id}" value="Cancel" />
+							     <input type="button" id="cancel" class="btn btn-danger btn-small cancelBatch" rel="cancel"  rel2="${batchDetails.id}" value="Cancel" /><br />
 							</c:otherwise>
 						    </c:choose>
 						</c:if>
@@ -89,7 +101,14 @@
 				<p>
 				    <strong>Configuration:</strong>
 				    <br />
-				    <a href="/administrator/configurations/details?i=${batchDetails.configId}">${batchDetails.configName}</a>
+				    <c:choose>
+					<c:when test="${batchDetails.configId > 0}">
+					    <a href="/administrator/configurations/details?i=${batchDetails.configId}">${batchDetails.configName}</a>
+					</c:when>
+					<c:otherwise>
+					    Could not figure out the source configuration based on the file uploaded.
+					</c:otherwise>
+				    </c:choose>
 				</p>
 			    </div>
 			    <div class="col-md-6">
@@ -111,6 +130,9 @@
 							<a href="/administrator/processing-activity/outbound/auditReport/${batchDownloadId}">${batchDownloadId}</a><br />
 						    </c:forEach>
 						</c:when>
+						<c:otherwise>
+						    Could not generate target file(s) because of errors 
+						</c:otherwise>
 					    </c:choose>
 					</p> 
 					<c:if test="${not empty batchDetails.originalFileName}">

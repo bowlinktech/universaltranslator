@@ -100,7 +100,7 @@ public interface transactionInDAO {
 
     Integer getRecordCounts(Integer batchId, List<Integer> statusIds, boolean foroutboundProcessing, boolean inStatusIds);
 
-    Integer insertLoadData(Integer batchId, Integer configId,String delimChar, String fileWithPath, String tableName, boolean containsHeaderRow, String lineTerminator);
+    Integer insertLoadData(Integer batchId, Integer configId, String delimChar, String fileWithPath, String tableName, boolean containsHeaderRow, String lineTerminator);
 
     Integer updateConfigIdForBatch(Integer batchId, Integer configId);
 
@@ -138,7 +138,7 @@ public interface transactionInDAO {
 
     List<Integer> checkCWFieldForList(Integer configId, Integer batchId, configurationDataTranslations cdt, boolean foroutboundProcessing);
 
-    List<IdAndFieldValue> getIdAndValuesForConfigField(Integer configId, Integer batchId,configurationDataTranslations cdt, boolean foroutboundProcessing);
+    List<IdAndFieldValue> getIdAndValuesForConfigField(Integer configId, Integer batchId, configurationDataTranslations cdt, boolean foroutboundProcessing);
 
     Integer updateFieldValue(Integer batchId, String fieldValue, Integer fieldNo, Integer transactionId, boolean foroutboundProcessing);
 
@@ -149,7 +149,7 @@ public interface transactionInDAO {
     Integer clearBatchDownloads(List<Integer> batchDownloadIDs);
 
     String getTransactionInIdsFromBatch(Integer batchUploadId);
-    
+
     List<WSMessagesIn> getWSMessagesByStatusId(List<Integer> statusIds);
 
     WSMessagesIn getWSMessagesById(Integer wsMessageId);
@@ -205,59 +205,60 @@ public interface transactionInDAO {
     void deleteMoveFileLogsByStatus(Integer statusId, Integer transportMethodId) throws Exception;
 
     void deleteLoadTableRows(Integer howMany, String ascOrDesc, String laodTableName) throws Exception;
-    
+
     BigInteger getUserRejectedCount(Integer userId, Integer orgId, String fromDate, String toDate) throws Exception;
-    
+
     List<batchErrorSummary> getBatchErrorSummary(int batchId) throws Exception;
-    
+
     List getErrorDataBySQLStmt(String sqlStmt) throws Exception;
-    
+
     List getErrorReportField(Integer batchId) throws Exception;
-    
-    List<batchUploads> getBatchesByStatusIdsAndDate(Date fromDate, Date toDate, Integer fetchSize, List <Integer> statusIds) throws Exception;
-    
-    batchRetry getBatchRetryByUploadId (Integer batchUploadId, Integer statusId) throws Exception;
-    
-    void saveBatchRetry (batchRetry br) throws Exception;
-    
-    void clearBatchRetry (Integer batchUploadId) throws Exception;
-    
+
+    List<batchUploads> getBatchesByStatusIdsAndDate(Date fromDate, Date toDate, Integer fetchSize, List<Integer> statusIds) throws Exception;
+
+    batchRetry getBatchRetryByUploadId(Integer batchUploadId, Integer statusId) throws Exception;
+
+    void saveBatchRetry(batchRetry br) throws Exception;
+
+    void clearBatchRetry(Integer batchUploadId) throws Exception;
+
     Integer insertRestApiMessage(RestAPIMessagesIn newRestAPIMessage) throws Exception;
-    
+
     List<RestAPIMessagesIn> getRestAPIMessagesByStatusId(List<Integer> statusIds);
 
     RestAPIMessagesIn getRestAPIMessagesById(Integer RestAPIMessageId);
-    
-    Integer updateRestAPIMessage(RestAPIMessagesIn APIMessage);
-    
-    void updateBatchClearAfterDeliveryByBatchUploadId(Integer batchUploadId, Integer newStatusId) throws Exception;
-    
-    Integer clearBatchClearAfterDeliveryByBatchUploadId(Integer batchUploadId) throws Exception;
-    
-    List<Integer> getTargetConfigsForUploadBatch(Integer batchUploadId, Integer configId) throws Exception;
-    
-    Integer checkClearAfterDeliveryBatch (int batchUploadId) throws Exception;
-    
-    Integer removeLoadTableBlankRows(Integer batchUploadId, String loadTableName) throws Exception;
-    
-    Integer getLoadTransactionCount(String loadTableName) throws Exception;
-    
-    void deleteBatch(Integer batchId) throws Exception;
-    
-    Integer getRecordCountForTable(String tableName, String colName, int matchId) throws Exception;
-    
-    void updateBatchUpload(batchUploads batchUpload) throws Exception;
-    
-    List<Integer> getConfigIdsForBatchOnly(int batchUploadId) throws Exception;
-    
-    void createBatchTables(int batchUploadId, int configId);
-    
-    void deleteBatchTransactionTables(Integer batchUploadId) throws Exception;
-    
-    List<batchDownloads> findBatchesToCleanUp() throws Exception;
-    
-    void batchUploadTableCleanUp(List<batchDownloads> batchesToCleanup) throws Exception;
-	
-	 List<configurationConnection> getPassThruBatchTargets(Integer batchId, boolean active);
-}
 
+    Integer updateRestAPIMessage(RestAPIMessagesIn APIMessage);
+
+    void updateBatchClearAfterDeliveryByBatchUploadId(Integer batchUploadId, Integer newStatusId) throws Exception;
+
+    Integer clearBatchClearAfterDeliveryByBatchUploadId(Integer batchUploadId) throws Exception;
+
+    List<Integer> getTargetConfigsForUploadBatch(Integer batchUploadId, Integer configId) throws Exception;
+
+    Integer checkClearAfterDeliveryBatch(int batchUploadId) throws Exception;
+
+    Integer removeLoadTableBlankRows(Integer batchUploadId, String loadTableName) throws Exception;
+
+    Integer getLoadTransactionCount(String loadTableName) throws Exception;
+
+    void deleteBatch(Integer batchId) throws Exception;
+
+    Integer getRecordCountForTable(String tableName, String colName, int matchId) throws Exception;
+
+    void updateBatchUpload(batchUploads batchUpload) throws Exception;
+
+    List<Integer> getConfigIdsForBatchOnly(int batchUploadId) throws Exception;
+
+    void createBatchTables(int batchUploadId, int configId);
+
+    void deleteBatchTransactionTables(Integer batchUploadId) throws Exception;
+
+    List<batchDownloads> findBatchesToCleanUp() throws Exception;
+
+    void batchUploadTableCleanUp(List<batchDownloads> batchesToCleanup) throws Exception;
+
+    List<configurationConnection> getPassThruBatchTargets(Integer batchId, boolean active);
+
+    void resetTransactionCounts(Integer batchUploadId) throws Exception;
+}

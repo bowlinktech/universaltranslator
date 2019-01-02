@@ -743,53 +743,30 @@ public class transactionOutDAOImpl implements transactionOutDAO {
     @SuppressWarnings("unchecked")
     @Override
     @Transactional(readOnly = true)
-    public List<batchDownloads> getBatchesByStatusIdsAndDate(Date fromDate,
-	    Date toDate, Integer fetchSize, List<Integer> statusIds)
-	    throws Exception {
-	String sql = "select case when orgName is null then 'No Org Match' else orgName end orgName, "
-		+ " a.dateCreated, transportMethod, utBatchName, a.statusId, b.displayCode as statusValue"
-		+ " from batchdownloads a left join (select id as statusId, displayCode from lu_processstatus  "
-		+ " where id in (:statusIds)) b on a.statusId = b.statusId "
-		+ " left join organizations c on a.orgId = c.id "
-		+ " left join ref_transportmethods d on d.id = a.transportmethodId "
-		+ " where  a.statusId in (:statusIds)";
-	if (!"".equals(fromDate) || (!"".equals(toDate))) {
-	    sql = sql + " and ";
+    public List<batchDownloads> getBatchesByStatusIdsAndDate(Date fromDate,Date toDate, Integer fetchSize, List<Integer> statusIds) throws Exception {
+	
+	Criteria findBatches = sessionFactory.getCurrentSession().createCriteria(batchDownloads.class);
+	findBatches.add(Restrictions.in("statusId",statusIds));
 
+	if (fromDate != null) {
 	    if (!"".equals(fromDate)) {
-		sql = sql + " a.dateCreated >= :fromDate  ";
-	    }
-
-	    if (!"".equals(fromDate) && (!"".equals(toDate))) {
-		sql = sql + " and  ";
-	    }
-	    if (!"".equals(toDate)) {
-		sql = sql + " a.dateCreated <= :toDate  ";
+		findBatches.add(Restrictions.ge("dateCreated", fromDate));
 	    }
 	}
-	sql = sql + " order by dateCreated desc ";
+
+	if (toDate != null) {
+	    if (!"".equals(toDate)) {
+		findBatches.add(Restrictions.lt("dateCreated", toDate));
+	    }
+	}
+
+	findBatches.addOrder(Order.desc("dateCreated"));
 
 	if (fetchSize > 0) {
-	    sql = sql + " limit " + fetchSize;
+	    findBatches.setMaxResults(fetchSize);
 	}
 
-	Query query = sessionFactory.getCurrentSession().createSQLQuery(sql).setResultTransformer(
-		Transformers.aliasToBean(batchDownloads.class));
-
-	if (!"".equals(fromDate)) {
-	    query.setParameter("fromDate", mysqlDateFormat.format(fromDate));
-
-	}
-
-	if (!"".equals(toDate)) {
-	    query.setParameter("toDate", mysqlDateFormat.format(toDate));
-	}
-
-	query.setParameterList("statusIds", statusIds);
-
-	List<batchDownloads> batchList = query.list();
-
-	return batchList;
+	return findBatches.list();
     }
 
     @Override
@@ -1017,6 +994,8 @@ public class transactionOutDAOImpl implements transactionOutDAO {
 	List<configurationFormFields> configFormFields = configurationTransportManager.getConfigurationFieldsToCopy(configId);
 	
 	List<configurationFormFields> uploadconfigFormFields = configurationTransportManager.getConfigurationFieldsToCopy(uploadConfigId);
+	
+	List<configurationTransport> handlingDetails = transactionInManager.getHandlingDetailsByBatch(batchUploadId);
 
 	StringBuilder tableFields = new StringBuilder();
 	
@@ -1072,7 +1051,15 @@ public class transactionOutDAOImpl implements transactionOutDAO {
 	    sql+= "batchDownloadId, configId) ";
 
 	    sql+= "select "+insertFields;
-	    sql+= batchDownloadId + ","+configId +" from temp_transactiontranslatedin_"+batchUploadId+"_"+batchDownloadId+" where statusId = 9;";
+	    
+	    //Source configuration error handling is set to pass through all transaction errors.
+	    if(handlingDetails.get(0).geterrorHandling() == 4) {
+		sql+= batchDownloadId + ","+configId +" from temp_transactiontranslatedin_"+batchUploadId+"_"+batchDownloadId+" where statusId in (9,14);";
+	    }
+	    //Otherwise only send transactions that have zero errors
+	    else {
+		sql+= batchDownloadId + ","+configId +" from temp_transactiontranslatedin_"+batchUploadId+"_"+batchDownloadId+" where statusId = 9;";
+	    }
 	    
 	    query = sessionFactory.getCurrentSession().createSQLQuery(sql);
 	    query.executeUpdate();

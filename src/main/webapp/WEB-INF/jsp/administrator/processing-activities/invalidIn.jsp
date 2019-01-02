@@ -6,6 +6,21 @@
 
 
 <div class="main clearfix" role="main">
+    <div class="row-fluid">
+        <div class="col-md-12">
+            <section class="panel panel-default">
+                <div class="panel-body">
+                    <dt>
+                    <dt>System Summary:</dt>
+                    <dd><strong>Batches Received in the Past Hour:</strong> <fmt:formatNumber value="${summaryDetails.batchesPastHour}" /></dd>
+                    <dd><strong>Batches Received in today:</strong> <fmt:formatNumber value="${summaryDetails.batchesToday}" /></dd>
+                    <dd><strong>Batches Received in This Week:</strong> <fmt:formatNumber value="${summaryDetails.batchesThisWeek}" /></dd>
+                    <dd><strong>Total Batches in Error:</strong> <fmt:formatNumber value="${summaryDetails.batchesInError}" /></dd>
+                    </dt>
+                </div>
+            </section>
+        </div>
+    </div>
     <div class="col-md-12">
         <section class="panel panel-default">
             <div class="panel-body">
@@ -26,16 +41,7 @@
                         <br/><br/>
                     </div>
                 </c:if>
-                 <div class="form-group">
-					<select id="wsDirection" name="wsDirection" class="form-control" style="width:150px;">
-                                <option value="inbound" selected>Inbound</option>
-                                <option value="outbound">Outbound</option>
-                    </select>
-                    </div>
-                            
-
                 <div class="form-container scrollable">
-                
                     <div class="date-range-picker-trigger form-control pull-right daterange" style="width:285px; margin-left: 10px;">
                         <i class="glyphicon glyphicon-calendar"></i>
                         <span class="date-label"><fmt:formatDate value="${fromDate}" type="date" pattern="MMMM dd, yyyy" /> - <fmt:formatDate value="${toDate}" type="date" pattern="MMMM dd, yyyy" /></span> <b class="caret"></b>
@@ -43,37 +49,107 @@
                     <table class="table table-striped table-hover table-default"  <c:if test="${not empty batchList}">id="dataTable"</c:if>>
                             <thead>
                                 <tr>
-                                    <th scope="col">Send From Organization</th>
-                                    <th scope="col">Transport Method</th>
-                                    <th scope="col" style="width:50px">Batch Id<br/>Assigned</th>
-                                    <th scope="col" style="width:50px">Batch Status</th>
+                                    <th scope="col">Organization</th>
+                                    <th scope="col" style="width:50px">Batch Details</th>
+                                    <th scope="col" class="center-text">Transport Method</th>
+                                    <th scope="col" class="center-text">Status</th>
+                                    <th scope="col"># of Transactions</th>
                                     <th scope="col" class="center-text">Date Received</th>
-                                   
+                                    <th scope="col"></th>
                                 </tr>
                             </thead>
                             <tbody>
                             <c:choose>
-                                <c:when test="${not empty batchList}">
-                                    <c:forEach var="batch" items="${batchList}">
+                                <c:when test="${not empty batches}">
+                                    <c:forEach var="batch" items="${batches}">
                                         <tr  style="cursor: pointer">
                                             <td scope="row">
-                                                ${batch.orgName}                                               
-                                            </td>
-                                            <td scope="row">
-                                                ${batch.transportMethod}                                               
+                                                ${batch.orgName}
                                             </td>
                                             <td>
-                                           		<a href="<c:url value='/administrator/processing-activity/inbound/auditReport/${batch.utBatchName}' />" class="btn btn-link viewAuditReport" title="View Audit Report" role="button">${batch.utBatchName}</a>
+						<strong><c:choose><c:when test="${not empty batch.configName}">${batch.configName}</c:when><c:otherwise>Invalid File</c:otherwise></c:choose></strong><br />
+                                                ${batch.utBatchName}
+                                                <c:if test="${batch.transportMethodId != 2}">
+                                                    <c:set var="text" value="${fn:split(batch.originalFileName,'.')}" />
+                                                    <c:set var="ext" value="${text[fn:length(text)-1]}" />
+                                                    <br />
+                                                    <c:set var="hrefLink" value="/FileDownload/downloadFile.do?filename=archive_${batch.utBatchName}.${ext}&foldername=archivesIn"/>
+
+                                                    <c:if test="${batch.transportMethodId == 6}">
+                                                        <c:set var="hrefLink" value="/FileDownload/downloadFile.do?filename=${batch.utBatchName}_dec.${ext}&foldername=archivesIn"/>
+                                                    </c:if>
+						    <c:if test="${batch.transportMethodId == 10 || batch.transportMethodId == 6 || batch.transportMethodId == 9}">
+							<c:set var="hrefPipeLink" value="/FileDownload/downloadFile.do?filename=${batch.utBatchName}_dec.txt&foldername=archivesIn"/>
+						    </c:if>
+
+                                                    <a href="${hrefLink}" title="View Original File">
+                                                        ${batch.originalFileName}
+                                                    </a>
+						    <br/>
+						    <c:if test="${(batch.transportMethodId == 10 || batch.transportMethodId == 6 || batch.transportMethodId == 9) && batch.statusId != 42}">
+							<a href="${hrefPipeLink}" title="View Pipe File">
+							    Translated File - ${batch.utBatchName}
+							</a>
+						    </c:if>
+                                                </c:if>
+                                            </td>
+                                            <td class="center-text">
+						<c:choose>
+						    <c:when test="${batch.transportMethod == 'Rest API'}">
+							<a href="/administrator/processing-activity/apimessages/${batch.utBatchName}" title="View Rest API Message">${batch.transportMethod}</a>
+						    </c:when>
+						    <c:otherwise>
+							${batch.transportMethod}
+						    </c:otherwise>
+                                                </c:choose>
+                                            </td>
+                                            <td class="center-text">
+                                               <a href="#statusModal" data-toggle="modal" class="viewStatus" rel="${batch.statusId}" title="View this Status">${batch.statusValue}</a>
                                             </td>
                                             <td>
-                                                ${batch.statusValue} (${batch.statusId})
+                                                Total Transactions: <strong><fmt:formatNumber value = "${batch.totalRecordCount}" type = "number"/></strong>
+						<br />
+						Total Error Transactions: <strong><fmt:formatNumber value = "${batch.errorRecordCount}" type = "number"/></strong>
                                             </td>
-                                            <td class="center-text"><fmt:formatDate value="${batch.dateSubmitted}" type="both" pattern="M/dd/yyyy h:mm:ss a" /></td>  
+                                            <td class="center-text"><fmt:formatDate value="${batch.dateSubmitted}" type="both" pattern="M/dd/yyyy h:mm:ss a" /></td>
+                                            <td>
+						<div class="dropdown pull-left">
+						    <button class="btn btn-sm btn-default dropdown-toggle" type="button" data-toggle="dropdown">
+							<i class="fa fa-cog"></i>
+						    </button>
+						    <ul class="dropdown-menu pull-right">
+							<c:if test="${batch.transportMethodId != 2}">
+							    <li>
+								<a href="<c:url value='/administrator/processing-activity/inbound/batchActivities/${batch.utBatchName}'/>" class="viewBatchActivities" title="View Batch Activities">
+								    <span class="glyphicon glyphicon-edit"></span>
+								    View Batch Activities
+								</a>
+							    </li>
+							    <li class="divider"></li>
+							    <li>
+								<a href="<c:url value='/administrator/processing-activity/inbound/auditReport/${batch.utBatchName}' />" title="View Audit Report">
+								    <span class="glyphicon glyphicon-edit"></span>
+								    View Audit Report
+								</a>
+							    </li>
+							</c:if>
+							<c:if test="${sessionScope.userDetails.roleId == 1}">
+							    <li class="divider"></li>
+							    <li>
+								<a href="javascript:void(0);" rel="${batch.utBatchName}" class="deleteTransactions" title="Delete Batch Transactions">
+								    <span class="glyphicon glyphicon-remove"></span>
+								    Delete Batch
+								</a>
+							    </li>
+							</c:if>
+						    </ul>
+						</div>
+                                            </td>
                                         </tr>
                                     </c:forEach>     
                                 </c:when>   
                                 <c:otherwise>
-                                    <tr><td colspan="5" class="center-text">There are currently no submitted web service messages.</td></tr>
+                                    <tr><td colspan="7" class="center-text">There were no files submitted in the date range selected.</td></tr>
                                 </c:otherwise>
                             </c:choose>           
                         </tbody>

@@ -1782,8 +1782,7 @@ public class transactionInDAOImpl implements transactionInDAO {
     public List<Integer> geBatchesIdsForReport(String fromDate, String toDate) throws Exception {
 
 	String sql = "select id from batchUploads a "
-		+ "where a.totalRecordCount > 0 "
-		+ "and (a.dateSubmitted >= '" + fromDate + "' and a.dateSubmitted < '" + toDate + "') "
+		+ "where (a.dateSubmitted >= '" + fromDate + "' and a.dateSubmitted < '" + toDate + "') "
 		+ "and statusId in (2,3,4,5,6,22,23,24,25,28,36,38,41,42,43,59) "
 		+ "order by dateSubmitted desc";
 
@@ -1934,15 +1933,17 @@ public class transactionInDAOImpl implements transactionInDAO {
     public List<Transaction> setTransactionInInfoByStatusId(Integer batchId, List<Integer> statusIds, Integer howMany) throws Exception {
 
 	String sql = "select c.configName as srcConfigName, "
-		+ "b.orgId, b.configId, ti.transactionInRecordsId as transactionId, b.id as batchId "
+		+ "b.orgId, b.configId, ti.transactionInRecordsId as transactionId, b.id as batchId, d.orgName as srcOrgName "
 		+ "from transactiontranslatedin_"+batchId+" ti inner join "
 		+ "batchUploads b on ti.batchUploadId = b.id inner join "
-		+ "configurations c on b.configId = c.id "
+		+ "configurations c on b.configId = c.id inner join "
+		+ "organizations d on d.id = b.orgId "
 		+ "where ti.statusid in (:statusIds) "
 		+ "limit :howMany";
 	
 	Query query = sessionFactory.getCurrentSession().createSQLQuery(sql)
 		.addScalar("srcConfigName", StandardBasicTypes.STRING)
+		.addScalar("srcOrgName", StandardBasicTypes.STRING)
 		.addScalar("orgId", StandardBasicTypes.INTEGER)
 		.addScalar("transactionId", StandardBasicTypes.INTEGER)
 		.addScalar("configId", StandardBasicTypes.INTEGER)
@@ -2290,51 +2291,31 @@ public class transactionInDAOImpl implements transactionInDAO {
     @Override
     @Transactional(readOnly = true)
     public List<batchUploads> getBatchesByStatusIdsAndDate(Date fromDate, Date toDate, Integer fetchSize, List<Integer> statusIds) throws Exception {
+	
+	
+	Criteria findBatches = sessionFactory.getCurrentSession().createCriteria(batchUploads.class);
+	findBatches.add(Restrictions.in("statusId",statusIds));
 
-	String sql = "select case when orgName is null then 'No Org Match' else orgName end orgName, "
-		+ " a.dateSubmitted, transportMethod, utBatchName, a.statusId, b.displayCode as statusValue"
-		+ " from batchuploads a left join (select id as statusId, displayCode from lu_processstatus  "
-		+ " where id in (:statusIds)) b on a.statusId = b.statusId "
-		+ " left join organizations c on a.orgId = c.id "
-		+ " left join ref_transportmethods d on d.id = a.transportmethodId "
-		+ " where  a.statusId in (:statusIds)";
-	if (!"".equals(fromDate) || (!"".equals(toDate))) {
-	    sql = sql + " and ";
-
+	if (fromDate != null) {
 	    if (!"".equals(fromDate)) {
-		sql = sql + " a.dateSubmitted >= :fromDate  ";
-	    }
-
-	    if (!"".equals(fromDate) && (!"".equals(toDate))) {
-		sql = sql + " and  ";
-	    }
-	    if (!"".equals(toDate)) {
-		sql = sql + " a.dateSubmitted <= :toDate  ";
+		findBatches.add(Restrictions.ge("dateSubmitted", fromDate));
 	    }
 	}
-	sql = sql + " order by dateSubmitted desc ";
+
+	if (toDate != null) {
+	    if (!"".equals(toDate)) {
+		findBatches.add(Restrictions.lt("dateSubmitted", toDate));
+	    }
+	}
+
+	findBatches.addOrder(Order.desc("dateSubmitted"));
 
 	if (fetchSize > 0) {
-	    sql = sql + " limit " + fetchSize;
+	    findBatches.setMaxResults(fetchSize);
 	}
 
-	Query query = sessionFactory.getCurrentSession().createSQLQuery(sql).setResultTransformer(
-		Transformers.aliasToBean(batchUploads.class));
-
-	if (!"".equals(fromDate)) {
-	    query.setParameter("fromDate", mysqlDateFormat.format(fromDate));
-
-	}
-
-	if (!"".equals(toDate)) {
-	    query.setParameter("toDate", mysqlDateFormat.format(toDate));
-	}
-
-	query.setParameterList("statusIds", statusIds);
-
-	List<batchUploads> batchList = query.list();
-
-	return batchList;
+	return findBatches.list();
+	
     }
 
     @SuppressWarnings("unchecked")
@@ -2875,7 +2856,7 @@ public class transactionInDAOImpl implements transactionInDAO {
 	}
     }
 	
-	@Override
+    @Override
     @Transactional(readOnly = true)
     @SuppressWarnings("unchecked")
     public List<configurationConnection> getPassThruBatchTargets(Integer batchId, boolean active) {
@@ -2899,6 +2880,20 @@ public class transactionInDAOImpl implements transactionInDAO {
 	} catch (Exception ex) {
 	    System.err.println("getBatchTargets " + ex.getCause());
 	    return null;
+	}
+    }
+    
+    @Override
+    @Transactional(readOnly = false)
+    public void resetTransactionCounts(Integer batchUploadId) throws Exception {
+	String sql = "update batchUploads set totalRecordCount = 0, errorRecordCount = 0 where id = :batchUploadId";
+	
+	Query updateData = sessionFactory.getCurrentSession().createSQLQuery(sql).setParameter("batchUploadId", batchUploadId);
+	
+	try {
+	    updateData.executeUpdate();
+	} catch (Exception ex) {
+	    System.err.println("resetTransactionCounts " + ex.getCause());
 	}
     }
 }
