@@ -122,9 +122,9 @@ public class fileSystem {
 	try {
             //Windows
             if (os.indexOf("win") >= 0) {
-               String[] directories = dirName.replace("/UT", "").replace("UT", "").split("/");
+               String[] directories = dirName.split("/");
 		
-		String dir = directoryPath + "UT\\";
+		String dir = directoryPath;
 		
 		for(int i=0;i<directories.length;i++) {
 		    dir += directories[i] + "\\";
@@ -135,9 +135,9 @@ public class fileSystem {
 		}
             } //Mac
             else if (os.indexOf("mac") >= 0) {
-		String[] directories = dirName.replace("/UT", "").replace("UT", "").split("/");
+		String[] directories = dirName.split("/");
 		
-		String dir = directoryPath + "UT/";
+		String dir = directoryPath;
 		
 		for(int i=0;i<directories.length;i++) {
 		    dir += directories[i] + "/";
@@ -148,9 +148,9 @@ public class fileSystem {
 		}
             } //Unix or Linux or Solarix
             else if (os.indexOf("nix") >= 0 || os.indexOf("nux") >= 0 || os.indexOf("aix") >= 0 || os.indexOf("sunos") >= 0) {
-                String[] directories = dirName.replace("/UT", "").replace("UT", "").split("/");
+                String[] directories = dirName.split("/");
 		
-		String dir = directoryPath + "UT/";
+		String dir = directoryPath;
 		
 		for(int i=0;i<directories.length;i++) {
 		    dir += directories[i] + "/";

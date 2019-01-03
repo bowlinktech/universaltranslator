@@ -1119,14 +1119,13 @@ public class adminProcessingActivity {
         if (userInfo != null && batchDetails != null) {
             
 	    if (batchOption.equalsIgnoreCase("processBatch")) {
-                if (batchDetails.getstatusId() == 2) {
-                    strBatchOption = "Loaded Batch";
-                    transactionInManager.loadBatch(batchId);
-                } 
-		else if (batchDetails.getstatusId() == 3 || batchDetails.getstatusId() == 36) {
-                    strBatchOption = "Processed Batch";
-                    transactionInManager.processBatch(batchId, false);
-                }
+		//Clear transaction counts
+		transactionInManager.resetTransactionCounts(batchId);
+		
+		//Delete batch transaction tables
+		transactionInManager.deleteBatchTransactionTables(batchId);
+                
+		transactionInManager.updateBatchStatus(batchId, 42, "startDateTime");
             } 
 	    else if (batchOption.equalsIgnoreCase("cancel")) {
                 strBatchOption = "Cancelled Batch";

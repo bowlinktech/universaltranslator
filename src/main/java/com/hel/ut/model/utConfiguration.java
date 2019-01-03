@@ -19,7 +19,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 public class utConfiguration {
 
     @Transient
-    private String orgName = null, messageTypeName = null, transportMethod = null;
+    private String orgName = null, messageTypeName = null, transportMethod = null, sourceConfigurationName = "";
 
     @Transient
     private Integer transportDetailId = 0, scheduleType = 5;
@@ -224,4 +224,13 @@ public class utConfiguration {
 	this.deleted = deleted;
     }
 
+    public String getSourceConfigurationName() {
+	return sourceConfigurationName;
+    }
+
+    public void setSourceConfigurationName(String sourceConfigurationName) {
+	this.sourceConfigurationName = sourceConfigurationName;
+    }
+
+    
 }

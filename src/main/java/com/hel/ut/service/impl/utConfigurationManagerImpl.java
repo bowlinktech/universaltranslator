@@ -661,4 +661,14 @@ public class utConfigurationManagerImpl implements utConfigurationManager {
     public List<configurationConnection> getConnectionsBySourceConfiguration(Integer configId) {
 	return utConfigurationDAO.getConnectionsBySourceConfiguration(configId);
     }
+    
+    @Override
+    public List<utConfiguration>  getAllSourceConfigurations() throws Exception {
+	return utConfigurationDAO.getAllSourceConfigurations();
+    }
+    
+    @Override
+    public List<utConfiguration>  getAllTargetConfigurations() throws Exception {
+	return utConfigurationDAO.getAllTargetConfigurations();
+    }
 }

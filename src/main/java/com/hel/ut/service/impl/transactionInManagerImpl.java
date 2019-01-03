@@ -99,8 +99,6 @@ import com.hel.ut.service.utConfigurationManager;
 import com.hel.ut.service.utConfigurationTransportManager;
 import com.registryKit.registry.submittedMessages.submittedMessage;
 import com.registryKit.registry.submittedMessages.submittedMessageManager;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
 
 /**
  *
@@ -1131,8 +1129,9 @@ public class transactionInManagerImpl implements transactionInManager {
 			if (tempLoadFile.exists()) {
 			    tempLoadFile.delete();
 			}
-			//if the original file name is a HL7 file (".hr") then we are going to translate it to a pipe-delimited text file.
-		    } else if (processFileName.endsWith(".hr")) {
+		    } 
+		    //if the original file name is a HL7 file (".hr") then we are going to translate it to a pipe-delimited text file.
+		    else if (processFileName.endsWith(".hr")) {
 			newfilename = hl7toTxt.TranslateHl7toTxt(decodedFilePath, decodedFileName, batch.getOrgId(), batch.getConfigId());
 			if (newfilename.equals("ERRORERRORERROR")) {
 			    updateBatchStatus(batchId, 39, "endDateTime");
@@ -1145,7 +1144,8 @@ public class transactionInManagerImpl implements transactionInManager {
 			if (tempLoadFile.exists()) {
 			    tempLoadFile.delete();
 			}
-		    } else if (processFileName.endsWith(".xlsx") || processFileName.endsWith(".xls")) {
+		    } 
+		    else if (processFileName.endsWith(".xlsx") || processFileName.endsWith(".xls")) {
 			if (processFileName.endsWith(".xlsx")) {
 			    newfilename = exceltotxt.TranslateXLSXtoTxt(decodedFilePath, decodedFileName, batch);
 			} else if (processFileName.endsWith(".xls")) {
@@ -1253,59 +1253,77 @@ public class transactionInManagerImpl implements transactionInManager {
 		    //sysError = sysError + updateLoadTable(loadTableName, batch.getId());
 		    //3.5 we delete blank rows
 		    sysError = sysError + removeLoadTableBlankRows(batch.getId(), "transactionInRecords_" + batch.getId());
-
-		    //4. Check to s
+		    
+		    //4. Check to see if we have a config, if not find it in the records
 		    if (batch.getConfigId() == null || batch.getConfigId() == 0) {
+			Integer foundConfigId = 0;
+			String batchRecord = "";
 
 			//1. we get all configs for user - user might not have permission to submit but someone else in org does
 			List<configurationMessageSpecs> configurationMessageSpecs = configurationtransportmanager.getConfigurationMessageSpecsForOrgTransport(batch.getOrgId(), batch.gettransportMethodId(), false);
-			List<configurationMessageSpecs> checkOnlyConfigForOrg = configurationtransportmanager.getConfigurationMessageSpecsForOrgTransport(batch.getOrgId(), batch.gettransportMethodId(), true);
-
-			if (configurationMessageSpecs == null || (configurationMessageSpecs.isEmpty() && checkOnlyConfigForOrg.isEmpty())) {
-			    insertProcessingError(6, null, batchId, null, null, null, null, false, false, "No valid configurations were found for loading batch.");
-			    // update all transactions to invalid
-			    updateBatchStatus(batchId, 7, "endDateTime");
-			}
-			//if we only have one and it is set to 0,we can default, else we loop through
-			if ((configurationMessageSpecs.size() == 1 && configurationMessageSpecs.get(0).getmessageTypeCol() == 0) || checkOnlyConfigForOrg.size() == 1) {
-			    int configId = 0;
-			    if (configurationMessageSpecs.size() == 0) {
-				configId = checkOnlyConfigForOrg.get(0).getconfigId();
-			    } else {
-				configId = configurationMessageSpecs.get(0).getconfigId();
+			
+			if(configurationMessageSpecs != null) {
+			    if(!configurationMessageSpecs.isEmpty()) {
+				for(configurationMessageSpecs messageSpec : configurationMessageSpecs) {
+				    if(messageSpec.getmessageTypeCol() > 0 && !"".equals(messageSpec.getmessageTypeVal())) {
+					
+					//Pull the first record for the batch
+					String recordVal = transactionInDAO.getFieldValue("transactioninrecords_"+batch.getId(),"F"+messageSpec.getmessageTypeCol(), "batchUploadId", batch.getId());
+					if(recordVal.trim().toLowerCase().equals(messageSpec.getmessageTypeVal().trim().toLowerCase())) {
+					    foundConfigId = messageSpec.getconfigId();
+					    break;
+					}
+				    }
+				}
 			    }
-			    sysError = sysError + updateConfigIdForBatch(batch.getId(), configId);
-			} else {
-			    sysError++;
-			    insertProcessingError(processingSysErrorId, null, batch.getId(), null, null, null, null, false, false, "System error while checking configuration");
+			    else {
+				insertProcessingError(6, null, batchId, null, null, null, null, false, false, "No valid configurations were found for loading batch.");
+				updateBatchStatus(batchId, 7, "endDateTime");
+			    }
+			}
+			else {
+			   insertProcessingError(6, null, batchId, null, null, null, null, false, false, "No valid configurations were found for loading batch."); 
+			   updateBatchStatus(batchId, 7, "endDateTime");
+			}
+			
+			if(foundConfigId == 0) {
+			   insertProcessingError(6, null, batchId, null, null, null, null, false, false, "No valid configurations were found for loading batch."); 
+			   updateBatchStatus(batchId, 7, "endDateTime");
+			}
+			else {
+			    batch.setConfigId(foundConfigId);
+			    transactionInDAO.updateBatchUpload(batch);
 			}
 		    }
+		    
+		    if(batch.getConfigId() > 0) {
 
-		    //we populate transactionTranslatedIn
-		    sysError = sysError + loadTransactionTranslatedIn(batchId, batch.getConfigId());
+			//we populate transactionTranslatedIn
+			sysError = sysError + loadTransactionTranslatedIn(batchId, batch.getConfigId());
 
-		    // we trim all values
-		    trimFieldValues(batchId, false, batch.getConfigId(), true);
+			// we trim all values
+			trimFieldValues(batchId, false, batch.getConfigId(), true);
 
-		    //now that we have our config, we will apply pre-processing cw and macros to manipulate our data
-		    //1. find all configs for batch, loop and process
-		    List<Integer> configIds = getConfigIdsForBatchOnly(batchId);
+			//now that we have our config, we will apply pre-processing cw and macros to manipulate our data
+			//1. find all configs for batch, loop and process
+			List<Integer> configIds = getConfigIdsForBatchOnly(batchId);
 
-		    for (Integer configId : configIds) {
-			//we need to run all checks before insert regardless 
-			//we are reordering 1. cw/macro, 2. required and 3. validate 
-			// 1. grab the configurationDataTranslations and run cw/macros
-			List<configurationDataTranslations> dataTranslations = configurationManager.getDataTranslationsWithFieldNo(configId, 2); //pre processing
-			for (configurationDataTranslations cdt : dataTranslations) {
-			    if (cdt.getCrosswalkId() != 0) {
-				sysError = sysError + processCrosswalk(configId, batchId, cdt, false);
-			    } else if (cdt.getMacroId() != 0) {
-				sysError = sysError + processMacro(configId, batchId, cdt, false);
+			for (Integer configId : configIds) {
+			    //we need to run all checks before insert regardless 
+			    //we are reordering 1. cw/macro, 2. required and 3. validate 
+			    // 1. grab the configurationDataTranslations and run cw/macros
+			    List<configurationDataTranslations> dataTranslations = configurationManager.getDataTranslationsWithFieldNo(configId, 2); //pre processing
+			    for (configurationDataTranslations cdt : dataTranslations) {
+				if (cdt.getCrosswalkId() != 0) {
+				    sysError = sysError + processCrosswalk(configId, batchId, cdt, false);
+				} else if (cdt.getMacroId() != 0) {
+				    sysError = sysError + processMacro(configId, batchId, cdt, false);
+				}
 			    }
 			}
-
 		    }
 		}
+		
 		if (sysErrors > 0) {
 		    insertProcessingError(processingSysErrorId, null, batchId, null, null, null, null, false, false, errorMessage);
 		    updateBatchStatus(batchId, 39, "endDateTime");
@@ -1313,6 +1331,7 @@ public class transactionInManagerImpl implements transactionInManager {
 
 		//we check handling here for rejecting entire batch
 		List<configurationTransport> batchHandling = getHandlingDetailsByBatch(batchId);
+		
 		// if entire batch failed and have no configIds, there will be no error handling found
 		if (getRecordCounts(batchId, Arrays.asList(11), false) == getRecordCounts(batchId, new ArrayList<Integer>(), false)) {
 		    //entire batch failed, we reject entire batch
@@ -1321,7 +1340,8 @@ public class transactionInManagerImpl implements transactionInManager {
 		    updateBatchStatus(batchId, 7, "endDateTime");
 		    //need to insert error on why we are rejecting
 		    insertProcessingError(7, null, batchId, null, null, null, null, false, false, "No valid transactions were found for batch.");
-		} else if (batchHandling.size() != 1) {
+		} 
+		else if (batchHandling.size() != 1) {
 		    //TODO email admin to fix problem
 		    insertProcessingError(8, null, batchId, null, null, null, null, false, false, "Multiple or no file handling found, please check auto-release and error handling configurations");
 		    updateRecordCounts(batchId, new ArrayList<Integer>(), false, "totalRecordCount");
@@ -1329,6 +1349,7 @@ public class transactionInManagerImpl implements transactionInManager {
 		    updateRecordCounts(batchId, errorStatusIds, false, "errorRecordCount");
 		    updateBatchStatus(batchId, 39, "endDateTime");
 		}
+		
 		if (batchHandling.size() == 1) {
 		    //reject submission on error
 		    if (batchHandling.get(0).geterrorHandling() == 3) {
@@ -1342,7 +1363,9 @@ public class transactionInManagerImpl implements transactionInManager {
 
 		updateRecordCounts(batchId, errorStatusIds, false, "errorRecordCount");
 		updateRecordCounts(batchId, new ArrayList<Integer>(), false, "totalRecordCount");
-		batchStatusId = 43; //loaded without targets               
+		batchStatusId = 43; //loaded without targets 
+		
+		
 	    } catch (Exception ex) {
 		insertProcessingError(processingSysErrorId, null, batchId, null, null, null, null, false, false, ("loadBatch error " + ex.getLocalizedMessage()));
 		batchStatusId = 39;
@@ -1996,27 +2019,28 @@ public class transactionInManagerImpl implements transactionInManager {
 					configurationTransport transportDetails = configurationtransportmanager.getTransportDetails(batchInfo.getConfigId());
 
 					if (transportDetails != null) {
-					    if (transportDetails.getHelRegistryId() > 0 && transportDetails.getHelRegistryConfigId() > 0 && !"".equals(transportDetails.getHelSchemaName())) {
+					    if(transportDetails.getHelRegistryConfigId() != null) {
+						if (transportDetails.getHelRegistryId() > 0 && transportDetails.getHelRegistryConfigId() > 0 && !"".equals(transportDetails.getHelSchemaName())) {
 						
-						submittedMessage existingRegistrySubmittedMessage = submittedmessagemanager.getSubmittedMessageBySQL(transportDetails.getHelSchemaName(),batchInfo.getutBatchName());
-						
-						if (existingRegistrySubmittedMessage != null) {
-						    submittedmessagemanager.updateSubmittedMessage(transportDetails.getHelSchemaName(),existingRegistrySubmittedMessage.getId(),23,batchId);
-						}
-						else {
-						    submittedMessage newSubmittedMessage = new submittedMessage();
-						    newSubmittedMessage.setUtBatchUploadId(batchId);
-						    newSubmittedMessage.setRegistryConfigId(transportDetails.getHelRegistryConfigId());
-						    newSubmittedMessage.setUploadedFileName(batchInfo.getoriginalFileName());
-						    newSubmittedMessage.setAssignedFileName(batchInfo.getutBatchName());
-						    newSubmittedMessage.setInFileExt(FilenameUtils.getExtension(batchInfo.getoriginalFileName()));
-						    newSubmittedMessage.setStatusId(23);
-						    newSubmittedMessage.setTransportId(1);
-						    newSubmittedMessage.setSystemUserId(0);
+						    submittedMessage existingRegistrySubmittedMessage = submittedmessagemanager.getSubmittedMessageBySQL(transportDetails.getHelSchemaName(),batchInfo.getutBatchName());
 
-						    submittedmessagemanager.submitSubmittedMessage(transportDetails.getHelSchemaName(),newSubmittedMessage);
+						    if (existingRegistrySubmittedMessage != null) {
+							submittedmessagemanager.updateSubmittedMessage(transportDetails.getHelSchemaName(),existingRegistrySubmittedMessage.getId(),23,batchId);
+						    }
+						    else {
+							submittedMessage newSubmittedMessage = new submittedMessage();
+							newSubmittedMessage.setUtBatchUploadId(batchId);
+							newSubmittedMessage.setRegistryConfigId(transportDetails.getHelRegistryConfigId());
+							newSubmittedMessage.setUploadedFileName(batchInfo.getoriginalFileName());
+							newSubmittedMessage.setAssignedFileName(batchInfo.getutBatchName());
+							newSubmittedMessage.setInFileExt(FilenameUtils.getExtension(batchInfo.getoriginalFileName()));
+							newSubmittedMessage.setStatusId(23);
+							newSubmittedMessage.setTransportId(1);
+							newSubmittedMessage.setSystemUserId(0);
+
+							submittedmessagemanager.submitSubmittedMessage(transportDetails.getHelSchemaName(),newSubmittedMessage);
+						    }
 						}
-						
 					    }
 					}
 				    }

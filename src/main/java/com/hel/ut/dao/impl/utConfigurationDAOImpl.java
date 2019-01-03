@@ -1646,4 +1646,22 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
         List<configurationConnection> connections = query.list();
         return connections;
     }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public List<utConfiguration>  getAllSourceConfigurations() throws Exception {
+	Query query = sessionFactory.getCurrentSession().createQuery("from utConfiguration where deleted = 0 and type = 1");
+
+        List<utConfiguration> sourceConfigurations = query.list();
+        return sourceConfigurations;
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public List<utConfiguration>  getAllTargetConfigurations() throws Exception {
+	Query query = sessionFactory.getCurrentSession().createQuery("from utConfiguration where deleted = 0 and type = 2");
+
+        List<utConfiguration> targetConfigurations = query.list();
+        return targetConfigurations;
+    }
 }

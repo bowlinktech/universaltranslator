@@ -51,7 +51,7 @@
 						    <input type="button" id="release" class="btn btn-success btn-small releaseBatch" rel="releaseBatch" rel2="${batchDetails.id}"  value="Release" /><br />
 						</c:if>
 						<c:if test="${canEdit}">
-						    <input type="button" id="rejectMessages" class="btn btn-danger btn-small rejectMessages" value="Reject All Errors" /><br />
+						    <input type="button" id="rejectMessage" class="btn btn-danger btn-small rejectMessages" value="Reject All Errors" /><br />
 						</c:if>
 						<c:if test="${batchDetails.statusId == 2}">
 						    <input type="button" id="processBatch" class="btn btn-success btn-small processBatch" rel="processBatch" rel2="${batchDetails.id}" value="Load Batch" /><br />
@@ -194,11 +194,6 @@
 	</div>
     </c:if>
 </div>
-
-<form action="../../rejectMessages" id="massReject" method="post">
-    <input type="hidden" id="idList" name="idList" value="${fn:substring(idList,1,fn:length(idList))}" />
-    <input type="hidden" name="batchId" id="batchId" value="${batchDetails.id}"/>
-</form>
 
 <form action="../../editTransaction" id="editTransaction" method="post">
     <input type="hidden" id="transactionInId" name="transactionInId" value="" />

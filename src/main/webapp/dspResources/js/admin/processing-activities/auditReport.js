@@ -206,20 +206,6 @@ require(['./main'], function () {
 
         });
 
-        //This function will reject all errors
-        $(document).on('click', '.rejectMessages', function () {
-
-            var confirmed = confirm("Are you sure you want to reject all transactions with errors?");
-
-            if (confirmed) {
-                $("#actionRowBottom").hide();
-                $("#actionRowTop").hide();
-                $('input[name="batchOption"]').val("rejectMessages");
-                $('#massReject').submit();
-            }
-
-        });
-
         //This function will release the batch
         $(document).on('click', '.releaseBatch', function () {
 

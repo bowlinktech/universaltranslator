@@ -78,7 +78,7 @@
                                                     <c:if test="${batch.transportMethodId == 6}">
                                                         <c:set var="hrefLink" value="/FileDownload/downloadFile.do?filename=${batch.utBatchName}_dec.${ext}&foldername=archivesIn"/>
                                                     </c:if>
-						    <c:if test="${batch.transportMethodId == 10 || batch.transportMethodId == 6 || batch.transportMethodId == 9}">
+						    <c:if test="${batch.transportMethodId == 10 || batch.transportMethodId == 3 || batch.transportMethodId == 6 || batch.transportMethodId == 9}">
 							<c:set var="hrefPipeLink" value="/FileDownload/downloadFile.do?filename=${batch.utBatchName}_dec.txt&foldername=archivesIn"/>
 						    </c:if>
 
@@ -86,7 +86,7 @@
                                                         ${batch.originalFileName}
                                                     </a>
 						    <br/>
-						    <c:if test="${(batch.transportMethodId == 10 || batch.transportMethodId == 6 || batch.transportMethodId == 9) && batch.statusId != 42}">
+						    <c:if test="${(batch.transportMethodId == 10 || batch.transportMethodId == 3 || batch.transportMethodId == 6 || batch.transportMethodId == 9) && batch.statusId != 42}">
 							<a href="${hrefPipeLink}" title="View Pipe File">
 							    Translated File - ${batch.utBatchName}
 							</a>

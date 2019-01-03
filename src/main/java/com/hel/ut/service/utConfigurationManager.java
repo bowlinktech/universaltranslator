@@ -189,4 +189,8 @@ public interface utConfigurationManager {
     List<utConfiguration>  getAllActiveSourceConfigurations() throws Exception;
     
     List<configurationConnection> getConnectionsBySourceConfiguration(Integer configId);
+    
+    List<utConfiguration>  getAllSourceConfigurations() throws Exception;
+    
+    List<utConfiguration>  getAllTargetConfigurations() throws Exception;
 }

@@ -28,11 +28,8 @@
                     <table class="table table-striped table-hover table-default" <c:if test="${not empty connections}">id="dataTable"</c:if>>
                             <thead>
                                 <tr>
-                                    <th scope="col">Source Organization Name</th>
-                                    <th scope="col">Message Type</th>
-                                    <th scope="col" class="center-text">Source Transport Method</th>
-                                    <th scope="col">Target Organization Name</th>
-                                    <th scope="col" class="center-text">Target Transport Method</th>
+                                    <th scope="col">Source Details</th>
+                                    <th scope="col">Target Details</th>
                                     <th scope="col" class="center-text">Date Created</th>
                                     <th scope="col" class="center-text">Status</th>
                                     <th scope="col" class="center-text"></th>
@@ -44,19 +41,18 @@
                                     <c:forEach var="connection" items="${connections}">
                                         <tr>
                                             <td scope="row">
-                                                <strong>${connection.srcConfigDetails.getOrgName()}</strong>
-                                             </td>
-                                            <td>
-                                                ${connection.srcConfigDetails.getMessageTypeName()}
+                                                Organization: <strong>${connection.srcConfigDetails.getOrgName()}</strong>
+						<br />
+						Configuration: <strong>${connection.srcConfigDetails.getconfigName()} (Id: ${connection.srcConfigDetails.getId()})</strong>
+						<br />
+						Transport Method: <strong>${connection.srcConfigDetails.gettransportMethod()}</strong>
                                             </td>
-                                            <td class="center-text">
-                                                ${connection.srcConfigDetails.gettransportMethod()}
-                                            </td>
-                                            <td scope="row">
-                                                <strong>${connection.tgtConfigDetails.getOrgName()}</strong>
-                                            </td>
-                                            <td class="center-text">
-                                                ${connection.tgtConfigDetails.gettransportMethod()}
+					    <td scope="row">
+                                                Organization: <strong>${connection.tgtConfigDetails.getOrgName()}</strong>
+						<br />
+						Configuration: <strong>${connection.tgtConfigDetails.getconfigName()} (Id: ${connection.srcConfigDetails.getId()})</strong>
+						<br />
+						Transport Method: <strong>${connection.tgtConfigDetails.gettransportMethod()}</strong>
                                             </td>
                                             <td class="center-text"><fmt:formatDate value="${connection.dateCreated}" type="date" pattern="M/dd/yyyy" /></td>
                                             <td class="center-text actions-col">

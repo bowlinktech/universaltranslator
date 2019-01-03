@@ -124,14 +124,18 @@ public class adminConfigController {
 
         ModelAndView mav = new ModelAndView();
         mav.setViewName("/administrator/configurations/list");
-
-        List<utConfiguration> configurations = utconfigurationmanager.getConfigurations();
+	
+	//Get all source configurations
+        List<utConfiguration> sourceconfigurations = utconfigurationmanager.getAllSourceConfigurations();
+	
+	//Get all target configurations
+        List<utConfiguration> targetconfigurations = utconfigurationmanager.getAllTargetConfigurations();
 
         Organization org;
         messageType messagetype;
         configurationTransport transportDetails;
 
-        for (utConfiguration config : configurations) {
+        for (utConfiguration config : sourceconfigurations) {
             org = organizationmanager.getOrganizationById(config.getorgId());
             config.setOrgName(org.getOrgName());
 	   
@@ -141,8 +145,28 @@ public class adminConfigController {
             }
 
         }
+	mav.addObject("sourceconfigurations", sourceconfigurations);
+	
+	for (utConfiguration config : targetconfigurations) {
+            org = organizationmanager.getOrganizationById(config.getorgId());
+            config.setOrgName(org.getOrgName());
+	   
+            transportDetails = utconfigurationTransportManager.getTransportDetails(config.getId());
+            if (transportDetails != null) {
+                config.settransportMethod(utconfigurationTransportManager.getTransportMethodById(transportDetails.gettransportMethodId()));
+            }
+	    
+	    if(config.getAssociatedSourceConfigId() > 0) {
+		 for (utConfiguration sourceConfig : sourceconfigurations) {
+		     if(sourceConfig.getId() == config.getAssociatedSourceConfigId()) {
+			 config.setSourceConfigurationName(sourceConfig.getconfigName());
+			 break;
+		     }
+		 }
+	    }
 
-        mav.addObject("configurationList", configurations);
+        }
+	mav.addObject("targetconfigurations", targetconfigurations);
 
         return mav;
 
@@ -628,10 +652,8 @@ public class adminConfigController {
 	configurationDetails.setThreshold(transportDetails.getThreshold());
 	utconfigurationmanager.updateConfiguration(configurationDetails);
 	
-        /**
-         * if it is a new transport, for web services, we add the domain sender if not, it is handled with add/edit already *
-         */
-        if (transportDetails.gettransportMethodId() == 6) { 
+        // if it is a new transport, for web services, we add the domain sender if not, it is handled with add/edit already 
+	if (transportDetails.gettransportMethodId() == 6) { 
             if (configurationDetails.getType() == 1) {
                 if (utconfigurationTransportManager.getWSSenderList(transportId).size() == 0) {
                     configurationWebServiceSenders confWSSender = new configurationWebServiceSenders();
@@ -671,19 +693,20 @@ public class adminConfigController {
 	     session.setAttribute("showAllConfigOptions", false);
 	}
 	
-        /**
-         * Need to set up the FTP information if any has been entered
-         */
+        //Need to set up the FTP information if any has been entered
         if (transportDetails.gettransportMethodId() == 3 && !transportDetails.getFTPFields().isEmpty()) {
+	    fileSystem dir = new fileSystem();
+	    
             for (configurationFTPFields ftpFields : transportDetails.getFTPFields()) {
-                ftpFields.settransportId(transportId);
+		
+		dir.creatFTPDirectory(ftpFields.getdirectory().replace("/HELProductSuite/universalTranslator/",""));
+		
+		ftpFields.settransportId(transportId);
                 utconfigurationTransportManager.saveTransportFTP(configurationDetails.getorgId(), ftpFields);
             }
         }
 	
-        /**
-         * need to get file drop info if any has been entered *
-         */
+        // need to get file drop info if any has been entered 
 	if (transportDetails.gettransportMethodId() == 10 && !transportDetails.getFileDropFields().isEmpty()) {
 	    fileSystem dir = new fileSystem();
 	    
@@ -1971,8 +1994,12 @@ public class adminConfigController {
 
         redirectAttr.addFlashAttribute("savedStatus", "updated");
 	
-	boolean HL7Val = (boolean) session.getAttribute("configHL7");
-
+	boolean HL7Val = false;
+	
+	if(session.getAttribute("configHL7") != null) {
+	    HL7Val = (boolean) session.getAttribute("configHL7");
+	}
+	
         if ("save".equals(action)) {
 	    
 	    if(configurationDetails.getConfigurationType() == 2) {

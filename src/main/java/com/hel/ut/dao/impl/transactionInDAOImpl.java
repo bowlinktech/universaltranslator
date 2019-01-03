@@ -1582,6 +1582,7 @@ public class transactionInDAOImpl implements transactionInDAO {
     public Integer updateBatchDLStatusByUploadBatchId(Integer batchUploadId, Integer fromStatusId, Integer toStatusId, String timeField) {
 	try {
 	    String sql = "update batchDownloads set statusId = :toStatusId ";
+	    
 	    if (timeField.equalsIgnoreCase("startover")) {
 		// we reset time
 		sql = sql + ",startDateTime = null, endDateTime = null";

@@ -501,8 +501,16 @@ public class utConfigurationTransportDAOImpl implements utConfigurationTransport
             Integer orgId, Integer transportMethodId, boolean getZeroMessageTypeCol) {
         try {
 
-            String sql = ("select * from configurationMessageSpecs where configId in ("
-                    + "select configId from configurationTransportDetails where configId in (select id from configurations where orgId = :orgId)"
+            String sql = ("select * "
+		    + "from configurationMessageSpecs "
+		    + "where configId in ("
+		    + "select configId "
+		    + "from configurationTransportDetails "
+		    + "where configId in ("
+		    + "select id "
+		    + "from configurations "
+		    + "where orgId = :orgId"
+		    + ")"
                     + " and transportmethodId = :transportMethodId)");
             if (!getZeroMessageTypeCol) {
                 sql = sql + " and messageTypeCol != 0";

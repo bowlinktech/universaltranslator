@@ -3,10 +3,51 @@
 
 require(['./main'], function () {
     require(['jquery'], function ($) {
+	
+	/* Table initialisation */
+	var sourceconfigdatatable = $('#sourceconfigdatatable').dataTable({
+	    "bStateSave": true,
+	    "iCookieDuration": 60,
+	    "sPaginationType": "bootstrap",
+	    "oLanguage": {
+		"sSearch": "_INPUT_",
+		"sLengthMenu": '<select class="form-control" style="width:150px">' +
+			'<option value="10">10 Records</option>' +
+			'<option value="20">20 Records</option>' +
+			'<option value="30">30 Records</option>' +
+			'<option value="40">40 Records</option>' +
+			'<option value="50">50 Records</option>' +
+			'<option value="-1">All</option>' +
+			'</select>'
+	    }
+	});
 
-        var oSettings = datatable.fnSettings();
+        //var oSettings = datatable.fnSettings();
 
-        datatable.fnSort([[6, 'desc']]);
+        sourceconfigdatatable.fnSort([[4, 'desc']]);
+	
+	/* Table initialisation */
+	var targetconfigdatatable = $('#targetconfigdatatable').dataTable({
+	    "bStateSave": true,
+	    "iCookieDuration": 60,
+	    "sPaginationType": "bootstrap",
+	    "oLanguage": {
+		"sSearch": "_INPUT_",
+		"sLengthMenu": '<select class="form-control" style="width:150px">' +
+			'<option value="10">10 Records</option>' +
+			'<option value="20">20 Records</option>' +
+			'<option value="30">30 Records</option>' +
+			'<option value="40">40 Records</option>' +
+			'<option value="50">50 Records</option>' +
+			'<option value="-1">All</option>' +
+			'</select>'
+	    }
+	});
+
+        //var oSettings = datatable.fnSettings();
+
+        targetconfigdatatable.fnSort([[5, 'desc']]);
+
 
         $.ajaxSetup({
             cache: false
@@ -44,9 +85,7 @@ require(['./main'], function () {
                       window.location.href = "list?msg=deleted";
                     }
                 });
-                
             }
-            
         });
 	
 	$(document).on('click', '.copyConfig', function() {

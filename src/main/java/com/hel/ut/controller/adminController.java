@@ -18,7 +18,6 @@ import com.hel.ut.model.utConfiguration;
 import com.hel.ut.model.configurationConnection;
 import com.hel.ut.model.configurationTransport;
 import com.hel.ut.model.custom.searchParameters;
-import com.hel.ut.model.systemSummary;
 import com.hel.ut.model.watchlist;
 import com.hel.ut.service.messageTypeManager;
 import com.hel.ut.service.organizationManager;
