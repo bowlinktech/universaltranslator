@@ -1112,7 +1112,7 @@ public class transactionOutDAOImpl implements transactionOutDAO {
 	clearSQL += "truncate TABLE `transactionouterrors_" + batchDownloadId + "`;";
 	clearSQL += "truncate TABLE `transactiontranslatedlistout_" + batchDownloadId + "`;";
 	clearSQL += "truncate TABLE `transactiontranslatedout_" + batchDownloadId + "`;";
-	clearSQL += "delete from `transactionoutrecords_" + batchDownloadId + "`;";
+	clearSQL += "truncate TABLE `transactionoutrecords_" + batchDownloadId + "`;";
 	
 	Query clearData = sessionFactory.getCurrentSession().createSQLQuery(clearSQL);
 

@@ -972,7 +972,7 @@ public class transactionInDAOImpl implements transactionInDAO {
 	try {
 	    String sql = ("select distinct clearRecords, autoRelease, errorHandling "
 		    + " from configurationtransportdetails where configId in "
-		    + "(select distinct configId from transactioninrecords_"+batchId+");");
+		    + "(select distinct configId from batchUploads where id = "+batchId+");");
 	    
 	    Query query = sessionFactory.getCurrentSession().createSQLQuery(sql)
 		    .setResultTransformer(Transformers.aliasToBean(configurationTransport.class));

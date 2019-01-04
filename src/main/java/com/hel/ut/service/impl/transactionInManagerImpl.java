@@ -3436,12 +3436,7 @@ public class transactionInManagerImpl implements transactionInManager {
 		//write the file
 		filemanager.writeFile(writeToFile, APIMessage.getPayload());
 		if (batchInfo.getConfigId() != 0 && batchInfo.getstatusId() == 2) {
-		    /**
-		     * check for mass translation *
-		     */
-		    if (configurationtransportmanager.getTransportDetails(batchInfo.getConfigId()).isMassTranslation()) {
-			batchInfo.setstatusId(42);
-		    }
+		    batchInfo.setstatusId(42);
 		}
 		batchId = submitBatchUpload(batchInfo);
 		//insert error
@@ -3553,31 +3548,8 @@ public class transactionInManagerImpl implements transactionInManager {
 		    batchInfo.setFileLocation(ct.getfileLocation());
 		    batchInfo.setoriginalFileName(batchName + fileExt);
 		    batchInfo.setEncodingId(encodingId);
+		    batchInfo.setuserId(0);
 
-		    //find user 
-		    List<utUser> users = new ArrayList<>();
-
-		    if (configId != 0) {
-			users = usermanager.getSendersForConfig(Arrays.asList(configId));
-		    }
-		    if (users.isEmpty()) {
-			users = usermanager.getOrganizationContact(APIMessage.getOrgId(), 1);
-		    }
-		    if (users.isEmpty()) {
-			users = usermanager.getOrganizationContact(APIMessage.getOrgId(), 2);
-		    }
-		    if (users.isEmpty()) {
-			users = usermanager.getOrganizationContact(APIMessage.getOrgId(), 0);
-		    }
-		    //if we can't find a user to assign the batch to - we have to error the file
-		    if (users.isEmpty()) {
-			//we assign to admin
-			batchInfo.setuserId(1);
-			statusId = 7;
-			errorId = 27;
-		    } else {
-			batchInfo.setuserId(users.get(0).getId());
-		    }
 		    //write payload to file
 		    writeToFile = dir.setPath(fileNamePath);
 
@@ -3622,10 +3594,6 @@ public class transactionInManagerImpl implements transactionInManager {
 			}
 			//check file size
 			if (statusId == 2) {
-			    /**
-			     * check file size if configId is 0 we go with the smallest file size *
-			     */
-
 			    long maxFileSize = fileSize * 1000000;
 
 			    if (Files.size(file.toPath()) > maxFileSize) {
@@ -3638,19 +3606,21 @@ public class transactionInManagerImpl implements transactionInManager {
 		    batchInfo.setstatusId(statusId);
 		    batchInfo.setendDateTime(new Date());
 		    batchInfo.settotalRecordCount(1); // need to be at least one to show up in activites
+		    
 		    if (batchInfo.getConfigId() != 0 && batchInfo.getstatusId() == 2) {
 
 			//If utConfiguration is set for passthru
 			if (configDetails.getConfigurationType() == 2) {
 			    batchInfo.setstatusId(24);
 			    statusId = 24;
-			} else {
-			    if (configurationtransportmanager.getTransportDetails(batchInfo.getConfigId()).isMassTranslation()) {
-				batchInfo.setstatusId(42);
-			    }
+			} 
+			else {
+			    batchInfo.setstatusId(42);
 			}
 		    }
+		    
 		    batchId = submitBatchUpload(batchInfo);
+		    
 		    if (statusId != 2 && statusId != 42 && statusId != 24) {
 			insertProcessingError(errorId, 0, batchId, null, null, null, null, false, false, "");
 		    }
@@ -3666,9 +3636,7 @@ public class transactionInManagerImpl implements transactionInManager {
 		}
 	    }
 
-	    /**
-	     * insert log*
-	     */
+	    //insert log
 	    try {
 		//log user activity
 		utUserActivity ua = new utUserActivity();
@@ -3922,25 +3890,14 @@ public class transactionInManagerImpl implements transactionInManager {
 
 	    utConfiguration tgtconfigDetails = configurationManager.getConfigurationById(bt.gettargetConfigId());
 
-	    /*batchUploadSummary uploadSummary = new batchUploadSummary();
-	    uploadSummary.setbatchId(batchId);
-	    uploadSummary.setTransactionTargetId(0);
-	    uploadSummary.setmessageTypeId(0);
-	    uploadSummary.setsourceOrgId(configDetails.getorgId());
-	    uploadSummary.settargetOrgId(tgtconfigDetails.getorgId());
-	    uploadSummary.setSourceSubOrgId(0);
-	    uploadSummary.setTargetSubOrgId(0);
-	    uploadSummary.setTargetConfigId(bt.gettargetConfigId());
-	    
-	    transactionInDAO.submitBatchUploadSummary(uploadSummary);*/
 	    if (batchDetails.getConfigId() != bt.getsourceConfigId()) {
 		if (bt.getTargetOrgCol() != 0) {
 		    rejectInvalidTargetOrg(batchId, bt);
 		}
-	    } else {
+	    } 
+	    else {
 
-		//each outbound config is its own batch, this doesn't consider combining outbound batches yet **/	
-		/* Create the batch name (OrgId+MessageTypeId+Date/Time) - need milliseconds as computer is fast and files have the same name*/
+		// Create the batch name (OrgId+MessageTypeId+Date/Time) - need milliseconds as computer is fast and files have the same name*/
 		DateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmssS");
 		Date date = new Date();
 
@@ -3948,17 +3905,13 @@ public class transactionInManagerImpl implements transactionInManager {
 
 		String utbatchName = new StringBuilder().append(transportDetails.gettransportMethodId()).append("_m_").append(tgtconfigDetails.getorgId()).append(tgtconfigDetails.getMessageTypeId()).append(dateFormat.format(date)).toString();
 
-		/* Get the userId for the utConfiguration */
-		List<configurationConnection> connections = configurationManager.getConnectionsBySrcAndTargetConfigurations(batchDetails.getConfigId(), tgtconfigDetails.getId());
-
-		int userId = 0;
-
 		//we create a batchDownloads
 		batchDownloads batchDownload = new batchDownloads();
 
 		//set batch download details
 		batchDownload.setutBatchName(utbatchName);
-		//set it to interim status
+		
+		//set the batch to a completed status (passthru requires no processing)
 		batchDownload.setstatusId(28);
 
 		//we determine output file name
@@ -3967,44 +3920,25 @@ public class transactionInManagerImpl implements transactionInManager {
 		batchDownload.setstartDateTime(new Date());
 		batchDownload.settransportMethodId(transportDetails.gettransportMethodId());
 		batchDownload.setOrgId(tgtconfigDetails.getorgId());
-		batchDownload.setuserId(userId);
+		batchDownload.setuserId(0);
 		batchDownload.settotalErrorCount(0);
 		batchDownload.settotalRecordCount(1);
 		batchDownload.setdeleted(false);
 		batchDownload.setdateCreated(new Date());
-		/* Submit a new batch */
+		batchDownload.setConfigId(tgtconfigDetails.getId());
+		batchDownload.setBatchUploadId(batchDetails.getId());
+		
+		// Submit a new batch
 		int batchDLId = (int) transactionOutDAO.submitBatchDownload(batchDownload);
 
 		batchDownloads batchDLDetails = transactionOutDAO.getBatchDetails(batchDLId);
 
-		//Insert the batch download summary
-		/*batchDownloadSummary downloadSummary = new batchDownloadSummary();
-		downloadSummary.setbatchId(batchDLId);
-		downloadSummary.settargetOrgId(tgtconfigDetails.getorgId());
-		downloadSummary.setsourceOrgId(configDetails.getorgId());
-		downloadSummary.settransactionTargetId(0);
-		downloadSummary.setmessageTypeId(0);
-		downloadSummary.settargetConfigId(bt.gettargetConfigId());
-		downloadSummary.setTargetSubOrgId(0);
-		downloadSummary.setSourceSubOrgId(0);
-		
-		transactionOutDAO.submitSummaryEntry(downloadSummary);*/
-		//Insert transaction Target
-		/*transactionTarget transTarget = new transactionTarget();
-		transTarget.setbatchUploadId(batchId);
-		transTarget.setbatchDLId(batchDLId);
-		transTarget.setSourceSubOrgId(0);
-		transTarget.setTargetSubOrgId(0);
-		transTarget.setconfigId(bt.gettargetConfigId());
-		transTarget.setstatusId(60);
-		
-		transactionInDAO.submitTransactionTarget(transTarget);*/
 		//Need to copy the source file into the target location (final target location to send from.
 		String fileName = new StringBuilder().append(batchDLDetails.getoutputFIleName()).toString();
 		fileSystem dir = new fileSystem();
 
 		String filelocation = transportDetails.getfileLocation();
-		filelocation = filelocation.replace("/HELProductSuite/", "");
+		filelocation = filelocation.replace("/HELProductSuite/universalTranslator/", "");
 		dir.setDirByName(filelocation);
 
 		File targetFile = new File(dir.getDir() + fileName);
@@ -4031,7 +3965,7 @@ public class transactionInManagerImpl implements transactionInManager {
 		filemanager.writeFile(archiveOutFile.getAbsolutePath(), strEncodedFile);
 
 		//Need to call new method for sending of the file only
-		//transactionOutManager.sendPassThruFiles(batchDetails,batchDLDetails,transportDetails,archiveFile);
+		transactionoutmanager.sendPassThruFiles(batchDetails,batchDLDetails,transportDetails,archiveFile);
 	    }
 	}
     }

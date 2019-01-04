@@ -1,6 +1,6 @@
 /** 1.3.19 **/
 
-1. Work on passthru configuration type.
+1. Work on passthru configuration type. ** DONE **
 
 2. Work on calculating log in and log out time correctly.
 

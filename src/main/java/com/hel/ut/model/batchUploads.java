@@ -25,7 +25,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 public class batchUploads {
 
     @Transient
-    private Integer totalTransactions = 0,transTotalNotFinal = 10, totalOpen = 0, totalClosed = 0, threshold = 100, watchListEntryId = 0;
+    private Integer totalTransactions = 0,transTotalNotFinal = 10, totalOpen = 0, totalClosed = 0, threshold = 100, watchListEntryId = 0, inboundBatchConfigurationType = 1;
 
     @Transient
     private String statusValue, usersName, 
@@ -416,6 +416,13 @@ public class batchUploads {
     public void setRelatedBatchDownloadIds(String relatedBatchDownloadIds) {
 	this.relatedBatchDownloadIds = relatedBatchDownloadIds;
     }
-    
+
+    public Integer getInboundBatchConfigurationType() {
+	return inboundBatchConfigurationType;
+    }
+
+    public void setInboundBatchConfigurationType(Integer inboundBatchConfigurationType) {
+	this.inboundBatchConfigurationType = inboundBatchConfigurationType;
+    }
     
 }

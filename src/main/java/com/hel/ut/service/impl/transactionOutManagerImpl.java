@@ -1513,10 +1513,15 @@ public class transactionOutManagerImpl implements transactionOutManager {
 
 	String batchName = "";
 	String sourceFileName = batchUploadDetails.getoriginalFileName();
+	
 	if (transportDetails.gettargetFileName() == null) {
-	    /* Create the batch name (OrgId+MessageTypeId) */
+	    // Create the batch name (OrgId+MessageTypeId)
 	    batchName = new StringBuilder().append(configDetails.getorgId()).append(configDetails.getMessageTypeId()).toString();
-	} else if ("USE SOURCE FILE".equals(transportDetails.gettargetFileName())) {
+	} 
+	else if ("".equals(transportDetails.gettargetFileName())) {
+	    batchName = new StringBuilder().append(configDetails.getorgId()).append(configDetails.getMessageTypeId()).toString();
+	}
+	else if ("USE SOURCE FILE".equals(transportDetails.gettargetFileName())) {
 	    int lastPeriodPos = sourceFileName.lastIndexOf(".");
 
 	    if (lastPeriodPos <= 0) {
@@ -2155,8 +2160,9 @@ public class transactionOutManagerImpl implements transactionOutManager {
     public void sendPassThruFiles(batchUploads batchULDetails, batchDownloads batchDLDetails,configurationTransport transportDetails,File archiveFile) throws Exception {
 	
 	//we have file already, we just need to move it
-	if (transportDetails.gettransportMethodId() == 5) {
-	    /* Get the File Drop Details */
+	if (transportDetails.gettransportMethodId() == 10) {
+	   
+	   // Get the File Drop Details
 	   configurationFileDropFields fileDropDetails = configurationTransportManager.getTransFileDropDetailsPush(transportDetails.getId());
 
 	    // the file is in output folder already, we need to rebuild path and move it
@@ -2168,6 +2174,27 @@ public class transactionOutManagerImpl implements transactionOutManager {
 	    File targetFile = new File(directoryPath + fileDropDetails.getDirectory() + batchDLDetails.getoutputFIleName());
 	    Files.copy(archiveFile.toPath(), targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
 	} 
+	
+	//SFTP
+	else if (transportDetails.gettransportMethodId() == 3) {
+	    
+	    //Get the ftp fields
+	    configurationFTPFields ftpDetails = configurationTransportManager.getTransportFTPDetailsPush(transportDetails.getId());
+	    
+	    if(ftpDetails != null) {
+		if(!ftpDetails.getdirectory().equals("")) {
+		    // the file is in output folder already, we need to rebuild path and move it
+		    fileSystem dir = new fileSystem();
+		    String filelocation = transportDetails.getfileLocation();
+		    filelocation = filelocation.replace("/HELProductSuite/universalTranslator/", "");
+		    dir.setDirByName(filelocation);
+
+		    File targetFile = new File(directoryPath + ftpDetails.getdirectory() + batchDLDetails.getoutputFIleName());
+		    Files.copy(archiveFile.toPath(), targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+		}
+	    }
+	}
+	
 	// REST API 
 	else if (transportDetails.gettransportMethodId() == 9) {
 	    
@@ -2208,6 +2235,8 @@ public class transactionOutManagerImpl implements transactionOutManager {
 		
 		Calendar today = Calendar.getInstance();
 		today.set(Calendar.SECOND,0);
+		today.set(Calendar.MINUTE,0);
+		today.set(Calendar.MILLISECOND, 0);
 		
 		batchDownloadsToProcess.forEach(batchDownload -> {
 		    
@@ -2236,13 +2265,9 @@ public class transactionOutManagerImpl implements transactionOutManager {
 				    processDate.set(Calendar.HOUR_OF_DAY,scheduleDetails.getprocessingTime());
 				    processDate.set(Calendar.MINUTE,0);
 				    processDate.set(Calendar.SECOND,0);
+				    processDate.set(Calendar.MILLISECOND, 0);
 				    
-				    System.out.println(processDate.getTime());
-				    System.out.println(today.getTime());
-				    System.out.println(processDate.equals(today));
-
 				    if(processDate.equals(today)) {
-					System.out.println("Proces Target Batch");
 					transactionOutDAO.updateBatchStatus(batchDownload.getId(),61);
 				    }
 				    
@@ -2271,6 +2296,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
 				processDate.set(Calendar.HOUR_OF_DAY,scheduleDetails.getprocessingTime());
 				processDate.set(Calendar.MINUTE,0);
 				processDate.set(Calendar.SECOND,0);
+				processDate.set(Calendar.MILLISECOND, 0);
 				
 				if(processDate.equals(today)) {
 				    transactionOutDAO.updateBatchStatus(batchDownload.getId(),61);
@@ -2293,6 +2319,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
 				processDate.set(Calendar.HOUR_OF_DAY,scheduleDetails.getprocessingTime());
 				processDate.set(Calendar.MINUTE,0);
 				processDate.set(Calendar.SECOND,0);
+				processDate.set(Calendar.MILLISECOND, 0);
 				
 				if(processDate.equals(today)) {
 				    transactionOutDAO.updateBatchStatus(batchDownload.getId(),61);

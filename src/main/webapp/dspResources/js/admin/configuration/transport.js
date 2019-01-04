@@ -130,10 +130,6 @@ require(['./main'], function () {
 	    else if (fileType == 12) {
 		$('#jsonWrapperElementDiv').show();
                 $('#fileExt').val('json');
-		
-		if ($('#configType').attr('rel') == 2) {
-                    $('#ccdDetailsDiv').show();
-                }
             }
 
         });

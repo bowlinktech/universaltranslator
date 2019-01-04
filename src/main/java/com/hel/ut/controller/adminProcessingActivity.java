@@ -324,8 +324,10 @@ public class adminProcessingActivity {
 		//we can map the process status so we only have to query once
                 List<utConfiguration> configurationList = configurationManager.getConfigurations();
                 Map<Integer, String> cMap = new HashMap<Integer, String>();
+		Map<Integer, Integer> cTypeMap = new HashMap<Integer, Integer>();
                 for (utConfiguration c : configurationList) {
                     cMap.put(c.getId(), c.getconfigName());
+		    cTypeMap.put(c.getId(), c.getConfigurationType());
                 }
 		
                 //we can map the process status so we only have to query once
@@ -369,6 +371,8 @@ public class adminProcessingActivity {
                     batch.setusersName(userMap.get(batch.getuserId()));
 		    
 		    batch.setConfigName(cMap.get(batch.getConfigId()));
+		    
+		    batch.setInboundBatchConfigurationType(cTypeMap.get(batch.getConfigId()));
 
                 }
             }
@@ -430,8 +434,10 @@ public class adminProcessingActivity {
 		//we can map the process status so we only have to query once
                 List<utConfiguration> configurationList = configurationManager.getConfigurations();
                 Map<Integer, String> cMap = new HashMap<Integer, String>();
+		Map<Integer, Integer> cTypeMap = new HashMap<Integer, Integer>();
                 for (utConfiguration c : configurationList) {
                     cMap.put(c.getId(), c.getconfigName());
+		    cTypeMap.put(c.getId(), c.getConfigurationType());
                 }
 		
                 //we can map the process status so we only have to query once
@@ -473,6 +479,8 @@ public class adminProcessingActivity {
                     batch.setusersName(userMap.get(batch.getuserId()));
 		    
 		    batch.setConfigName(cMap.get(batch.getConfigId()));
+		    
+		    batch.setInboundBatchConfigurationType(cTypeMap.get(batch.getConfigId()));
                 }
             }
 
@@ -528,8 +536,8 @@ public class adminProcessingActivity {
         systemSummary summaryDetails = transactionOutManager.generateSystemOutboundSummary();
         mav.addObject("summaryDetails", summaryDetails);
 
-        /* Get all inbound transactions */
-        try {
+        // Get all inbound transactions 
+        //try {
 	    
 	    List<batchDownloads> Batches = null;
 	    
@@ -611,9 +619,9 @@ public class adminProcessingActivity {
 
             mav.addObject("batches", Batches);
 
-        } catch (Exception e) {
-            throw new Exception("Error occurred viewing the all downloaded batches. Error:" + e.getMessage(), e);
-        }
+        //} catch (Exception e) {
+            //throw new Exception("Error occurred viewing the all downloaded batches. Error:" + e.getMessage(), e);
+        //}
 
         return mav;
 

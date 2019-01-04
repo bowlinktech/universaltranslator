@@ -73,12 +73,20 @@
                                                     <c:set var="text" value="${fn:split(batch.originalFileName,'.')}" />
                                                     <c:set var="ext" value="${text[fn:length(text)-1]}" />
                                                     <br />
-                                                    <c:set var="hrefLink" value="/FileDownload/downloadFile.do?filename=archive_${batch.utBatchName}.${ext}&foldername=archivesIn"/>
+						    
+						    <c:choose>
+							<c:when test="${batch.transportMethodId == 9}">
+							    <c:set var="hrefLink" value="/FileDownload/downloadFile.do?filename=${batch.utBatchName}.${ext}&foldername=archivesIn"/>
+							</c:when>
+							<c:otherwise>
+							    <c:set var="hrefLink" value="/FileDownload/downloadFile.do?filename=archive_${batch.utBatchName}.${ext}&foldername=archivesIn"/>
+							</c:otherwise>
+						    </c:choose>
 
                                                     <c:if test="${batch.transportMethodId == 6}">
                                                         <c:set var="hrefLink" value="/FileDownload/downloadFile.do?filename=${batch.utBatchName}_dec.${ext}&foldername=archivesIn"/>
                                                     </c:if>
-						    <c:if test="${batch.transportMethodId == 10 || batch.transportMethodId == 3 || batch.transportMethodId == 6 || batch.transportMethodId == 9}">
+						    <c:if test="${batch.inboundBatchConfigurationType == 1 && (batch.transportMethodId == 10 || batch.transportMethodId == 3 || batch.transportMethodId == 6 || batch.transportMethodId == 9)}">
 							<c:set var="hrefPipeLink" value="/FileDownload/downloadFile.do?filename=${batch.utBatchName}_dec.txt&foldername=archivesIn"/>
 						    </c:if>
 
@@ -86,7 +94,7 @@
                                                         ${batch.originalFileName}
                                                     </a>
 						    <br/>
-						    <c:if test="${(batch.transportMethodId == 10 || batch.transportMethodId == 3 || batch.transportMethodId == 6 || batch.transportMethodId == 9) && batch.statusId != 42 && batch.statusId != 64}">
+						    <c:if test="${batch.inboundBatchConfigurationType == 1 && (batch.transportMethodId == 10 || batch.transportMethodId == 3 || batch.transportMethodId == 6 || batch.transportMethodId == 9) && batch.statusId != 42 && batch.statusId != 64}">
 							<a href="${hrefPipeLink}" title="View Pipe File">
 							    Translated File - ${batch.utBatchName}
 							</a>

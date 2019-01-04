@@ -25,7 +25,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 public class batchDownloads {
 
     @Transient
-    private Integer totalTransactions = 0, threshold = 100;;
+    private Integer totalTransactions = 0, threshold = 100, totalBatchDownloads = 0, totalDelivered = 0;
 
     @Transient
     private String statusValue, usersName, orgName, configName, transportMethod,fromBatchName,fromBatchFile, tgtorgName, originalFileName, dashboardRowColor = "table-secondary";
@@ -354,6 +354,22 @@ public class batchDownloads {
 
     public void setBatchUploadId(int batchUploadId) {
 	this.batchUploadId = batchUploadId;
+    }
+
+    public Integer getTotalBatchDownloads() {
+	return totalBatchDownloads;
+    }
+
+    public void setTotalBatchDownloads(Integer totalBatchDownloads) {
+	this.totalBatchDownloads = totalBatchDownloads;
+    }
+
+    public Integer getTotalDelivered() {
+	return totalDelivered;
+    }
+
+    public void setTotalDelivered(Integer totalDelivered) {
+	this.totalDelivered = totalDelivered;
     }
     
     

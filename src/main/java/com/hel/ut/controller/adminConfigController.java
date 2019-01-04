@@ -235,9 +235,14 @@ public class adminConfigController {
             return mav;
         }
 	
-	if(configurationDetails.getMessageTypeId() == null) {
-	    configurationDetails.setMessageTypeId(0);
+	if(configurationDetails.getAssociatedSourceConfigId() > 0) {
+	    utConfiguration sourceConfigDetails = utconfigurationmanager.getConfigurationById(configurationDetails.getAssociatedSourceConfigId());
+	    if(sourceConfigDetails.getConfigurationType() == 2) {
+		configurationDetails.setConfigurationType(2);
+	    }
 	}
+	
+	configurationDetails.setMessageTypeId(0);
 	configurationDetails.setstepsCompleted(1);
 	
         Integer id = (Integer) utconfigurationmanager.createConfiguration(configurationDetails);
@@ -377,6 +382,13 @@ public class adminConfigController {
 
         //Need to get a list of organization users 
         List<utUser> users = userManager.getUsersByOrganization(configurationDetails.getorgId());
+	
+	if(configurationDetails.getAssociatedSourceConfigId() > 0) {
+	    utConfiguration sourceConfigDetails = utconfigurationmanager.getConfigurationById(configurationDetails.getAssociatedSourceConfigId());
+	    if(sourceConfigDetails.getConfigurationType() == 2) {
+		configurationDetails.setConfigurationType(2);
+	    }
+	}
 
         //submit the updates
 	utconfigurationmanager.updateConfiguration(configurationDetails);
