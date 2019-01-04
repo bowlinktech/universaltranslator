@@ -203,7 +203,54 @@ require(['./main'], function () {
                     }
                 });
             }
+        });
+	
+	$(document).on('click', '.deleteTransactions', function() {
+            
+            var batchName = $(this).attr('rel');
+           
+            if(confirm("Are you sure you want to remove this inbound batch?")) {
+                
+                $('body').overlay({
+                    glyphicon : 'floppy-disk',
+                    message : 'Deleting...'
+                });
+                
+                $.ajax({
+                    url: '../../deleteBatch.do',
+                    data: {
+                        'batchName': batchName
+                    },
+                    type: 'POST',
+                    success: function(data) {
+                       location.reload();
+                    }
+                });
+                
+            }
+            
+        });
+	
+	//This function will release the batch
+        $(document).on('click', '.releaseOutboundBatch', function () {
 
+            var confirmed = confirm("Are you sure you want to release this outbound batch?");
+
+            if (confirmed) {
+                $("#actionRowBottom").hide();
+                $("#actionRowTop").hide();
+                $.ajax({
+                    url: '../../outboundBatchOptions',
+                    data: {
+			'batchOption': $(this).attr('rel'), 
+			'batchId': $(this).attr('rel2')
+		    },
+                    type: "POST",
+                    success: function (data) {
+                        window.location.href = '/administrator/processing-activity/outbound';
+                    }
+                });
+            }
         });
 
         //This function will release the batch
@@ -216,7 +263,10 @@ require(['./main'], function () {
                 $("#actionRowTop").hide();
                 $.ajax({
                     url: '../../inboundBatchOptions',
-                    data: {'batchOption': $(this).attr('rel'), 'batchId': $(this).attr('rel2')},
+                    data: {
+			'batchOption': $(this).attr('rel'), 
+			'batchId': $(this).attr('rel2')
+		    },
                     type: "POST",
                     success: function (data) {
                         window.location.href = '/administrator/processing-activity/inbound';

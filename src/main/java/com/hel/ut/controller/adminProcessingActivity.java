@@ -1023,7 +1023,7 @@ public class adminProcessingActivity {
                 canReset = true;
             }
 
-            if (batchDetails.getstatusId() == 5) {
+            if (batchDetails.getstatusId() == 5 || batchDetails.getstatusId() == 64) {
                 // now we check so we don't have to make a db hit if batch status is not 5 
                 if (transactionInManager.getRecordCounts(batchDetails.getId(), Arrays.asList(11, 12, 13, 16), false, false) == 0) {
                     canSend = true;
@@ -1153,7 +1153,11 @@ public class adminProcessingActivity {
             } 
 	    else if (batchOption.equalsIgnoreCase("releaseBatch")) {
                 strBatchOption = "Released Batch";
-                if (batchDetails.getstatusId() == 5) {
+		
+		if(batchDetails.getstatusId() == 64) {
+		    transactionInManager.updateBatchStatus(batchId, 42, "startDateTime");
+		}
+		else if (batchDetails.getstatusId() == 5) {
                     transactionInManager.updateBatchStatus(batchId, 4, "startDateTime");
                     //check once again to make sure all transactions are in final status
                     if (transactionInManager.getRecordCounts(batchId, Arrays.asList(11, 12, 13, 16), false, false) == 0) {
@@ -3500,7 +3504,7 @@ public class adminProcessingActivity {
             lu_ProcessStatus processStatus = sysAdminManager.getProcessStatusById(batchDetails.getstatusId());
             batchDetails.setstatusValue(processStatus.getDisplayCode());
 
-            List<Integer> cancelStatusList = Arrays.asList(25,30,61);
+            List<Integer> cancelStatusList = Arrays.asList(25,30,61,64,59);
             if (cancelStatusList.contains(batchDetails.getstatusId())) {
                 canCancel = true;
             }
@@ -3509,6 +3513,10 @@ public class adminProcessingActivity {
             if (resetStatusList.contains(batchDetails.getstatusId())) {
                 canReset = true;
             }
+	    
+	    if(batchDetails.getstatusId() == 64 || batchDetails.getstatusId() == 59) {
+		canSend = true;
+	    }
 	    
             batchDetails.setConfigName(configurationManager.getMessageTypeNameByConfigId(batchDetails.getConfigId()));
             
@@ -3519,15 +3527,7 @@ public class adminProcessingActivity {
 		//List<batchErrorSummary> batchErrorSummary = transactionOutManager.getBatchErrorSummary(batchDetails.getId());
 		//mav.addObject("batchErrorSummary", batchErrorSummary);
 	    }
-	         
-	    if(orgDetails.getHelRegistryOrgId()> 0) {
-		canReset = false;
-	    }
-	    
-	    if(orgDetails.getHelRegistryId()> 0) {
-		showButtons = false;
-	    }
-	    
+	   
 	    
         } else {
             mav.addObject("doesNotExist", true);
@@ -3570,23 +3570,25 @@ public class adminProcessingActivity {
 	batchDownloads batchDetails = transactionOutManager.getBatchDetails(batchId);
 
         if (userInfo != null && batchDetails != null) {
-            
-	    if (batchOption.equalsIgnoreCase("cancel")) {
-                strBatchOption = "Cancelled Batch";
-                transactionInManager.updateBatchStatus(batchDetails.getBatchUploadId(), 4, "startDateTime");
-                transactionInManager.updateBatchStatus(batchDetails.getBatchUploadId(), 32, "endDateTime");
-                //need to cancel targets also
-                transactionOutManager.updateTargetBatchStatus(batchId, 32, "startDateTime");
+	    
+	    //Release a manual target batch
+	    if(batchOption.equalsIgnoreCase("releaseBatch")) {
+		strBatchOption = "Release Outbound Batch";
+		transactionOutManager.updateTargetBatchStatus(batchId, 61, "startDateTime");
+	    }
+	    
+	    else if (batchOption.equalsIgnoreCase("cancel")) {
+		strBatchOption = "Cancelled Outbound Batch";
 		
-		//Delete batch transaction tables
-		transactionInManager.deleteBatchTransactionTables(batchDetails.getBatchUploadId());
+		//need to cancel target batch
+                transactionOutManager.updateTargetBatchStatus(batchId, 32, "startDateTime");
 		
 		//Delete batch target tables
 		transactionOutManager.deleteBatchDownloadTables(batchId);
 
             } 
 	    else if (batchOption.equalsIgnoreCase("reset")) {
-                strBatchOption = "Reset Batch";
+                strBatchOption = "Reset Outbound Batch";
 		
 		transactionOutManager.updateTargetBatchStatus(batchId, 66, "startDateTime");
 		

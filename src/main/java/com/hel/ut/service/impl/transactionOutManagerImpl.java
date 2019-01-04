@@ -25,6 +25,7 @@ import com.hel.ut.model.configurationDataTranslations;
 import com.hel.ut.model.configurationFTPFields;
 import com.hel.ut.model.configurationFormFields;
 import com.hel.ut.model.configurationFileDropFields;
+import com.hel.ut.model.configurationSchedules;
 import com.hel.ut.model.configurationTransport;
 import com.hel.ut.service.emailMessageManager;
 import com.hel.ut.model.mailMessage;
@@ -1719,10 +1720,6 @@ public class transactionOutManagerImpl implements transactionOutManager {
 			    }
 			});
 		    }
-		    //OLD WAY
-		    //updateTargetBatchStatus(batches.get(0).getId(), 25, "startDateTime");
-		    //processMassOutputBatch(batches.get(0));
-
 		}
 	    } catch (Exception ex1) {
 		System.out.println(new Date() + " processMassOutputBatches error");
@@ -2189,4 +2186,123 @@ public class transactionOutManagerImpl implements transactionOutManager {
 	return transactionOutDAO.getDLBatchesByBatchUploadId(batchUploadId);
     }
     
+    /**
+     * THe 'checkOutboundScheduledBatches' method will check to see if there are any waiting outbound batches to be sent.
+     * THe method will find any downloadBatch with status Id (59) and check the configurations schedule settings against
+     * the current date/time.
+     * 
+     * If there is a match it will update the status Id of the batch to (61 ready to process).
+     * 
+     * @throws Exception 
+     */
+    @Override
+    public void checkOutboundScheduledBatches() throws Exception {
+	
+	List<Integer> statusIds = new ArrayList<>();
+	statusIds.add(59);
+	
+	List<batchDownloads> batchDownloadsToProcess = transactionOutDAO.getDLBatchesByStatusIds(statusIds);
+	
+	if(batchDownloadsToProcess != null) {
+	    if(!batchDownloadsToProcess.isEmpty()) {
+		
+		Calendar today = Calendar.getInstance();
+		today.set(Calendar.SECOND,0);
+		
+		batchDownloadsToProcess.forEach(batchDownload -> {
+		    
+		    if(batchDownload.getConfigId() > 0) {
+			
+			//Need to get the schedule
+			configurationSchedules scheduleDetails = configurationManager.getScheduleDetails(batchDownload.getConfigId());
+			
+			//Automatically
+			if(scheduleDetails.gettype() == 5) {
+			    transactionOutDAO.updateBatchStatus(batchDownload.getId(),61);
+			}
+			
+			//Daily
+			else if(scheduleDetails.gettype() == 2) {
+			    
+			    //Scheduled
+			    if(scheduleDetails.getprocessingType() == 1) {
+				if(scheduleDetails.getprocessingTime() > 0) {
+				    
+				    Calendar processDate = Calendar.getInstance();
+
+				    processDate.set(Calendar.YEAR, today.get(Calendar.YEAR));
+				    processDate.set(Calendar.MONTH, today.get(Calendar.MONTH));
+				    processDate.set(Calendar.DAY_OF_MONTH, today.get(Calendar.DAY_OF_MONTH));
+				    processDate.set(Calendar.HOUR_OF_DAY,scheduleDetails.getprocessingTime());
+				    processDate.set(Calendar.MINUTE,0);
+				    processDate.set(Calendar.SECOND,0);
+
+				    if(processDate.equals(today)) {
+					transactionOutDAO.updateBatchStatus(batchDownload.getId(),61);
+				    }
+				    
+				    
+				}
+				//If no time set, set the batch to manual
+				else {
+				    transactionOutDAO.updateBatchStatus(batchDownload.getId(),64);
+				}
+			    }
+			    //Continuous
+			    else {
+				transactionOutDAO.updateBatchStatus(batchDownload.getId(),61);
+			    }
+			}
+			
+			//Weekly
+			else if(scheduleDetails.gettype() == 3) {
+			    
+			    if(scheduleDetails.getprocessingTime() > 0 && scheduleDetails.getprocessingDay() > 0) {
+				Calendar processDate = Calendar.getInstance();
+				
+				processDate.set(Calendar.YEAR, today.get(Calendar.YEAR));
+				processDate.set(Calendar.MONTH, today.get(Calendar.MONTH));
+				processDate.set(Calendar.DAY_OF_WEEK, scheduleDetails.getprocessingDay());
+				processDate.set(Calendar.HOUR_OF_DAY,scheduleDetails.getprocessingTime());
+				processDate.set(Calendar.MINUTE,0);
+				processDate.set(Calendar.SECOND,0);
+				
+				if(processDate.equals(today)) {
+				    transactionOutDAO.updateBatchStatus(batchDownload.getId(),61);
+				}
+			    }
+			    else {
+				transactionOutDAO.updateBatchStatus(batchDownload.getId(),64);
+			    }
+			}
+			
+			//Monthly (Always check on the first)
+			else if(scheduleDetails.gettype() == 4) {
+			    
+			    if(scheduleDetails.getprocessingTime() > 0) {
+				Calendar processDate = Calendar.getInstance();
+				
+				processDate.set(Calendar.YEAR, today.get(Calendar.YEAR));
+				processDate.set(Calendar.MONTH, today.get(Calendar.MONTH));
+				processDate.set(Calendar.DAY_OF_MONTH, 1);
+				processDate.set(Calendar.HOUR_OF_DAY,scheduleDetails.getprocessingTime());
+				processDate.set(Calendar.MINUTE,0);
+				processDate.set(Calendar.SECOND,0);
+				
+				if(processDate.equals(today)) {
+				    transactionOutDAO.updateBatchStatus(batchDownload.getId(),61);
+				}
+			    }
+			}
+			
+			//Set to manually
+			else {
+			    transactionOutDAO.updateBatchStatus(batchDownload.getId(),61);
+			}
+		    }
+		});
+		
+	    }
+	}
+    }
 }

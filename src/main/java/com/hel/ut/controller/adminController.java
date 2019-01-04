@@ -78,6 +78,7 @@ public class adminController {
      */
     @RequestMapping(value = "/administrator", method = RequestMethod.GET)
     public ModelAndView HIMDashboard(HttpSession session, HttpServletRequest request, HttpServletResponse response) throws Exception {
+	
 
         ModelAndView mav = new ModelAndView();
         mav.setViewName("/administrator/himdashboard");

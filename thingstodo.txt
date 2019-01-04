@@ -1,5 +1,1 @@
 /** 1.2.19 **/
-
-1. Need to review inbound messages that are not set to automatically process. I don't think the "Pending" section is activated and the inbound process just processes the file automatically without looking at the schedule.
-
-2. Need to review the outbound schedule. Right now everything is just processing automatically.

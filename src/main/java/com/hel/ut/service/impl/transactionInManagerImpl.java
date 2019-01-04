@@ -564,39 +564,22 @@ public class transactionInManagerImpl implements transactionInManager {
 	boolean targetsInserted = false;
 	if (batchStatusId == 24) {
 	    
-	    //Need to get the schedule for the configuration to find out if the targets need to be processed automatically
-	    configurationSchedules configurationScheduleDetails = configurationManager.getScheduleDetails(updatedBatchDetails.getConfigId());
-	    
-	    Integer scheduleType = 1;
-	    boolean processTargets = false;
-	    
-	    if(configurationScheduleDetails != null) {
-		scheduleType = configurationScheduleDetails.gettype();
+	    //If no errors found then create the batch download entries
+	    if(updatedBatchDetails.geterrorRecordCount() == 0) {
+		assignBatchDLId(batchUploadId, batch.getConfigId());
+		targetsInserted = true;
 	    }
-	    
-	    //Create the targets automatically after processing
-	    if(scheduleType == 5 || scheduleType == 0) {
-		processTargets = true;
-	    }
-	    
-	    if(processTargets) {
-		//If no errors found then create the batch download entries
-		if(updatedBatchDetails.geterrorRecordCount() == 0) {
-		    assignBatchDLId(batchUploadId, batch.getConfigId());
-		    targetsInserted = true;
-		}
 
-		//If errors are found and the error handling is set to send only non errored transactions
-		//and there are successful tranasctions to send create the batch download entries
-		else if(handlingDetails.get(0).geterrorHandling() == 2 && (updatedBatchDetails.geterrorRecordCount() < updatedBatchDetails.gettotalRecordCount())) {
-		    assignBatchDLId(batchUploadId, batch.getConfigId());
-		    targetsInserted = true;
-		}
-		//If the error handling is set to send all transactions errored or not
-		else if(handlingDetails.get(0).geterrorHandling() == 4) {
-		    assignBatchDLId(batchUploadId, batch.getConfigId());
-		    targetsInserted = true;
-		}
+	    //If errors are found and the error handling is set to send only non errored transactions
+	    //and there are successful tranasctions to send create the batch download entries
+	    else if(handlingDetails.get(0).geterrorHandling() == 2 && (updatedBatchDetails.geterrorRecordCount() < updatedBatchDetails.gettotalRecordCount())) {
+		assignBatchDLId(batchUploadId, batch.getConfigId());
+		targetsInserted = true;
+	    }
+	    //If the error handling is set to send all transactions errored or not
+	    else if(handlingDetails.get(0).geterrorHandling() == 4) {
+		assignBatchDLId(batchUploadId, batch.getConfigId());
+		targetsInserted = true;
 	    }
 	}
 	
@@ -998,6 +981,37 @@ public class transactionInManagerImpl implements transactionInManager {
 		    ex.printStackTrace();
 		    System.err.println("loadBatch - insert user log" + ex.toString());
 		}
+		
+		
+		utConfiguration configDetails = configurationManager.getConfigurationById(batch.getConfigId());
+		configurationTransport transportDetails = configurationtransportmanager.getTransportDetails(batch.getConfigId());
+
+		if (transportDetails != null) {
+		    if(transportDetails.getHelRegistryConfigId() != null) {
+			if (transportDetails.getHelRegistryId() > 0 && transportDetails.getHelRegistryConfigId() > 0 && !"".equals(transportDetails.getHelSchemaName())) {
+
+			    submittedMessage existingRegistrySubmittedMessage = submittedmessagemanager.getSubmittedMessageBySQL(transportDetails.getHelSchemaName(),batch.getutBatchName());
+
+			    if (existingRegistrySubmittedMessage != null) {
+				submittedmessagemanager.updateSubmittedMessage(transportDetails.getHelSchemaName(),existingRegistrySubmittedMessage.getId(),23,batchId);
+			    }
+			    else {
+				submittedMessage newSubmittedMessage = new submittedMessage();
+				newSubmittedMessage.setUtBatchUploadId(batchId);
+				newSubmittedMessage.setRegistryConfigId(transportDetails.getHelRegistryConfigId());
+				newSubmittedMessage.setUploadedFileName(batch.getoriginalFileName());
+				newSubmittedMessage.setAssignedFileName(batch.getutBatchName());
+				newSubmittedMessage.setInFileExt(FilenameUtils.getExtension(batch.getoriginalFileName()));
+				newSubmittedMessage.setStatusId(23);
+				newSubmittedMessage.setTransportId(1);
+				newSubmittedMessage.setSystemUserId(0);
+
+				submittedmessagemanager.submitSubmittedMessage(transportDetails.getHelSchemaName(),newSubmittedMessage);
+			    }
+			}
+		    }
+		}
+		
 
 		// set batch to SBL - 38
 		//if could be that the process has picked this up
@@ -2009,39 +2023,19 @@ public class transactionInManagerImpl implements transactionInManager {
 				if (statusId != 42) {
 				    insertProcessingError(errorId, 0, batchId, null, null, null, null, false, false, "");
 				}
-
+				
 				updateBatchStatus(batchId, statusId, "endDateTime");
 				
 				// Check to see if the batch needs to be submitted to a Healt-e-link Registry
 				if (batchInfo.getConfigId() != null) {
 				    if (batchInfo.getConfigId() > 0) {
-					utConfiguration configDetails = configurationManager.getConfigurationById(batchInfo.getConfigId());
-					configurationTransport transportDetails = configurationtransportmanager.getTransportDetails(batchInfo.getConfigId());
-
-					if (transportDetails != null) {
-					    if(transportDetails.getHelRegistryConfigId() != null) {
-						if (transportDetails.getHelRegistryId() > 0 && transportDetails.getHelRegistryConfigId() > 0 && !"".equals(transportDetails.getHelSchemaName())) {
-						
-						    submittedMessage existingRegistrySubmittedMessage = submittedmessagemanager.getSubmittedMessageBySQL(transportDetails.getHelSchemaName(),batchInfo.getutBatchName());
-
-						    if (existingRegistrySubmittedMessage != null) {
-							submittedmessagemanager.updateSubmittedMessage(transportDetails.getHelSchemaName(),existingRegistrySubmittedMessage.getId(),23,batchId);
-						    }
-						    else {
-							submittedMessage newSubmittedMessage = new submittedMessage();
-							newSubmittedMessage.setUtBatchUploadId(batchId);
-							newSubmittedMessage.setRegistryConfigId(transportDetails.getHelRegistryConfigId());
-							newSubmittedMessage.setUploadedFileName(batchInfo.getoriginalFileName());
-							newSubmittedMessage.setAssignedFileName(batchInfo.getutBatchName());
-							newSubmittedMessage.setInFileExt(FilenameUtils.getExtension(batchInfo.getoriginalFileName()));
-							newSubmittedMessage.setStatusId(23);
-							newSubmittedMessage.setTransportId(1);
-							newSubmittedMessage.setSystemUserId(0);
-
-							submittedmessagemanager.submitSubmittedMessage(transportDetails.getHelSchemaName(),newSubmittedMessage);
-						    }
-						}
-					    }
+					
+					//Need to check the schedule to see if this is an automaticl process or manual process
+					configurationSchedules configurationSchedule = configurationManager.getScheduleDetails(batchInfo.getConfigId());
+					
+					//If manual change the status of the batch so it does not process (Setting batch status to "Manual Processing Required" Id: 64)
+					if(configurationSchedule.gettype() == 1) {
+					    updateBatchStatus(batchId, 64, "endDateTime");
 					}
 				    }
 				}
@@ -3788,8 +3782,20 @@ public class transactionInManagerImpl implements transactionInManager {
 
 		//set batch download details
 		batchDownload.setutBatchName(utbatchName);
-		//set it to interim status
-		batchDownload.setstatusId(61);
+		
+		
+		//Need to get the schedule for the configuration to find out if the targets need to be processed automatically
+		configurationSchedules configurationScheduleDetails = configurationManager.getScheduleDetails(configId);
+		
+		if(configurationScheduleDetails.gettype() == 5) {
+		   batchDownload.setstatusId(61);
+		}
+		else if (configurationScheduleDetails.gettype() == 1) {
+		    batchDownload.setstatusId(64);
+		}
+		else {
+		    batchDownload.setstatusId(59);
+		}
 
 		//we determine output file name
 		batchDownload.setoutputFIleName(transactionoutmanager.generateDLBatchName(transportDetails, configDetails, batchUploadDetails, date) + "." + transportDetails.getfileExt());
@@ -3879,7 +3885,7 @@ public class transactionInManagerImpl implements transactionInManager {
 
     @Override
     public void batchUploadTableCleanUp() throws Exception {
-
+	
 	//Get a list of batches that can be cleaned up
 	List<batchDownloads> batchesToCleanup = transactionInDAO.findBatchesToCleanUp();
 

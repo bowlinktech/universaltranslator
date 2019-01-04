@@ -86,7 +86,7 @@
                                                         ${batch.originalFileName}
                                                     </a>
 						    <br/>
-						    <c:if test="${(batch.transportMethodId == 10 || batch.transportMethodId == 3 || batch.transportMethodId == 6 || batch.transportMethodId == 9) && batch.statusId != 42}">
+						    <c:if test="${(batch.transportMethodId == 10 || batch.transportMethodId == 3 || batch.transportMethodId == 6 || batch.transportMethodId == 9) && batch.statusId != 42 && batch.statusId != 64}">
 							<a href="${hrefPipeLink}" title="View Pipe File">
 							    Translated File - ${batch.utBatchName}
 							</a>

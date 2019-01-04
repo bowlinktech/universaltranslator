@@ -68,7 +68,6 @@
 						    && (
 						    batch.statusId == 28 || 
 						    batch.statusId == 58 || 
-						    batch.statusId == 59 || 
 						    batch.statusId == 30)}">
                                                     <br />
                                                     <a href="/FileDownload/downloadFile.do?filename=${batch.outputFIleName}&utBatchName=${batch.outputFIleName}&foldername=archivesOut&orgId=0" title="View Original File">

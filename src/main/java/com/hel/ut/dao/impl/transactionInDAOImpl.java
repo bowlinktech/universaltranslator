@@ -1784,7 +1784,7 @@ public class transactionInDAOImpl implements transactionInDAO {
 
 	String sql = "select id from batchUploads a "
 		+ "where (a.dateSubmitted >= '" + fromDate + "' and a.dateSubmitted < '" + toDate + "') "
-		+ "and statusId in (2,3,4,5,6,22,23,24,25,28,36,38,41,42,43,59) "
+		+ "and statusId in (2,3,4,5,6,22,23,24,25,28,36,38,41,42,43,59,64) "
 		+ "order by dateSubmitted desc";
 
 	Query findBatches = sessionFactory.getCurrentSession().createSQLQuery(sql);
@@ -1802,7 +1802,7 @@ public class transactionInDAOImpl implements transactionInDAO {
 	String sql = "select count(a.id) as totalMessagesSent "
 		+ "from batchdownloads a inner join "
 		+ "batchUploads b on a.batchUploadId = b.id "
-		+ "where a.statusId <> 41 and (b.dateSubmitted >= '" + fromDate + "' and b.dateSubmitted < '" + toDate + "')";
+		+ "where a.statusId = 28 and (b.dateSubmitted >= '" + fromDate + "' and b.dateSubmitted < '" + toDate + "')";
 
 	Query getMessagesSentCount = sessionFactory.getCurrentSession().createSQLQuery(sql);
 
@@ -2820,8 +2820,8 @@ public class transactionInDAOImpl implements transactionInDAO {
 	String sql = "select * from ("
 		+ "select count(a.id) as totalBatchDownloads, deliveredBatches.totalDelivered, a.* "
 		+ "from batchdownloads a inner join information_schema.tables join ("
-		+ "select count(id) as totalDelivered, batchUploadId"
-		+ "from batchdownloads where statusId = 28 group by batchUploadId) deliveredBatches "
+		+ "select count(id) as totalDelivered, batchUploadId "
+		+ "from batchdownloads where statusId = 28 or statusId = 32 or statusId = 21 group by batchUploadId) deliveredBatches "
 		+ "on deliveredBatches.batchUploadId = a.batchUploadId "
 		+ "where table_name = concat('transactiontranslatedin_',a.batchUploadId) "
 		+ "group by a.batchUploadId ) as batchesToClear "
@@ -2846,6 +2846,10 @@ public class transactionInDAOImpl implements transactionInDAO {
 		for(batchDownloads batch : batchesToCleanup) {
 		    if(batch.getBatchUploadId() > 0) {
 			deleteSQL += "DROP TABLE IF EXISTS `transactiontranslatedin_" + batch.getBatchUploadId() + "`;";
+			deleteSQL += "DROP TABLE IF EXISTS `transactionindetailauditerrors_" + batch.getBatchUploadId() + "`;";
+			deleteSQL += "DROP TABLE IF EXISTS `transactiontranslatedlistin_" + batch.getBatchUploadId() + "`;";
+			deleteSQL += "DROP TABLE IF EXISTS `transactioninrecords_" + batch.getBatchUploadId() + "`;";
+			deleteSQL += "DROP TABLE IF EXISTS `transactioninerrors_" + batch.getBatchUploadId() + "`;";
 		    }
 		}
 		
