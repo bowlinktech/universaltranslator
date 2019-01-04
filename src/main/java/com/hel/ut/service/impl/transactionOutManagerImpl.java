@@ -2236,8 +2236,13 @@ public class transactionOutManagerImpl implements transactionOutManager {
 				    processDate.set(Calendar.HOUR_OF_DAY,scheduleDetails.getprocessingTime());
 				    processDate.set(Calendar.MINUTE,0);
 				    processDate.set(Calendar.SECOND,0);
+				    
+				    System.out.println(processDate.getTime());
+				    System.out.println(today.getTime());
+				    System.out.println(processDate.equals(today));
 
 				    if(processDate.equals(today)) {
+					System.out.println("Proces Target Batch");
 					transactionOutDAO.updateBatchStatus(batchDownload.getId(),61);
 				    }
 				    
