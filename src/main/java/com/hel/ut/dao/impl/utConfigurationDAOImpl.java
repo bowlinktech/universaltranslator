@@ -31,7 +31,6 @@ import com.hel.ut.model.configurationExcelDetails;
 import com.hel.ut.model.configurationMessageSpecs;
 import com.hel.ut.model.configurationSchedules;
 import com.hel.ut.model.configurationTransport;
-import com.hel.ut.model.messageType;
 import com.hel.ut.model.watchlist;
 import com.hel.ut.model.watchlistEntry;
 import com.hel.ut.reference.fileSystem;
@@ -119,28 +118,9 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
 
         if (!"".equals(searchTerm)) {
 
-            //get a list of message type id's that match the term passed in
-            List<Integer> msgTypeIdList = new ArrayList<Integer>();
-            Criteria findMsgTypes = sessionFactory.getCurrentSession().createCriteria(messageType.class);
-            findMsgTypes.add(Restrictions.like("name", "%" + searchTerm + "%"));
-            List<messageType> msgTypes = findMsgTypes.list();
-
-            for (messageType msgType : msgTypes) {
-                msgTypeIdList.add(msgType.getId());
-            }
-
             Criteria criteria = sessionFactory.getCurrentSession().createCriteria(utConfiguration.class);
 
-            if (msgTypeIdList.isEmpty()) {
-                msgTypeIdList.add(0);
-            }
-
-            criteria.add(Restrictions.eq("orgId", orgId));
-            criteria.add(Restrictions.or(
-                    Restrictions.in("messageTypeId", msgTypeIdList)
-            )
-            )
-                    .addOrder(Order.desc("dateCreated"));
+            criteria.add(Restrictions.eq("orgId", orgId)).addOrder(Order.desc("dateCreated"));
 
             return criteria.list();
         } else {

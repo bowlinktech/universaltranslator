@@ -21,9 +21,6 @@ import com.hel.ut.dao.organizationDAO;
 import com.hel.ut.service.messageTypeManager;
 import com.hel.ut.model.Crosswalks;
 import com.hel.ut.model.Organization;
-import com.hel.ut.model.messageType;
-import com.hel.ut.model.messageTypeDataTranslations;
-import com.hel.ut.model.messageTypeFormFields;
 import com.hel.ut.model.validationType;
 import com.hel.ut.reference.fileSystem;
 
@@ -36,140 +33,9 @@ public class messageTypeManagerImpl implements messageTypeManager {
     @Autowired
     private organizationDAO organizationDAO;
     
-
-    @Override
-    public Integer createMessageType(messageType messageType) throws Exception {
-        Integer lastId = null;
-
-        MultipartFile file = messageType.getFile();
-        String fileName = file.getOriginalFilename();
-
-        InputStream inputStream = null;
-        OutputStream outputStream = null;
-
-        try {
-            inputStream = file.getInputStream();
-            File newFile = null;
-
-            //Set the directory to save the uploaded message type template to
-            fileSystem dir = new fileSystem();
-            dir.setMessageTypeDir("libraryFiles");
-
-            newFile = new File(dir.getDir() + fileName);
-
-            if (newFile.exists()) {
-                int i = 1;
-                while (newFile.exists()) {
-                    int iDot = fileName.lastIndexOf(".");
-                    newFile = new File(dir.getDir() + fileName.substring(0, iDot) + "_(" + ++i + ")" + fileName.substring(iDot));
-                }
-                fileName = newFile.getName();
-            } else {
-                newFile.createNewFile();
-            }
-            outputStream = new FileOutputStream(newFile);
-            int read = 0;
-            byte[] bytes = new byte[1024];
-
-            while ((read = inputStream.read(bytes)) != -1) {
-                outputStream.write(bytes, 0, read);
-            }
-            outputStream.close();
-
-            //Set the filename to the file name
-            messageType.setTemplateFile(fileName);
-
-        } catch (IOException e) {
-            e.printStackTrace();
-            throw new Exception(e);
-        }
-
-        //Submit the new message type to the database
-        lastId = (Integer) messageTypeDAO.createMessageType(messageType);
-
-        //Call the function that will load the content of the message type excel file
-        //into the messageTypeFormFields table
-        loadExcelContents(lastId, fileName);
-
-        return lastId;
-    }
-    
-    @Override
-    public void updateMessageType(messageType messageType) {
-        //Update the selected message type
-        messageTypeDAO.updateMessageType(messageType);
-    }
-
-    @Override
-    public void saveMessageTypeFields(messageTypeFormFields formField) {
-        messageTypeDAO.saveMessageTypeFields(formField);
-    }
-
-    @Override
-    public List<messageType> getMessageTypes() {
-        return messageTypeDAO.getMessageTypes();
-    }
-
-    @Override
-    public List<messageType> getAvailableMessageTypes(int orgId) {
-        return messageTypeDAO.getAvailableMessageTypes(orgId);
-    }
-
-    @Override
-    public List<messageType> getLatestMessageTypes(int maxResults) {
-        return messageTypeDAO.getLatestMessageTypes(maxResults);
-    }
-
-    @Override
-    public List<messageType> getActiveMessageTypes() {
-        return messageTypeDAO.getActiveMessageTypes();
-    }
-
-    @Override
-    public messageType getMessageTypeById(int messageTypeId) {
-        return messageTypeDAO.getMessageTypeById(messageTypeId);
-    }
-
-    @Override
-    public messageType getMessageTypeByName(String name) {
-        return messageTypeDAO.getMessageTypeByName(name);
-    }
-
-    @Override
-    public Long findTotalMessageTypes() {
-        return messageTypeDAO.findTotalMessageTypes();
-    }
-
     @Override
     public double findTotalCrosswalks(int orgId) {
         return messageTypeDAO.findTotalCrosswalks(orgId);
-    }
-
-    @Override
-    public void deleteMessageType(int messageTypeId) {
-
-        //First get the message type details
-        messageType messageType = messageTypeDAO.getMessageTypeById(messageTypeId);
-
-        //Next delete the actual attachment
-        fileSystem currdir = new fileSystem();
-        currdir.setMessageTypeDir("libraryFiles");
-        File currFile = new File(currdir.getDir() + messageType.getTemplateFile());
-        currFile.delete();
-
-        messageTypeDAO.deleteMessageType(messageTypeId);
-    }
-
-    @Override
-    public List<messageTypeFormFields> getMessageTypeFields(int messageTypeId) {
-        return messageTypeDAO.getMessageTypeFields(messageTypeId);
-    }
-
-    @Override
-    public void updateMessageTypeFields(messageTypeFormFields formField) {
-
-        //Update the message type form field mappings
-        messageTypeDAO.updateMessageTypeFields(formField);
     }
 
     @SuppressWarnings("rawtypes")
@@ -387,21 +253,6 @@ public class messageTypeManagerImpl implements messageTypeManager {
         return messageTypeDAO.getCrosswalk(cwId);
     }
 
-    @Override
-    public void saveDataTranslations(messageTypeDataTranslations translations) {
-        messageTypeDAO.saveDataTranslations(translations);
-    }
-
-    @Override
-    public void deleteDataTranslations(int messageTypeId) {
-        messageTypeDAO.deleteDataTranslations(messageTypeId);
-    }
-
-    @Override
-    public List<messageTypeDataTranslations> getMessageTypeTranslations(int messageTypeId) {
-        return messageTypeDAO.getMessageTypeTranslations(messageTypeId);
-    }
-
     /**
      * The 'loadCrosswalkContents' will take the contents of the uploaded text template file and populate the rel_crosswalkData table.
      *
@@ -481,27 +332,11 @@ public class messageTypeManagerImpl implements messageTypeManager {
 
     }
 
-    /**
-     * The 'loadExcelContents' will take the contents of the uploaded excel template file and populate the corresponding message type form fields table. This function will split up the contents into the appropriate buckets. Buckets (1 - 4) will be separated by spacer rows with in the excel file.
-     *
-     * @param id id: value of the latest added message type
-     * @param fileName	fileName: file name of the uploaded excel file.
-     *
-     */
-    public void loadExcelContents(Integer id, String fileName) {
-	messageTypeDAO.loadExcelContents(id, fileName);
-    }
-
     // this does the same thing as getValidationTypes except putting result in an object
     //TODO need to combine and test and replace getValidationTypes
     @Override
     public List<validationType> getValidationTypes1() {
         return messageTypeDAO.getValidationTypes1();
-    }
-
-    @Override
-    public List<messageType> getAssociatedMessageTypes(int orgId) {
-        return messageTypeDAO.getAssociatedMessageTypes(orgId);
     }
 
     @Override

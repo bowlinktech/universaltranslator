@@ -25,7 +25,6 @@
                             <thead>
                                 <tr>
                                     <th scope="col">Configuration Name</th>
-                                    <th scope="col">Message Type</th>
                                     <th scope="col">Configuration Type</th>
                                     <th scope="col" class="center-text">Transport Method</th>
                                     <th scope="col" class="center-text">Date Created</th>
@@ -41,10 +40,7 @@
                                                 <a href="<c:url value='/administrator/configurations/details?i=${config.id}' />" title="Edit this configuration">${config.configName}</a>
                                                 <br />
                                                 (<c:choose><c:when test="${config.status == true}">active</c:when><c:otherwise>inactive</c:otherwise></c:choose>)
-                                                    </td>
-                                                    <td>
-                                                ${config.messageTypeName}
-                                            </td>
+					    </td>
                                             <td>
                                                 <c:choose><c:when test="${config.type == 1}">Source Configuration</c:when><c:otherwise>Target Configuration</c:otherwise></c:choose>
                                                     </td>
@@ -62,7 +58,7 @@
                                     </c:forEach>
                                 </c:when>
                                 <c:otherwise>
-                                    <tr><td colspan="6" class="center-text">There are currently no configurations set up for this organization.</td></tr>
+                                    <tr><td colspan="5" class="center-text">There are currently no configurations set up for this organization.</td></tr>
                                 </c:otherwise>
                             </c:choose>
                         </tbody>

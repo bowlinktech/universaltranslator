@@ -306,50 +306,6 @@
         <put-attribute name="jscript" value="/dspResources/js/admin/organization/loginAs.js" />
     </definition>
 
-    <!-- Admin Message Type Library Definitions -->
-    <definition name="/administrator/messageTypeLibrary/list" extends="base.definition.admin">
-        <put-attribute name="page-id" value="library-list" />
-        <put-attribute name="page-section" value="section-library" />
-        <put-attribute name="title" value="Administrator - Manage Message Type Library" />
-        <put-attribute name="header" value="/WEB-INF/jsp/common/adminHeader.jsp?sect=lib" />
-        <put-attribute name="actions" value="/WEB-INF/jsp/administrator/messageTypeLibrary/actionBar.jsp?page=list" />
-        <put-attribute name="body" value="/WEB-INF/jsp/administrator/messageTypeLibrary/list.jsp" />
-        <put-attribute name="jscript" value="/dspResources/js/admin/library/list.js" />
-    </definition>
-
-    <definition name="/administrator/messageTypeLibrary/details" extends="base.definition.admin">
-        <put-attribute name="page-id" value="library-details" />
-        <put-attribute name="page-section" value="section-library" />
-        <put-attribute name="title" value="Administrator - Manage Message Type Library" />
-        <put-attribute name="header" value="/WEB-INF/jsp/common/adminHeader.jsp?sect=lib" />
-        <put-attribute name="actions" value="/WEB-INF/jsp/administrator/messageTypeLibrary/actionBar.jsp?page=details" />
-        <put-attribute name="menu" value="/WEB-INF/jsp/administrator/messageTypeLibrary/menu.jsp?page=details" />
-        <put-attribute name="body" value="/WEB-INF/jsp/administrator/messageTypeLibrary/details.jsp" />
-        <put-attribute name="jscript" value="/dspResources/js/admin/library/details.js" />
-    </definition>
-
-    <definition name="/administrator/messageTypeLibrary/mappings" extends="base.definition.admin">
-        <put-attribute name="page-id" value="library-mappings" />
-        <put-attribute name="page-section" value="section-library" />
-        <put-attribute name="title" value="Administrator - Manage Message Type Library" />
-        <put-attribute name="header" value="/WEB-INF/jsp/common/adminHeader.jsp?sect=lib" />
-        <put-attribute name="actions" value="/WEB-INF/jsp/administrator/messageTypeLibrary/actionBar.jsp?page=mappings" />
-        <put-attribute name="menu" value="/WEB-INF/jsp/administrator/messageTypeLibrary/menu.jsp?page=mappings" />
-        <put-attribute name="body" value="/WEB-INF/jsp/administrator/messageTypeLibrary/fieldMappings.jsp" />
-        <put-attribute name="jscript" value="/dspResources/js/admin/library/mappings.js" />
-    </definition>
-
-    <definition name="/administrator/messageTypeLibrary/translations" extends="base.definition.admin">
-        <put-attribute name="page-id" value="library-translations" />
-        <put-attribute name="page-section" value="section-library" />
-        <put-attribute name="title" value="Administrator - Manage Message Type Library" />
-        <put-attribute name="header" value="/WEB-INF/jsp/common/adminHeader.jsp?sect=lib" />
-        <put-attribute name="actions" value="/WEB-INF/jsp/administrator/messageTypeLibrary/actionBar.jsp?page=translations" />
-        <put-attribute name="menu" value="/WEB-INF/jsp/administrator/messageTypeLibrary/menu.jsp?page=translations" />
-        <put-attribute name="body" value="/WEB-INF/jsp/administrator/messageTypeLibrary/dataTranslations.jsp" />
-        <put-attribute name="jscript" value="/dspResources/js/admin/library/translations.js" />
-    </definition>
-
     <!--  End Admin Definitions -->
 
     <!-- start sysadmin definitions -->

@@ -14,7 +14,6 @@ import org.springframework.transaction.annotation.Transactional;
 import com.hel.ut.dao.sysAdminDAO;
 import com.hel.ut.dao.UtilitiesDAO;
 import com.hel.ut.model.Macros;
-import com.hel.ut.model.custom.LogoInfo;
 import com.hel.ut.model.custom.LookUpTable;
 import com.hel.ut.model.custom.TableData;
 import com.hel.ut.model.lutables.lu_ProcessStatus;
@@ -322,32 +321,6 @@ public class sysAdminDAOImpl implements sysAdminDAO {
         }
     }
 
-    @Override
-    @Transactional(readOnly = true)
-    @SuppressWarnings("unchecked")
-    public LogoInfo getLogoInfo() {
-        LogoInfo logoInfo = new LogoInfo();
-        try {
-            Query logos = sessionFactory.getCurrentSession().createQuery("from LogoInfo order by id desc ").setMaxResults(1);
-            List<LogoInfo> li = logos.list();
-            if (li.size() != 0) {
-                logoInfo = li.get(0);
-            }
-        } catch (Throwable ex) {
-            System.err.println("get LogoInfo failed." + ex);
-        }
-        return logoInfo;
-    }
-
-    @Override
-    @Transactional(readOnly = false)
-    public void updateLogoInfo(LogoInfo logoDetails) {
-        try {
-            sessionFactory.getCurrentSession().update(logoDetails);
-        } catch (Throwable ex) {
-            System.err.println("update LogoInfo failed." + ex);
-        }
-    }
 
     /**
      * The 'getHL7List' function will return the list of saved hl7 standard versions.

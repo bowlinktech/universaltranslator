@@ -47,7 +47,6 @@ import com.hel.ut.model.configurationFTPFields;
 import com.hel.ut.model.configurationMessageSpecs;
 import com.hel.ut.model.configurationSchedules;
 import com.hel.ut.service.organizationManager;
-import com.hel.ut.model.messageType;
 import com.hel.ut.service.messageTypeManager;
 import com.hel.ut.model.configurationTransport;
 import com.hel.ut.model.configurationTransportMessageTypes;
@@ -132,7 +131,6 @@ public class adminConfigController {
         List<utConfiguration> targetconfigurations = utconfigurationmanager.getAllTargetConfigurations();
 
         Organization org;
-        messageType messagetype;
         configurationTransport transportDetails;
 
         for (utConfiguration config : sourceconfigurations) {
@@ -191,10 +189,7 @@ public class adminConfigController {
         List<Organization> organizations = organizationmanager.getAllActiveOrganizations();
         mav.addObject("organizations", organizations);
 
-        //Need to get a list of active message types
-        List<messageType> messageTypes = messagetypemanager.getActiveMessageTypes();
-        mav.addObject("messageTypes", messageTypes);
-	mav.addObject("mappings", 1);
+        mav.addObject("mappings", 1);
 	
 	session.setAttribute("showAllConfigOptions",true);
 	mav.addObject("showAllConfigOptions", session.getAttribute("showAllConfigOptions"));
@@ -206,23 +201,6 @@ public class adminConfigController {
        
         return mav;
 
-    }
-
-    /**
-     * The '/getAvailableMessageTypes.do' function will return a list of message types that have not been already set up for the passed in organization.
-     *
-     * @param orgId The organization selected in the drop down
-     *
-     * @return messageTypes The available message types
-     */
-    @SuppressWarnings("rawtypes")
-    @RequestMapping(value = "/getAvailableMessageTypes.do", method = RequestMethod.GET)
-    public @ResponseBody
-    List<messageType> getMessageTypes(@RequestParam(value = "orgId", required = true) int orgId) {
-
-        List<messageType> messageTypes = messagetypemanager.getAvailableMessageTypes(orgId);
-
-        return messageTypes;
     }
 
     /**
@@ -397,9 +375,6 @@ public class adminConfigController {
         //Need to get a list of active organizations.
         List<Organization> organizations = organizationmanager.getAllActiveOrganizations();
 
-        //Need to get a list of active message types
-        List<messageType> messageTypes = messagetypemanager.getActiveMessageTypes();
-
         //Need to get a list of organization users 
         List<utUser> users = userManager.getUsersByOrganization(configurationDetails.getorgId());
 
@@ -413,7 +388,6 @@ public class adminConfigController {
             mav.setViewName("/administrator/configurations/details");
 
             mav.addObject("organizations", organizations);
-            mav.addObject("messageTypes", messageTypes);
             mav.addObject("users", users);
             mav.addObject("id", configurationDetails.getId());
             mav.addObject("mappings", session.getAttribute("configmappings"));
@@ -1519,13 +1493,6 @@ public class adminConfigController {
 
                 srcconfigDetails.setOrgName(organizationmanager.getOrganizationById(srcconfigDetails.getorgId()).getOrgName());
 		
-		if(srcconfigDetails.getMessageTypeId() > 0) {
-		    srcconfigDetails.setMessageTypeName(messagetypemanager.getMessageTypeById(srcconfigDetails.getMessageTypeId()).getName());
-		}
-		else {
-		    srcconfigDetails.setMessageTypeName("N/A");
-		}
-		
                 srcconfigDetails.settransportMethod(utconfigurationTransportManager.getTransportMethodById(srctransportDetails.gettransportMethodId()));
                 if (srctransportDetails.gettransportMethodId() == 1 && srcconfigDetails.getType() == 2) {
                     srcconfigDetails.settransportMethod("File Download");
@@ -1539,13 +1506,6 @@ public class adminConfigController {
                 configurationTransport tgttransportDetails = utconfigurationTransportManager.getTransportDetails(tgtconfigDetails.getId());
 
                 tgtconfigDetails.setOrgName(organizationmanager.getOrganizationById(tgtconfigDetails.getorgId()).getOrgName());
-		
-		if(tgtconfigDetails.getMessageTypeId() > 0) {
-		    tgtconfigDetails.setMessageTypeName(messagetypemanager.getMessageTypeById(tgtconfigDetails.getMessageTypeId()).getName());
-		}
-		else {
-		    tgtconfigDetails.setMessageTypeName("N/A");
-		}
 		
                 if (tgttransportDetails.gettransportMethodId() == 1 && tgtconfigDetails.getType() == 2) {
                     tgtconfigDetails.settransportMethod("File Download");
@@ -1791,14 +1751,6 @@ public class adminConfigController {
 
                 configuration.setOrgName(organizationmanager.getOrganizationById(configuration.getorgId()).getOrgName());
 		
-		if(configuration.getMessageTypeId() > 0) {
-		    configuration.setMessageTypeName(messagetypemanager.getMessageTypeById(configuration.getMessageTypeId()).getName());
-		}
-		else {
-		    configuration.setMessageTypeName("N/A");
-		}
-		
-                
                 configuration.settransportMethod(utconfigurationTransportManager.getTransportMethodById(transportDetails.gettransportMethodId()));
             }
         }
@@ -2053,7 +2005,6 @@ public class adminConfigController {
         configurationTransport transportDetails = utconfigurationTransportManager.getTransportDetails(configId);
 
         configurationDetails.setOrgName(organizationmanager.getOrganizationById(configurationDetails.getorgId()).getOrgName());
-        configurationDetails.setMessageTypeName(messagetypemanager.getMessageTypeById(configurationDetails.getMessageTypeId()).getName());
         configurationDetails.settransportMethod(utconfigurationTransportManager.getTransportMethodById(transportDetails.gettransportMethodId()));
 
         //pass the utConfiguration detail object back to the page.
@@ -2681,7 +2632,6 @@ public class adminConfigController {
         configurationTransport transportDetails = utconfigurationTransportManager.getTransportDetails(configId);
 
         configurationDetails.setOrgName(organizationmanager.getOrganizationById(configurationDetails.getorgId()).getOrgName());
-        configurationDetails.setMessageTypeName(messagetypemanager.getMessageTypeById(configurationDetails.getMessageTypeId()).getName());
         configurationDetails.settransportMethod(utconfigurationTransportManager.getTransportMethodById(transportDetails.gettransportMethodId()));
 
         //pass the utConfiguration detail object back to the page.

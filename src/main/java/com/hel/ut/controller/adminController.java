@@ -12,11 +12,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.servlet.ModelAndView;
 
 import com.hel.ut.model.Organization;
-import com.hel.ut.model.utUser;
-import com.hel.ut.model.messageType;
-import com.hel.ut.model.utConfiguration;
-import com.hel.ut.model.configurationConnection;
-import com.hel.ut.model.configurationTransport;
 import com.hel.ut.model.custom.searchParameters;
 import com.hel.ut.model.watchlist;
 import com.hel.ut.service.messageTypeManager;
@@ -110,119 +105,6 @@ public class adminController {
         return mav;
     }
 
-
-    /**
-     * The '/administrator' request will serve up the administrator dashboard after a successful login.
-     *
-     * @param request
-     * @param response
-     * @return	the administrator dashboard view
-     * @throws Exception
-     */
-    @RequestMapping(value = "/administratorOld", method = RequestMethod.GET)
-    public ModelAndView listConfigurations(HttpServletRequest request, HttpServletResponse response, HttpSession session, RedirectAttributes redirectAttr) throws Exception {
-
-        utUser userInfo = (utUser) session.getAttribute("userDetails");
-
-        if (userInfo.getRoleId() == 3 || userInfo.getRoleId() == 4) {
-
-            ModelAndView mav = new ModelAndView(new RedirectView("/administrator/processing-activity/activityReport"));
-            return mav;
-
-        } else {
-            ModelAndView mav = new ModelAndView();
-            mav.setViewName("/administrator/dashboard");
-
-            //Need to get totals for the dashboard.
-            //Return the total list of organizations
-            Long totalOrgs = organizationManager.findTotalOrgs();
-            mav.addObject("totalOrgs", totalOrgs);
-
-            //Return the latest organizations
-            List<Organization> organizations = organizationManager.getLatestOrganizations(maxResults);
-            mav.addObject("latestOrgs", organizations);
-
-            //Return the total list of message types
-            Long totalMessageTypes = messagetypemanager.findTotalMessageTypes();
-            mav.addObject("totalMessageTypes", totalMessageTypes);
-
-            //Return the latest message types created
-            List<messageType> messagetypes = messagetypemanager.getLatestMessageTypes(maxResults);
-            mav.addObject("latestMessageTypes", messagetypes);
-
-            //Return the total list of configurations
-            Long totalConfigs = configurationmanager.findTotalConfigs();
-            mav.addObject("totalConfigs", totalConfigs);
-
-            //Return the latest configurations
-            List<utConfiguration> configurations = configurationmanager.getLatestConfigurations(maxResults);
-            mav.addObject("latestConfigs", configurations);
-
-            /* Get system inbound summary */
-            //systemSummary summaryDetails = transactionOutManager.generateSystemWaitingSummary();
-            //mav.addObject("summaryDetails", summaryDetails);
-
-            Organization org;
-            messageType messagetype;
-            configurationTransport transportDetails;
-
-            for (utConfiguration config : configurations) {
-                org = organizationManager.getOrganizationById(config.getorgId());
-                config.setOrgName(org.getOrgName());
-
-                messagetype = messagetypemanager.getMessageTypeById(config.getMessageTypeId());
-                config.setMessageTypeName(messagetype.getName());
-
-                transportDetails = configurationTransportManager.getTransportDetails(config.getId());
-                if (transportDetails != null) {
-                    config.settransportMethod(configurationTransportManager.getTransportMethodById(transportDetails.gettransportMethodId()));
-                }
-            }
-
-            /* get a list of all connections in the sysetm */
-            List<configurationConnection> connections = configurationmanager.getLatestConnections(maxResults);
-
-            /* Loop over the connections to get the utConfiguration details */
-            if (connections != null) {
-                for (configurationConnection connection : connections) {
-
-                    utConfiguration srcconfigDetails = configurationmanager.getConfigurationById(connection.getsourceConfigId());
-                    configurationTransport srctransportDetails = configurationTransportManager.getTransportDetails(srcconfigDetails.getId());
-
-                    srcconfigDetails.setOrgName(organizationManager.getOrganizationById(srcconfigDetails.getorgId()).getOrgName());
-                    srcconfigDetails.setMessageTypeName(messagetypemanager.getMessageTypeById(srcconfigDetails.getMessageTypeId()).getName());
-                    srcconfigDetails.settransportMethod(configurationTransportManager.getTransportMethodById(srctransportDetails.gettransportMethodId()));
-                    if (srctransportDetails.gettransportMethodId() == 1 && srcconfigDetails.getType() == 2) {
-                        srcconfigDetails.settransportMethod("File Download");
-                    } else {
-                        srcconfigDetails.settransportMethod(configurationTransportManager.getTransportMethodById(srctransportDetails.gettransportMethodId()));
-                    }
-
-                    connection.setsrcConfigDetails(srcconfigDetails);
-
-                    utConfiguration tgtconfigDetails = configurationmanager.getConfigurationById(connection.gettargetConfigId());
-                    configurationTransport tgttransportDetails = configurationTransportManager.getTransportDetails(tgtconfigDetails.getId());
-
-                    tgtconfigDetails.setOrgName(organizationManager.getOrganizationById(tgtconfigDetails.getorgId()).getOrgName());
-                    tgtconfigDetails.setMessageTypeName(messagetypemanager.getMessageTypeById(tgtconfigDetails.getMessageTypeId()).getName());
-                    if (tgttransportDetails.gettransportMethodId() == 1 && tgtconfigDetails.getType() == 2) {
-                        tgtconfigDetails.settransportMethod("File Download");
-                    } else {
-                        tgtconfigDetails.settransportMethod(configurationTransportManager.getTransportMethodById(tgttransportDetails.gettransportMethodId()));
-                    }
-
-                    connection.settgtConfigDetails(tgtconfigDetails);
-                }
-
-            }
-
-            mav.addObject("connections", connections);
-            return mav;
-
-        }
-
-    }
-    
     /**
      * @param filter START for start date of month e.g. Nov 01, 2013 END for end date of month e.g. Nov 30, 2013
      * @return

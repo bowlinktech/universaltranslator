@@ -2,7 +2,6 @@ package com.hel.ut.dao;
 
 import java.util.List;
 
-import com.hel.ut.model.custom.LogoInfo;
 import com.hel.ut.model.custom.LookUpTable;
 import com.hel.ut.model.custom.TableData;
 import com.hel.ut.model.lutables.lu_ProcessStatus;
@@ -50,10 +49,6 @@ public interface sysAdminDAO {
     lu_ProcessStatus getProcessStatusById(int id) throws Exception;
 
     void updateProcessStatus(lu_ProcessStatus lu);
-
-    LogoInfo getLogoInfo();
-
-    void updateLogoInfo(LogoInfo logoDetails);
 
     List<mainHL7Details> getHL7List() throws Exception;
 

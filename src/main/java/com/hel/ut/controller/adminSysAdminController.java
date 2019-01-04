@@ -14,8 +14,6 @@ import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.hel.ut.reference.TestCategoryList;
-import com.hel.ut.reference.USStateList;
 import com.hel.ut.reference.ProcessCategoryList;
 import com.hel.ut.service.sysAdminManager;
 import com.hel.ut.service.userManager;
@@ -23,7 +21,6 @@ import com.hel.ut.model.Macros;
 import com.hel.ut.model.MoveFilesLog;
 import com.hel.ut.model.utUser;
 import com.hel.ut.model.utUserActivity;
-import com.hel.ut.model.custom.LogoInfo;
 import com.hel.ut.model.custom.LookUpTable;
 import com.hel.ut.model.custom.TableData;
 import com.hel.ut.model.lutables.lu_ProcessStatus;
@@ -464,42 +461,6 @@ public class adminSysAdminController {
         return mav;
     }
 
-    /**
-     * End of ProcessStatus*
-     */
-    /**
-     * Logos
-     */
-    @RequestMapping(value = "/logos", method = RequestMethod.GET)
-    public @ResponseBody
-    ModelAndView updateLogosForm(HttpServletRequest request) throws Exception {
-
-        ModelAndView mav = new ModelAndView();
-        mav.setViewName("/administrator/sysadmin/logos");
-        LogoInfo logoDetails = sysAdminManager.getLogoInfo();
-        /**
-         * we had a logo from before *
-         */
-        if (logoDetails.getBackEndLogoName().indexOf("backEndLogo") == 0) {
-            sysAdminManager.copyBELogo(request, logoDetails);
-        }
-        if (logoDetails.getFrontEndLogoName().indexOf("frontEndLogo") == 0) {
-            sysAdminManager.copyFELogo(request, logoDetails);
-        }
-        mav.addObject("btnValue", "Update");
-        mav.addObject("logoDetails", logoDetails);
-        return mav;
-    }
-
-    @RequestMapping(value = "/logos", method = RequestMethod.POST)
-    public ModelAndView updateLogos(@ModelAttribute(value = "logoDetails") LogoInfo logoDetails,
-            RedirectAttributes redirectAttr) throws Exception {
-
-        sysAdminManager.updateLogoInfo(logoDetails);
-        ModelAndView mav = new ModelAndView(new RedirectView("logos?msg=updated"));
-        redirectAttr.addFlashAttribute("savedStatus", "updated");
-        return mav;
-    }
 
     /**
      * modify admin profile *

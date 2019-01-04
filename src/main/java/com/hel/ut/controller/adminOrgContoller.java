@@ -20,7 +20,6 @@ import com.hel.ut.model.Organization;
 import com.hel.ut.service.organizationManager;
 import com.hel.ut.model.utConfiguration;
 import com.hel.ut.model.configurationTransport;
-import com.hel.ut.model.messageType;
 import com.hel.ut.reference.CountryList;
 import com.hel.ut.reference.USStateList;
 import com.hel.ut.service.messageTypeManager;
@@ -342,19 +341,9 @@ public class adminOrgContoller {
         mav.addObject("selOrgType", orgDetails.getOrgType());
         mav.addObject("configs", configurations);
 
-        messageType messagetype;
         configurationTransport transportDetails;
 
         for (utConfiguration config : configurations) {
-	    
-	    if(config.getMessageTypeId() > 0) {
-		messagetype = messagetypemanager.getMessageTypeById(config.getMessageTypeId());
-		config.setMessageTypeName(messagetype.getName());
-	    }
-	    else {
-		config.setMessageTypeName("N/A");
-	    }
-            
             transportDetails = configurationTransportManager.getTransportDetails(config.getId());
             if (transportDetails != null) {
                 config.settransportMethod(configurationTransportManager.getTransportMethodById(transportDetails.gettransportMethodId()));

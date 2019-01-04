@@ -5,7 +5,6 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
-import com.hel.ut.model.custom.LogoInfo;
 import com.hel.ut.model.custom.LookUpTable;
 import com.hel.ut.model.custom.TableData;
 import com.hel.ut.model.lutables.lu_ProcessStatus;
@@ -62,25 +61,9 @@ public interface sysAdminManager {
 
     void updateProcessStatus(lu_ProcessStatus lu);
 
-    boolean logoExists(String fileName);
-
-    LogoInfo getLogoInfo();
-
-    boolean updateLogoInfo(LogoInfo logoDetails);
-
     boolean writeFile(String path, InputStream inputStream, String directory);
 
-    void copyFELogo(HttpServletRequest request, LogoInfo logoInfo);
-
-    void copyBELogo(HttpServletRequest request, LogoInfo logoInfo);
-
-    String getBowlinkLogoPath();
-
     String getDeployedPath(HttpServletRequest request);
-
-    String getFrontEndLogoPath();
-
-    String getBackEndLogoPath();
 
     List<mainHL7Details> getHL7List() throws Exception;
 
