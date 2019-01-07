@@ -24,7 +24,8 @@
 			<c:forEach var="systemAdminLogin" items="${systemAdminLogins}">
 			    <tr id="dataRow" scope="row">
 				<td class="center-text">
-				    <fmt:formatDate value="${systemAdminLogin.dateCreated}" type="date" pattern="M/dd/yyyy h:mm a" />
+				    <fmt:parseDate value="${systemAdminLogin.logInDate}" pattern="yyyy-MM-dd HH:mm:ss" var="myDate"/>
+				    <fmt:formatDate value="${myDate}" type="date" pattern="M/dd/yyyy hh:mm:ss a" />
 				</td>
 				<td class="center-text">
 				    <c:choose>

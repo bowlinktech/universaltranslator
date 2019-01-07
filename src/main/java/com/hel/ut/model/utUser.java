@@ -23,10 +23,10 @@ public class utUser {
 
 
     @Transient
-    private String orgName, password, roleType;
+    private String orgName, password, roleType, lastLogInDate = "";
 
     @Transient
-    private Date dateOrgWasCreated = null, lastLogInDate;
+    private Date dateOrgWasCreated = null;
 
     @Transient
     private Integer orgType, timesloggedIn, totalTimeLoggedIn, totalLogins;
@@ -415,14 +415,6 @@ public class utUser {
 	this.totalTimeLoggedIn = totalTimeLoggedIn;
     }
 
-    public Date getLastLogInDate() {
-	return lastLogInDate;
-    }
-
-    public void setLastLogInDate(Date lastLogInDate) {
-	this.lastLogInDate = lastLogInDate;
-    }
-
     public Integer getTotalLogins() {
 	return totalLogins;
     }
@@ -438,6 +430,13 @@ public class utUser {
     public void setRoleType(String roleType) {
 	this.roleType = roleType;
     }
-    
+
+    public String getLastLogInDate() {
+	return lastLogInDate;
+    }
+
+    public void setLastLogInDate(String lastLogInDate) {
+	this.lastLogInDate = lastLogInDate;
+    }
     
 }

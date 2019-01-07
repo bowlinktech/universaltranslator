@@ -293,12 +293,12 @@ public class transactionOutManagerImpl implements transactionOutManager {
 	    json = true;
 	}
 
-	int findExt = batchDetails.getoutputFIleName().lastIndexOf(".");
+	int findExt = batchDetails.getoutputFileName().lastIndexOf(".");
 
 	if (findExt >= 0) {
-	    fileName = batchDetails.getoutputFIleName();
+	    fileName = batchDetails.getoutputFileName();
 	} else {
-	    fileName = new StringBuilder().append(batchDetails.getoutputFIleName()).append(".").append(transportDetails.getfileExt()).toString();
+	    fileName = new StringBuilder().append(batchDetails.getoutputFileName()).append(".").append(transportDetails.getfileExt()).toString();
 	}
 
 	File newFile = new File(dir.getDir() + fileName);
@@ -2028,7 +2028,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
 		/* Get the File Drop Details */
 		configurationFTPFields FTPPushDetails = configurationTransportManager.getTransportFTPDetailsPush(transportDetails.getId());
 
-		File targetFile = new File(directoryPath + FTPPushDetails.getdirectory()+ batchDownload.getoutputFIleName());
+		File targetFile = new File(directoryPath + FTPPushDetails.getdirectory()+ batchDownload.getoutputFileName());
 		
 		Files.copy(archiveFile.toPath(), targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
 		
@@ -2171,7 +2171,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
 	    filelocation = filelocation.replace("/HELProductSuite/universalTranslator/", "");
 	    dir.setDirByName(filelocation);
 
-	    File targetFile = new File(directoryPath + fileDropDetails.getDirectory() + batchDLDetails.getoutputFIleName());
+	    File targetFile = new File(directoryPath + fileDropDetails.getDirectory() + batchDLDetails.getoutputFileName());
 	    Files.copy(archiveFile.toPath(), targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
 	} 
 	
@@ -2189,7 +2189,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
 		    filelocation = filelocation.replace("/HELProductSuite/universalTranslator/", "");
 		    dir.setDirByName(filelocation);
 
-		    File targetFile = new File(directoryPath + ftpDetails.getdirectory() + batchDLDetails.getoutputFIleName());
+		    File targetFile = new File(directoryPath + ftpDetails.getdirectory() + batchDLDetails.getoutputFileName());
 		    Files.copy(archiveFile.toPath(), targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
 		}
 	    }

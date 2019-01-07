@@ -590,10 +590,10 @@ public class adminProcessingActivity {
 
                 for (batchDownloads batch : Batches) {
 
-		    String fileDownloadExt = batch.getoutputFIleName().substring(batch.getoutputFIleName().lastIndexOf(".") + 1);
+		    String fileDownloadExt = batch.getoutputFileName().substring(batch.getoutputFileName().lastIndexOf(".") + 1);
 		    String newfileName = new StringBuilder().append(batch.getutBatchName()).append(".").append(fileDownloadExt).toString();
 		    
-		    batch.setoutputFIleName(newfileName);
+		    batch.setoutputFileName(newfileName);
 
                     batch.setstatusValue(psMap.get(batch.getstatusId()));
 
@@ -710,10 +710,10 @@ public class adminProcessingActivity {
 
             if (!Batches.isEmpty()) {
                 for (batchDownloads batch : Batches) {
-		    String fileDownloadExt = batch.getoutputFIleName().substring(batch.getoutputFIleName().lastIndexOf(".") + 1);
+		    String fileDownloadExt = batch.getoutputFileName().substring(batch.getoutputFileName().lastIndexOf(".") + 1);
 		    String newfileName = new StringBuilder().append(batch.getutBatchName()).append(".").append(fileDownloadExt).toString();
 		    
-		    batch.setoutputFIleName(newfileName);
+		    batch.setoutputFileName(newfileName);
 
                     batch.setstatusValue(psMap.get(batch.getstatusId()));
 
@@ -2606,10 +2606,10 @@ public class adminProcessingActivity {
 
                 for (batchDownloads batch : invalidOutboundBatches) {
 
-		    String fileDownloadExt = batch.getoutputFIleName().substring(batch.getoutputFIleName().lastIndexOf(".") + 1);
+		    String fileDownloadExt = batch.getoutputFileName().substring(batch.getoutputFileName().lastIndexOf(".") + 1);
 		    String newfileName = new StringBuilder().append(batch.getutBatchName()).append(".").append(fileDownloadExt).toString();
 		    
-		    batch.setoutputFIleName(newfileName);
+		    batch.setoutputFileName(newfileName);
 
                     batch.setstatusValue(psMap.get(batch.getstatusId()));
 

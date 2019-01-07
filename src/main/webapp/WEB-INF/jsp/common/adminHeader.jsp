@@ -36,7 +36,7 @@
 		    </c:if>
                 </ul>
                 <ul class="nav navbar-nav navbar-right" id="secondary-nav">
-                    <li><a class="logout" href="<c:url value='/logout' />">Log out</a></li>
+                    <li><a class="logout" href="<c:url value='/userlogout' />">Log out</a></li>
                 </ul>
             </div>
         </div>

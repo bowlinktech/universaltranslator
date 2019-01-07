@@ -10,14 +10,15 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
-import org.springframework.format.annotation.DateTimeFormat;
-
 @Entity
 @Table(name = "REL_USERLOGINS")
 public class utUserLogin {
     
     @Transient
     private int totalTimeLoggedIn;
+    
+    @Transient
+    private String dateLastLoggedIn = "", logInDate = "";
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -27,11 +28,9 @@ public class utUserLogin {
     @Column(name = "USERID", nullable = false)
     private int userId;
 
-    @DateTimeFormat(pattern = "dd/MM/yyyy hh:mm:ss")
     @Column(name = "DATECREATED", nullable = true)
     private Date dateCreated = new Date();
     
-    @DateTimeFormat(pattern = "dd/MM/yyyy hh:mm:ss")
     @Column(name = "dateLoggedOut", nullable = true)
     private Date dateLoggedOut = null;
 
@@ -67,4 +66,21 @@ public class utUserLogin {
 	this.totalTimeLoggedIn = totalTimeLoggedIn;
     }
 
+    public String getDateLastLoggedIn() {
+	return dateLastLoggedIn;
+    }
+
+    public void setDateLastLoggedIn(String dateLastLoggedIn) {
+	this.dateLastLoggedIn = dateLastLoggedIn;
+    }
+
+    public String getLogInDate() {
+	return logInDate;
+    }
+
+    public void setLogInDate(String logInDate) {
+	this.logInDate = logInDate;
+    }
+
+    
 }

@@ -3766,7 +3766,7 @@ public class transactionInManagerImpl implements transactionInManager {
 		}
 
 		//we determine output file name
-		batchDownload.setoutputFIleName(transactionoutmanager.generateDLBatchName(transportDetails, configDetails, batchUploadDetails, date) + "." + transportDetails.getfileExt());
+		batchDownload.setoutputFileName(transactionoutmanager.generateDLBatchName(transportDetails, configDetails, batchUploadDetails, date) + "." + transportDetails.getfileExt());
 		batchDownload.setmergeable(false);
 		batchDownload.setstartDateTime(new Date());
 		batchDownload.settransportMethodId(transportDetails.gettransportMethodId());
@@ -3915,7 +3915,7 @@ public class transactionInManagerImpl implements transactionInManager {
 		batchDownload.setstatusId(28);
 
 		//we determine output file name
-		batchDownload.setoutputFIleName(transactionoutmanager.generateDLBatchName(transportDetails, tgtconfigDetails, batchDetails, date) + "." + transportDetails.getfileExt());
+		batchDownload.setoutputFileName(transactionoutmanager.generateDLBatchName(transportDetails, tgtconfigDetails, batchDetails, date) + "." + transportDetails.getfileExt());
 		batchDownload.setmergeable(false);
 		batchDownload.setstartDateTime(new Date());
 		batchDownload.settransportMethodId(transportDetails.gettransportMethodId());
@@ -3934,7 +3934,7 @@ public class transactionInManagerImpl implements transactionInManager {
 		batchDownloads batchDLDetails = transactionOutDAO.getBatchDetails(batchDLId);
 
 		//Need to copy the source file into the target location (final target location to send from.
-		String fileName = new StringBuilder().append(batchDLDetails.getoutputFIleName()).toString();
+		String fileName = new StringBuilder().append(batchDLDetails.getoutputFileName()).toString();
 		fileSystem dir = new fileSystem();
 
 		String filelocation = transportDetails.getfileLocation();

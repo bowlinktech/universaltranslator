@@ -56,7 +56,7 @@ public class batchDownloads {
 
     @NoHtml
     @Column(name = "OUTPUTFILENAME", nullable = true)
-    private String outputFIleName = null;
+    private String outputFileName = null;
 
     @DateTimeFormat(pattern = "dd/MM/yyyy hh:mm:ss")
     @Column(name = "DATECREATED", nullable = false)
@@ -132,12 +132,12 @@ public class batchDownloads {
         this.transportMethodId = transportMethodId;
     }
 
-    public String getoutputFIleName() {
-        return outputFIleName;
+    public String getoutputFileName() {
+        return outputFileName;
     }
 
-    public void setoutputFIleName(String outputFIleName) {
-        this.outputFIleName = outputFIleName;
+    public void setoutputFileName(String outputFileName) {
+        this.outputFileName = outputFileName;
     }
 
     public int getstatusId() {

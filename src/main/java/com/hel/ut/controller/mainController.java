@@ -5,8 +5,6 @@ import com.hel.ut.model.mailMessage;
 import com.hel.ut.service.emailMessageManager;
 import com.hel.ut.service.userManager;
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Random;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -79,9 +77,9 @@ public class mainController {
 	return mav;
 
     }
-
+	
     /**
-     * The '/logout' request will handle a user logging out of the system. The request will handle front-end users or administrators logging out.
+     * The '/userlogout' request will handle a user logging out of the system. The request will handle front-end users or administrators logging out.
      *
      * @param request
      * @param response
@@ -89,9 +87,9 @@ public class mainController {
      * @return	the login page view
      * @throws Exception
      */
-    @RequestMapping(value = "/logout", method = RequestMethod.GET)
-	public ModelAndView logout(HttpServletRequest request, HttpServletResponse response, HttpSession session) throws Exception {
-
+    @RequestMapping(value = "/userlogout", method = RequestMethod.GET)
+    public ModelAndView userlogout(HttpServletRequest request, HttpServletResponse response, HttpSession session) throws Exception {
+	 
 	utUser userInfo = (utUser) session.getAttribute("userDetails");
 
 	if (userInfo != null) {
@@ -103,7 +101,8 @@ public class mainController {
 	    }
 	}
 
-	return new ModelAndView("/login");
+	ModelAndView mav = new ModelAndView(new RedirectView("/logout"));
+	return mav;
     }
 
     /**

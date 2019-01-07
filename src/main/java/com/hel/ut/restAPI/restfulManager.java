@@ -135,12 +135,12 @@ public class restfulManager {
 
 	    String fileName = null;
 
-	    int findExt = batchFileInfo.getoutputFIleName().lastIndexOf(".");
+	    int findExt = batchFileInfo.getoutputFileName().lastIndexOf(".");
 
 	    if (findExt >= 0) {
-		fileName = batchFileInfo.getoutputFIleName();
+		fileName = batchFileInfo.getoutputFileName();
 	    } else {
-		fileName = new StringBuilder().append(batchFileInfo.getoutputFIleName()).append(".").append(transportDetails.getfileExt()).toString();
+		fileName = new StringBuilder().append(batchFileInfo.getoutputFileName()).append(".").append(transportDetails.getfileExt()).toString();
 	    }
 	    
 	    //Submit the restAPImessageOut
@@ -438,12 +438,12 @@ public class restfulManager {
 
 	    String fileName = null;
 
-	    int findExt = batchFileInfo.getoutputFIleName().lastIndexOf(".");
+	    int findExt = batchFileInfo.getoutputFileName().lastIndexOf(".");
 
 	    if (findExt >= 0) {
-		fileName = batchFileInfo.getoutputFIleName();
+		fileName = batchFileInfo.getoutputFileName();
 	    } else {
-		fileName = new StringBuilder().append(batchFileInfo.getoutputFIleName()).append(".").append(transportDetails.getfileExt()).toString();
+		fileName = new StringBuilder().append(batchFileInfo.getoutputFileName()).append(".").append(transportDetails.getfileExt()).toString();
 	    }
 
 	    //Set the directory to save the brochures to
@@ -786,12 +786,12 @@ public class restfulManager {
 
 	    String fileName = null;
 
-	    int findExt = batchFileInfo.getoutputFIleName().lastIndexOf(".");
+	    int findExt = batchFileInfo.getoutputFileName().lastIndexOf(".");
 
 	    if (findExt >= 0) {
-		fileName = batchFileInfo.getoutputFIleName();
+		fileName = batchFileInfo.getoutputFileName();
 	    } else {
-		fileName = new StringBuilder().append(batchFileInfo.getoutputFIleName()).append(".").append(transportDetails.getfileExt()).toString();
+		fileName = new StringBuilder().append(batchFileInfo.getoutputFileName()).append(".").append(transportDetails.getfileExt()).toString();
 	    }
 	    
 	    //Submit the restAPImessageOut

@@ -16,8 +16,11 @@ import com.hel.ut.model.utConfiguration;
 import com.hel.ut.model.configurationConnection;
 import com.hel.ut.model.configurationConnectionSenders;
 import com.hel.ut.model.utUserLogin;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.TimeZone;
 import org.hibernate.type.StandardBasicTypes;
 
 /**
@@ -527,9 +530,17 @@ public class userDAOImpl implements userDAO {
 	List<utUserLogin> logins = query.list();
 	
 	if(logins != null) {
+	    Date logoutDate = new Date();
+	    DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+	    // Set the formatter to use a different timezone  
+	    formatter.setTimeZone(TimeZone.getTimeZone("EST"));  
+	    
 	    utUserLogin lastLogin = (utUserLogin) logins.get(0);
-	    lastLogin.setDateLoggedOut(new Date());
-	    sessionFactory.getCurrentSession().saveOrUpdate(lastLogin);
+	    
+	    Query q1 = sessionFactory.getCurrentSession().createSQLQuery("update rel_userlogins set dateLoggedOut = '" +formatter.format(logoutDate)+ "' where id = " + lastLogin.getId());
+	    q1.executeUpdate();
+	    
 	}
     }
     
@@ -546,7 +557,7 @@ public class userDAOImpl implements userDAO {
 
         List<Integer> OrgIds = new ArrayList<Integer>();
         OrgIds.add(orgId);
-
+	
 	String sql = "select a.id, a.firstName, a.lastName, a.status, b.role as roleType," 
 		+ "(select dateCreated from rel_userlogins where userId = a.id order by dateCreated desc limit 1) as lastLogInDate,"
 		+ "(select TIMESTAMPDIFF(MINUTE,dateCreated,dateLoggedOut) as totalTimeLoggedIn from rel_userlogins where userId = a.id order by dateCreated desc limit 1) as totalTimeLoggedIn," 
@@ -559,7 +570,7 @@ public class userDAOImpl implements userDAO {
                 .addScalar("firstName", StandardBasicTypes.STRING)
 		.addScalar("lastName", StandardBasicTypes.STRING)
                 .addScalar("status", StandardBasicTypes.BOOLEAN)
-		.addScalar("lastLogInDate", StandardBasicTypes.TIMESTAMP)
+		.addScalar("lastLogInDate", StandardBasicTypes.STRING)
                 .addScalar("totalTimeLoggedIn", StandardBasicTypes.INTEGER)
                 .addScalar("totalLogins", StandardBasicTypes.INTEGER)
 		.addScalar("roleType", StandardBasicTypes.STRING)
@@ -582,13 +593,13 @@ public class userDAOImpl implements userDAO {
     @Transactional(readOnly = true)
     public List<utUserLogin> getUserLogins(int userId) {
 
-	String sql = "select dateCreated,IFNULL(TIMESTAMPDIFF(MINUTE,dateCreated,dateLoggedOut),0) as totalTimeLoggedIn " 
+	String sql = "select dateCreated as logInDate,IFNULL(TIMESTAMPDIFF(MINUTE,dateCreated,dateLoggedOut),0) as totalTimeLoggedIn " 
 		+ "from rel_userlogins " 
 		+ "where userId = " + userId 
 		+ " order by dateCreated desc";
 	
 	 Query query = sessionFactory.getCurrentSession().createSQLQuery(sql)
-		.addScalar("dateCreated", StandardBasicTypes.TIMESTAMP)
+		.addScalar("logInDate", StandardBasicTypes.STRING)
                 .addScalar("totalTimeLoggedIn", StandardBasicTypes.INTEGER)
 		.setResultTransformer(Transformers.aliasToBean(utUserLogin.class));
 

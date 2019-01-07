@@ -2827,8 +2827,10 @@ public class transactionInDAOImpl implements transactionInDAO {
 		+ "group by a.batchUploadId ) as batchesToClear "
 		+ "where totalBatchDownloads = totalDelivered";
 	
-	Query query = sessionFactory.getCurrentSession().createSQLQuery(sql).setResultTransformer(
-		Transformers.aliasToBean(batchDownloads.class));
+	Query query = sessionFactory.getCurrentSession().createSQLQuery(sql)
+		.addScalar("batchUploadId", StandardBasicTypes.INTEGER)
+		.addScalar("totalBatchDownloads", StandardBasicTypes.INTEGER)
+		.setResultTransformer(Transformers.aliasToBean(batchDownloads.class));
 	
 	return query.list();
     }
@@ -2838,12 +2840,17 @@ public class transactionInDAOImpl implements transactionInDAO {
     public void batchUploadTableCleanUp(List<batchDownloads> batchesToCleanup) throws Exception {
 	
 	if(batchesToCleanup != null) {
+	    
+	    System.out.println("Total Found: " + batchesToCleanup.size());
+	    
 	    if(!batchesToCleanup.isEmpty()) {
 		
 		String deleteSQL = "";
 		Query deleteQuery;
 		
 		for(batchDownloads batch : batchesToCleanup) {
+		    System.out.println("Batch Upload Id: " + batch.getBatchUploadId());
+		    
 		    if(batch.getBatchUploadId() > 0) {
 			deleteSQL += "DROP TABLE IF EXISTS `transactiontranslatedin_" + batch.getBatchUploadId() + "`;";
 			deleteSQL += "DROP TABLE IF EXISTS `transactionindetailauditerrors_" + batch.getBatchUploadId() + "`;";

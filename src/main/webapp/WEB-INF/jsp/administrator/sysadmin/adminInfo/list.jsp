@@ -63,7 +63,8 @@
 					    <td class="center-text">
 						<c:choose>
 						    <c:when test="${not empty systemAdmin.lastLogInDate}">
-							<fmt:formatDate value="${systemAdmin.lastLogInDate}" type="date" pattern="M/dd/yyyy h:mm a" />
+							<fmt:parseDate value="${systemAdmin.lastLogInDate}" pattern="yyyy-MM-dd HH:mm:ss" var="myDate"/>
+							<fmt:formatDate value="${myDate}" type="date" pattern="M/dd/yyyy hh:mm:ss a" />
 							<br /><a href="#lastloginsModal" id="lastloginsButton" rel="${systemAdmin.id}"  data-toggle="modal" title="View All Logins">
 							    <span class="glyphicon glyphicon-eye-open"></span>
 							    View All Logins	
