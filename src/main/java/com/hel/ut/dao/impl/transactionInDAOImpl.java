@@ -2841,16 +2841,13 @@ public class transactionInDAOImpl implements transactionInDAO {
 	
 	if(batchesToCleanup != null) {
 	    
-	    System.out.println("Total Found: " + batchesToCleanup.size());
-	    
 	    if(!batchesToCleanup.isEmpty()) {
 		
 		String deleteSQL = "";
 		Query deleteQuery;
 		
 		for(batchDownloads batch : batchesToCleanup) {
-		    System.out.println("Batch Upload Id: " + batch.getBatchUploadId());
-		    
+		     
 		    if(batch.getBatchUploadId() > 0) {
 			deleteSQL += "DROP TABLE IF EXISTS `transactiontranslatedin_" + batch.getBatchUploadId() + "`;";
 			deleteSQL += "DROP TABLE IF EXISTS `transactionindetailauditerrors_" + batch.getBatchUploadId() + "`;";
