@@ -2905,4 +2905,24 @@ public class transactionInDAOImpl implements transactionInDAO {
 	    System.err.println("resetTransactionCounts " + ex.getCause());
 	}
     }
+    
+    @Override
+    @Transactional(readOnly = false)
+    public void deleteMoveFileLogById(Integer logId) throws Exception {
+	Query deletMoveFilesLog = sessionFactory.getCurrentSession().createQuery("delete from MoveFilesLog where id = :id");
+	deletMoveFilesLog.setParameter("id", logId);
+
+	deletMoveFilesLog.executeUpdate();
+
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public List<MoveFilesLog> existingMoveFileLogs(Integer statusId, Integer methodId) throws Exception {
+	
+	Criteria criteria = sessionFactory.getCurrentSession().createCriteria(MoveFilesLog.class);
+	criteria.add(Restrictions.eq("statusId", statusId));
+	criteria.add(Restrictions.eq("transportMethodId", methodId));
+	return criteria.list();
+    }
 }

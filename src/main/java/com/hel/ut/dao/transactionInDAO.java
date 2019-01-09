@@ -261,4 +261,8 @@ public interface transactionInDAO {
     List<configurationConnection> getPassThruBatchTargets(Integer batchId, boolean active);
 
     void resetTransactionCounts(Integer batchUploadId) throws Exception;
+    
+    List<MoveFilesLog> existingMoveFileLogs(Integer statusId, Integer methodId) throws Exception;
+    
+    void deleteMoveFileLogById(Integer logId) throws Exception;
 }

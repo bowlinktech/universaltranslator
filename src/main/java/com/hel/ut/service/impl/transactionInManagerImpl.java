@@ -1629,7 +1629,21 @@ public class transactionInManagerImpl implements transactionInManager {
 	    List<configurationFTPFields> sftpPaths = getFTPInfoForJob(1);
 
 	    //2 we clean up
-	    deleteMoveFileLogsByStatus(2, 3);
+	    //Find move files log by status Id and methodId
+	    //Delete the records found
+	    List<MoveFilesLog> existingSFTPMoveFileLogs = transactionInDAO.existingMoveFileLogs(2,3);
+	    
+	    if(existingSFTPMoveFileLogs != null) {
+		if(!existingSFTPMoveFileLogs.isEmpty()) {
+		    existingSFTPMoveFileLogs.forEach(moveLog -> {
+			try {
+			    transactionInDAO.deleteMoveFileLogById(moveLog.getId());
+			} catch (Exception ex) {
+			    Logger.getLogger(transactionInManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
+			}
+		    });
+		}
+	    }
 
 	    //get home folder of sFTP
 	    String sftpHome = myProps.getProperty("ut.directory.sftpHome");
@@ -2156,85 +2170,6 @@ public class transactionInManagerImpl implements transactionInManager {
     }
 
     /**
-     * The 'chkUploadBatchFile' function will take in the file and orgName and upload the file to the appropriate file on the file system. The function will run the file through various validations. If a single validation fails the batch will be put in a error validation status and the file will be removed from the system. The user will receive an error message on the screen letting them know which validations have failed and be asked to upload a new file.
-     *
-     * The following validations will be taken place. - File is not empty - Proper file type (as determined in the utConfiguration set up) - Proper delimiter (as determined in the utConfiguration set up) - Does not exceed file size (as determined in the utConfiguration set up)
-     *
-     * @param configId The utConfiguration Id to get some validation parameters
-     * @param fileUpload The file to be uploaded
-     *
-     */
-    @Override
-    public Map<String, String> chkUploadBatchFile(configurationTransport transportDetails, File uploadedFile) throws Exception {
-
-	Map<String, String> batchFileResults = new HashMap<String, String>();
-
-	try {
-	    long fileSize = uploadedFile.length();
-	    long fileSizeMB = (fileSize / (1024L * 1024L));
-
-	    /* 
-             1 = File is empty
-             2 = Too large
-             3 = Wrong file type
-             4 = Wrong delimiter
-	     */
- /* Make sure the file is not empty : ERROR CODE 1 */
-	    if (fileSize == 0) {
-		batchFileResults.put("emptyFile", "1");
-	    }
-
-	    /* Make sure file is the correct size : ERROR CODE 2 */
-	    double maxFileSize = (double) transportDetails.getmaxFileSize();
-
-	    if (fileSizeMB > maxFileSize) {
-		batchFileResults.put("wrongSize", "2");
-	    }
-
-	    String fileName = uploadedFile.getName();
-
-	    batchFileResults.put("fileName", fileName);
-
-	    /* Make sure file is the correct file type : ERROR CODE 3 */
-	    String ext = FilenameUtils.getExtension(uploadedFile.getAbsolutePath());
-	   
-
-	    String fileType = (String) configurationManager.getFileTypesById(transportDetails.getfileType());
-
-	    if ("hl7".equals(fileType)) {
-		fileType = "hr";
-	    }
-
-	    if (ext == null ? fileType != null : !ext.equals(transportDetails.getfileExt())) {
-		batchFileResults.put("wrongFileType", "3");
-	    }
-
-	    fileSystem dir = new fileSystem();
-
-	    /* Make sure the file has the correct delimiter : ERROR CODE 5 */
-	    String delimChar = (String) messageTypeDAO.getDelimiterChar(transportDetails.getfileDelimiter());
-
-	    //Check to make sure the file contains the selected delimiter
-	    //Set the directory that holds the crosswalk files
-	    int delimCount = (Integer) dir.checkFileDelimiter(uploadedFile, delimChar);
-
-	    if (delimCount < 3
-		    && !"xml".equals(transportDetails.getfileExt())
-		    && !"xls".equals(transportDetails.getfileExt())
-		    && !"xlsx".equals(transportDetails.getfileExt())) {
-		batchFileResults.put("wrongDelim", "4");
-	    }
-
-	    //Save the attachment
-	} catch (Exception e) {
-	    e.printStackTrace();
-	}
-
-	return batchFileResults;
-
-    }
-
-    /**
      * The 'moveFileDroppedFiles' method will look for files dropped in the UT folders based on the records saved in the 
      * rel_transportfiledropdetails table for configurations.
      * 
@@ -2248,9 +2183,23 @@ public class transactionInManagerImpl implements transactionInManager {
 	    
 	    //1 . Find all configurations that have file dropped transport methods (Method = 1)
 	    List<configurationFileDropFields> inputPaths = getFileDropInfoForJob(1);
-
+	    
 	    //2 we clean up, delete entries in the move files log table with statusId = 2 and transport method = 10 (File Drop)
-	    deleteMoveFileLogsByStatus(2, 10);
+	    //Find move files log by status Id and methodId
+	    //Delete the records found
+	    List<MoveFilesLog> existingMoveFileLogs = transactionInDAO.existingMoveFileLogs(2,10);
+	    
+	    if(existingMoveFileLogs != null) {
+		if(!existingMoveFileLogs.isEmpty()) {
+		    existingMoveFileLogs.forEach(moveLog -> {
+			try {
+			    transactionInDAO.deleteMoveFileLogById(moveLog.getId());
+			} catch (Exception ex) {
+			    Logger.getLogger(transactionInManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
+			}
+		    });
+		}
+	    }
 
 	    //loop through the file drop paths found and check for any files
 	    

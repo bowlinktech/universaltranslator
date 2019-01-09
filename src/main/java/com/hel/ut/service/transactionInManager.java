@@ -177,8 +177,6 @@ public interface transactionInManager {
 
     String copyUplaodedPath(configurationTransport transportDetails, MultipartFile fileUpload);
 
-    Map<String, String> chkUploadBatchFile(configurationTransport transportDetails, File uploadedFile) throws Exception;
-
     Integer moveFileDroppedFiles();
 
     List<configurationFileDropFields> getFileDropInfoForJob(Integer method);
