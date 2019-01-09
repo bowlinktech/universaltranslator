@@ -2987,4 +2987,218 @@ public class adminConfigController {
         return 1;
 
     }
+    
+    /**
+     * The '/getCrosswalks.do' function will return all the available crosswalks.
+     *
+     * @param page
+     * @param orgId
+     * @param maxCrosswalks
+     * @return 
+     * @throws java.lang.Exception 
+     * @Return list of crosswalks
+     */
+    @RequestMapping(value = "/getCrosswalks.do", method = RequestMethod.GET)
+    public @ResponseBody
+    ModelAndView getCrosswalks(@RequestParam(value = "page", required = false) Integer page, @RequestParam(value = "orgId", required = false) Integer orgId, @RequestParam(value = "maxCrosswalks", required = false) Integer maxCrosswalks) throws Exception {
+
+        if (page == null) {
+            page = 1;
+        }
+
+        if (orgId == null) {
+            orgId = 0;
+        }
+
+        if (maxCrosswalks == null) {
+            maxCrosswalks = 4;
+        }
+
+        double maxCrosswalkVal = maxCrosswalks;
+
+        ModelAndView mav = new ModelAndView();
+        mav.setViewName("/administrator/configurations/crosswalks");
+        mav.addObject("orgId", orgId);
+
+        //Need to return a list of crosswalks
+        List<Crosswalks> crosswalks = messagetypemanager.getCrosswalks(page, maxCrosswalks, orgId);
+        mav.addObject("availableCrosswalks", crosswalks);
+
+        //Find out the total number of crosswalks
+        double totalCrosswalks = messagetypemanager.findTotalCrosswalks(orgId);
+
+        Integer totalPages = (int) Math.ceil((double) totalCrosswalks / maxCrosswalkVal);
+        mav.addObject("totalPages", totalPages);
+        mav.addObject("currentPage", page);
+
+        return mav;
+
+    }
+    
+    /**
+     * The '/newCrosswalk' GET request will be used to return a blank crosswalk form.
+     *
+     *
+     * @param orgId
+     * @return	The crosswalk details page
+     * @throws java.lang.Exception
+     *
+     * @Objects	(1) An object that will hold all the details of the clicked crosswalk
+     *
+     */
+    @RequestMapping(value = "/newCrosswalk", method = RequestMethod.GET)
+    public @ResponseBody
+    ModelAndView newCrosswalk(@RequestParam(value = "orgId", required = false) Integer orgId) throws Exception {
+
+        if (orgId == null) {
+            orgId = 0;
+        }
+
+        ModelAndView mav = new ModelAndView();
+        mav.setViewName("/administrator/configurations/crosswalkDetails");
+
+        Crosswalks crosswalkDetails = new Crosswalks();
+        mav.addObject("crosswalkDetails", crosswalkDetails);
+        mav.addObject("btnValue", "Create");
+	mav.addObject("actionValue", "Create");
+        mav.addObject("orgId", orgId);
+
+        //Get the list of available file delimiters
+        @SuppressWarnings("rawtypes")
+        List delimiters = messagetypemanager.getDelimiters();
+        mav.addObject("delimiters", delimiters);
+
+        return mav;
+    }
+
+    /**
+     * The '/createCrosswalk' function will be used to create a new crosswalk
+     *
+     * @param crosswalkDetails
+     * @param result
+     * @param redirectAttr
+     * @param orgId
+     * @return 
+     * @throws java.lang.Exception
+     * @Return The function will either return the crosswalk form on error or redirect to the data translation page.
+     */
+    @RequestMapping(value = "/createCrosswalk", method = RequestMethod.POST)
+    public @ResponseBody
+    ModelAndView createCrosswalk(@ModelAttribute(value = "crosswalkDetails") Crosswalks crosswalkDetails, BindingResult result, RedirectAttributes redirectAttr, @RequestParam int orgId) throws Exception {
+
+        crosswalkDetails.setOrgId(orgId);
+        int lastId = messagetypemanager.createCrosswalk(crosswalkDetails);
+
+        if (lastId == 0) {
+            redirectAttr.addFlashAttribute("savedStatus", "error");
+        } else {
+            redirectAttr.addFlashAttribute("savedStatus", "created");
+        }
+
+        //if orgId > 0 then need to send back to the configurations page
+        //otherwise send back to the message type libarary translation page.
+        if (orgId > 0) {
+            ModelAndView mav = new ModelAndView(new RedirectView("../configurations/translations"));
+            return mav;
+        } else {
+            ModelAndView mav = new ModelAndView(new RedirectView("translations"));
+            return mav;
+        }
+    }
+    
+    /**
+     * The '/UploadNewFile' function will be used to upload a new file for an existing crosswalk.
+     *
+     * @param crosswalkDetails
+     * @param result
+     * @param redirectAttr
+     * @param orgId
+     * @return 
+     * @throws java.lang.Exception 
+     * @Return The function will either return the crosswalk form on error or redirect to the data translation page.
+     */
+    @RequestMapping(value = "/uploadnewfileCrosswalk", method = RequestMethod.POST)
+    public @ResponseBody 
+        ModelAndView uploadnewfileCrosswalk(
+            @ModelAttribute(value = "crosswalkDetails") Crosswalks crosswalkDetails, 
+            BindingResult result, RedirectAttributes redirectAttr, @RequestParam int orgId
+    ) throws Exception {
+
+        
+        int lastId = messagetypemanager.uploadNewFileForCrosswalk(crosswalkDetails);
+
+        if (lastId == 0) {
+            redirectAttr.addFlashAttribute("savedStatus", "error");
+        } else {
+            redirectAttr.addFlashAttribute("savedStatus", "updated");
+        }
+
+        //if orgId > 0 then need to send back to the configurations page
+        //otherwise send back to the message type libarary translation page.
+        if (orgId > 0) {
+            ModelAndView mav = new ModelAndView(new RedirectView("../configurations/translations"));
+            return mav;
+        } else {
+            ModelAndView mav = new ModelAndView(new RedirectView("translations"));
+            return mav;
+        }
+    }
+
+    /**
+     *
+     * @param name
+     * @param orgId
+     * @return 
+     * @throws java.lang.Exception
+     */
+    @RequestMapping(value = "/checkCrosswalkName.do", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+    public @ResponseBody
+    Long checkCrosswalkName(@RequestParam(value = "name", required = true) String name, @RequestParam(value = "orgId", required = false) Integer orgId) throws Exception {
+
+        if (orgId == null) {
+            orgId = 0;
+        }
+
+        Long nameExists = (Long) messagetypemanager.checkCrosswalkName(name, orgId);
+
+        return nameExists;
+
+    }
+
+    
+    /**
+     * The '/viewCrosswalk{params}' function will return the details of the selected crosswalk. The results will be displayed in the overlay.
+     *
+     * @Param	i	This will hold the id of the selected crosswalk
+     *
+     * @Return	This function will return the crosswalk details view.
+     */
+    @RequestMapping(value = "/viewCrosswalk{params}", method = RequestMethod.GET)
+    public @ResponseBody
+    ModelAndView viewCrosswalk(@RequestParam(value = "i", required = true) Integer cwId) throws Exception {
+	
+        ModelAndView mav = new ModelAndView();
+        mav.setViewName("/administrator/configurations/crosswalkDetails");
+
+        //Get the details of the selected crosswalk
+        Crosswalks crosswalkDetails = messagetypemanager.getCrosswalk(cwId);
+        mav.addObject("crosswalkDetails", crosswalkDetails);
+
+        //Get the data associated with the selected crosswalk
+        @SuppressWarnings("rawtypes")
+        List crosswalkData = messagetypemanager.getCrosswalkData(cwId);
+        mav.addObject("crosswalkData", crosswalkData);
+
+        //Get the list of available file delimiters
+        @SuppressWarnings("rawtypes")
+        List delimiters = messagetypemanager.getDelimiters();
+        mav.addObject("delimiters", delimiters);
+	
+	mav.addObject("btnValue", "Upload New File");
+        mav.addObject("actionValue", "UploadNewFile");
+	
+	mav.addObject("orgId", crosswalkDetails.getOrgId());
+
+        return mav;
+    }
 }

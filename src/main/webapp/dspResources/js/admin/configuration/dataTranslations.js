@@ -106,7 +106,7 @@ require(['./main'], function () {
         //crosswalk details
         $(document).on('click', '.viewCrosswalk', function () {
             $.ajax({
-                url: '../library/viewCrosswalk' + $(this).attr('rel'),
+                url: 'viewCrosswalk' + $(this).attr('rel'),
                 type: "GET",
                 success: function (data) {
                     $("#crosswalkModal").html(data);
@@ -120,7 +120,7 @@ require(['./main'], function () {
             var orgId = $('#orgId').val();
 
             $.ajax({
-                url: '../library/newCrosswalk',
+                url: 'newCrosswalk',
                 type: "GET",
                 data: {'orgId': orgId},
                 success: function (data) {
@@ -159,7 +159,7 @@ require(['./main'], function () {
 	    if(actionValue === "create") {
 
 		$.ajax({
-		    url: '../library/checkCrosswalkName.do',
+		    url: 'checkCrosswalkName.do',
 		    type: "POST",
 		    async: false,
 		    data: {'name': $('#name').val(), 'orgId': orgId},
@@ -195,7 +195,7 @@ require(['./main'], function () {
                 return false;
             }
 
-            $('#crosswalkdetailsform').attr('action', '../library/' + actionValue + 'Crosswalk');
+            $('#crosswalkdetailsform').attr('action', actionValue + 'Crosswalk');
             $('#crosswalkdetailsform').submit();
 
         });
@@ -329,7 +329,7 @@ function populateCrosswalks(page) {
     var orgId = $('#orgId').val();
 
     $.ajax({
-        url: '/administrator/library/getCrosswalks.do',
+        url: 'getCrosswalks.do',
         type: "GET",
         data: {'page': page, 'orgId': orgId, 'maxCrosswalks': 8},
         success: function (data) {
