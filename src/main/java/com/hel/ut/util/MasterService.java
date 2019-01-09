@@ -37,21 +37,21 @@ public class MasterService {
 	String defaultDBName = masterservice.configProp.getProperty("jdbc.defaultUTDBName");
 	
 	DriverManagerDataSource defaultdataSource = new DriverManagerDataSource();
-        defaultdataSource.setDriverClassName("com.mysql.jdbc.Driver");
+        defaultdataSource.setDriverClassName("com.mysql.cj.jdbc.Driver");
         defaultdataSource.setUrl("jdbc:mysql://"+masterservice.configProp.getProperty("jdbc.url")+"/"+defaultDBName+"?allowMultiQueries=true&serverTimezone=UTC");
         defaultdataSource.setUsername(masterservice.configProp.getProperty("jdbc.user"));
         defaultdataSource.setPassword(masterservice.configProp.getProperty("jdbc.password"));
+	
 	
 	return defaultdataSource;
     }
     
     public static DataSource getComboPooledDataSource(String tenantIdentifier) throws IOException {
-	
 	MasterService masterservice = new MasterService();
 	masterservice.loadProperties();
 	
 	DriverManagerDataSource defaultdataSource = new DriverManagerDataSource();
-        defaultdataSource.setDriverClassName("com.mysql.jdbc.Driver");
+        defaultdataSource.setDriverClassName("com.mysql.cj.jdbc.Driver");
         defaultdataSource.setUrl("jdbc:mysql://"+masterservice.configProp.getProperty("jdbc.url")+"/"+tenantIdentifier+"?allowMultiQueries=true&serverTimezone=UTC");
         defaultdataSource.setUsername(masterservice.configProp.getProperty("jdbc.user"));
         defaultdataSource.setPassword(masterservice.configProp.getProperty("jdbc.password"));

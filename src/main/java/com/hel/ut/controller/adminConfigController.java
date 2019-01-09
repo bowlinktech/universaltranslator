@@ -235,11 +235,14 @@ public class adminConfigController {
             return mav;
         }
 	
-	if(configurationDetails.getAssociatedSourceConfigId() > 0) {
-	    utConfiguration sourceConfigDetails = utconfigurationmanager.getConfigurationById(configurationDetails.getAssociatedSourceConfigId());
-	    if(sourceConfigDetails.getConfigurationType() == 2) {
-		configurationDetails.setConfigurationType(2);
+	if(configurationDetails.getAssociatedSourceConfigId() != null) {
+	    if(configurationDetails.getAssociatedSourceConfigId() > 0) {
+		utConfiguration sourceConfigDetails = utconfigurationmanager.getConfigurationById(configurationDetails.getAssociatedSourceConfigId());
+		if(sourceConfigDetails.getConfigurationType() == 2) {
+		    configurationDetails.setConfigurationType(2);
+		}
 	    }
+
 	}
 	
 	configurationDetails.setMessageTypeId(0);
@@ -250,40 +253,42 @@ public class adminConfigController {
         session.setAttribute("manageconfigId", id);
 	
 	//If configuration is a target then create the connection
-	if(id > 0 && configurationDetails.getType() == 2 && configurationDetails.getAssociatedSourceConfigId() > 0) {
-	    configurationConnection newConnection = new configurationConnection();
-	    newConnection.setsourceConfigId(configurationDetails.getAssociatedSourceConfigId());
-	    newConnection.settargetConfigId(id);
-	    newConnection.setStatus(true);
+	if(id > 0 && configurationDetails.getType() == 2 && configurationDetails.getAssociatedSourceConfigId() != null) {
 	    
-	    Integer newConnectionId = utconfigurationmanager.saveConnection(newConnection);
-	    
-	    //Get the sending organization details
-	    utConfiguration sendingConfigDetails = utconfigurationmanager.getConfigurationById(configurationDetails.getAssociatedSourceConfigId());
-	    Organization sendingOrgDetails = organizationmanager.getOrganizationById(sendingConfigDetails.getorgId());
-	    
-	    if(!sendingOrgDetails.getPrimaryContactEmail().equals("")) {
-		configurationConnectionSenders newConnectionSender = new configurationConnectionSenders();
-		newConnectionSender.setConnectionId(newConnectionId);
-		newConnectionSender.setEmailAddress(sendingOrgDetails.getPrimaryContactEmail());
-		newConnectionSender.setSendEmailNotifications(false);
-		
-		utconfigurationmanager.saveConnectionSenders(newConnectionSender);
+	    if(configurationDetails.getAssociatedSourceConfigId() > 0) {
+		configurationConnection newConnection = new configurationConnection();
+		newConnection.setsourceConfigId(configurationDetails.getAssociatedSourceConfigId());
+		newConnection.settargetConfigId(id);
+		newConnection.setStatus(true);
+
+		Integer newConnectionId = utconfigurationmanager.saveConnection(newConnection);
+
+		//Get the sending organization details
+		utConfiguration sendingConfigDetails = utconfigurationmanager.getConfigurationById(configurationDetails.getAssociatedSourceConfigId());
+		Organization sendingOrgDetails = organizationmanager.getOrganizationById(sendingConfigDetails.getorgId());
+
+		if(!sendingOrgDetails.getPrimaryContactEmail().equals("")) {
+		    configurationConnectionSenders newConnectionSender = new configurationConnectionSenders();
+		    newConnectionSender.setConnectionId(newConnectionId);
+		    newConnectionSender.setEmailAddress(sendingOrgDetails.getPrimaryContactEmail());
+		    newConnectionSender.setSendEmailNotifications(false);
+
+		    utconfigurationmanager.saveConnectionSenders(newConnectionSender);
+		}
+
+		//Get the receiving organziation details
+		Organization receivingOrgDetails = organizationmanager.getOrganizationById(configurationDetails.getorgId());
+
+		if(!receivingOrgDetails.getPrimaryContactEmail().equals("")) {
+		    configurationConnectionReceivers newConnectionReceiver = new configurationConnectionReceivers();
+		    newConnectionReceiver.setConnectionId(newConnectionId);
+		    newConnectionReceiver.setEmailAddress(receivingOrgDetails.getPrimaryContactEmail());
+		    newConnectionReceiver.setSendEmailNotifications(false);
+
+		    utconfigurationmanager.saveConnectionReceivers(newConnectionReceiver);
+		}
 	    }
-	    
-	    //Get the receiving organziation details
-	    Organization receivingOrgDetails = organizationmanager.getOrganizationById(configurationDetails.getorgId());
-	   
-	    if(!receivingOrgDetails.getPrimaryContactEmail().equals("")) {
-		configurationConnectionReceivers newConnectionReceiver = new configurationConnectionReceivers();
-		newConnectionReceiver.setConnectionId(newConnectionId);
-		newConnectionReceiver.setEmailAddress(receivingOrgDetails.getPrimaryContactEmail());
-		newConnectionReceiver.setSendEmailNotifications(false);
-		
-		utconfigurationmanager.saveConnectionReceivers(newConnectionReceiver);
-	    }
-	    
-	}
+	 }
 	
         //If the "Save" button was pressed 
         if (action.equals("save")) {
@@ -424,6 +429,7 @@ public class adminConfigController {
     /**
      * The '/transport' GET request will display the clicked utConfiguration transport details form.
      *
+     * @param session
      * @return	Will return the utConfiguration transport details form
      *
      * @Objects	transportDetails will hold a empty object or an object containing the existing transport details for the selected configuration
@@ -454,6 +460,8 @@ public class adminConfigController {
 
         // Get organization directory name
         Organization orgDetails = organizationmanager.getOrganizationById(configurationDetails.getorgId());
+	
+	configurationDetails.setOrgName(orgDetails.getOrgName());
 	
         configurationTransport transportDetails = utconfigurationTransportManager.getTransportDetails(configId);
         if (transportDetails == null) {
@@ -651,14 +659,6 @@ public class adminConfigController {
         }
 	
 	
-	//No mappings needed for source configurations
-	if(configurationDetails.getType() == 1) {
-	    session.setAttribute("configmappings", 0);
-	}
-	else {
-	    session.setAttribute("configmappings", 1);
-	}
-	
         if (transportDetails.getfileType() == 4 && configurationDetails.getType() == 2) {
             session.setAttribute("configHL7", true);
             session.setAttribute("configCCD", false);
@@ -824,6 +824,11 @@ public class adminConfigController {
         //Get the utConfiguration details for the selected config
         utConfiguration configurationDetails = utconfigurationmanager.getConfigurationById(configId);
 	
+	 // Get organization directory name
+        Organization orgDetails = organizationmanager.getOrganizationById(configurationDetails.getorgId());
+	
+	configurationDetails.setOrgName(orgDetails.getOrgName());
+	
 	configurationDetails.settransportMethod(utconfigurationTransportManager.getTransportMethodById(transportDetails.gettransportMethodId()));
 
         //pass the utConfiguration detail object back to the page.
@@ -850,8 +855,8 @@ public class adminConfigController {
     @RequestMapping(value = "/messagespecs", method = RequestMethod.POST)
     public ModelAndView updateMessageSpecs(HttpSession session,@Valid @ModelAttribute(value = "messageSpecs") configurationMessageSpecs messageSpecs, BindingResult result, RedirectAttributes redirectAttr, @RequestParam String action) throws Exception {
 
-       
-        /**
+	
+	/**
          * Need to pass the selected transport Type
          */
         configurationTransport transportDetails = utconfigurationTransportManager.getTransportDetails(messageSpecs.getconfigId());
