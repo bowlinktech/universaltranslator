@@ -2004,8 +2004,6 @@ public class transactionOutManagerImpl implements transactionOutManager {
 		if(utOrgDetails.getHelRegistryId() > 0 && !utOrgDetails.getHelRegistrySchemaName().equals("")) {
 		    helRegistry registryDetails = helregistrymanager.getRegistryDetails("registries",utOrgDetails.getHelRegistryId());
 		    
-		   
-		    
 		    if(!registryDetails.getRegistryName().equals("")) {
 			String registryFolderName = registryDetails.getRegistryName().toLowerCase().replaceAll(" ","-");
 			
@@ -2336,5 +2334,16 @@ public class transactionOutManagerImpl implements transactionOutManager {
 		
 	    }
 	}
+    }
+    
+    /**
+     * 
+     * @param batchUploadId
+     * @return
+     * @throws Exception 
+     */
+    @Override
+    public boolean chechForTransactionInTable(Integer batchUploadId) throws Exception {
+	return transactionOutDAO.chechForTransactionInTable(batchUploadId);
     }
 }

@@ -191,7 +191,7 @@
 				<c:choose>
 				    <c:when test="${batchDownload}">
 					<c:if test="${not empty batchDetails.utBatchName}">
-					    <c:set var="text" value="${fn:split(batchDetails.outputFIleName,'.')}" />
+					    <c:set var="text" value="${fn:split(batchDetails.outputFileName,'.')}" />
 					    <c:set var="ext" value="${text[fn:length(text)-1]}" />
 					    <c:set var="hrefLink" value="/FileDownload/downloadFile.do?filename=${batchDetails.utBatchName}.${ext}&foldername=archivesOut"/>
 					    <p><strong>Generated Target File (Located in archivesOut):</strong>

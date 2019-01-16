@@ -560,26 +560,28 @@ public class transactionInManagerImpl implements transactionInManager {
 
 	} // end of single batch insert 
 
-	// Insert all Targets is batch status = 24
+	// Insert all Targets if batch status = 24
 	boolean targetsInserted = false;
+	boolean noTargetsFound = false;
+	
 	if (batchStatusId == 24) {
 	    
 	    //If no errors found then create the batch download entries
 	    if(updatedBatchDetails.geterrorRecordCount() == 0) {
-		assignBatchDLId(batchUploadId, batch.getConfigId());
 		targetsInserted = true;
+		noTargetsFound = assignBatchDLId(batchUploadId, batch.getConfigId());
 	    }
 
 	    //If errors are found and the error handling is set to send only non errored transactions
 	    //and there are successful tranasctions to send create the batch download entries
 	    else if(handlingDetails.get(0).geterrorHandling() == 2 && (updatedBatchDetails.geterrorRecordCount() < updatedBatchDetails.gettotalRecordCount())) {
-		assignBatchDLId(batchUploadId, batch.getConfigId());
 		targetsInserted = true;
+		noTargetsFound = assignBatchDLId(batchUploadId, batch.getConfigId());
 	    }
 	    //If the error handling is set to send all transactions errored or not
 	    else if(handlingDetails.get(0).geterrorHandling() == 4) {
-		assignBatchDLId(batchUploadId, batch.getConfigId());
 		targetsInserted = true;
+		noTargetsFound = assignBatchDLId(batchUploadId, batch.getConfigId());
 	    }
 	}
 	
@@ -591,8 +593,17 @@ public class transactionInManagerImpl implements transactionInManager {
 	populateAuditReport(batch.getId(), configurationManager.getMessageSpecs(batch.getConfigId()));
 	
 	//If no target batches created delete upload tables
-	if(!targetsInserted) {
+	if(!targetsInserted || !noTargetsFound) {
 	    transactionInDAO.deleteBatchTransactionTables(batchUploadId);
+	}
+	
+	//If not targets were found
+	if(targetsInserted && !noTargetsFound) {
+	    insertProcessingError(10, null, batchUploadId, null, null, null, null, false, false, "No valid connections were found for loading batch.");
+	    updateRecordCounts(batchUploadId, new ArrayList<Integer>(), false, "errorRecordCount");
+	    updateRecordCounts(batchUploadId, new ArrayList<Integer>(), false, "totalRecordCount");
+	    updateBatchStatus(batchUploadId, 7, "endDateTime");
+	    return false;
 	}
 
 	//update log with transactionInIds 
@@ -990,7 +1001,7 @@ public class transactionInManagerImpl implements transactionInManager {
 		    if(transportDetails.getHelRegistryConfigId() != null) {
 			if (transportDetails.getHelRegistryId() > 0 && transportDetails.getHelRegistryConfigId() > 0 && !"".equals(transportDetails.getHelSchemaName())) {
 
-			    submittedMessage existingRegistrySubmittedMessage = submittedmessagemanager.getSubmittedMessageBySQL(transportDetails.getHelSchemaName(),batch.getutBatchName());
+			    submittedMessage existingRegistrySubmittedMessage = submittedmessagemanager.getSubmittedMessageBySQL(transportDetails.getHelSchemaName(),batch.getoriginalFileName());
 
 			    if (existingRegistrySubmittedMessage != null) {
 				submittedmessagemanager.updateSubmittedMessage(transportDetails.getHelSchemaName(),existingRegistrySubmittedMessage.getId(),23,batchId);
@@ -1737,6 +1748,7 @@ public class transactionInManagerImpl implements transactionInManager {
 		    //loop through all found files
 		    for (File file : listOfFiles) {
 			String fileName = file.getName();
+			
 			DateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmssS");
 			Date date = new Date();
 
@@ -1773,16 +1785,41 @@ public class transactionInManagerImpl implements transactionInManager {
 
 				//figure out if files has distinct delimiters
 				List<configurationTransport> transports = configurationtransportmanager.getConfigTransportForFileExtAndPath(fileExt, transportMethodId, 1, transportId);
-
-				batchUploads batchInfo = new batchUploads();
-				batchInfo.setOrgId(orgId);
-				batchInfo.settransportMethodId(transportMethodId);
-				batchInfo.setstatusId(4);
-				batchInfo.setstartDateTime(date);
-				batchInfo.setutBatchName(batchName);
-				batchInfo.setOriginalFolder(rootPath + configDroppedPath);
-
+				
+				//Check to see if the batch already exists (RESET)
+				batchUploads batchDetails = transactionInDAO.getBatchDetailsByOriginalFileName(fileName);
+				
 				Integer batchId = 0;
+				boolean newBatchRecord = true;
+				
+				if(batchDetails != null) {
+				    newBatchRecord = false;
+				    batchDetails.setstatusId(4);
+				    batchDetails.setstartDateTime(date);
+				    batchDetails.setutBatchName(batchName);
+				    
+				    batchId = batchDetails.getId();
+				    
+				    transactionInDAO.updateBatchUpload(batchDetails);
+				}
+				else {
+				    batchUploads batchInfo = new batchUploads();
+				    batchInfo.setOrgId(orgId);
+				    batchInfo.settransportMethodId(transportMethodId);
+				    batchInfo.setstatusId(4);
+				    batchInfo.setstartDateTime(date);
+				    batchInfo.setutBatchName(batchName);
+				    batchInfo.setOriginalFolder(rootPath + configDroppedPath);
+				    batchInfo.setuserId(0);
+				    batchInfo.setConfigId(0);
+				    batchInfo.setoriginalFileName(fileName);
+				    batchInfo.setFileLocation(rootPath + configDroppedPath);
+				    
+				    batchId = submitBatchUpload(batchInfo);
+				    
+				    batchDetails = transactionInDAO.getBatchDetails(batchId);
+				}
+
 				String newFileName = "";
 
 				Integer configId = 0;
@@ -1791,13 +1828,9 @@ public class transactionInManagerImpl implements transactionInManager {
 				
 				//Check to see if there was a transport found, if not create error
 				if (transportList.isEmpty() || transports.isEmpty()) {
-				    batchInfo.setuserId(0);
-				    batchInfo.setConfigId(0);
-				    batchInfo.setoriginalFileName(fileName);
-				    batchInfo.setFileLocation(rootPath + configDroppedPath);
-				    batchInfo.setEncodingId(encodingId);
 				    
-				    batchId = submitBatchUpload(batchInfo);
+				    batchDetails.setEncodingId(encodingId);
+				    transactionInDAO.updateBatchUpload(batchDetails);
 				    
 				    //insert error
 				    errorId = 13;
@@ -1826,18 +1859,22 @@ public class transactionInManagerImpl implements transactionInManager {
 					} else {
 					    configId = ct.getconfigId();
 					}
-					batchInfo.setConfigId(configId);
-					batchInfo.setContainsHeaderRow(transports.get(0).getContainsHeaderRow());
-					batchInfo.setDelimChar(transports.get(0).getDelimChar());
-					batchInfo.setFileLocation(ct.getfileLocation());
-					batchInfo.setOrgId(orgId);
-					batchInfo.setoriginalFileName(fileName);
-					batchInfo.setEncodingId(encodingId);
-					batchInfo.setuserId(0);
 					
-					batchId = (Integer) submitBatchUpload(batchInfo);
+					if(newBatchRecord) {
+					    batchDetails.setConfigId(configId);
+					    batchDetails.setContainsHeaderRow(transports.get(0).getContainsHeaderRow());
+					    batchDetails.setDelimChar(transports.get(0).getDelimChar());
+					    batchDetails.setFileLocation(ct.getfileLocation());
+					    batchDetails.setOrgId(orgId);
+					    batchDetails.setoriginalFileName(fileName);
+					    batchDetails.setEncodingId(encodingId);
+					    batchDetails.setuserId(0);
+
+					    transactionInDAO.updateBatchUpload(batchDetails);
+					}
 					
-					if (batchInfo.getConfigId() != 0) {
+					
+					if (batchDetails.getConfigId() != 0) {
 					    statusId = 42;
 					}
 				    }
@@ -1855,7 +1892,10 @@ public class transactionInManagerImpl implements transactionInManager {
 				    
 				    //we reject file is multiple encodings/delimiters are found for extension type as we won't know how to decode it and read delimiter
 				    if (encodings.size() != 1) {
-					batchInfo.setuserId(usermanager.getUserByTypeByOrganization(orgId).get(0).getId());
+					if(newBatchRecord) {
+					    batchDetails.setuserId(usermanager.getUserByTypeByOrganization(orgId).get(0).getId());
+					    transactionInDAO.updateBatchUpload(batchDetails);
+					}
 					statusId = 7;
 					errorId = 16;
 				    } else {
@@ -1875,33 +1915,37 @@ public class transactionInManagerImpl implements transactionInManager {
 				    }
 				    
 				    if (errorId > 0) {
-					// some error detected from previous checks
-					userId = usermanager.getUserByTypeByOrganization(orgId).get(0).getId();
-					batchInfo.setConfigId(configId);
-					batchInfo.setFileLocation(rootPath + configDroppedPath);
-					batchInfo.setOrgId(orgId);
-					batchInfo.setoriginalFileName(fileName);
-					batchInfo.setuserId(0);
-					batchInfo.setEncodingId(encodingId);
-					
-					if (batchInfo.getConfigId() != 0 && batchInfo.getstatusId() == 2) {
-					   batchInfo.setstatusId(42);
+					if(newBatchRecord) {
+					    // some error detected from previous checks
+					    userId = usermanager.getUserByTypeByOrganization(orgId).get(0).getId();
+					    batchDetails.setConfigId(configId);
+					    batchDetails.setFileLocation(rootPath + configDroppedPath);
+					    batchDetails.setOrgId(orgId);
+					    batchDetails.setoriginalFileName(fileName);
+					    batchDetails.setuserId(0);
+					    batchDetails.setEncodingId(encodingId);
 					}
 					
-					batchId = (Integer) submitBatchUpload(batchInfo);
+					if (batchDetails.getConfigId() != 0 && batchDetails.getstatusId() == 2) {
+					   batchDetails.setstatusId(42);
+					}
+					
+					transactionInDAO.updateBatchUpload(batchDetails);
 				    } 
 				    else if (statusId != 2) {
 					//no vaild delimiter detected
 					statusId = 7;
 					userId = usermanager.getUserByTypeByOrganization(orgId).get(0).getId();
-					batchInfo.setConfigId(configId);
-					batchInfo.setFileLocation(rootPath + configDroppedPath);
-					batchInfo.setOrgId(orgId);
-					batchInfo.setoriginalFileName(fileName);
-					batchInfo.setuserId(0);
-					batchInfo.setEncodingId(encodingId);
-					
-					batchId = (Integer) submitBatchUpload(batchInfo);
+					if(newBatchRecord) {
+					    batchDetails.setConfigId(configId);
+					    batchDetails.setFileLocation(rootPath + configDroppedPath);
+					    batchDetails.setOrgId(orgId);
+					    batchDetails.setoriginalFileName(fileName);
+					    batchDetails.setuserId(0);
+					    batchDetails.setEncodingId(encodingId);
+					    
+					    transactionInDAO.updateBatchUpload(batchDetails);
+					}   
 					
 					errorId = 15;
 					
@@ -1913,7 +1957,10 @@ public class transactionInManagerImpl implements transactionInManager {
 					List<configurationTransport> containsHeaderRowCount = configurationtransportmanager.getCountContainsHeaderRow(fileExt, transportMethodId);
 
 					if (containsHeaderRowCount.size() != 1) {
-					    batchInfo.setuserId(usermanager.getUserByTypeByOrganization(orgId).get(0).getId());
+					    if(newBatchRecord) {
+						batchDetails.setuserId(usermanager.getUserByTypeByOrganization(orgId).get(0).getId());
+						transactionInDAO.updateBatchUpload(batchDetails);
+					    }
 					    statusId = 7;
 					    errorId = 14;
 					} 
@@ -1935,19 +1982,23 @@ public class transactionInManagerImpl implements transactionInManager {
 						users = usermanager.getOrgUsersForConfig(totalConfigs);
 					    }
 					    userId = users.get(0).getId();
-					    batchInfo.setContainsHeaderRow(containsHeaderRowCount.get(0).getContainsHeaderRow());
-					    batchInfo.setDelimChar(delimiter);
-					    batchInfo.setConfigId(configId);
-					    batchInfo.setFileLocation(fileLocation);
-					    batchInfo.setOrgId(orgId);
-					    batchInfo.setoriginalFileName(fileName);
-					    batchInfo.setuserId(0);
-					    batchInfo.setEncodingId(encodingId);
 					    
-					    if (batchInfo.getConfigId() != 0 && batchInfo.getstatusId() == 2) {
-						batchInfo.setstatusId(42);
+					    if(newBatchRecord) {
+						batchDetails.setContainsHeaderRow(containsHeaderRowCount.get(0).getContainsHeaderRow());
+						batchDetails.setDelimChar(delimiter);
+						batchDetails.setConfigId(configId);
+						batchDetails.setFileLocation(fileLocation);
+						batchDetails.setOrgId(orgId);
+						batchDetails.setoriginalFileName(fileName);
+						batchDetails.setuserId(0);
+						batchDetails.setEncodingId(encodingId);
 					    }
-					    batchId = (Integer) submitBatchUpload(batchInfo);
+					    
+					    if (batchDetails.getConfigId() != 0 && batchDetails.getstatusId() == 2) {
+						batchDetails.setstatusId(42);
+					    }
+					    
+					    transactionInDAO.updateBatchUpload(batchDetails);
 					}
 				    }
 				}
@@ -1959,7 +2010,7 @@ public class transactionInManagerImpl implements transactionInManager {
 				    ua.setFeatureId(0);
 				    ua.setAccessMethod("System");
 				    ua.setActivity("System Uploaded File");
-				    ua.setBatchUploadId(batchInfo.getId());
+				    ua.setBatchUploadId(batchDetails.getId());
 				    usermanager.insertUserLog(ua);
 
 				} catch (Exception ex) {
@@ -1967,7 +2018,7 @@ public class transactionInManagerImpl implements transactionInManager {
 				    System.err.println("moveFilesByPath - insert user log" + ex.toString());
 				}
 
-				createBatchTables(batchId, batchInfo.getConfigId());
+				createBatchTables(batchId, batchDetails.getConfigId());
 				
 				//we encoded the file if it is not
 				File newFile = new File(rootPath + orgDetails.getcleanURL() + "/input files/encoded_"+batchName);
@@ -2041,11 +2092,11 @@ public class transactionInManagerImpl implements transactionInManager {
 				updateBatchStatus(batchId, statusId, "endDateTime");
 				
 				// Check to see if the batch needs to be submitted to a Healt-e-link Registry
-				if (batchInfo.getConfigId() != null) {
-				    if (batchInfo.getConfigId() > 0) {
+				if (batchDetails.getConfigId() != null) {
+				    if (batchDetails.getConfigId() > 0) {
 					
-					//Need to check the schedule to see if this is an automaticl process or manual process
-					configurationSchedules configurationSchedule = configurationManager.getScheduleDetails(batchInfo.getConfigId());
+					//Need to check the schedule to see if this is an automatic process or manual process
+					configurationSchedules configurationSchedule = configurationManager.getScheduleDetails(batchDetails.getConfigId());
 					
 					//If manual change the status of the batch so it does not process (Setting batch status to "Manual Processing Required" Id: 64)
 					if(configurationSchedule.gettype() == 1) {
@@ -2227,6 +2278,7 @@ public class transactionInManagerImpl implements transactionInManager {
 			//paths are from root instead of /home
 			String inPath = fileSystem.setPathFromRoot(directoryHome + fileDropInfo.getDirectory().replace("/HELProductSuite/universalTranslator/",""));
 			File f = new File(inPath);
+			
 			if (!f.exists()) {
 			    moveJob.setNotes(("Directory " + directoryHome + fileDropInfo.getDirectory().replace("/HELProductSuite/universalTranslator/","") + " does not exist"));
 			    updateSFTPRun(moveJob);
@@ -2238,7 +2290,7 @@ public class transactionInManagerImpl implements transactionInManager {
 			    
 			    //Find the organization for this transportId 
 			    Integer orgId = configurationtransportmanager.getOrgIdForFileDropPath(fileDropInfo);
-
+			    
 			    sysErrors = sysErrors + moveFilesByPath(directoryHome, fileDropInfo.getDirectory().replace("/HELProductSuite/universalTranslator/",""), 10, orgId, fileDropInfo.getTransportId());
 
 			    if (sysErrors == 0) {
@@ -3634,7 +3686,9 @@ public class transactionInManagerImpl implements transactionInManager {
     }
 
     @Override
-    public void assignBatchDLId(Integer batchUploadId, Integer batchConfigId) throws Exception {
+    public boolean assignBatchDLId(Integer batchUploadId, Integer batchConfigId) throws Exception {
+	
+	boolean targetsInserted = false;
 
 	// now we assign batchdownload Id to each config
 	List<Integer> configIds = getTargetConfigsForUploadBatch(batchUploadId, batchConfigId);
@@ -3648,6 +3702,7 @@ public class transactionInManagerImpl implements transactionInManager {
 	List<batchDownloads> pendingResetBatchDownloads = transactionoutmanager.getPendingResetBatches(batchUploadId);
 
 	if (!pendingResetBatchDownloads.isEmpty()) {
+	    targetsInserted = true;
 
 	    for (batchDownloads pendingBatches : pendingResetBatchDownloads) {
 		pendingBatches.setstatusId(61);
@@ -3658,7 +3713,8 @@ public class transactionInManagerImpl implements transactionInManager {
 		transactionOutDAO.submitBatchDownloadChanges(pendingBatches);
 	    }
 
-	} else {
+	} 
+	else {
 
 	    //If reseting inbound batch we need to make sure all the targets are cleared and removed.
 	    List<batchDownloads> batchDownloads = transactionOutDAO.getDLBatchesByBatchUploadId(batchUploadId);
@@ -3675,9 +3731,15 @@ public class transactionInManagerImpl implements transactionInManager {
 		    transactionInDAO.clearBatchDownloads(batchDLIDs);
 		}
 	    }
+	    
+	    Integer useTargetOrgId = 0;
+	    boolean useTarget = false;
 
 	    //we loop configs here 
 	    for (Integer configId : configIds) {
+		useTargetOrgId = 0;
+		useTarget = false;
+
 		//each outbound config is its own batch, this doesn't consider combining outbound batches yet **/	
 		/* Create the batch name (OrgId+MessageTypeId+Date/Time) - need milliseconds as computer is fast and files have the same name*/
 		DateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmssS");
@@ -3685,53 +3747,89 @@ public class transactionInManagerImpl implements transactionInManager {
 
 		//get transport & config details
 		utConfiguration configDetails = configurationManager.getConfigurationById(configId);
-		configurationTransport transportDetails = configurationtransportmanager.getTransportDetails(configDetails.getId());
-
-		String utbatchName = new StringBuilder().append(transportDetails.gettransportMethodId()).append("_m_").append(configDetails.getorgId()).append(configDetails.getMessageTypeId()).append(dateFormat.format(date)).toString();
-
-		// Get the userId for the utConfiguration
-		List<configurationConnection> connections = configurationManager.getConnectionsBySrcAndTargetConfigurations(batchUploadDetails.getConfigId(), configDetails.getId());
-
-		int userId = 0;
-
-		//we create a batchDownloads
-		batchDownloads batchDownload = new batchDownloads();
-
-		//set batch download details
-		batchDownload.setutBatchName(utbatchName);
 		
+		//get the target org details
+		Organization targetOrg = organizationmanager.getOrganizationById(configDetails.getorgId());
 		
-		//Need to get the schedule for the configuration to find out if the targets need to be processed automatically
-		configurationSchedules configurationScheduleDetails = configurationManager.getScheduleDetails(configId);
-		
-		if(configurationScheduleDetails.gettype() == 5) {
-		   batchDownload.setstatusId(61);
+		//We need to check to see if the configuration is looking for the target in specific column
+		List<configurationMessageSpecs> configurationMessageSpecs = configurationtransportmanager.getConfigurationMessageSpecsForOrgTransport(batchUploadDetails.getOrgId(), batchUploadDetails.gettransportMethodId(), true);
+
+		if(configurationMessageSpecs != null) {
+		    if(!configurationMessageSpecs.isEmpty()) {
+			configurationMessageSpecs messageSpec = configurationMessageSpecs.get(0);
+			
+			if(messageSpec.gettargetOrgCol() > 0 && !"".equals(messageSpec.gettargetOrgCol())) {
+			    
+			    //Pull the first record for the batch
+			    String recordVal = transactionInDAO.getFieldValue("transactioninrecords_"+batchUploadId,"F"+messageSpec.gettargetOrgCol(), "batchUploadId", batchUploadId);
+			    if(recordVal.trim().toLowerCase().equals(String.valueOf(targetOrg.getId())) || recordVal.trim().toLowerCase().equals(String.valueOf(targetOrg.getHelRegistryOrgId()))) {
+				useTarget = true;
+				useTargetOrgId = targetOrg.getId();
+			    }
+			}
+			else {
+			    useTarget = true;
+			    useTargetOrgId = targetOrg.getId();
+			}
+		    }
 		}
-		else if (configurationScheduleDetails.gettype() == 1) {
-		    batchDownload.setstatusId(64);
+		
+		if(useTarget && useTargetOrgId > 0) {
+		    targetsInserted = true;
+		    
+		    configurationTransport transportDetails = configurationtransportmanager.getTransportDetails(configDetails.getId());
+
+		    String utbatchName = new StringBuilder().append(transportDetails.gettransportMethodId()).append("_m_").append(configDetails.getorgId()).append(configDetails.getMessageTypeId()).append(dateFormat.format(date)).toString();
+
+		    // Get the userId for the utConfiguration
+		    List<configurationConnection> connections = configurationManager.getConnectionsBySrcAndTargetConfigurations(batchUploadDetails.getConfigId(), configDetails.getId());
+
+		    int userId = 0;
+
+		    //we create a batchDownloads
+		    batchDownloads batchDownload = new batchDownloads();
+
+		    //set batch download details
+		    batchDownload.setutBatchName(utbatchName);
+
+
+		    //Need to get the schedule for the configuration to find out if the targets need to be processed automatically
+		    configurationSchedules configurationScheduleDetails = configurationManager.getScheduleDetails(configId);
+
+		    if(configurationScheduleDetails.gettype() == 5) {
+		       batchDownload.setstatusId(61);
+		    }
+		    else if (configurationScheduleDetails.gettype() == 1) {
+			batchDownload.setstatusId(64);
+		    }
+		    else {
+			batchDownload.setstatusId(59);
+		    }
+
+		    //we determine output file name
+		    batchDownload.setoutputFileName(transactionoutmanager.generateDLBatchName(transportDetails, configDetails, batchUploadDetails, date) + "." + transportDetails.getfileExt());
+		    batchDownload.setmergeable(false);
+		    batchDownload.setstartDateTime(new Date());
+		    batchDownload.settransportMethodId(transportDetails.gettransportMethodId());
+		    batchDownload.setOrgId(useTargetOrgId);
+		    batchDownload.setuserId(userId);
+		    batchDownload.settotalErrorCount(0);
+		    batchDownload.settotalRecordCount(0);
+		    batchDownload.setdeleted(false);
+		    batchDownload.setdateCreated(new Date());
+		    batchDownload.setBatchUploadId(batchUploadId);
+		    batchDownload.setConfigId(configId);
+
+		    /* Submit a new batch */
+		    int batchDLId = (int) transactionOutDAO.submitBatchDownload(batchDownload);
 		}
 		else {
-		    batchDownload.setstatusId(59);
+		    //No batches found
 		}
-
-		//we determine output file name
-		batchDownload.setoutputFileName(transactionoutmanager.generateDLBatchName(transportDetails, configDetails, batchUploadDetails, date) + "." + transportDetails.getfileExt());
-		batchDownload.setmergeable(false);
-		batchDownload.setstartDateTime(new Date());
-		batchDownload.settransportMethodId(transportDetails.gettransportMethodId());
-		batchDownload.setOrgId(configDetails.getorgId());
-		batchDownload.setuserId(userId);
-		batchDownload.settotalErrorCount(0);
-		batchDownload.settotalRecordCount(0);
-		batchDownload.setdeleted(false);
-		batchDownload.setdateCreated(new Date());
-		batchDownload.setBatchUploadId(batchUploadId);
-		batchDownload.setConfigId(configId);
-
-		/* Submit a new batch */
-		int batchDLId = (int) transactionOutDAO.submitBatchDownload(batchDownload);
 	    }
 	}
+	
+	return targetsInserted;
 
     }
 

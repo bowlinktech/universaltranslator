@@ -112,4 +112,6 @@ public interface transactionOutDAO {
     
     void submitBatchDownloadChanges(batchDownloads batchDownload) throws Exception;
     
+    boolean chechForTransactionInTable(Integer batchUploadId) throws Exception;
+    
 }

@@ -5,6 +5,7 @@
  */
 package com.hel.ut.controller;
 
+import com.google.common.io.Files;
 import com.hel.ut.model.WSMessagesIn;
 import com.hel.ut.model.activityReportList;
 import com.hel.ut.model.Organization;
@@ -15,8 +16,11 @@ import com.hel.ut.model.utUser;
 import com.hel.ut.model.utUserActivity;
 import com.hel.ut.model.batchDownloads;
 import com.hel.ut.model.batchUploads;
+import com.hel.ut.model.configurationFTPFields;
+import com.hel.ut.model.configurationFileDropFields;
 import com.hel.ut.model.utConfiguration;
 import com.hel.ut.model.configurationFormFields;
+import com.hel.ut.model.configurationTransport;
 import com.hel.ut.model.wsMessagesOut;
 import com.hel.ut.model.custom.TableData;
 import com.hel.ut.model.custom.batchErrorSummary;
@@ -130,8 +134,10 @@ public class adminProcessingActivity {
      * The private maxResults variable will hold the number of results to show per list page.
      */
     private static int maxResults = 10;
+    
+     private String directoryPath = System.getProperty("directory.utRootDir");
 
-    private String archivePath = "/HELProductSuite/universalTranslator/archivesIn/";
+     private String archivePath = (directoryPath + "archivesIn/");
     
 
     /**
@@ -1088,7 +1094,7 @@ public class adminProcessingActivity {
         } else {
             mav.addObject("doesNotExist", true);
         }
-
+	
         mav.addObject("canCancel", canCancel);
         mav.addObject("canReset", canReset);
         mav.addObject("canEdit", canEdit);
@@ -3517,7 +3523,7 @@ public class adminProcessingActivity {
                 canCancel = true;
             }
 
-            List<Integer> resetStatusList = Arrays.asList(28,30,31,41); //DNP (21) is not a final status for admin
+            List<Integer> resetStatusList = Arrays.asList(28,30,31,41,58); //DNP (21) is not a final status for admin
             if (resetStatusList.contains(batchDetails.getstatusId())) {
                 canReset = true;
             }
@@ -3598,9 +3604,95 @@ public class adminProcessingActivity {
 	    else if (batchOption.equalsIgnoreCase("reset")) {
                 strBatchOption = "Reset Outbound Batch";
 		
-		transactionOutManager.updateTargetBatchStatus(batchId, 66, "startDateTime");
+		//Delete all target tables
+		transactionOutManager.deleteBatchDownloadTables(batchId);
 		
-                transactionInManager.updateBatchStatus(batchDetails.getBatchUploadId(), 42, "startDateTime");
+		//Need to check to see if the transactiontranslatedin_BatchUploadId table exists
+		boolean transactionInTableForBatchExists = transactionOutManager.chechForTransactionInTable(batchDetails.getBatchUploadId());
+		
+		if(transactionInTableForBatchExists) {
+		    //Reset status to 61 to start the outbound process over
+		    transactionOutManager.updateTargetBatchStatus(batchId, 61, "startDateTime");
+		}
+		else {
+		    //Reset status to 61 to start the outbound process over
+		    transactionOutManager.updateTargetBatchStatus(batchId, 66, "startDateTime");
+		    
+		    //Clear transaction counts
+		    transactionInManager.resetTransactionCounts(batchDetails.getBatchUploadId());
+		    
+		    batchUploads batchUploadDetails = transactionInManager.getBatchDetails(batchDetails.getBatchUploadId());
+		    
+		    //Need to move the archive file back to the loading directory
+		    fileSystem dir = new fileSystem();
+		    dir.setDirByName("/");
+		    File archiveFile = new File(dir.setPathFromRoot(directoryPath + "archivesIn/") + "archive_" + batchUploadDetails.getutBatchName() + batchUploadDetails.getoriginalFileName().substring(batchUploadDetails.getoriginalFileName().lastIndexOf(".")));
+		    File archiveDecFile = new File(dir.setPathFromRoot(directoryPath + "archivesIn/") + batchUploadDetails.getutBatchName() + "_dec" + batchUploadDetails.getoriginalFileName().substring(batchUploadDetails.getoriginalFileName().lastIndexOf(".")));
+		    
+		    //Need to get the configuration details and transport method
+		    configurationTransport transportDetails = configurationTransportManager.getTransportDetails(batchUploadDetails.getConfigId());
+		    
+		    File encodedUploadedFile = new File(dir.setPathFromRoot(directoryPath + transportDetails.getfileLocation().replace("/HELProductSuite/universalTranslator/","")) + "encoded_" + batchUploadDetails.getutBatchName());
+		    
+		    //File Dropped
+		    if(transportDetails.gettransportMethodId() == 10) {
+			List<configurationFileDropFields> fileDropDetails = configurationTransportManager.getTransFileDropDetails(transportDetails.getId());
+			
+			if(fileDropDetails != null) {
+			    for(configurationFileDropFields fileDropDetail : fileDropDetails) {
+				if(fileDropDetail.getMethod() == 1) {
+				    
+				    if(archiveFile.renameTo(new File(dir.setPathFromRoot(directoryPath + fileDropDetail.getDirectory().replace("/HELProductSuite/universalTranslator/","")) + "/" + batchUploadDetails.getoriginalFileName()))) {
+					archiveFile.delete();
+					
+					if(archiveDecFile.exists()) {
+					    archiveDecFile.delete();
+					}
+					if(encodedUploadedFile.exists()) {
+					    encodedUploadedFile.delete();
+					}
+				    }
+				}
+			    }
+			}
+		    }
+		    //SFTP
+		    else if(transportDetails.gettransportMethodId() == 8) {
+			List<configurationFTPFields> ftpDetails = configurationTransportManager.getTransportFTPDetails(transportDetails.getId());
+			
+			if(ftpDetails != null) {
+			    for(configurationFTPFields ftpDetail : ftpDetails) {
+				if(ftpDetail.getmethod()== 1) {
+				    
+				    if(archiveFile.renameTo(new File(dir.setPathFromRoot(directoryPath + ftpDetail.getdirectory().replace("/sFTP","sFTP").replace("/HELProductSuite/universalTranslator/","")) + "/" + batchUploadDetails.getoriginalFileName()))) {
+					archiveFile.delete();
+					
+					if(archiveDecFile.exists()) {
+					    archiveDecFile.delete();
+					}
+					if(encodedUploadedFile.exists()) {
+					    encodedUploadedFile.delete();
+					}
+				    }
+				}
+			    }
+			}
+		    }
+		    else {
+			if(archiveFile.renameTo(new File(dir.setPathFromRoot(directoryPath + transportDetails.getfileLocation().replace("/HELProductSuite/universalTranslator/","")) + batchUploadDetails.getoriginalFileName()))) {
+			    archiveFile.delete();
+
+			    if(archiveDecFile.exists()) {
+				archiveDecFile.delete();
+			    }
+			    if(encodedUploadedFile.exists()) {
+				encodedUploadedFile.delete();
+			    }
+			}
+		    }
+		    
+		    transactionInManager.updateBatchStatus(batchDetails.getBatchUploadId(), 35, "startDateTime");
+		}
             } 
         }
 

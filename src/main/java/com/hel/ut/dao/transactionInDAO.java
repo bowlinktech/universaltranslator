@@ -265,4 +265,6 @@ public interface transactionInDAO {
     List<MoveFilesLog> existingMoveFileLogs(Integer statusId, Integer methodId) throws Exception;
     
     void deleteMoveFileLogById(Integer logId) throws Exception;
+    
+    batchUploads getBatchDetailsByOriginalFileName(String batchName) throws Exception;
 }

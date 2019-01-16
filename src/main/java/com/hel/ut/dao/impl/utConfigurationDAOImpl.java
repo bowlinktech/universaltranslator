@@ -788,7 +788,7 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
         Query query = sessionFactory
 	    .getCurrentSession()
 	    .createSQLQuery(
-		    "select configurationDataTranslations.*, configurationFormFields.associatedFieldNo as fieldNo "
+		    "select configurationDataTranslations.*, configurationFormFields.fieldNo "
 		    + "from configurationDataTranslations inner join "
 		    + "configurationFormFields on configurationFormFields.id = configurationDataTranslations.fieldId " 
 		    + "where configurationDataTranslations.configId = :configId "

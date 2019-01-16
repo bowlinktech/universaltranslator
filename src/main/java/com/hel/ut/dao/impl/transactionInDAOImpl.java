@@ -1401,8 +1401,8 @@ public class transactionInDAOImpl implements transactionInDAO {
     @Override
     @Transactional(readOnly = true)
     @SuppressWarnings("unchecked")
-    public List<configurationFileDropFields> getFileDropInfoForJob(
-	    Integer method) {
+    public List<configurationFileDropFields> getFileDropInfoForJob(Integer method) {
+	
 	try {
 	    String sql = ("select rel_transportfiledropdetails.id, directory, method, transportId "
 		    + " from configurationTransportDetails, rel_transportfiledropdetails "
@@ -2924,5 +2924,26 @@ public class transactionInDAOImpl implements transactionInDAO {
 	criteria.add(Restrictions.eq("statusId", statusId));
 	criteria.add(Restrictions.eq("transportMethodId", methodId));
 	return criteria.list();
+    }
+    
+    /**
+     * The 'getBatchDetailsByOriginalFileName' will return a batch by name
+     *
+     * @param originalFileName The name of the batch to search form.
+     *
+     * @return This function will return a batchUpload object
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public batchUploads getBatchDetailsByOriginalFileName(String originalFileName) throws Exception {
+	Query query = sessionFactory.getCurrentSession().createQuery("from batchUploads where originalFileName = :originalFileName");
+	query.setParameter("originalFileName", originalFileName);
+
+	if (query.list().size() > 1) {
+	    return null;
+	} else {
+	    return (batchUploads) query.uniqueResult();
+	}
+
     }
 }

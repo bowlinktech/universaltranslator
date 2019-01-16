@@ -43,9 +43,9 @@
 	</property>   
     </bean>
 
-    <tx:annotation-driven transaction-manager="HELRegistrytransactionManager"/>
+    <tx:annotation-driven transaction-manager="UTTransactionManager"/>
 
-    <bean id="HELRegistrytransactionManager" class="org.springframework.orm.hibernate4.HibernateTransactionManager">
+    <bean id="UTTransactionManager" class="org.springframework.orm.hibernate4.HibernateTransactionManager">
 	<property name="autodetectDataSource" value="false"/>
         <property name="sessionFactory" ref="sessionFactory"/>
     </bean>

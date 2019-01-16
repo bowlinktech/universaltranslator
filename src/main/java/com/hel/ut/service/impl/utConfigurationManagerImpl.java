@@ -375,8 +375,7 @@ public class utConfigurationManagerImpl implements utConfigurationManager {
     }
 
     @Override
-    public List<configurationDataTranslations> getDataTranslationsWithFieldNo(
-	    int configId, int categoryId) {
+    public List<configurationDataTranslations> getDataTranslationsWithFieldNo(int configId, int categoryId) {
 	return utConfigurationDAO.getDataTranslationsWithFieldNo(configId, categoryId);
     }
 

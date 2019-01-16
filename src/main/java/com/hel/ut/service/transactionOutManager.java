@@ -103,5 +103,7 @@ public interface transactionOutManager {
     List<batchDownloads> getDownloadBatchesByBatchUploadId(Integer batchUploadId) throws Exception;
     
     void checkOutboundScheduledBatches() throws Exception;
-
+    
+    boolean chechForTransactionInTable(Integer batchUploadId) throws Exception;
+    
 }

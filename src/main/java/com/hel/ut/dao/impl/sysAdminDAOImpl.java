@@ -188,7 +188,7 @@ public class sysAdminDAOImpl implements sysAdminDAO {
     }
 
     @Override
-    @Transactional(readOnly = false, value = "iltransactionManager")
+    @Transactional(readOnly = false)
     public void createTableDataHibernate(TableData tableData, String utTableName) {
 
         String sql = "insert into " + utTableName + " (displayText, description, isCustom, status) "

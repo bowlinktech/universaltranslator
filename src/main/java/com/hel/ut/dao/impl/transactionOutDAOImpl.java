@@ -1246,4 +1246,28 @@ public class transactionOutDAOImpl implements transactionOutDAO {
 	sessionFactory.getCurrentSession().update(batchDownload);
     }
   
+    
+    @Override
+    @Transactional(readOnly = true)
+    public boolean chechForTransactionInTable(Integer batchUploadId) throws Exception {
+	
+	boolean tableFound = false;
+	
+	String tableNameToFind = "transactiontranslatedin_"+batchUploadId;
+	
+	String SQL_MASTER_TABLES = "SHOW TABLES IN universaltranslator";
+	
+	Query query = sessionFactory.getCurrentSession().createSQLQuery(SQL_MASTER_TABLES);
+	List<String> tableNames = query.list();
+	
+	if(!query.list().isEmpty()) {
+	    for(String tableName : tableNames) {
+		if(tableNameToFind.equals(tableName)) {
+		    tableFound = true;
+		}
+	    }
+	}
+	
+	return tableFound;
+    }
 }

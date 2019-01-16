@@ -32,12 +32,9 @@ import com.hel.ut.model.custom.batchErrorSummary;
 import com.hel.ut.model.referralActivityExports;
 import com.hel.ut.model.systemSummary;
 
-import java.io.File;
 import java.math.BigInteger;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
-import javax.servlet.http.HttpSession;
 
 import org.springframework.web.multipart.MultipartFile;
 
@@ -297,7 +294,7 @@ public interface transactionInManager {
     
     Integer clearBatchClearAfterDeliveryByBatchUploadId(Integer batchUploadId) throws Exception;
 
-    void assignBatchDLId (Integer batchUploadId, Integer configId) throws Exception;
+    boolean assignBatchDLId (Integer batchUploadId, Integer configId) throws Exception;
     
     List<Integer> getTargetConfigsForUploadBatch(Integer batchUploadId, Integer configId) throws Exception;
     
