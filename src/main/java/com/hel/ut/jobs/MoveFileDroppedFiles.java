@@ -43,16 +43,16 @@ public class MoveFileDroppedFiles implements Job {
                 	/* Send Email to admin*/
                     emailMessage messageDetails = new emailMessage();
                     messageDetails.settoEmailAddress(System.getProperty("admin.email"));
-                    messageDetails.setmessageSubject("MoveRRFiles job error - " + System.getProperty("server.identity"));
+                    messageDetails.setmessageSubject("MoveFileDroppedFiles job error - " + System.getProperty("server.identity"));
                     messageDetails.setmessageBody(ex.toString());
                     messageDetails.setfromEmailAddress("support@health-e-link.net");
                     emailmanager.sendEmail(messageDetails);
-                	throw new Exception("Error occurred for MoveRRFiles  - schedule task",ex);
+                	throw new Exception("Error occurred for MoveFileDroppedFiles  - schedule task",ex);
                 } catch (Exception ex1) {
                     Logger.getLogger(MoveFileDroppedFiles.class.getName()).log(Level.SEVERE, null, ex1);
                 }
             	
-            	throw new Exception("Error occurred for MoveRRFiles job  - new type schedule task",ex);
+            	throw new Exception("Error occurred for MoveFileDroppedFiles job  - new type schedule task",ex);
             } catch (Exception ex1) {
                 Logger.getLogger(MoveFileDroppedFiles.class.getName()).log(Level.SEVERE, null, ex1);
             }

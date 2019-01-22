@@ -101,8 +101,7 @@
         </trigger>
     </schedule>
     
-    
-     <schedule>
+    <schedule>
         <job>
             <name>MoveSFTPFiles</name>
             <group>processGroup</group>
@@ -155,7 +154,7 @@
             </cron>
         </trigger>
     </schedule>
-    
+   
     <schedule>
         <job>
             <name>ProcessRestAPIMessages</name>

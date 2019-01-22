@@ -2012,7 +2012,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
 			Files.copy(archiveFile.toPath(), targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
 			
 			//Need to update the Registry submitted message entry to capture the created file name
-			submittedmessagemanager.updateSubmittedMessage(registryDetails.getDbschemaname(),batchDownload.getBatchUploadId(),batchDownload.getutBatchName() + "." + fileExt);
+			submittedmessagemanager.updateSubmittedMessage(registryDetails.getDbschemaname(),batchDownload.getBatchUploadId(),batchDownload.getutBatchName() + "." + fileExt,utOrgDetails.getHelRegistryOrgId());
 		    }
 		    
 		}

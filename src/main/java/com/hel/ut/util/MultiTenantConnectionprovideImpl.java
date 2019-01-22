@@ -10,6 +10,8 @@ package com.hel.ut.util;
  * @author chadmccue
  */
 
+import com.mchange.v2.c3p0.C3P0Registry;
+import com.mchange.v2.c3p0.PooledDataSource;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -32,14 +34,17 @@ public class MultiTenantConnectionprovideImpl extends AbstractDataSourceBasedMul
 
     @Override
     protected DataSource selectDataSource(String tenantIdentifier) {
+	PooledDataSource pds = C3P0Registry.pooledDataSourceByName(tenantIdentifier);
 	
-	try {
-	    return MasterService.getComboPooledDataSource(tenantIdentifier);
+	if(pds == null) {
+	    try {
+		return MasterService.getComboPooledDataSource(tenantIdentifier);
+	    }
+	    catch (IOException ex) {
+		Logger.getLogger(MultiTenantConnectionprovideImpl.class.getName()).log(Level.SEVERE, null, ex);
+	    }
 	}
-	catch (IOException ex) {
-	    Logger.getLogger(MultiTenantConnectionprovideImpl.class.getName()).log(Level.SEVERE, null, ex);
-	}
-	return null;
+	return pds;
 	
     }
 
