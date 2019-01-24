@@ -993,36 +993,53 @@ public class transactionInManagerImpl implements transactionInManager {
 		    System.err.println("loadBatch - insert user log" + ex.toString());
 		}
 		
+		//Find all targets set up for this configuration
+		List<configurationConnection> configurationConnections = configurationManager.getConnectionsBySourceConfiguration(batch.getConfigId());
 		
-		utConfiguration configDetails = configurationManager.getConfigurationById(batch.getConfigId());
-		configurationTransport transportDetails = configurationtransportmanager.getTransportDetails(batch.getConfigId());
-
-		if (transportDetails != null) {
-		    if(transportDetails.getHelRegistryConfigId() != null) {
-			if (transportDetails.getHelRegistryId() > 0 && transportDetails.getHelRegistryConfigId() > 0 && !"".equals(transportDetails.getHelSchemaName())) {
-
-			    submittedMessage existingRegistrySubmittedMessage = submittedmessagemanager.getSubmittedMessageBySQL(transportDetails.getHelSchemaName(),batch.getoriginalFileName());
-
-			    if (existingRegistrySubmittedMessage != null) {
-				submittedmessagemanager.updateSubmittedMessage(transportDetails.getHelSchemaName(),existingRegistrySubmittedMessage.getId(),23,batchId);
+		Integer HELRegistryConfigId = 0;
+		Integer HELRegistryId = 0;
+		String HELSchemaName = "";
+		
+		if(configurationConnections != null) {
+		    if(!configurationConnections.isEmpty()) {
+			
+			for(configurationConnection connection : configurationConnections) {
+			    
+			    configurationTransport targetTransportDetails = configurationtransportmanager.getTransportDetails(connection.gettargetConfigId());
+			    
+			    if(targetTransportDetails.getHelRegistryConfigId() > 0) {
+				HELSchemaName = targetTransportDetails.getHelSchemaName();
+				HELRegistryId = targetTransportDetails.getHelRegistryId();
+				HELRegistryConfigId = targetTransportDetails.getHelRegistryConfigId();
 			    }
-			    else {
-				//Get the registery organization Id
-				Organization organizationDetails = organizationmanager.getOrganizationById(batch.getOrgId());
-				
-				submittedMessage newSubmittedMessage = new submittedMessage();
-				newSubmittedMessage.setUtBatchUploadId(batchId);
-				newSubmittedMessage.setRegistryConfigId(transportDetails.getHelRegistryConfigId());
-				newSubmittedMessage.setUploadedFileName(batch.getoriginalFileName());
-				newSubmittedMessage.setAssignedFileName(batch.getutBatchName());
-				newSubmittedMessage.setInFileExt(FilenameUtils.getExtension(batch.getoriginalFileName()));
-				newSubmittedMessage.setStatusId(23);
-				newSubmittedMessage.setTransportId(1);
-				newSubmittedMessage.setSystemUserId(0);
-				newSubmittedMessage.setSourceOrganizationId(organizationDetails.getHelRegistryOrgId());
+			}
+		    }
+		}
+		
+		if(HELRegistryConfigId != null) {
+		    if (HELRegistryId > 0 && HELRegistryConfigId > 0 && !"".equals(HELSchemaName)) {
 
-				submittedmessagemanager.submitSubmittedMessage(transportDetails.getHelSchemaName(),newSubmittedMessage);
-			    }
+			submittedMessage existingRegistrySubmittedMessage = submittedmessagemanager.getSubmittedMessageBySQL(HELSchemaName,batch.getoriginalFileName());
+
+			if (existingRegistrySubmittedMessage != null) {
+			    submittedmessagemanager.updateSubmittedMessage(HELSchemaName,existingRegistrySubmittedMessage.getId(),23,batchId);
+			}
+			else {
+			    //Get the registery organization Id
+			    Organization organizationDetails = organizationmanager.getOrganizationById(batch.getOrgId());
+
+			    submittedMessage newSubmittedMessage = new submittedMessage();
+			    newSubmittedMessage.setUtBatchUploadId(batchId);
+			    newSubmittedMessage.setRegistryConfigId(HELRegistryConfigId);
+			    newSubmittedMessage.setUploadedFileName(batch.getoriginalFileName());
+			    newSubmittedMessage.setAssignedFileName(batch.getutBatchName());
+			    newSubmittedMessage.setInFileExt(FilenameUtils.getExtension(batch.getoriginalFileName()));
+			    newSubmittedMessage.setStatusId(23);
+			    newSubmittedMessage.setTransportId(1);
+			    newSubmittedMessage.setSystemUserId(0);
+			    newSubmittedMessage.setSourceOrganizationId(organizationDetails.getHelRegistryOrgId());
+
+			    submittedmessagemanager.submitSubmittedMessage(HELSchemaName,newSubmittedMessage);
 			}
 		    }
 		}

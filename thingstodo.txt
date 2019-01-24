@@ -9,3 +9,5 @@
 - Need to test out the target found in an incoming RR File drop to make sure it is set correctly. ** DONE CM 1/16/19 **
 
 - Test reseting a received REST API file
+
+- Need to look at the registry associated message type, this should be done only on the target side.
