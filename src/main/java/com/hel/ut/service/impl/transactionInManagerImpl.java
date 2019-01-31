@@ -99,6 +99,7 @@ import com.hel.ut.service.utConfigurationManager;
 import com.hel.ut.service.utConfigurationTransportManager;
 import com.registryKit.registry.submittedMessages.submittedMessage;
 import com.registryKit.registry.submittedMessages.submittedMessageManager;
+import java.security.SecureRandom;
 
 /**
  *
@@ -1027,6 +1028,15 @@ public class transactionInManagerImpl implements transactionInManager {
 			else {
 			    //Get the registery organization Id
 			    Organization organizationDetails = organizationmanager.getOrganizationById(batch.getOrgId());
+			    
+			    DateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmssS");
+			    Date date = new Date();
+
+			    SecureRandom random = new SecureRandom();
+			    int num = random.nextInt(100000);
+			    String formattedRandom = String.format("%05d", num);
+
+			    String messageName = new StringBuilder().append(HELRegistryConfigId).append(formattedRandom).append(dateFormat.format(date)).toString();
 
 			    submittedMessage newSubmittedMessage = new submittedMessage();
 			    newSubmittedMessage.setUtBatchUploadId(batchId);
@@ -1038,6 +1048,7 @@ public class transactionInManagerImpl implements transactionInManager {
 			    newSubmittedMessage.setTransportId(1);
 			    newSubmittedMessage.setSystemUserId(0);
 			    newSubmittedMessage.setSourceOrganizationId(organizationDetails.getHelRegistryOrgId());
+			    newSubmittedMessage.setAssignedMessageNumber(messageName);
 
 			    submittedmessagemanager.submitSubmittedMessage(HELSchemaName,newSubmittedMessage);
 			}
