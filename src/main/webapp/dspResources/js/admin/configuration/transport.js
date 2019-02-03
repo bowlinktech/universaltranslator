@@ -43,7 +43,8 @@ require(['./main'], function () {
         $('#transportMethod').change(function () {
             var methodId = $(this).val();
 	    
-	    if((methodId == 8 || transportMethod == 10) && helRegistryId > 0 && helSchemaName != "") {
+	    
+	    if((methodId == 8 || methodId == 10) && helRegistryId > 0 && helSchemaName != "") {
 		populateHELRegistryConfigs(helRegistryId,helSchemaName);
 	    }
 	    else {

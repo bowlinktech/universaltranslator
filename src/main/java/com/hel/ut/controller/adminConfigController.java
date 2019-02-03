@@ -511,17 +511,18 @@ public class adminConfigController {
             List<configurationFileDropFields> emptyFileDropFields = new ArrayList<>();
             configurationFileDropFields pushRFields = new configurationFileDropFields();
             pushRFields.setMethod(1);
-            pushRFields.setDirectory("/HELProductSuite/universalTranslator/" + orgDetails.getcleanURL() + "/input files/");
+            pushRFields.setDirectory("/HELProductSuite/universalTranslator/" + orgDetails.getcleanURL() + "/input files/"+configurationDetails.getconfigName().toLowerCase().replace(" ", "")+"/");
 
            configurationFileDropFields getRFields = new configurationFileDropFields();
             getRFields.setMethod(2);
-            getRFields.setDirectory("/HELProductSuite/universalTranslator/" + orgDetails.getcleanURL() + "/output files/");
+            getRFields.setDirectory("/HELProductSuite/universalTranslator/" + orgDetails.getcleanURL() + "/output files/"+configurationDetails.getconfigName().toLowerCase().replace(" ", "")+"/");
 
             emptyFileDropFields.add(pushRFields);
             emptyFileDropFields.add(getRFields);
 
             transportDetails.setFileDropFields(emptyFileDropFields);
         } else {
+	   
             transportDetails.setFileDropFields(fileDropFields);
         }
 

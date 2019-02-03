@@ -7,6 +7,8 @@
 
 require(['./main'], function () {
     require(['jquery'], function ($) {
+	
+	//setInterval(function(){searchByDateRange()}, 30000);
 
         $("input:text,form").attr("autocomplete", "off");
 
