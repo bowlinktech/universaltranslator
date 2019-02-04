@@ -1026,6 +1026,7 @@ public class transactionInManagerImpl implements transactionInManager {
 			    submittedmessagemanager.updateSubmittedMessage(HELSchemaName,existingRegistrySubmittedMessage.getId(),23,batchId);
 			}
 			else {
+			    
 			    //Get the registery organization Id
 			    Organization organizationDetails = organizationmanager.getOrganizationById(batch.getOrgId());
 			    
@@ -1047,6 +1048,7 @@ public class transactionInManagerImpl implements transactionInManager {
 			    newSubmittedMessage.setStatusId(23);
 			    newSubmittedMessage.setTransportId(1);
 			    newSubmittedMessage.setSystemUserId(0);
+			    newSubmittedMessage.setTotalRows(batch.gettotalRecordCount());
 			    newSubmittedMessage.setSourceOrganizationId(organizationDetails.getHelRegistryOrgId());
 			    newSubmittedMessage.setAssignedMessageNumber(messageName);
 

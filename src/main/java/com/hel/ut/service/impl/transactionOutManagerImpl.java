@@ -21,6 +21,9 @@ import com.hel.ut.model.batchDownloads;
 import com.hel.ut.model.batchUploads;
 import com.hel.ut.model.utConfiguration;
 import com.hel.ut.model.configurationCCDElements;
+import com.hel.ut.model.configurationConnection;
+import com.hel.ut.model.configurationConnectionReceivers;
+import com.hel.ut.model.configurationConnectionSenders;
 import com.hel.ut.model.configurationDataTranslations;
 import com.hel.ut.model.configurationFTPFields;
 import com.hel.ut.model.configurationFormFields;
@@ -33,7 +36,6 @@ import com.hel.ut.model.pendingDeliveryTargets;
 import com.hel.ut.model.systemSummary;
 import com.hel.ut.model.transactionOutRecords;
 import com.hel.ut.model.custom.ConfigOutboundForInsert;
-import com.hel.ut.model.custom.batchErrorSummary;
 import com.hel.ut.reference.fileSystem;
 import com.hel.ut.restAPI.restfulManager;
 import com.hel.ut.service.fileManager;
@@ -1762,6 +1764,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
 	
 	//get upload details    
 	batchUploads batchUploadDetails = transactionInManager.getBatchDetails(batchDownload.getBatchUploadId());
+	utConfiguration uploadConfigDetails = configurationManager.getConfigurationById(batchUploadDetails.getConfigId());
 
 	//Create target tables
 	transactionOutDAO.createTargetBatchTables(batchDownload.getId(), batchDownload.getConfigId());
@@ -2066,6 +2069,109 @@ public class transactionOutManagerImpl implements transactionOutManager {
 	if(downloadBatchDetails.getstatusId() == 28) {
 	    //Delete all transaction target tables
 	    transactionOutDAO.deleteBatchDownloadTables(batchDownload.getId());
+	    
+	    //Need to see if any emails need to be sent
+	    List<configurationConnection> connectionDetails = configurationManager.getConnectionsBySrcAndTargetConfigurations(uploadConfigDetails.getId(), configDetails.getId());
+	    
+	    if(connectionDetails != null) {
+		if(!connectionDetails.isEmpty()) {
+		    List<configurationConnectionReceivers> connectionReceivers = configurationManager.getConnectionReceivers(connectionDetails.get(0).getId());
+		    List<configurationConnectionSenders> connectionSenders = configurationManager.getConnectionSenders(connectionDetails.get(0).getId());
+		    
+		    Organization targetOrgDetails = organizationManager.getOrganizationById(configDetails.getorgId());
+		    Organization sourceOrgDetails = organizationManager.getOrganizationById(uploadConfigDetails.getorgId());
+		    
+		    if(!connectionSenders.isEmpty()) {
+			String fromName = "";
+			String fromEmail = "";
+			mailMessage msg = new mailMessage();
+			ArrayList<String> fromCCAddressArray = new ArrayList<String>();
+			msg.setfromEmailAddress("support@health-e-link.net");
+			
+			for(configurationConnectionSenders sender : connectionSenders) {
+			    if(sender.getSendEmailNotifications() && !"".equals(sender.getEmailAddress())) {
+				if ("".equals(fromEmail)) {
+				    fromEmail = sender.getEmailAddress();
+				} else {
+				    fromCCAddressArray.add(sender.getEmailAddress());
+				}
+			    }
+			}
+			
+			if (!"".equals(fromEmail)) {
+			    msg.settoEmailAddress(fromEmail);
+
+			    if (fromCCAddressArray.size() > 0) {
+				String[] fromCCAddressList = new String[fromCCAddressArray.size()];
+				fromCCAddressList = fromCCAddressArray.toArray(fromCCAddressList);
+				msg.setccEmailAddress(fromCCAddressList);
+			    }
+
+			    msg.setmessageSubject("Your " + uploadConfigDetails.getconfigName() + " message has been successfully delivered (" + myProps.getProperty("server.identity") + ")");
+
+			    /* Build the body of the email */
+			    StringBuilder sb = new StringBuilder();
+			    sb.append("The ").append(uploadConfigDetails.getconfigName()).append(" sent to ").append(targetOrgDetails.getOrgName()).append(" has been successfully delivered.");
+			    msg.setmessageBody(sb.toString());
+
+			    /* Send the email */
+			    try {
+				emailMessageManager.sendEmail(msg);
+			    } catch (Exception ex) {
+				System.err.println("mail exception");
+				//ex.printStackTrace();
+			    }
+			}
+		    }
+		    
+		    if(!connectionReceivers.isEmpty()) {
+			String fromName = "";
+			String fromEmail = "";
+			mailMessage msg = new mailMessage();
+			ArrayList<String> fromCCAddressArray = new ArrayList<String>();
+			msg.setfromEmailAddress("support@health-e-link.net");
+			
+			for(configurationConnectionReceivers receiver : connectionReceivers) {
+			    if(receiver.getSendEmailNotifications() && !"".equals(receiver.getEmailAddress())) {
+				if ("".equals(fromEmail)) {
+				    fromEmail = receiver.getEmailAddress();
+				} else {
+				    fromCCAddressArray.add(receiver.getEmailAddress());
+				}
+			    }
+			}
+			
+			if (!"".equals(fromEmail)) {
+			    msg.settoEmailAddress(fromEmail);
+
+			    if (fromCCAddressArray.size() > 0) {
+				String[] fromCCAddressList = new String[fromCCAddressArray.size()];
+				fromCCAddressList = fromCCAddressArray.toArray(fromCCAddressList);
+				msg.setccEmailAddress(fromCCAddressList);
+			    }
+
+			    msg.setmessageSubject("You have received a new message from " + sourceOrgDetails.getOrgName() + " (" + myProps.getProperty("server.identity") + ")");
+
+			    /* Build the body of the email */
+			    StringBuilder sb = new StringBuilder();
+			    sb.append("You have received a new message from ").append(sourceOrgDetails.getOrgName());
+			    sb.append("<br /><br />");
+			    sb.append("Configuration: ").append(configDetails.getconfigName());
+			    sb.append("<br />");
+			    sb.append("Total Records: ").append(batchDownload.gettotalRecordCount());
+			    msg.setmessageBody(sb.toString());
+
+			    /* Send the email */
+			    try {
+				emailMessageManager.sendEmail(msg);
+			    } catch (Exception ex) {
+				System.err.println("mail exception");
+				//ex.printStackTrace();
+			    }
+			}
+		    }
+		}
+	    }
 	}
 	
 	return 0;

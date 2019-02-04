@@ -104,7 +104,7 @@ public class transactionInDAOImpl implements transactionInDAO {
 	Query query = sessionFactory.getCurrentSession().createSQLQuery(sql);
 	query.setParameter("id", idValue);
 
-	String tableValue = String.valueOf(query.uniqueResult());
+	String tableValue = String.valueOf(query.list().get(0));
 
 	/* Check if null */
 	if (tableValue == null || "null".equals(tableValue)) {

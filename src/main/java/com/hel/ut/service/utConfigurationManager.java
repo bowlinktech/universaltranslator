@@ -193,4 +193,5 @@ public interface utConfigurationManager {
     List<utConfiguration>  getAllSourceConfigurations() throws Exception;
     
     List<utConfiguration>  getAllTargetConfigurations() throws Exception;
+    
 }
