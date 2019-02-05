@@ -967,7 +967,7 @@ public class transactionInManagerImpl implements transactionInManager {
 
     @Override
     public void loadBatch(Integer batchId) throws Exception {
-
+	
 	//first thing we do is get details, then we set it to  38
 	batchUploads batch = getBatchDetails(batchId);
 
@@ -997,6 +997,13 @@ public class transactionInManagerImpl implements transactionInManager {
 		//Find all targets set up for this configuration
 		List<configurationConnection> configurationConnections = configurationManager.getConnectionsBySourceConfiguration(batch.getConfigId());
 		
+		// set batch to SBL - 38
+		//if could be that the process has picked this up
+		updateBatchStatus(batchId, batchStatusId, "startDateTime");
+
+		Integer sysErrors = 0;
+		clearTransactionTables(batchId, batch.getConfigId());
+		
 		Integer HELRegistryConfigId = 0;
 		Integer HELRegistryId = 0;
 		String HELSchemaName = "";
@@ -1008,14 +1015,17 @@ public class transactionInManagerImpl implements transactionInManager {
 			    
 			    configurationTransport targetTransportDetails = configurationtransportmanager.getTransportDetails(connection.gettargetConfigId());
 			    
-			    if(targetTransportDetails.getHelRegistryConfigId() > 0) {
-				HELSchemaName = targetTransportDetails.getHelSchemaName();
-				HELRegistryId = targetTransportDetails.getHelRegistryId();
-				HELRegistryConfigId = targetTransportDetails.getHelRegistryConfigId();
+			    if(targetTransportDetails.getHelRegistryConfigId() != null) {
+				if(targetTransportDetails.getHelRegistryConfigId() > 0) {
+				    HELSchemaName = targetTransportDetails.getHelSchemaName();
+				    HELRegistryId = targetTransportDetails.getHelRegistryId();
+				    HELRegistryConfigId = targetTransportDetails.getHelRegistryConfigId();
+				}
 			    }
 			}
 		    }
 		}
+		
 		
 		if(HELRegistryConfigId != null) {
 		    if (HELRegistryId > 0 && HELRegistryConfigId > 0 && !"".equals(HELSchemaName)) {
@@ -1057,14 +1067,6 @@ public class transactionInManagerImpl implements transactionInManager {
 		    }
 		}
 		
-
-		// set batch to SBL - 38
-		//if could be that the process has picked this up
-		updateBatchStatus(batchId, batchStatusId, "startDateTime");
-
-		Integer sysErrors = 0;
-		clearTransactionTables(batchId, batch.getConfigId());
-
 		String errorMessage = "Load errors, please contact admin to review logs";
 		// loading batch will take it all the way to loaded (9) status for
 		if (sysErrors > 0) {
@@ -1426,9 +1428,9 @@ public class transactionInManagerImpl implements transactionInManager {
 		
 		
 	    } catch (Exception ex) {
-		insertProcessingError(processingSysErrorId, null, batchId, null, null, null, null, false, false, ("loadBatch error " + ex.getLocalizedMessage()));
+		insertProcessingError(processingSysErrorId, null, batchId, null, null, null, null, false, false, ("loadBatch error " + ex.getMessage()));
 		batchStatusId = 39;
-	    }
+	   }
 
 	    try {
 		updateBatchStatus(batchId, batchStatusId, "endDateTime");
@@ -3058,7 +3060,7 @@ public class transactionInManagerImpl implements transactionInManager {
 		emailManager.sendEmail(mail);
 	    }
 	}
-
+	
 	if (run) {
 	    List<batchUploads> batches = getBatchesByStatusIds(Arrays.asList(42, 2));
 	    if (batches != null) {
@@ -3072,7 +3074,6 @@ public class transactionInManagerImpl implements transactionInManager {
 				try {
 				    loadBatch(batch.getId());
 				} catch (Exception ex) {
-				    System.out.println(ex.getMessage());
 				    Logger.getLogger(transactionInManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
 				}
 			    }
@@ -3194,7 +3195,6 @@ public class transactionInManagerImpl implements transactionInManager {
 				try {
 				    processBatch(batch.getId(), false);
 				} catch (Exception ex) {
-				    System.out.println(ex.getMessage());
 				    Logger.getLogger(transactionInManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
 				}
 			    }

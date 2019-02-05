@@ -96,6 +96,7 @@ import com.hel.ut.service.utConfigurationManager;
 import com.hel.ut.service.utConfigurationTransportManager;
 import com.registryKit.registry.helRegistry;
 import com.registryKit.registry.helRegistryManager;
+import com.registryKit.registry.submittedMessages.submittedMessage;
 import com.registryKit.registry.submittedMessages.submittedMessageManager;
 
 /**
@@ -2067,6 +2068,25 @@ public class transactionOutManagerImpl implements transactionOutManager {
 	batchDownloads downloadBatchDetails = getBatchDetails(batchDownload.getId());
 	
 	if(downloadBatchDetails.getstatusId() == 28) {
+	    
+	    //Need to check if the source message came from a HEL registry but the target is not sending back to the registry. In this case
+	    //We need to mark the message in the registry as complete and insert the target link.
+	    if(transportDetails.gettransportMethodId() != 8) {
+		
+		configurationTransport sourceTransportDetails = configurationTransportManager.getTransportDetails(batchUploadDetails.getConfigId());
+		
+		if(sourceTransportDetails.getHelSchemaName() != null) {
+		    if(!"".equals(sourceTransportDetails.getHelSchemaName())) {
+			submittedMessage existingRegistrySubmittedMessage = submittedmessagemanager.getSubmittedMessageBySQL(sourceTransportDetails.getHelSchemaName(),batchUploadDetails.getoriginalFileName());
+
+			if (existingRegistrySubmittedMessage != null) {
+			    submittedmessagemanager.updateSubmittedMessage(sourceTransportDetails.getHelSchemaName(),existingRegistrySubmittedMessage.getId(),28,batchUploadDetails.getId());
+			    submittedmessagemanager.enterSubmittedMessageTarget(existingRegistrySubmittedMessage.getId());
+			}
+		    }
+		}
+	    }
+	    
 	    //Delete all transaction target tables
 	    transactionOutDAO.deleteBatchDownloadTables(batchDownload.getId());
 	    

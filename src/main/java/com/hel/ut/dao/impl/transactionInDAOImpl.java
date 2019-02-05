@@ -2678,7 +2678,7 @@ public class transactionInDAOImpl implements transactionInDAO {
 		    });
 		}
 	    }
-
+	    
 	    //Create the transactioninrecords_batchUploadId table
 	    String transactionInRecordsTable = "DROP TABLE IF EXISTS `transactioninrecords_" + batchUploadId + "`; CREATE TABLE `transactioninrecords_" + batchUploadId + "` (";
 	    transactionInRecordsTable += tableFields;
@@ -2798,7 +2798,7 @@ public class transactionInDAOImpl implements transactionInDAO {
     @Override
     @Transactional(readOnly = false)
     public void deleteBatchTransactionTables(Integer batchId) throws Exception {
-
+	
 	/* Delete all the stored records */
 	String deleteSQL = "";
 	Query deleteQuery;
@@ -2807,7 +2807,7 @@ public class transactionInDAOImpl implements transactionInDAO {
 	deleteSQL += "DROP TABLE IF EXISTS `transactiontranslatedin_" + batchId + "`;";
 	deleteSQL += "DROP TABLE IF EXISTS `transactioninrecords_" + batchId + "`;";
 	deleteSQL += "DROP TABLE IF EXISTS `transactioninerrors_" + batchId + "`;";
-
+	
 	deleteQuery = sessionFactory.getCurrentSession().createSQLQuery(deleteSQL);
 	deleteQuery.executeUpdate();
 

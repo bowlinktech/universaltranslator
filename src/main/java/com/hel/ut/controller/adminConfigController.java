@@ -3184,6 +3184,11 @@ public class adminConfigController {
         //Get the details of the selected crosswalk
         Crosswalks crosswalkDetails = messagetypemanager.getCrosswalk(cwId);
         mav.addObject("crosswalkDetails", crosswalkDetails);
+	
+	if(crosswalkDetails.getOrgId() > 0) {
+	    Organization organizationDetails = organizationmanager.getOrganizationById(crosswalkDetails.getOrgId());
+	    mav.addObject("cleanOrgURL",organizationDetails.getCleanURL());
+	}
 
         //Get the data associated with the selected crosswalk
         @SuppressWarnings("rawtypes")

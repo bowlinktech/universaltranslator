@@ -43,10 +43,21 @@
                         </div>
                     </spring:bind>
 		    <c:if test="${crosswalkDetails.id > 0 }">
-                        <div class="form-group">
-                            <label class="control-label" >Existing Crosswalk File</label>
-                            <p>${crosswalkDetails.fileName}</p>
-                        </div>
+                        <c:choose>
+			    <c:when test="${not empty cleanOrgURL}">
+				<c:set var="hrefLink" value="/FileDownload/downloadFile.do?filename=${crosswalkDetails.fileName}&foldername=${cleanOrgURL}/crosswalks"/>
+				<div class="form-group">
+				    <label class="control-label" >Existing Crosswalk File</label>
+				    <p><a href="${hrefLink}" title="Download Crosswalk File">${crosswalkDetails.fileName}</a></p>
+				</div>
+			    </c:when>
+			    <c:otherwise>
+				<div class="form-group">
+				    <label class="control-label" >Existing Crosswalk File</label>
+				    <p>${crosswalkDetails.fileName}</p>
+				</div>
+			    </c:otherwise>
+			</c:choose>
                     </c:if>
                     <spring:bind path="file">
                         <div id="crosswalkFileDiv" class="form-group ${status.error ? 'has-error' : '' }">

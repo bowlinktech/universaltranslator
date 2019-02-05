@@ -248,6 +248,32 @@ public class fileSystem {
                     new File(directoryPath + orgName + "\\attachments").mkdirs();
                     new File(directoryPath + orgName + "\\certificates").mkdirs();
                 }
+		else {
+		    directory = new File(directoryPath + orgName + "\\crosswalks");
+		    if (!directory.exists()) {
+			 directory.mkdir();
+		    }
+		    directory = new File(directoryPath + orgName + "\\input files");
+		    if (!directory.exists()) {
+			 directory.mkdir();
+		    }
+		    directory = new File(directoryPath + orgName + "\\output files");
+		    if (!directory.exists()) {
+			 directory.mkdir();
+		    }
+		    directory = new File(directoryPath + orgName + "\\templates");
+		    if (!directory.exists()) {
+			 directory.mkdir();
+		    }
+		    directory = new File(directoryPath + orgName + "\\attachments");
+		    if (!directory.exists()) {
+			 directory.mkdir();
+		    }
+		    directory = new File(directoryPath + orgName + "\\certificates");
+		    if (!directory.exists()) {
+			 directory.mkdir();
+		    }
+		}
             } //Mac
             else if (os.indexOf("mac") >= 0) {
                 String dir = directoryPath + orgName;
@@ -261,6 +287,32 @@ public class fileSystem {
                     new File(directoryPath + orgName + "/attachments").mkdirs();
                     new File(directoryPath + orgName + "/certificates").mkdirs();
                 }
+		else {
+		    directory = new File(directoryPath + orgName + "/crosswalks");
+		    if (!directory.exists()) {
+			 directory.mkdir();
+		    }
+		    directory = new File(directoryPath + orgName + "/input files");
+		    if (!directory.exists()) {
+			 directory.mkdir();
+		    }
+		    directory = new File(directoryPath + orgName + "/output files");
+		    if (!directory.exists()) {
+			 directory.mkdir();
+		    }
+		    directory = new File(directoryPath + orgName + "/templates");
+		    if (!directory.exists()) {
+			 directory.mkdir();
+		    }
+		    directory = new File(directoryPath + orgName + "/attachments");
+		    if (!directory.exists()) {
+			 directory.mkdir();
+		    }
+		    directory = new File(directoryPath + orgName + "/certificates");
+		    if (!directory.exists()) {
+			 directory.mkdir();
+		    }
+		}
             } //Unix or Linux or Solarix
             else if (os.indexOf("nix") >= 0 || os.indexOf("nux") >= 0 || os.indexOf("aix") >= 0 || os.indexOf("sunos") >= 0) {
                 String dir = directoryPath + orgName;
@@ -274,6 +326,32 @@ public class fileSystem {
                     new File(directoryPath + orgName + "/attachments").mkdirs();
                     new File(directoryPath + orgName + "/certificates").mkdirs();
                 }
+		else {
+		    directory = new File(directoryPath + orgName + "/crosswalks");
+		    if (!directory.exists()) {
+			 directory.mkdir();
+		    }
+		    directory = new File(directoryPath + orgName + "/input files");
+		    if (!directory.exists()) {
+			 directory.mkdir();
+		    }
+		    directory = new File(directoryPath + orgName + "/output files");
+		    if (!directory.exists()) {
+			 directory.mkdir();
+		    }
+		    directory = new File(directoryPath + orgName + "/templates");
+		    if (!directory.exists()) {
+			 directory.mkdir();
+		    }
+		    directory = new File(directoryPath + orgName + "/attachments");
+		    if (!directory.exists()) {
+			 directory.mkdir();
+		    }
+		    directory = new File(directoryPath + orgName + "/certificates");
+		    if (!directory.exists()) {
+			 directory.mkdir();
+		    }
+		}
             } else {
                 System.out.println("Your OS is not support!!");
             }
