@@ -9,8 +9,6 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
-import org.hibernate.validator.constraints.NotEmpty;
-
 @Entity
 @Table(name = "CONFIGURATIONFORMFIELDS")
 public class configurationFormFields {

@@ -1644,4 +1644,6 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
         List<utConfiguration> targetConfigurations = query.list();
         return targetConfigurations;
     }
+    
+    
 }

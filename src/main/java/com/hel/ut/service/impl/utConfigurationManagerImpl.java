@@ -37,6 +37,7 @@ import org.hibernate.SessionFactory;
 import org.springframework.web.multipart.MultipartFile;
 import com.hel.ut.service.utConfigurationManager;
 import com.hel.ut.dao.utConfigurationDAO;
+import com.hel.ut.model.configurationFormFields;
 
 @Service
 public class utConfigurationManagerImpl implements utConfigurationManager {
@@ -240,69 +241,72 @@ public class utConfigurationManagerImpl implements utConfigurationManager {
     @Override
     public void updateMessageSpecs(configurationMessageSpecs messageSpecs, int transportDetailId, int fileType) throws Exception {
 
-	boolean processFile = false;
-	String fileName = null;
-	String cleanURL = null;
-	int clearFields = 0;
-	fileSystem dir = null;
-
-	MultipartFile file = messageSpecs.getFile();
-
 	//Need to get the selected organization clean url
 	utConfiguration configDetails = utConfigurationDAO.getConfigurationById(messageSpecs.getconfigId());
 	Organization orgDetails = organizationDAO.getOrganizationById(configDetails.getorgId());
-	cleanURL = orgDetails.getcleanURL();
+	String cleanURL = orgDetails.getcleanURL();
+	fileSystem dir = null;
+	boolean processFile = false;
+	String fileName = null;
+	int clearFields = 0;
+	
+	if(messageSpecs.getFile() != null) {
+	    if(!messageSpecs.getFile().isEmpty()) {
+		
+		MultipartFile file = messageSpecs.getFile();
 
-	//If a file is uploaded
-	if (file != null && !file.isEmpty()) {
-	    processFile = true;
+		//If a file is uploaded
+		if (file != null && !file.isEmpty()) {
+		    processFile = true;
 
-	    clearFields = 1;
+		    clearFields = 1;
 
-	    fileName = file.getOriginalFilename();
+		    fileName = file.getOriginalFilename();
 
-	    InputStream inputStream = null;
-	    OutputStream outputStream = null;
+		    InputStream inputStream = null;
+		    OutputStream outputStream = null;
 
-	    try {
-		inputStream = file.getInputStream();
-		File newFile = null;
+		    try {
+			inputStream = file.getInputStream();
+			File newFile = null;
 
-		//Set the directory to save the uploaded message type template to
-		dir = new fileSystem();
-		dir.setDir(cleanURL, "templates");
+			//Set the directory to save the uploaded message type template to
+			dir = new fileSystem();
+			dir.setDir(cleanURL, "templates");
 
-		newFile = new File(dir.getDir() + fileName);
+			newFile = new File(dir.getDir() + fileName);
 
-		if (newFile.exists()) {
-		    int i = 1;
-		    while (newFile.exists()) {
-			int iDot = fileName.lastIndexOf(".");
-			newFile = new File(dir.getDir() + fileName.substring(0, iDot) + "_(" + ++i + ")" + fileName.substring(iDot));
+			if (newFile.exists()) {
+			    int i = 1;
+			    while (newFile.exists()) {
+				int iDot = fileName.lastIndexOf(".");
+				newFile = new File(dir.getDir() + fileName.substring(0, iDot) + "_(" + ++i + ")" + fileName.substring(iDot));
+			    }
+			    fileName = newFile.getName();
+			} else {
+			    newFile.createNewFile();
+			}
+			outputStream = new FileOutputStream(newFile);
+			int read = 0;
+			byte[] bytes = new byte[1024];
+
+			while ((read = inputStream.read(bytes)) != -1) {
+			    outputStream.write(bytes, 0, read);
+			}
+			outputStream.close();
+			inputStream.close();
+
+			//Set the filename to the file name
+			messageSpecs.settemplateFile(fileName);
+
+		    } catch (IOException e) {
+			e.printStackTrace();
+			throw new Exception(e);
 		    }
-		    fileName = newFile.getName();
-		} else {
-		    newFile.createNewFile();
 		}
-		outputStream = new FileOutputStream(newFile);
-		int read = 0;
-		byte[] bytes = new byte[1024];
-
-		while ((read = inputStream.read(bytes)) != -1) {
-		    outputStream.write(bytes, 0, read);
-		}
-		outputStream.close();
-		inputStream.close();
-
-		//Set the filename to the file name
-		messageSpecs.settemplateFile(fileName);
-
-	    } catch (IOException e) {
-		e.printStackTrace();
-		throw new Exception(e);
 	    }
 	}
-
+	
 	MultipartFile parsingScript = messageSpecs.getParsingScriptFile();
 	//If a file is uploaded
 	if (parsingScript != null && !parsingScript.isEmpty()) {
@@ -670,4 +674,6 @@ public class utConfigurationManagerImpl implements utConfigurationManager {
     public List<utConfiguration>  getAllTargetConfigurations() throws Exception {
 	return utConfigurationDAO.getAllTargetConfigurations();
     }
+    
+    
 }

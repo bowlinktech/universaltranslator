@@ -29,9 +29,11 @@
 	<div class="col-md-6">
 	    <section class="panel panel-default">
 		<div class="panel-heading">
-		    <%--<div class="pull-right">
-			<a class="btn btn-primary btn-xs  btn-action" id="meetsStandard" data-toggle="tooltip" data-original-title="Click here to match to the starndard fields.">Meets Standard</a>
-		    </div>--%>
+		    <c:if test="${transportDetails.transportMethodId == 10}">
+			<div class="pull-right">
+			    <a class="btn btn-primary btn-xs  btn-action" rel2="${transportDetails.id}" rel="${configurationDetails.id}" id="reloadConfigurationFields" data-toggle="tooltip" data-original-title="Click here to reload Configuration Fields.">Reload Configuration Fields</a>
+			</div>
+		    </c:if>
 		    <h3 class="panel-title"><c:choose><c:when test="${configurationDetails.type == 2}">Target</c:when><c:otherwise>Source</c:otherwise></c:choose> Configuration Fields</h3>
 		</div>
 		<div class="panel-body">

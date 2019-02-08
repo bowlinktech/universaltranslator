@@ -18,7 +18,7 @@ require(['./main'], function () {
 	
 	//if the selected transport method is From a Health-e-Link Registry or going to a Health-e-Link registry
 	//show the conifguration box
-	if((transportMethod == 8 || transportMethod == 10) && helRegistryId > 0 && helSchemaName != "") {
+	if((transportMethod == 8 || transportMethod == 10 || transportMethod == 11) && helRegistryId > 0 && helSchemaName != "") {
 	    populateHELRegistryConfigs(helRegistryId,helSchemaName);
 	}
 	
@@ -38,14 +38,23 @@ require(['./main'], function () {
 	
         var selMethodId = $('#transportMethod').val();
         showCorrectFieldsByTransportMethod(selMethodId);
-
         
         $('#transportMethod').change(function () {
             var methodId = $(this).val();
 	    
 	    
-	    if((methodId == 8 || methodId == 10) && helRegistryId > 0 && helSchemaName != "") {
+	    if((methodId == 8 || methodId == 10 || methodId == 11) && helRegistryId > 0 && helSchemaName != "") {
 		populateHELRegistryConfigs(helRegistryId,helSchemaName);
+		
+		//If method == 10 (Coming from a HEL Registry online form preset the values
+		if(methodId == 10 || methodId == 8) {
+		    $('#fileType').val(2);
+		    $('#fileExt').val('txt');
+		}
+		else {
+		    $('#fileType').val(0);
+		    $('#fileExt').val('');
+		}
 	    }
 	    else {
 		$('#helRegistryConfigDiv').hide();
@@ -122,7 +131,6 @@ require(['./main'], function () {
                     $('#ccdDetailsDiv').show();
                 }
 
-
             } else if (fileType == 10) {
                 $('#fileExt').val('doc');
 	    } else if (fileType == 11) {
@@ -180,7 +188,7 @@ function showCorrectFieldsByTransportMethod(transportMethod) {
 	$('#restDetailsDiv').hide();
     }
     
-    if (transportMethod == 10) {
+    if (transportMethod == 10 || transportMethod == 11) {
 	$('#fileDropDetailsDiv').show();
     }
     else {
@@ -223,7 +231,7 @@ function checkFormFields() {
     }
     
 
-    if (selMethodId == 1 || selMethodId == 3 || selMethodId == 6 || selMethodId == 8 || selMethodId == 9 || selMethodId == 10) {
+    if (selMethodId == 1 || selMethodId == 3 || selMethodId == 6 || selMethodId == 8 || selMethodId == 9 || selMethodId == 10  || selMethodId == 11) {
 
 	//Make sure the file size is numeric and greate than 0
         if ($('#maxFileSize').val() <= 0 || !$.isNumeric($('#maxFileSize').val())) {

@@ -56,10 +56,10 @@
                                         <option value="">- Select -</option>
                                         <c:forEach items="${transportMethods}" var="transMethod" varStatus="tStatus">
 					    <c:choose>
-						<c:when test="${transportMethods[tStatus.index][0] != 8 && transportMethods[tStatus.index][0] != 10}">
+						<c:when test="${transportMethods[tStatus.index][0] != 8 && transportMethods[tStatus.index][0] != 10 && transportMethods[tStatus.index][0] != 11}">
 						    <option value="${transportMethods[tStatus.index][0]}" <c:if test="${transportDetails.transportMethodId == transportMethods[tStatus.index][0]}">selected</c:if>><c:choose><c:when test="${transportMethods[tStatus.index][0] == 1}"><c:choose><c:when test="${configurationDetails.type == 1}">File Upload</c:when><c:otherwise>File Download</c:otherwise></c:choose></c:when><c:otherwise>${transportMethods[tStatus.index][1]}</c:otherwise></c:choose></option>
 						</c:when>
-						<c:when test="${(transportMethods[tStatus.index][0] == 8 || transportMethods[tStatus.index][0] == 10) && transportDetails.helRegistryId > 0}">
+						<c:when test="${(transportMethods[tStatus.index][0] == 8 || transportMethods[tStatus.index][0] == 10 || transportMethods[tStatus.index][0] == 11) && transportDetails.helRegistryId > 0}">
 						    <option value="${transportMethods[tStatus.index][0]}" <c:if test="${transportDetails.transportMethodId == transportMethods[tStatus.index][0]}">selected</c:if>><c:choose><c:when test="${transportMethods[tStatus.index][0] == 1}"><c:choose><c:when test="${configurationDetails.type == 1}">File Upload</c:when><c:otherwise>File Download</c:otherwise></c:choose></c:when><c:otherwise>${transportMethods[tStatus.index][1]}</c:otherwise></c:choose></option>
 						</c:when>
 					    </c:choose>

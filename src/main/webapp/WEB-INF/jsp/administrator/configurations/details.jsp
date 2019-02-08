@@ -65,11 +65,12 @@
 			   <label for="type">Processing Type * </label>
 			   <div>
 			       <label class="radio-inline">
-				   <form:radiobutton id="configurationType" path="configurationType" class="configurationType" value="1" /> Translate Incoming Message 
+				   <form:radiobutton id="configurationType" path="configurationType" class="configurationType" value="1" disabled="${configurationDetails.id == 0 ? 'false' : 'true' }" /> Translate Incoming Message 
 			       </label>
 			       <label class="radio-inline">
-				   <form:radiobutton id="configurationType" path="configurationType" class="configurationType" value="2"/> Passthru
+				   <form:radiobutton id="configurationType" path="configurationType" class="configurationType" value="2" disabled="${configurationDetails.id == 0 ? 'false' : 'true' }"/> Passthru
 			       </label>
+			       <c:if test="${configurationDetails.id > 0}"><form:hidden id="configurationTypeVal" path="configurationType"/></c:if>  
 			   </div>
 		        </div>   
                         <spring:bind path="orgId">
@@ -96,9 +97,11 @@
                                     </c:forEach>
                                 </form:select>
                                 <c:if test="${configurationDetails.id > 0}">
-				    <form:hidden id="organization" class="savedOrgId" path="orgId"/></c:if>  
-                                    <span id="associatedSourceConfigMsg" class="control-label"></span>
-                                </div>
+				    <form:hidden id="organization" class="savedOrgId" path="orgId"/>
+				    <form:hidden id="associatedSourceConfigId" path="associatedSourceConfigId"/>
+				</c:if>  
+				<span id="associatedSourceConfigMsg" class="control-label"></span>
+			    </div>
                         </spring:bind>       
                         <spring:bind path="configName">
                             <div id="configNameDiv" class="form-group ${status.error ? 'has-error' : '' } ${not empty existingName ? 'has-error' : ''}">

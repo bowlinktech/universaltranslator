@@ -50,7 +50,7 @@
 					    <td scope="row">
                                                 Organization: <strong>${connection.tgtConfigDetails.getOrgName()}</strong>
 						<br />
-						Configuration: <strong>${connection.tgtConfigDetails.getconfigName()} (Id: ${connection.srcConfigDetails.getId()})</strong>
+						Configuration: <strong>${connection.tgtConfigDetails.getconfigName()} (Id: ${connection.tgtConfigDetails.getId()})</strong>
 						<br />
 						Transport Method: <strong>${connection.tgtConfigDetails.gettransportMethod()}</strong>
                                             </td>

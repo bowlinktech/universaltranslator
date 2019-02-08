@@ -85,6 +85,21 @@ require(['./main'], function () {
                 return false;
             }
         });
+	
+	//Reload Configuration Fields
+	$('#reloadConfigurationFields').click(function (event) {
+	    $.ajax({
+		url: 'reloadConfigurationFields',
+		data: {
+		    'configurationId' : $(this).attr('rel'),
+		    'transportDetailsId': $(this).attr('rel2')
+		},
+		type: "GET",
+		success: function (data) {
+		    window.location.href = 'mappings';
+		}
+	    });
+	});
 
     });
 });

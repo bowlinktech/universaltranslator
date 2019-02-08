@@ -111,7 +111,7 @@ public class utConfigurationTransportDAOImpl implements utConfigurationTransport
 	 
 	//Source configuration
 	if(configurationType == 1) {
-	    query = sessionFactory.getCurrentSession().createSQLQuery("SELECT id, transportMethod FROM ref_transportMethods where active = 1 and id in (1,3,4,6,9,10) order by transportMethod asc");
+	    query = sessionFactory.getCurrentSession().createSQLQuery("SELECT id, transportMethod FROM ref_transportMethods where active = 1 and id in (1,3,4,6,9,10,11) order by transportMethod asc");
 	}
 	
 	//Target configuration
@@ -1202,5 +1202,58 @@ public class utConfigurationTransportDAOImpl implements utConfigurationTransport
 	Query query = sessionFactory.getCurrentSession().createSQLQuery(sql).setResultTransformer(Transformers.aliasToBean(configurationFormFields.class));
            
         return query.list();
+    }
+    
+    /**
+     * 
+     * @param sqlStatement
+     * @return
+     * @throws Exception 
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public List<String> getHELConfigurationDetailsBySQL(String sqlStatement) throws Exception {
+	
+	Query query = sessionFactory.getCurrentSession().createSQLQuery(sqlStatement);
+	
+	if(query != null) {
+	    if(!query.list().isEmpty()) {
+		return query.list();
+	    }
+	    else {
+		return null;
+	    }
+	}
+	else {
+	    return null;
+	}
+    }
+    
+    /**
+     * The 'deleteConfigurationFormField' function will remove form field from the configuration.
+     *
+     * @param formFieldId 
+     *
+     */
+    @Transactional(readOnly = false)
+    public void deleteConfigurationFormField(Integer formFieldId) {
+        Query query = sessionFactory.getCurrentSession().createQuery("DELETE FROM configurationFormFields where id = :formFieldId");
+        query.setParameter("formFieldId", formFieldId);
+
+        query.executeUpdate();
+    }
+    
+    /**
+     * The 'configurationDataTranslations' function will remove form field data translation from the configuration.
+     *
+     * @param formFieldId 
+     *
+     */
+    @Transactional(readOnly = false)
+    public void configurationDataTranslations(Integer formFieldId) {
+        Query query = sessionFactory.getCurrentSession().createQuery("DELETE FROM configurationDataTranslations where fieldId = :formFieldId");
+        query.setParameter("formFieldId", formFieldId);
+
+        query.executeUpdate();
     }
 }

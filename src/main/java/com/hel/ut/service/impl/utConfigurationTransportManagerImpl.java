@@ -434,4 +434,149 @@ public class utConfigurationTransportManagerImpl implements utConfigurationTrans
     public List<configurationFormFields> getConfigurationFieldsToCopy(int configId) {
 	return configurationTransportDAO.getConfigurationFieldsToCopy(configId);
     }
+    
+    @Override
+    public void populateFieldsFromHELConfiguration(Integer configId, Integer transportId, Integer HELRegistryConfigId, String HELSchemaName, boolean reload) throws Exception {
+	
+	//Need to query to get a list of field for the passed in HELRegistryConfigId
+	String sqlStatement = "select concat(case when a.requiredField = 1 then 'true' else 'false' end,'|',a.validationId,'|',a.dspPos,'|',b.elementName) as fields "
+	    + "from "+HELSchemaName+".registry_configuration_dataelements a inner join "
+	    + HELSchemaName + ".dataElements b on b.id = a.dataElementId "
+	    + "where a.configurationId = " + HELRegistryConfigId + " "
+	    + "order by a.dspPos";
+	
+	List<String> HELConfigurationFields = configurationTransportDAO.getHELConfigurationDetailsBySQL(sqlStatement);
+	
+	if(HELConfigurationFields != null) {
+	    if(!HELConfigurationFields.isEmpty()) {
+		
+		if(reload) {
+		    List<configurationFormFields> currentFormFields = configurationTransportDAO.getConfigurationFieldsToCopy(configId);
+		    
+		    if(currentFormFields != null) {
+			if(!currentFormFields.isEmpty()) {
+			    
+			    for(String configurationFields : HELConfigurationFields) {
+				boolean found = false;
+				String[] configurationFieldsAsArray = configurationFields.split("\\|");
+
+				String required = configurationFieldsAsArray[0];
+				Integer validationId = Integer.parseInt(configurationFieldsAsArray[1]);
+				Integer dspPos = Integer.parseInt(configurationFieldsAsArray[2]);
+				String elementName = configurationFieldsAsArray[3];
+				
+				for(configurationFormFields configurationFormField : currentFormFields) {
+				    
+				    if(configurationFormField.getFieldDesc().trim().toLowerCase().equals(elementName.trim().toLowerCase())) {
+					configurationFormField.setFieldNo(dspPos);
+					configurationFormField.setValidationType(validationId);
+					if("true".equals(required)) {
+					    configurationFormField.setRequired(true);
+					}
+					else {
+					    configurationFormField.setRequired(false);
+					}
+					configurationTransportDAO.updateConfigurationFormFields(configurationFormField);
+					found = true;
+				    }
+				}
+				
+				if(!found) {
+				    configurationFormFields newFormField = new configurationFormFields();
+				    newFormField.setAssociatedFieldId(0);
+				    newFormField.setconfigId(configId);
+				    newFormField.settransportDetailId(transportId);
+				    newFormField.setFieldNo(dspPos);
+				    newFormField.setValidationType(validationId);
+				    newFormField.setFieldDesc(elementName);
+				    newFormField.setUseField(true);
+				    if("true".equals(required)) {
+					newFormField.setRequired(true);
+				    }
+				    else {
+					newFormField.setRequired(false);
+				    }
+
+				    configurationTransportDAO.saveConfigurationFormFields(newFormField);
+				}
+			    }
+			    
+			    //Check to see if any fields were removed from the configuration but was previously saved
+			    for(configurationFormFields configurationFormField : currentFormFields) {
+				boolean fieldFound = false;
+				
+				for(String configurationFields : HELConfigurationFields) {
+				    String[] configurationFieldsAsArray = configurationFields.split("\\|");
+				    String elementName = configurationFieldsAsArray[3];
+				    
+				    if(configurationFormField.getFieldDesc().trim().toLowerCase().equals(elementName.trim().toLowerCase())) {
+					fieldFound = true;
+				    }
+				}
+				
+				if(!fieldFound) {
+				    configurationTransportDAO.deleteConfigurationFormField(configurationFormField.getId());
+				    configurationTransportDAO.configurationDataTranslations(configurationFormField.getId());
+				}
+			    }
+			}
+			else {
+			    for(String configurationFields : HELConfigurationFields) {
+				String[] configurationFieldsAsArray = configurationFields.split("\\|");
+
+				String required = configurationFieldsAsArray[0];
+				Integer validationId = Integer.parseInt(configurationFieldsAsArray[1]);
+				Integer dspPos = Integer.parseInt(configurationFieldsAsArray[2]);
+				String elementName = configurationFieldsAsArray[3];
+
+				configurationFormFields newFormField = new configurationFormFields();
+				newFormField.setAssociatedFieldId(0);
+				newFormField.setconfigId(configId);
+				newFormField.settransportDetailId(transportId);
+				newFormField.setFieldNo(dspPos);
+				newFormField.setValidationType(validationId);
+				newFormField.setFieldDesc(elementName);
+				newFormField.setUseField(true);
+				if("true".equals(required)) {
+				    newFormField.setRequired(true);
+				}
+				else {
+				    newFormField.setRequired(false);
+				}
+
+				configurationTransportDAO.saveConfigurationFormFields(newFormField);
+			    }
+			}
+		    }
+		}
+		else {
+		    for(String configurationFields : HELConfigurationFields) {
+			String[] configurationFieldsAsArray = configurationFields.split("\\|");
+
+			String required = configurationFieldsAsArray[0];
+			Integer validationId = Integer.parseInt(configurationFieldsAsArray[1]);
+			Integer dspPos = Integer.parseInt(configurationFieldsAsArray[2]);
+			String elementName = configurationFieldsAsArray[3];
+
+			configurationFormFields newFormField = new configurationFormFields();
+			newFormField.setAssociatedFieldId(0);
+			newFormField.setconfigId(configId);
+			newFormField.settransportDetailId(transportId);
+			newFormField.setFieldNo(dspPos);
+			newFormField.setValidationType(validationId);
+			newFormField.setFieldDesc(elementName);
+			newFormField.setUseField(true);
+			if("true".equals(required)) {
+			    newFormField.setRequired(true);
+			}
+			else {
+			    newFormField.setRequired(false);
+			}
+
+			configurationTransportDAO.saveConfigurationFormFields(newFormField);
+		    }
+		}
+	    }
+	}
+    }
 }

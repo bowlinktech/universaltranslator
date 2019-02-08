@@ -372,6 +372,11 @@ public class adminConfigController {
     /**
      * The '/details' POST request will display the clicked utConfiguration details page.
      *
+     * @param session
+     * @param configurationDetails
+     * @param result
+     * @param redirectAttr
+     * @param action
      * @return	Will return the utConfiguration details page.
      *
      * @Objects	(1) The object containing all the information for the clicked configuration (2) The 'id' of the clicked configuration that will be used in the menu and action bar
@@ -388,13 +393,15 @@ public class adminConfigController {
         //Need to get a list of organization users 
         List<utUser> users = userManager.getUsersByOrganization(configurationDetails.getorgId());
 	
-	if(configurationDetails.getAssociatedSourceConfigId() > 0) {
-	    utConfiguration sourceConfigDetails = utconfigurationmanager.getConfigurationById(configurationDetails.getAssociatedSourceConfigId());
-	    if(sourceConfigDetails.getConfigurationType() == 2) {
-		configurationDetails.setConfigurationType(2);
+	if(configurationDetails.getAssociatedSourceConfigId() != null) {
+	    if(configurationDetails.getAssociatedSourceConfigId() > 0) {
+		utConfiguration sourceConfigDetails = utconfigurationmanager.getConfigurationById(configurationDetails.getAssociatedSourceConfigId());
+		if(sourceConfigDetails.getConfigurationType() == 2) {
+		    configurationDetails.setConfigurationType(2);
+		}
 	    }
 	}
-
+	
         //submit the updates
 	utconfigurationmanager.updateConfiguration(configurationDetails);
         
@@ -694,7 +701,7 @@ public class adminConfigController {
         }
 	
         // need to get file drop info if any has been entered 
-	if (transportDetails.gettransportMethodId() == 10 && !transportDetails.getFileDropFields().isEmpty()) {
+	if ((transportDetails.gettransportMethodId() == 10 || transportDetails.gettransportMethodId() == 11) && !transportDetails.getFileDropFields().isEmpty()) {
 	    fileSystem dir = new fileSystem();
 	    
 	     for (configurationFileDropFields fileDropFields : transportDetails.getFileDropFields()) {
@@ -741,6 +748,22 @@ public class adminConfigController {
 
         redirectAttr.addFlashAttribute("savedStatus", "updated");
 	
+	//If transport method == 10 (From HEL Registry onlin form) we can prepoulate the fields from
+	//the selected configuration. No need to have a custom template uploaded. The file submitted 
+	//to UT with this transport method will always have the same fields set up.
+	if((transportDetails.gettransportMethodId() == 8 || transportDetails.gettransportMethodId() == 10)) {
+	    
+	    List<configurationFormFields> existingFormFields = utconfigurationTransportManager.getConfigurationFieldsToCopy(transportDetails.getconfigId());
+	    
+	    if(existingFormFields.isEmpty()) {
+		if(transportDetails.getHelRegistryConfigId() != null && transportDetails.getHelSchemaName() != null) {
+		    if(transportDetails.getHelRegistryConfigId() > 0 && !"".equals(transportDetails.getHelSchemaName())) {
+			 utconfigurationTransportManager.populateFieldsFromHELConfiguration(transportDetails.getconfigId(), transportDetails.getId(),transportDetails.getHelRegistryConfigId(),transportDetails.getHelSchemaName(),false);
+		    }
+		}
+	    }
+	}
+	
         //If the "Save" button was pressed 
         if (action.equals("save") || transportDetails.getRestAPIType() == 2) {
             ModelAndView mav = new ModelAndView(new RedirectView("transport"));
@@ -760,8 +783,14 @@ public class adminConfigController {
 		}
                
             } else {
+		
+		//
+		if(transportDetails.gettransportMethodId() == 8) {
+		    ModelAndView mav = new ModelAndView(new RedirectView("mappings"));
+		    return mav;
+		}
 		//Check if passthru
-		if(configurationDetails.getConfigurationType() == 2) {
+		else if(configurationDetails.getConfigurationType() == 2) {
 		    ModelAndView mav = new ModelAndView(new RedirectView("scheduling"));
 		    return mav;
 		}
@@ -2813,6 +2842,9 @@ public class adminConfigController {
     
     /**
      * The 'copyConfiguration.do' method will copy the selected utConfiguration.
+     * @param configId
+     * @return 
+     * @throws java.lang.Exception
      */
     @RequestMapping(value = "/copyConfiguration.do", method = RequestMethod.POST)
     public @ResponseBody
@@ -2846,6 +2878,9 @@ public class adminConfigController {
 	newTransportDetails.setclearRecords(true);
 	newTransportDetails.setmaxFileSize(transportDetails.getmaxFileSize());
 	newTransportDetails.setMassTranslation(true);
+	newTransportDetails.setHelRegistryConfigId(transportDetails.getHelRegistryConfigId());
+	newTransportDetails.setHelSchemaName(transportDetails.getHelSchemaName());
+	newTransportDetails.setHelRegistryId(transportDetails.getHelRegistryId());
 	
 	Integer transportDetailId = utconfigurationTransportManager.updateTransportDetails(newTransportDetails);
 	
@@ -3206,5 +3241,27 @@ public class adminConfigController {
 	mav.addObject("orgId", crosswalkDetails.getOrgId());
 
         return mav;
+    }
+    
+    
+    /**
+     * 
+     * @param configurationId
+     * @param transportDetailsId
+     * @return
+     * @throws Exception 
+     */
+    @RequestMapping(value = "/reloadConfigurationFields", method = RequestMethod.GET)
+    public @ResponseBody String reloadConfigurationFields(
+	    @RequestParam(value = "configurationId", required = true) Integer configurationId,
+	    @RequestParam(value = "transportDetailsId", required = true) Integer transportDetailsId) throws Exception {
+	
+	configurationTransport transportDetails = utconfigurationTransportManager.getTransportDetails(configurationId);
+	
+	utconfigurationTransportManager.populateFieldsFromHELConfiguration(configurationId, transportDetailsId,transportDetails.getHelRegistryConfigId(),transportDetails.getHelSchemaName(), true);
+	
+	
+	return "1";
+	
     }
 }

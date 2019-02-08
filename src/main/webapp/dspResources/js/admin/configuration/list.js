@@ -4,49 +4,49 @@
 require(['./main'], function () {
     require(['jquery'], function ($) {
 	
-	/* Table initialisation */
-	var sourceconfigdatatable = $('#sourceconfigdatatable').dataTable({
-	    "bStateSave": true,
-	    "iCookieDuration": 60,
-	    "sPaginationType": "bootstrap",
-	    "oLanguage": {
-		"sSearch": "_INPUT_",
-		"sLengthMenu": '<select class="form-control" style="width:150px">' +
-			'<option value="10">10 Records</option>' +
-			'<option value="20">20 Records</option>' +
-			'<option value="30">30 Records</option>' +
-			'<option value="40">40 Records</option>' +
-			'<option value="50">50 Records</option>' +
-			'<option value="-1">All</option>' +
-			'</select>'
-	    }
-	});
-
-        //var oSettings = datatable.fnSettings();
-
-        sourceconfigdatatable.fnSort([[4, 'desc']]);
+	try {
+	    /* Table initialisation */
+	    var sourceconfigdatatable = $('#sourceconfigdatatable').dataTable({
+		"bStateSave": true,
+		"iCookieDuration": 60,
+		"sPaginationType": "bootstrap",
+		"oLanguage": {
+		    "sSearch": "_INPUT_",
+		    "sLengthMenu": '<select class="form-control" style="width:150px">' +
+			    '<option value="10">10 Records</option>' +
+			    '<option value="20">20 Records</option>' +
+			    '<option value="30">30 Records</option>' +
+			    '<option value="40">40 Records</option>' +
+			    '<option value="50">50 Records</option>' +
+			    '<option value="-1">All</option>' +
+			    '</select>'
+		}
+	    });
+	    sourceconfigdatatable.fnSort([[4, 'desc']]);
+	}
+	catch(err) {}
 	
-	/* Table initialisation */
-	var targetconfigdatatable = $('#targetconfigdatatable').dataTable({
-	    "bStateSave": true,
-	    "iCookieDuration": 60,
-	    "sPaginationType": "bootstrap",
-	    "oLanguage": {
-		"sSearch": "_INPUT_",
-		"sLengthMenu": '<select class="form-control" style="width:150px">' +
-			'<option value="10">10 Records</option>' +
-			'<option value="20">20 Records</option>' +
-			'<option value="30">30 Records</option>' +
-			'<option value="40">40 Records</option>' +
-			'<option value="50">50 Records</option>' +
-			'<option value="-1">All</option>' +
-			'</select>'
-	    }
-	});
-
-        //var oSettings = datatable.fnSettings();
-
-        targetconfigdatatable.fnSort([[5, 'desc']]);
+	try {
+	    /* Table initialisation */
+	    var targetconfigdatatable = $('#targetconfigdatatable').dataTable({
+		"bStateSave": true,
+		"iCookieDuration": 60,
+		"sPaginationType": "bootstrap",
+		"oLanguage": {
+		    "sSearch": "_INPUT_",
+		    "sLengthMenu": '<select class="form-control" style="width:150px">' +
+			    '<option value="10">10 Records</option>' +
+			    '<option value="20">20 Records</option>' +
+			    '<option value="30">30 Records</option>' +
+			    '<option value="40">40 Records</option>' +
+			    '<option value="50">50 Records</option>' +
+			    '<option value="-1">All</option>' +
+			    '</select>'
+		}
+	    });
+	    targetconfigdatatable.fnSort([[5, 'desc']]);
+	}
+	catch(err) {}
 
 
         $.ajaxSetup({

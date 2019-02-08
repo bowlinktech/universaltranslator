@@ -126,5 +126,9 @@ public interface utConfigurationTransportDAO {
     Integer saveConfigurationFormFields(configurationFormFields formField) throws Exception;
     
     List<configurationFormFields> getConfigurationFieldsToCopy(int configId);
-
+    
+    public List<String> getHELConfigurationDetailsBySQL(String sqlStatement) throws Exception;
+    
+    public void deleteConfigurationFormField(Integer formFieldId) throws Exception;
+    public void configurationDataTranslations(Integer formFieldId) throws Exception;
 }

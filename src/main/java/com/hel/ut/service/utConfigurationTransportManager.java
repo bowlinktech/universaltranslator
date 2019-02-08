@@ -122,5 +122,7 @@ public interface utConfigurationTransportManager {
     Integer saveConfigurationFormFields(configurationFormFields formField) throws Exception;
     
     List<configurationFormFields> getConfigurationFieldsToCopy(int configId);
+    
+    void populateFieldsFromHELConfiguration(Integer configId, Integer transportId, Integer HELRegistryConfigId, String HELSchemaName, boolean reload) throws Exception;
 
 }
