@@ -105,6 +105,8 @@ public interface utConfigurationDAO {
     void removeConnectionSenders(int connectionId);
 
     void removeConnectionReceivers(int connectionId);
+    
+    void removeConnection(int connectionId);
 
     List<CrosswalkData> getCrosswalkData(int cwId);
 

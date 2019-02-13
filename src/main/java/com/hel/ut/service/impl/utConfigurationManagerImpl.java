@@ -237,6 +237,11 @@ public class utConfigurationManagerImpl implements utConfigurationManager {
     public void removeConnectionReceivers(int connectionId) {
 	utConfigurationDAO.removeConnectionReceivers(connectionId);
     }
+    
+    @Override
+    public void removeConnection(int connectionId) {
+	utConfigurationDAO.removeConnection(connectionId);
+    }
 
     @Override
     public void updateMessageSpecs(configurationMessageSpecs messageSpecs, int transportDetailId, int fileType) throws Exception {

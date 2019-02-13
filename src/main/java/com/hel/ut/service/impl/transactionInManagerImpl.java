@@ -97,6 +97,8 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 import com.hel.ut.service.utConfigurationManager;
 import com.hel.ut.service.utConfigurationTransportManager;
+import com.registryKit.registry.fileUploads.fileUploadManager;
+import com.registryKit.registry.fileUploads.uploadedFile;
 import com.registryKit.registry.submittedMessages.submittedMessage;
 import com.registryKit.registry.submittedMessages.submittedMessageManager;
 import java.security.SecureRandom;
@@ -170,6 +172,9 @@ public class transactionInManagerImpl implements transactionInManager {
     
     @Autowired
     private submittedMessageManager submittedmessagemanager;
+    
+    @Autowired
+    fileUploadManager fileuploadmanager;
 
     private int processingSysErrorId = 5;
 
@@ -593,17 +598,20 @@ public class transactionInManagerImpl implements transactionInManager {
 	//populate
 	populateAuditReport(batch.getId(), configurationManager.getMessageSpecs(batch.getConfigId()));
 	
-	//If no target batches created delete upload tables
-	if(!targetsInserted || !noTargetsFound) {
-	    transactionInDAO.deleteBatchTransactionTables(batchUploadId);
-	}
-	
 	//If not targets were found
 	if(targetsInserted && !noTargetsFound) {
 	    insertProcessingError(10, null, batchUploadId, null, null, null, null, false, false, "No valid connections were found for loading batch.");
 	    updateRecordCounts(batchUploadId, new ArrayList<Integer>(), false, "errorRecordCount");
 	    updateRecordCounts(batchUploadId, new ArrayList<Integer>(), false, "totalRecordCount");
 	    updateBatchStatus(batchUploadId, 7, "endDateTime");
+	}
+	
+	//If no target batches created delete upload tables
+	if(!targetsInserted || !noTargetsFound) {
+	    //transactionInDAO.deleteBatchTransactionTables(batchUploadId);
+	}
+	
+	if(targetsInserted && !noTargetsFound) {
 	    return false;
 	}
 
@@ -810,7 +818,7 @@ public class transactionInManagerImpl implements transactionInManager {
 		// we loop through each field value in the list and apply cw
 		errors = processMultiValueCWData(configId, batchId, cdt, cdList, foroutboundProcessing);
 	    } else {
-
+		
 		Integer returnCW = executeCWDataForSingleFieldValue(configId, batchId, cdt, foroutboundProcessing);
 		//replacing with single query that will update entire cwlist
 		if (cdt.getPassClear() == 1) {
@@ -1029,41 +1037,53 @@ public class transactionInManagerImpl implements transactionInManager {
 		
 		if(HELRegistryConfigId != null) {
 		    if (HELRegistryId > 0 && HELRegistryConfigId > 0 && !"".equals(HELSchemaName)) {
-
-			submittedMessage existingRegistrySubmittedMessage = submittedmessagemanager.getSubmittedMessageBySQL(HELSchemaName,batch.getoriginalFileName());
-
-			if (existingRegistrySubmittedMessage != null) {
-			    submittedmessagemanager.updateSubmittedMessage(HELSchemaName,existingRegistrySubmittedMessage.getId(),23,batchId);
+			boolean fromRegistryFileUpload = false;
+			
+			//Check if there is file upload (from HEL Registry) entry
+			uploadedFile existingRegistryUploadedFile = fileuploadmanager.getUploadedFileBySQL(HELSchemaName,batch.getoriginalFileName());
+			
+			if (existingRegistryUploadedFile != null) {
+			    fromRegistryFileUpload = true;
+			    fileuploadmanager.updateUploadedFile(HELSchemaName,existingRegistryUploadedFile.getId(),23,batchId);
 			}
-			else {
-			    
-			    //Get the registery organization Id
-			    Organization organizationDetails = organizationmanager.getOrganizationById(batch.getOrgId());
-			    
-			    DateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmssS");
-			    Date date = new Date();
+			
+			if(!fromRegistryFileUpload) {
+			    submittedMessage existingRegistrySubmittedMessage = submittedmessagemanager.getSubmittedMessageBySQL(HELSchemaName,batch.getoriginalFileName());
 
-			    SecureRandom random = new SecureRandom();
-			    int num = random.nextInt(100000);
-			    String formattedRandom = String.format("%05d", num);
+			    if (existingRegistrySubmittedMessage != null) {
+				submittedmessagemanager.updateSubmittedMessage(HELSchemaName,existingRegistrySubmittedMessage.getId(),23,batchId);
+			    }
+			    else {
 
-			    String messageName = new StringBuilder().append(HELRegistryConfigId).append(formattedRandom).append(dateFormat.format(date)).toString();
+				//Get the registery organization Id
+				Organization organizationDetails = organizationmanager.getOrganizationById(batch.getOrgId());
 
-			    submittedMessage newSubmittedMessage = new submittedMessage();
-			    newSubmittedMessage.setUtBatchUploadId(batchId);
-			    newSubmittedMessage.setRegistryConfigId(HELRegistryConfigId);
-			    newSubmittedMessage.setUploadedFileName(batch.getoriginalFileName());
-			    newSubmittedMessage.setAssignedFileName(batch.getutBatchName());
-			    newSubmittedMessage.setInFileExt(FilenameUtils.getExtension(batch.getoriginalFileName()));
-			    newSubmittedMessage.setStatusId(23);
-			    newSubmittedMessage.setTransportId(1);
-			    newSubmittedMessage.setSystemUserId(0);
-			    newSubmittedMessage.setTotalRows(batch.gettotalRecordCount());
-			    newSubmittedMessage.setSourceOrganizationId(organizationDetails.getHelRegistryOrgId());
-			    newSubmittedMessage.setAssignedMessageNumber(messageName);
+				DateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmssS");
+				Date date = new Date();
 
-			    submittedmessagemanager.submitSubmittedMessage(HELSchemaName,newSubmittedMessage);
+				SecureRandom random = new SecureRandom();
+				int num = random.nextInt(100000);
+				String formattedRandom = String.format("%05d", num);
+
+				String messageName = new StringBuilder().append(HELRegistryConfigId).append(formattedRandom).append(dateFormat.format(date)).toString();
+
+				submittedMessage newSubmittedMessage = new submittedMessage();
+				newSubmittedMessage.setUtBatchUploadId(batchId);
+				newSubmittedMessage.setRegistryConfigId(HELRegistryConfigId);
+				newSubmittedMessage.setUploadedFileName(batch.getoriginalFileName());
+				newSubmittedMessage.setAssignedFileName(batch.getutBatchName());
+				newSubmittedMessage.setInFileExt(FilenameUtils.getExtension(batch.getoriginalFileName()));
+				newSubmittedMessage.setStatusId(23);
+				newSubmittedMessage.setTransportId(1);
+				newSubmittedMessage.setSystemUserId(0);
+				newSubmittedMessage.setTotalRows(batch.gettotalRecordCount());
+				newSubmittedMessage.setSourceOrganizationId(organizationDetails.getHelRegistryOrgId());
+				newSubmittedMessage.setAssignedMessageNumber(messageName);
+
+				submittedmessagemanager.submitSubmittedMessage(HELSchemaName,newSubmittedMessage);
+			    }
 			}
+
 		    }
 		}
 		
@@ -1425,7 +1445,6 @@ public class transactionInManagerImpl implements transactionInManager {
 		updateRecordCounts(batchId, errorStatusIds, false, "errorRecordCount");
 		updateRecordCounts(batchId, new ArrayList<Integer>(), false, "totalRecordCount");
 		batchStatusId = 43; //loaded without targets 
-		
 		
 	    } catch (Exception ex) {
 		insertProcessingError(processingSysErrorId, null, batchId, null, null, null, null, false, false, ("loadBatch error " + ex.getMessage()));
@@ -1815,10 +1834,10 @@ public class transactionInManagerImpl implements transactionInManager {
 					fileExt = fileName.substring(fileName.lastIndexOf(".") + 1);
 				    }
 				}
-
+				
 				//figure out how many active transports are using fileExt method for this particular path, we need to remove the parent directory from input path
 				List<configurationTransport> transportList = configurationtransportmanager.getTransportListForFileExtAndPath(fileExt, transportMethodId, 1, transportId);
-
+				
 				//figure out if files has distinct delimiters
 				List<configurationTransport> transports = configurationtransportmanager.getConfigTransportForFileExtAndPath(fileExt, transportMethodId, 1, transportId);
 				
@@ -2327,7 +2346,9 @@ public class transactionInManagerImpl implements transactionInManager {
 			    //Find the organization for this transportId 
 			    Integer orgId = configurationtransportmanager.getOrgIdForFileDropPath(fileDropInfo);
 			    
-			    sysErrors = sysErrors + moveFilesByPath(directoryHome, fileDropInfo.getDirectory().replace("/HELProductSuite/universalTranslator/",""), 10, orgId, fileDropInfo.getTransportId());
+			    configurationTransport transportDetails = configurationtransportmanager.getTransportDetailsByTransportId(fileDropInfo.getTransportId());
+			    
+			    sysErrors = sysErrors + moveFilesByPath(directoryHome, fileDropInfo.getDirectory().replace("/HELProductSuite/universalTranslator/",""), transportDetails.gettransportMethodId(), orgId, fileDropInfo.getTransportId());
 
 			    if (sysErrors == 0) {
 				moveJob.setStatusId(2);
@@ -3795,7 +3816,8 @@ public class transactionInManagerImpl implements transactionInManager {
 			if(messageSpec.gettargetOrgCol() > 0 && !"".equals(messageSpec.gettargetOrgCol())) {
 			    
 			    //Pull the first record for the batch
-			    String recordVal = transactionInDAO.getFieldValue("transactioninrecords_"+batchUploadId,"F"+messageSpec.gettargetOrgCol(), "batchUploadId", batchUploadId);
+			    String recordVal = transactionInDAO.getFieldValue("transactiontranslatedin_"+batchUploadId,"F"+messageSpec.gettargetOrgCol(), "batchUploadId", batchUploadId);
+			    
 			    if(recordVal.trim().toLowerCase().equals(String.valueOf(targetOrg.getId())) || recordVal.trim().toLowerCase().equals(String.valueOf(targetOrg.getHelRegistryOrgId()))) {
 				useTarget = true;
 				useTargetOrgId = targetOrg.getId();

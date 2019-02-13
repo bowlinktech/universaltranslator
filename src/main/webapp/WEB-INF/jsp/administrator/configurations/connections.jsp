@@ -17,7 +17,10 @@
         <c:if test="${not empty param['msg']}" >
             <div class="alert alert-success">
                 <strong>Success!</strong> 
-                The configuration connection status has been successfully updated!
+		<c:choose>
+                    <c:when test="${param['msg'] == 'updated'}">The configuration connection has been successfully updated!</c:when>
+                    <c:when test="${param['msg'] == 'deleted'}">The configuration connection has been successfully deleted!</c:when>
+                </c:choose>
             </div>
         </c:if>
 
@@ -65,12 +68,28 @@
                                                     </c:otherwise>
                                                 </c:choose>
                                             </td>
-                                            <td class="center-text actions-col">
-                                                <a href="#connectionsModal" data-toggle="modal" rel="${connection.id}" class="btn btn-link connectionEdit" title="Edit this connection">
-                                                    <span class="glyphicon glyphicon-edit"></span>
-                                                    Edit
-                                                </a>
-                                            </td>
+					    <td>
+						<div class="dropdown pull-left">
+						    <button class="btn btn-sm btn-default dropdown-toggle" type="button" data-toggle="dropdown">
+							<i class="fa fa-cog"></i>
+						    </button>
+						    <ul class="dropdown-menu pull-right">
+							<li>
+							    <a href="#connectionsModal" data-toggle="modal" rel="${connection.id}" class="connectionEdit" title="Edit this connection">
+								<span class="glyphicon glyphicon-edit"></span>
+								Edit
+							    </a>
+							</li>
+							<li class="divider"></li>
+							<li>
+							    <a href="javascript:void(0);" class="deleteConnection" rel="${connection.id}" title="Delete this connection">
+								<span class="glyphicon glyphicon-remove-circle"></span>
+								Delete
+							    </a>
+							</li>
+						    </ul>
+						</div>
+					    </td>
                                         </tr>
                                     </c:forEach>
                                 </c:when>

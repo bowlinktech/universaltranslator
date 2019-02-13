@@ -15,6 +15,30 @@ require(['./main'], function () {
 	    
 	}
 	
+	$(document).on('click', '.deleteConnection', function() {
+            
+            var connectionId = $(this).attr('rel');
+           
+            if(confirm("Are you sure you want to delelete this connection?")) {
+                
+                $('body').overlay({
+                    glyphicon : 'floppy-disk',
+                    message : 'Deleting...'
+                });
+                
+                $.ajax({
+                    url: 'deleteConnection.do',
+                    data: {
+                        'connectionId': connectionId
+                    },
+                    type: 'POST',
+                    success: function(data) {
+                      window.location.href = "connections?msg=deleted";
+                    }
+                });
+            }
+        });
+	
         //Update the status of the connection
         $('.changeStatus').click(function () {
             var connectionId = $(this).attr('rel');

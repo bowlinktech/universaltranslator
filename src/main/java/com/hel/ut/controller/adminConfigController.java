@@ -3264,4 +3264,22 @@ public class adminConfigController {
 	return "1";
 	
     }
+    
+    /**
+     * The '/deleteConnection.do' POST request will remove the passed in connection.
+     *
+     * @param connectionId The id for the connection to update the status for
+     *
+     * @return The method will return a 1 back to the calling ajax function.
+     */
+    @RequestMapping(value = "/deleteConnection.do", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+    public @ResponseBody
+    Integer deleteConnection(@RequestParam Integer connectionId) throws Exception {
+	
+	utconfigurationmanager.removeConnectionReceivers(connectionId);
+	utconfigurationmanager.removeConnectionSenders(connectionId);
+	utconfigurationmanager.removeConnection(connectionId);
+
+        return 1;
+    }
 }

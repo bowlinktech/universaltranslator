@@ -584,6 +584,7 @@ function checkFormFields() {
 }
 
 function populateHELRegistryConfigs(helRegistryId,helRegistrySchemaName) {
+    
     $.ajax({
 	url: '/administrator/configurations/getHELRegistryConfigurations?tenantId='+helRegistrySchemaName,
 	type: "GET",

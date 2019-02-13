@@ -606,6 +606,20 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
 
         query.executeUpdate();
     }
+    
+    /**
+     * The 'removeConnection' function will remove the connection for the passed in connectionId.
+     *
+     * @param connectionId The connection Id to remove receivers for
+     */
+    @Override
+    @Transactional(readOnly = false)
+    public void removeConnection(int connectionId) {
+        Query query = sessionFactory.getCurrentSession().createSQLQuery("DELETE from configurationConnections where Id = :connectionId")
+                .setParameter("connectionId", connectionId);
+
+        query.executeUpdate();
+    }
 
     /**
      * The 'updateConnection' function will update the status of the passed in connection
