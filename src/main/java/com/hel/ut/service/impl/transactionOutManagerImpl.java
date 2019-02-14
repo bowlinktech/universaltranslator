@@ -98,6 +98,8 @@ import com.registryKit.registry.helRegistry;
 import com.registryKit.registry.helRegistryManager;
 import com.registryKit.registry.submittedMessages.submittedMessage;
 import com.registryKit.registry.submittedMessages.submittedMessageManager;
+import java.security.SecureRandom;
+import org.apache.commons.io.FilenameUtils;
 
 /**
  *
@@ -2015,8 +2017,55 @@ public class transactionOutManagerImpl implements transactionOutManager {
 			File targetFile = new File(registrydirectoryPath + "/" + registryFolderName + "/loadFiles/" + batchDownload.getutBatchName() + "." + fileExt);
 			Files.copy(archiveFile.toPath(), targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
 			
-			//Need to update the Registry submitted message entry to capture the created file name
-			submittedmessagemanager.updateSubmittedMessage(registryDetails.getDbschemaname(),batchDownload.getBatchUploadId(),batchDownload.getutBatchName() + "." + fileExt,utOrgDetails.getHelRegistryOrgId());
+			//Check to see if a submitted message entry was made, if not we need to create one.
+			submittedMessage existingRegistrySubmittedMessage = submittedmessagemanager.getSubmittedMessageBySQL(registryDetails.getDbschemaname(),batchUploadDetails.getoriginalFileName());
+			
+			boolean createSubmittedMessage = false;
+			
+			if(existingRegistrySubmittedMessage != null){
+			    if(existingRegistrySubmittedMessage.getId() > 0) {
+				//Need to update the Registry submitted message entry to capture the created file name
+				submittedmessagemanager.updateSubmittedMessage(registryDetails.getDbschemaname(),batchDownload.getBatchUploadId(),batchDownload.getutBatchName() + "." + fileExt,utOrgDetails.getHelRegistryOrgId());
+			    }
+			    else {
+				createSubmittedMessage = true;
+			    }
+			}
+			else {
+			    createSubmittedMessage = true;
+			}
+			
+			if(createSubmittedMessage) {
+			    
+			    //Get the registery organization Id
+			    Organization organizationDetails = organizationManager.getOrganizationById(batchUploadDetails.getOrgId());
+
+			    DateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmssS");
+			    Date date = new Date();
+
+			    SecureRandom random = new SecureRandom();
+			    int num = random.nextInt(100000);
+			    String formattedRandom = String.format("%05d", num);
+
+			    String messageName = new StringBuilder().append(transportDetails.getHelRegistryConfigId()).append(formattedRandom).append(dateFormat.format(date)).toString();
+
+			    submittedMessage newSubmittedMessage = new submittedMessage();
+			    newSubmittedMessage.setUtBatchUploadId(batchUploadDetails.getId());
+			    newSubmittedMessage.setRegistryConfigId(transportDetails.getHelRegistryConfigId());
+			    newSubmittedMessage.setUploadedFileName(batchUploadDetails.getoriginalFileName());
+			    newSubmittedMessage.setAssignedFileName(batchUploadDetails.getutBatchName());
+			    newSubmittedMessage.setInFileExt(FilenameUtils.getExtension(batchUploadDetails.getoriginalFileName()));
+			    newSubmittedMessage.setStatusId(23);
+			    newSubmittedMessage.setTransportId(8);
+			    newSubmittedMessage.setSystemUserId(0);
+			    newSubmittedMessage.setTotalRows(batchUploadDetails.gettotalRecordCount());
+			    newSubmittedMessage.setSourceOrganizationId(organizationDetails.getHelRegistryOrgId());
+			    newSubmittedMessage.setTargetOrganizationId(utOrgDetails.getHelRegistryOrgId());
+			    newSubmittedMessage.setReceivedFileName(batchDownload.getutBatchName() + "." + fileExt);
+			    newSubmittedMessage.setAssignedMessageNumber(messageName);
+
+			    submittedmessagemanager.submitSubmittedMessage(registryDetails.getDbschemaname(),newSubmittedMessage);
+			}
 		    }
 		    
 		}

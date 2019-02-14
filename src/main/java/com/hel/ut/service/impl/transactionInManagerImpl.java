@@ -1054,9 +1054,15 @@ public class transactionInManagerImpl implements transactionInManager {
 				submittedmessagemanager.updateSubmittedMessage(HELSchemaName,existingRegistrySubmittedMessage.getId(),23,batchId);
 			    }
 			    else {
+				
+				//Moved the submitted message creation to the target side. This will ensure the incoming file processes successfully prio
+				//to making an entry in submitted messages table on the HEL registry side. No need to create an entry if the infbound file
+				//is rejected.
+				
+				
 
 				//Get the registery organization Id
-				Organization organizationDetails = organizationmanager.getOrganizationById(batch.getOrgId());
+				/*Organization organizationDetails = organizationmanager.getOrganizationById(batch.getOrgId());
 
 				DateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmssS");
 				Date date = new Date();
@@ -1080,7 +1086,7 @@ public class transactionInManagerImpl implements transactionInManager {
 				newSubmittedMessage.setSourceOrganizationId(organizationDetails.getHelRegistryOrgId());
 				newSubmittedMessage.setAssignedMessageNumber(messageName);
 
-				submittedmessagemanager.submitSubmittedMessage(HELSchemaName,newSubmittedMessage);
+				submittedmessagemanager.submitSubmittedMessage(HELSchemaName,newSubmittedMessage);*/
 			    }
 			}
 
