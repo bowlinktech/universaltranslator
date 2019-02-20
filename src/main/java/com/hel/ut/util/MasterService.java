@@ -63,7 +63,7 @@ public class MasterService {
 	cpds.setJdbcUrl("jdbc:mysql://"+masterservice.configProp.getProperty("jdbc.url")+"/"+tenantIdentifier+"?allowMultiQueries=true");
 	cpds.setUser(masterservice.configProp.getProperty("jdbc.user"));
         cpds.setPassword(masterservice.configProp.getProperty("jdbc.password"));
-        cpds.setInitialPoolSize(10);
+        cpds.setInitialPoolSize(1);
         cpds.setMaxConnectionAge(10000);
 	cpds.setMaxIdleTime(600);
 	

@@ -10,3 +10,9 @@
 
 - Test reseting a received REST API file
 
+- When selecting a target and HEL Registry Website as transport no need to select the configuration, it should come from the selected source.
+
+- When generating the target configuration preselect "USE SOURCE FIle NAME" and "Append Date and Time"
+
+- When on target side field mappings, allow button to preselect the drop down.
+
