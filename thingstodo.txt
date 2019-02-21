@@ -16,3 +16,5 @@
 
 - When on target side field mappings, allow button to preselect the drop down.
 
+- transactionindetailauditerrors_batchId is not being loaded when errors are found, seems like SP populateAuditReport is not being called.
+

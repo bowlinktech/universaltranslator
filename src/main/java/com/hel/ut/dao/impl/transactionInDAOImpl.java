@@ -869,42 +869,32 @@ public class transactionInDAOImpl implements transactionInDAO {
 	
 	try {
 	    
-	    String sql = ("CALL " + macro.getFormula() + " (:configId, :batchId, :srcField, "
+	    String sql = ("CALL universaltranslator." + macro.getFormula() + " (:configId, :batchId, :srcField, "
 		    + ":fieldA, :fieldB, :con1, :con2, :macroId, :foroutboundProcessing, :passClear, 0);");
-
+	    
 	    Query query = sessionFactory.getCurrentSession().createSQLQuery(sql);
 	    query.setParameter("configId", configId);
 	    query.setParameter("batchId", batchId);
 	    query.setParameter("srcField", ("F" + cdt.getFieldNo()));
-
+	  
 	    if (!cdt.getFieldA().equalsIgnoreCase("")) {
 		query.setParameter("fieldA", ("F" + cdt.getFieldA()));
 	    } else {
 		query.setParameter("fieldA", ("F" + cdt.getFieldNo()));
 	    }
 	    query.setParameter("fieldB", ("F" + cdt.getFieldB()));
-	    query.setParameter("con1", (cdt.getConstant1()));
+	    query.setParameter("con1", cdt.getConstant1());
 	    query.setParameter("con2", cdt.getConstant2());
 	    query.setParameter("macroId", cdt.getMacroId());
 	    query.setParameter("foroutboundProcessing", foroutboundProcessing);
 	    query.setParameter("passClear", cdt.getPassClear());
-
-	    List<String> macroResults = query.list();
 	    
-	    /**
-	     * we return '' with data manipulation macros and we return continue or stop with macros*
-	     */
-	    if (macroResults.get(0).equalsIgnoreCase("")) {
-		return 0;
-	    } else if (macroResults.get(0).equalsIgnoreCase("continue")) {
-		return 0;
-	    } else if (macroResults.get(0).equalsIgnoreCase("stop")) {
-		return 1;
-	    }
+	    query.executeUpdate();
 	    
 	    return 0;
+	    
 	} catch (Exception ex) {
-
+	    
 	    //insert system error
 	    insertProcessingError(processingSysErrorId, configId, batchId, cdt.getFieldNo(),cdt.getMacroId(), null, null,false, foroutboundProcessing, ("executeMacro " + ex.getCause().toString()));
 	    System.err.println("executeMacro -"+ macro.getFormula() + " for " + inboundOutbound + " batch (Id: " + batchId + ") " + ex.getCause());

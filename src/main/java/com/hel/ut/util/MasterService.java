@@ -66,6 +66,7 @@ public class MasterService {
         cpds.setInitialPoolSize(1);
         cpds.setMaxConnectionAge(10000);
 	cpds.setMaxIdleTime(600);
+	cpds.setMaxIdleTimeExcessConnections(120);
 	
 	try {
 	    cpds.setDriverClass("com.mysql.cj.jdbc.Driver");
