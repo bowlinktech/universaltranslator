@@ -1844,7 +1844,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
 	     //to massoutfiles where both tomcat and mysql has permission. 
 	     //Then we can create, copy and delete
 	    fileSystem fileSystemOutput = new fileSystem();
-	    File massOutFile = new File(fileSystemOutput.setPathFromRoot(massOutPutPath) + batchDownload.getutBatchName() + "." + fileExt);
+	    File massOutFile = new File(fileSystemOutput.setPathFromRoot(massOutPutPathMysqlPath) + batchDownload.getutBatchName() + "." + fileExt);
 
 	    //check to see if file is there, if so remove old file
 	    if (massOutFile.exists()) {
@@ -1876,7 +1876,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
 		    Path path = Paths.get(ccdTemplateDir.getDir() + ccdSampleTemplate);
 		    String ccdSampleContent = new String(Files.readAllBytes(path));
 
-		    Path newFilePath = Paths.get(massOutPutPath + batchDownload.getutBatchName() + "." + fileExt);
+		    Path newFilePath = Paths.get(massOutPutPathMysqlPath + batchDownload.getutBatchName() + "." + fileExt);
 
 		    Files.write(newFilePath, ccdSampleContent.getBytes());
 
