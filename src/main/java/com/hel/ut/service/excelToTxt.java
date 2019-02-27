@@ -7,7 +7,6 @@ package com.hel.ut.service;
 
 import com.hel.ut.model.Organization;
 import com.hel.ut.model.batchUploads;
-import com.hel.ut.reference.fileSystem;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -24,6 +23,8 @@ import org.springframework.stereotype.Service;
 import com.monitorjbl.xlsx.StreamingReader;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.util.Properties;
+import javax.annotation.Resource;
 
 /**
  *
@@ -40,26 +41,28 @@ public class excelToTxt {
 
     @Autowired
     private transactionInManager transactioninmanager;
+    
+    @Resource(name = "myProps")
+    private Properties myProps;
 
     @SuppressWarnings("deprecation")
 	public String TranslateXLSXtoTxt(String fileLocation, String excelFileName, batchUploads batch) throws Exception {
 
 	Organization orgDetails = organizationmanager.getOrganizationById(batch.getOrgId());
+	
+	String directory = myProps.getProperty("ut.directory.utRootDir") + orgDetails.getcleanURL() + "/loadFiles/";
 
-	fileSystem dir = new fileSystem();
-
-	dir.setDir(orgDetails.getcleanURL(), "loadFiles");
 	/* Get the uploaded xlsx File */
 	fileLocation = fileLocation.replace("/Applications/HELProductSuite/universalTranslator/", "").replace("/home/HELProductSuite/universalTranslator/", "").replace("/HELProductSuite/universalTranslator/", "");
-	dir.setDirByName(fileLocation);
+	directory = myProps.getProperty("ut.directory.utRootDir") + fileLocation;
 	
 	String excelFile = (excelFileName + ".xlsx");
 	
 	/* Create the txt file that will hold the excel fields */
 	String newfileName = (excelFileName + ".txt");
 
-	File newFile = new File(dir.getDir() + newfileName);
-	File inputFile = new File(dir.getDir() + excelFile);
+	File newFile = new File(directory + newfileName);
+	File inputFile = new File(directory + excelFile);
 
 	if (newFile.exists()) {
 	    try {
@@ -68,7 +71,7 @@ public class excelToTxt {
 		    int i = 1;
 		    while (newFile.exists()) {
 			int iDot = newfileName.lastIndexOf(".");
-			newFile = new File(dir.getDir() + newfileName.substring(0, iDot) + "(" + ++i + ")" + newfileName.substring(iDot));
+			newFile = new File(directory + newfileName.substring(0, iDot) + "(" + ++i + ")" + newfileName.substring(iDot));
 		    }
 		    newfileName = newFile.getName();
 		    newFile.createNewFile();

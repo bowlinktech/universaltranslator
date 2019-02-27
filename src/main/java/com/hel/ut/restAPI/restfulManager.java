@@ -15,7 +15,6 @@ import com.hel.ut.model.utConfiguration;
 import com.hel.ut.model.configurationConnection;
 import com.hel.ut.model.configurationTransport;
 import com.hel.ut.model.mailMessage;
-import com.hel.ut.reference.fileSystem;
 import com.hel.ut.service.emailMessageManager;
 import com.hel.ut.service.organizationManager;
 import com.hel.ut.service.transactionInManager;
@@ -149,14 +148,10 @@ public class restfulManager {
 	    apiMessageOut.setBatchDownloadId(batchId);
 	    apiMessageOut.setOrgId(batchFileInfo.getOrgId());
 
-	    //Set the directory to save the brochures to
-	    fileSystem dir = new fileSystem();
-
 	    String filelocation = transportDetails.getfileLocation();
 	    filelocation = filelocation.replace("/HELProductSuite/universalTranslator/", "");
-	    dir.setDirByName(filelocation);
 
-	    File file = new File(dir.getDir() + fileName);
+	    File file = new File(myProps.getProperty("ut.directory.utRootDir") + filelocation + fileName);
 
 	    boolean sendEmail = false;
 
@@ -238,7 +233,7 @@ public class restfulManager {
 		batchStatusId = 58;
 		apiMessageOut.setResponseStatus(0);
 		apiMessageOut.setStatusId(3);
-		apiMessageOut.setResponseMessage("No File Sent because file (" + dir.getDir() + fileName + ") was not Found");
+		apiMessageOut.setResponseMessage("No File Sent because file (" + myProps.getProperty("ut.directory.utRootDir") + filelocation + fileName + ") was not Found");
 	    }
 	    
 	    transactionOutDAO.insertRestApiMessage(apiMessageOut);
@@ -446,15 +441,11 @@ public class restfulManager {
 		fileName = new StringBuilder().append(batchFileInfo.getoutputFileName()).append(".").append(transportDetails.getfileExt()).toString();
 	    }
 
-	    //Set the directory to save the brochures to
-	    fileSystem dir = new fileSystem();
-
 	    String filelocation = transportDetails.getfileLocation();
 	    filelocation = filelocation.replace("/HELProductSuite/universalTranslator/", "");
-	    dir.setDirByName(filelocation);
-
-	    File file = new File(dir.getDir() + fileName);
-	    File folder = new File(dir.getDir());
+	    
+	    File file = new File(myProps.getProperty("ut.directory.utRootDir") + filelocation + fileName);
+	    File folder = new File(myProps.getProperty("ut.directory.utRootDir") + filelocation);
 
 	    //Submit the restAPImessageOut
 	    RestAPIMessagesOut apiMessageOut = new RestAPIMessagesOut();
@@ -473,7 +464,7 @@ public class restfulManager {
 
 		if (transportDetails.isZipped()) {
 
-		    String unzippedFile = dir.getDir() + fileName;
+		    String unzippedFile = myProps.getProperty("ut.directory.utRootDir") + filelocation + fileName;
 
 		    try {
 			File zippedFile = zipFileManager.zipFile(folder, unzippedFile.replace("//", "/"), unzippedFile.replace("//", "/"), fileName, transportDetails.getZipType(), fileExt);
@@ -584,7 +575,7 @@ public class restfulManager {
 		batchStatusId = 58;
 		apiMessageOut.setResponseStatus(0);
 		apiMessageOut.setStatusId(3);
-		apiMessageOut.setResponseMessage("No File Sent because file (" + dir.getDir() + fileName + ") was not Found");
+		apiMessageOut.setResponseMessage("No File Sent because file (" + myProps.getProperty("ut.directory.utRootDir") + filelocation + fileName + ") was not Found");
 	    }
 
 	    Integer restApiId = transactionOutDAO.insertRestApiMessage(apiMessageOut);
@@ -800,14 +791,10 @@ public class restfulManager {
 	    apiMessageOut.setBatchDownloadId(batchId);
 	    apiMessageOut.setOrgId(batchFileInfo.getOrgId());
 
-	    //Set the directory to save the brochures to
-	    fileSystem dir = new fileSystem();
-
 	    String filelocation = transportDetails.getfileLocation();
 	    filelocation = filelocation.replace("/HELProductSuite/universalTranslator/", "");
-	    dir.setDirByName(filelocation);
-
-	    File file = new File(dir.getDir() + fileName);
+	    
+	    File file = new File(myProps.getProperty("ut.directory.utRootDir") + filelocation + fileName);
 
 	    boolean sendEmail = false;
 
@@ -892,7 +879,7 @@ public class restfulManager {
 		batchStatusId = 58;
 		apiMessageOut.setResponseStatus(0);
 		apiMessageOut.setStatusId(3);
-		apiMessageOut.setResponseMessage("No File Sent because file (" + dir.getDir() + fileName + ") was not Found");
+		apiMessageOut.setResponseMessage("No File Sent because file (" + myProps.getProperty("ut.directory.utRootDir") + filelocation + fileName + ") was not Found");
 	    }
 	    
 	    transactionOutDAO.insertRestApiMessage(apiMessageOut);

@@ -28,6 +28,8 @@ import org.springframework.web.multipart.MultipartFile;
 import com.hel.ut.service.utConfigurationManager;
 import com.hel.ut.service.utConfigurationTransportManager;
 import com.hel.ut.dao.utConfigurationTransportDAO;
+import java.util.Properties;
+import javax.annotation.Resource;
 
 @Service
 public class utConfigurationTransportManagerImpl implements utConfigurationTransportManager {
@@ -40,6 +42,9 @@ public class utConfigurationTransportManagerImpl implements utConfigurationTrans
 
     @Autowired
     private utConfigurationManager utConfigurationManager;
+    
+    @Resource(name = "myProps")
+    private Properties myProps;
 
     @Override
     public configurationTransport getTransportDetails(int configId) throws Exception {
@@ -71,12 +76,7 @@ public class utConfigurationTransportManagerImpl implements utConfigurationTrans
                 inputStream = CCDTemplatefile.getInputStream();
                 File newCCDTemplateFile = null;
 
-                //Set the directory to save the uploaded message type template to
-                fileSystem orgdir = new fileSystem();
-
-                orgdir.setDir(orgDetails.getcleanURL(), "templates");
-
-                newCCDTemplateFile = new File(orgdir.getDir() + CCDTemplatefileName);
+                newCCDTemplateFile = new File(myProps.getProperty("ut.directory.utRootDir") + orgDetails.getcleanURL() + "/templates/"+ CCDTemplatefileName);
 
                 if (newCCDTemplateFile.exists()) {
                     newCCDTemplateFile.delete();
@@ -174,11 +174,7 @@ public class utConfigurationTransportManagerImpl implements utConfigurationTrans
                 inputStream = file.getInputStream();
                 File newFile = null;
 
-                //Set the directory to save the brochures to
-                fileSystem dir = new fileSystem();
-                dir.setDir(orgDetails.getcleanURL(), "certificates");
-
-                newFile = new File(dir.getDir() + fileName);
+                newFile = new File(myProps.getProperty("ut.directory.utRootDir") + orgDetails.getcleanURL() + "/certificates/" + fileName);
 
                 if (!newFile.exists()) {
                     newFile.createNewFile();
@@ -306,7 +302,7 @@ public class utConfigurationTransportManagerImpl implements utConfigurationTrans
         configurationTransportDAO.saveTransportFileDrop(fileDropFields);
 	//Makes sure the directory is created
         fileSystem dir = new fileSystem();
-	dir.creatFTPDirectory(fileDropFields.getDirectory());
+	dir.creatFTPDirectory(myProps.getProperty("ut.directory.utRootDir") + fileDropFields.getDirectory().replace("/Applications/HELProductSuite/universalTranslator/", "").replace("/home/HELProductSuite/universalTranslator/", "").replace("/HELProductSuite/universalTranslator/", ""));
 	
     }
 

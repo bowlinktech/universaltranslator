@@ -14,6 +14,8 @@ import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.InputStream;
 import java.io.PrintStream;
+import java.util.Properties;
+import javax.annotation.Resource;
 
 import org.apache.poi.hssf.extractor.ExcelExtractor;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
@@ -32,6 +34,9 @@ public class xlsToTxt {
 
     @Autowired
     private utConfigurationTransportManager configurationTransportManager;
+    
+    @Resource(name = "myProps")
+    private Properties myProps;
 
     @Autowired
     private transactionInManager transactioninmanager;
@@ -40,20 +45,19 @@ public class xlsToTxt {
 
     	Organization orgDetails = organizationmanager.getOrganizationById(batch.getOrgId());
 
-    	fileSystem dir = new fileSystem();
+	String directory = myProps.getProperty("ut.directory.utRootDir") + orgDetails.getcleanURL() + "/loadFiles/";
 
-    	dir.setDir(orgDetails.getcleanURL(), "loadFiles");
     	/* Get the uploaded xls File */
     	fileLocation = fileLocation.replace("/Applications/HELProductSuite/universalTranslator/", "").replace("/home/HELProductSuite/universalTranslator/", "").replace("/HELProductSuite/universalTranslator/", "");
-    	dir.setDirByName(fileLocation);
-    	
+    	directory = myProps.getProperty("ut.directory.utRootDir") + fileLocation;
+	
     	String excelFile = (excelFileName + ".xls");
     	
     	/* Create the txt file that will hold the excel fields */
     	String newfileName = (excelFileName + ".txt");
 
-    	File newFile = new File(dir.getDir() + newfileName);
-    	File inputFile = new File(dir.getDir() + excelFile);
+    	File newFile = new File(directory + newfileName);
+    	File inputFile = new File(directory + excelFile);
 
     	if (newFile.exists()) {
     	    try {
@@ -62,7 +66,7 @@ public class xlsToTxt {
     		    int i = 1;
     		    while (newFile.exists()) {
     			int iDot = newfileName.lastIndexOf(".");
-    			newFile = new File(dir.getDir() + newfileName.substring(0, iDot) + "(" + ++i + ")" + newfileName.substring(iDot));
+    			newFile = new File(directory + newfileName.substring(0, iDot) + "(" + ++i + ")" + newfileName.substring(iDot));
     		    }
     		    newfileName = newFile.getName();
     		    newFile.createNewFile();

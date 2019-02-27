@@ -7,7 +7,6 @@ package com.hel.ut.service;
 
 import com.hel.ut.model.Organization;
 import com.hel.ut.model.configurationMessageSpecs;
-import com.hel.ut.reference.fileSystem;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -16,6 +15,8 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.Properties;
+import javax.annotation.Resource;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -32,6 +33,9 @@ public class hl7toTxt {
     
     @Autowired
     private utConfigurationManager configurationManager;
+    
+    @Resource(name = "myProps")
+    private Properties myProps;
 
     @Autowired
     private utConfigurationTransportManager configurationtransportmanager;
@@ -39,9 +43,8 @@ public class hl7toTxt {
     public String TranslateHl7toTxt(String fileLocation, String fileName, int orgId, int configId) throws Exception {
 
         Organization orgDetails = organizationmanager.getOrganizationById(orgId);
-        fileSystem dir = new fileSystem();
 
-        dir.setDir(orgDetails.getcleanURL(), "templates");
+        String directory = myProps.getProperty("ut.directory.utRootDir") + orgDetails.getcleanURL() + "/templates/";
 
         String templatefileName = "";
 	String newfileName = "";
@@ -66,7 +69,7 @@ public class hl7toTxt {
 	}
 	
 	if(!"".equals(templatefileName)) {
-	    URLClassLoader loader = new URLClassLoader(new URL[]{new URL("file://" + dir.getDir() + templatefileName)});
+	    URLClassLoader loader = new URLClassLoader(new URL[]{new URL("file://" + directory + templatefileName)});
 
 	    // Remove the .class extension
 	    Class cls = loader.loadClass(templatefileName.substring(0, templatefileName.lastIndexOf('.')));
@@ -79,14 +82,14 @@ public class hl7toTxt {
 
 	    /* Get the uploaded HL7 File */
 	    fileLocation = fileLocation.replace("/Applications/HELProductSuite/universalTranslator/", "").replace("/home/HELProductSuite/universalTranslator/", "").replace("/HELProductSuite/universalTranslator/", "");
-	    dir.setDirByName(fileLocation);
+	    directory = myProps.getProperty("ut.directory.utRootDir") + fileLocation;
 
-	    File hl7File = new File(dir.getDir() + fileName + ".hr");
+	    File hl7File = new File(directory + fileName + ".hr");
 
 	    /* Create the output file */
 	    newfileName = new StringBuilder().append(hl7File.getName().substring(0, hl7File.getName().lastIndexOf("."))).append(".").append("txt").toString();
 
-	    File newFile = new File(dir.getDir() + newfileName);
+	    File newFile = new File(directory + newfileName);
 
 	    if (newFile.exists()) {
 		try {
@@ -95,7 +98,7 @@ public class hl7toTxt {
 			int i = 1;
 			while (newFile.exists()) {
 			    int iDot = newfileName.lastIndexOf(".");
-			    newFile = new File(dir.getDir() + newfileName.substring(0, iDot) + "_(" + ++i + ")" + newfileName.substring(iDot));
+			    newFile = new File(directory + newfileName.substring(0, iDot) + "_(" + ++i + ")" + newfileName.substring(iDot));
 			}
 			newfileName = newFile.getName();
 			newFile.createNewFile();

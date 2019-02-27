@@ -163,16 +163,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
     private submittedMessageManager submittedmessagemanager;
 
     private int processingSysErrorId = 5;
-
-    private String directoryPath = System.getProperty("directory.utRootDir");
-
-    private String archivePath = (directoryPath + "archivesOut/");
-
-    private String massOutPutPath = (directoryPath + "massoutputfiles/");
-
-    private String massOutPutPathMysqlPath = System.getProperty("directory.massOutputPath");
     
-   private String registrydirectoryPath = System.getProperty("directory.registryRootDir");
 
     //list of final status - these records we skip
     private List<Integer> transRELId = Arrays.asList(11, 12, 13, 16, 18, 20, 9);
@@ -262,7 +253,6 @@ public class transactionOutManagerImpl implements transactionOutManager {
      * The 'generateTargetFile' function will generate the actual file in the correct organizations outpufiles folder.
      *
      * @param createNewFile
-     * @param transactionTargetId
      * @param batchId
      * @param transportDetails
      * @param encrypt
@@ -278,12 +268,9 @@ public class transactionOutManagerImpl implements transactionOutManager {
 	InputStream inputStream = null;
 	OutputStream outputStream = null;
 
-	fileSystem dir = new fileSystem();
-
 	String filelocation = transportDetails.getfileLocation();
 	filelocation = filelocation.replace("/HELProductSuite/universalTranslator/", "");
-
-	dir.setDirByName(filelocation);
+	String directory = myProps.getProperty("ut.directory.utRootDir") + filelocation;
 
 	boolean hl7 = false;
 	boolean CCD = false;
@@ -306,7 +293,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
 	    fileName = new StringBuilder().append(batchDetails.getoutputFileName()).append(".").append(transportDetails.getfileExt()).toString();
 	}
 
-	File newFile = new File(dir.getDir() + fileName);
+	File newFile = new File(directory + fileName);
 
 	/* Create the empty file in the correct location */
 	if (createNewFile == true || !newFile.exists()) {
@@ -316,7 +303,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
 		    int i = 1;
 		    while (newFile.exists()) {
 			int iDot = fileName.lastIndexOf(".");
-			newFile = new File(dir.getDir() + fileName.substring(0, iDot) + "_(" + ++i + ")" + fileName.substring(iDot));
+			newFile = new File(directory + fileName.substring(0, iDot) + "_(" + ++i + ")" + fileName.substring(iDot));
 		    }
 		    fileName = newFile.getName();
 		    newFile.createNewFile();
@@ -334,7 +321,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
 
 	/* Read in the file */
 	FileInputStream fileInput = null;
-	File file = new File(dir.getDir() + fileName);
+	File file = new File(directory + fileName);
 	fileInput = new FileInputStream(file);
         
 	/* Need to get the records for the transaction */
@@ -364,15 +351,13 @@ public class transactionOutManagerImpl implements transactionOutManager {
 	    if (CCD == true) {
 
 		Organization orgDetails = organizationManager.getOrganizationById(batchDetails.getOrgId());
-		fileSystem ccdTemplateDir = new fileSystem();
-		ccdTemplateDir.setDir(orgDetails.getcleanURL(), "templates");
 
 		String ccdSampleTemplate = transportDetails.getCcdSampleTemplate();
 
-		Path path = Paths.get(ccdTemplateDir.getDir() + ccdSampleTemplate);
+		Path path = Paths.get(directory = myProps.getProperty("ut.directory.utRootDir") + orgDetails.getcleanURL() + "/templates/" + ccdSampleTemplate);
 		String ccdSampleContent = new String(Files.readAllBytes(path));
 
-		Path newFilePath = Paths.get(dir.getDir() + fileName);
+		Path newFilePath = Paths.get(directory + fileName);
 		Files.write(newFilePath, ccdSampleContent.getBytes());
 
 		String contentToUpdate = new String(Files.readAllBytes(newFilePath));
@@ -455,17 +440,15 @@ public class transactionOutManagerImpl implements transactionOutManager {
 				    if ("pdfattachment".equals(element.getelementName().toLowerCase()) && transportDetails.getHL7PDFSampleTemplate() != null && !"".equals(transportDetails.getHL7PDFSampleTemplate())) {
 
 					Organization orgDetails = organizationManager.getOrganizationById(batchDetails.getOrgId());
-					fileSystem hl7PDFTemplateDir = new fileSystem();
-					hl7PDFTemplateDir.setDir(orgDetails.getcleanURL(), "templates");
-
+					
 					String hl7PDFSampleTemplate = transportDetails.getHL7PDFSampleTemplate();
 
 					File inputFile;
 
 					if (hl7PDFSampleTemplate.contains(".docx")) {
-					    String inputfilepath = hl7PDFTemplateDir.getDir() + hl7PDFSampleTemplate;
+					    String inputfilepath = myProps.getProperty("ut.directory.utRootDir") + orgDetails.getcleanURL() + "/templates/" + hl7PDFSampleTemplate;
 
-					    String outputfilepath = dir.getDir() + "OUT_variableReplace.docx";
+					    String outputfilepath = directory + "OUT_variableReplace.docx";
 
 					    WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.load(new java.io.File(inputfilepath));
 
@@ -523,7 +506,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
 
 					    }
 
-					    inputFile = new File(dir.getDir() + "OUT_variableReplace.docx");
+					    inputFile = new File(directory + "OUT_variableReplace.docx");
 
 					    FieldUpdater updater = new FieldUpdater(wordMLPackage);
 					    updater.update(true);
@@ -531,7 +514,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
 					    FOSettings foSettings = Docx4J.createFOSettings();
 					    foSettings.setWmlPackage(wordMLPackage);
 
-					    String outputfilepath2 = dir.getDir() + "hl7pdf.pdf";
+					    String outputfilepath2 = directory + "hl7pdf.pdf";
 					    OutputStream os = new java.io.FileOutputStream(outputfilepath2);
 					    Docx4J.toFO(foSettings, os, Docx4J.FLAG_EXPORT_PREFER_XSL);
 
@@ -544,7 +527,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
 					    wordMLPackage = null;
 
 					    fileSystem attachDir = new fileSystem();
-					    File f = new File(dir.getDir() + "hl7pdf.pdf");
+					    File f = new File(directory + "hl7pdf.pdf");
 					    byte[] bytes = attachDir.loadFile(f);
 					    byte[] encoded = Base64.encode(bytes);
 					    String encodedString = new String(encoded);
@@ -556,10 +539,10 @@ public class transactionOutManagerImpl implements transactionOutManager {
 					    f.delete();
 					} else {
 
-					    Path path = Paths.get(hl7PDFTemplateDir.getDir() + hl7PDFSampleTemplate);
+					    Path path = Paths.get(myProps.getProperty("ut.directory.utRootDir") + orgDetails.getcleanURL() + "/templates/" + hl7PDFSampleTemplate);
 					    String hl7PDFSampleContent = new String(Files.readAllBytes(path));
 
-					    Path newFilePath = Paths.get(dir.getDir() + "hl7pdf.txt");
+					    Path newFilePath = Paths.get(directory + "hl7pdf.txt");
 					    Files.write(newFilePath, hl7PDFSampleContent.getBytes());
 
 					    String contentToUpdate = new String(Files.readAllBytes(newFilePath));
@@ -602,11 +585,11 @@ public class transactionOutManagerImpl implements transactionOutManager {
 
 					    Files.write(newFilePath, contentToUpdate.getBytes());
 
-					    inputFile = new File(dir.getDir() + "hl7pdf.txt");
+					    inputFile = new File(directory + "hl7pdf.txt");
 
-					    if (txtToPDF.convertTextToPDF(inputFile, dir.getDir(), "hl7pdf.pdf")) {
+					    if (txtToPDF.convertTextToPDF(inputFile, directory, "hl7pdf.pdf")) {
 						fileSystem attachDir = new fileSystem();
-						File f = new File(dir.getDir() + "hl7pdf.pdf");
+						File f = new File(directory + "hl7pdf.pdf");
 						byte[] bytes = attachDir.loadFile(f);
 						byte[] encoded = Base64.encode(bytes);
 						String encodedString = new String(encoded);
@@ -1843,8 +1826,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
 	     //mysql is the fastest way to output a file, but the permissions are tricky we write 
 	     //to massoutfiles where both tomcat and mysql has permission. 
 	     //Then we can create, copy and delete
-	    fileSystem fileSystemOutput = new fileSystem();
-	    File massOutFile = new File(fileSystemOutput.setPathFromRoot(massOutPutPathMysqlPath) + batchDownload.getutBatchName() + "." + fileExt);
+	    File massOutFile = new File(myProps.getProperty("ut.directory.massOutputPath") + batchDownload.getutBatchName() + "." + fileExt);
 
 	    //check to see if file is there, if so remove old file
 	    if (massOutFile.exists()) {
@@ -1868,15 +1850,13 @@ public class transactionOutManagerImpl implements transactionOutManager {
 
 		if (recordsToWrite != null) {
 		    Organization orgDetails = organizationManager.getOrganizationById(configurationManager.getConfigurationById(transportDetails.getconfigId()).getorgId());
-		    fileSystem ccdTemplateDir = new fileSystem();
-		    ccdTemplateDir.setDir(orgDetails.getcleanURL(), "templates");
-
+		    
 		    String ccdSampleTemplate = transportDetails.getCcdSampleTemplate();
 
-		    Path path = Paths.get(ccdTemplateDir.getDir() + ccdSampleTemplate);
+		    Path path = Paths.get(myProps.getProperty("ut.directory.utRootDir") + orgDetails.getcleanURL() + "/templates/" + ccdSampleTemplate);
 		    String ccdSampleContent = new String(Files.readAllBytes(path));
 
-		    Path newFilePath = Paths.get(massOutPutPathMysqlPath + batchDownload.getutBatchName() + "." + fileExt);
+		    Path newFilePath = Paths.get(myProps.getProperty("ut.directory.massOutputPath") + batchDownload.getutBatchName() + "." + fileExt);
 
 		    Files.write(newFilePath, ccdSampleContent.getBytes());
 
@@ -1965,7 +1945,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
 		}
 
 	    } else {
-		Integer writeOutCome = writeOutputToTextFile(transportDetails, batchDownload.getId(), massOutPutPathMysqlPath + batchDownload.getutBatchName() + "." + fileExt, configFields);
+		Integer writeOutCome = writeOutputToTextFile(transportDetails, batchDownload.getId(), myProps.getProperty("ut.directory.massOutputPath") + batchDownload.getutBatchName() + "." + fileExt, configFields);
 	    }
 
 	    if (!massOutFile.exists()) {
@@ -1979,8 +1959,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
 	    }
 
 	    //cp file to archiveOut and correct putput folder
-	    fileSystem fileSystem = new fileSystem();
-	    File archiveFile = new File(fileSystem.setPathFromRoot(archivePath) + batchDownload.getutBatchName() + "." + fileExt);
+	    File archiveFile = new File(myProps.getProperty("ut.directory.utRootDir") + "archivesOut/" + batchDownload.getutBatchName() + "." + fileExt);
 
 	    //at this point, message it not encrypted
 	    //we always encrypt the archive file
@@ -2014,7 +1993,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
 			String registryFolderName = registryDetails.getRegistryName().toLowerCase().replaceAll(" ","-");
 			
 			
-			File targetFile = new File(registrydirectoryPath + "/" + registryFolderName + "/loadFiles/" + batchDownload.getutBatchName() + "." + fileExt);
+			File targetFile = new File(myProps.getProperty("registry.directory.path") + registryFolderName + "/loadFiles/" + batchDownload.getutBatchName() + "." + fileExt);
 			Files.copy(archiveFile.toPath(), targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
 			
 			//Check to see if a submitted message entry was made, if not we need to create one.
@@ -2079,7 +2058,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
 		/* Get the File Drop Details */
 		configurationFTPFields FTPPushDetails = configurationTransportManager.getTransportFTPDetailsPush(transportDetails.getId());
 
-		File targetFile = new File(directoryPath + FTPPushDetails.getdirectory()+ batchDownload.getoutputFileName());
+		File targetFile = new File(myProps.getProperty("ut.directory.utRootDir") + FTPPushDetails.getdirectory()+ batchDownload.getoutputFileName());
 		
 		Files.copy(archiveFile.toPath(), targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
 		
@@ -2338,13 +2317,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
 	   // Get the File Drop Details
 	   configurationFileDropFields fileDropDetails = configurationTransportManager.getTransFileDropDetailsPush(transportDetails.getId());
 
-	    // the file is in output folder already, we need to rebuild path and move it
-	    fileSystem dir = new fileSystem();
-	    String filelocation = transportDetails.getfileLocation();
-	    filelocation = filelocation.replace("/HELProductSuite/universalTranslator/", "");
-	    dir.setDirByName(filelocation);
-
-	    File targetFile = new File(directoryPath + fileDropDetails.getDirectory() + batchDLDetails.getoutputFileName());
+	    File targetFile = new File(myProps.getProperty("ut.directory.utRootDir") + fileDropDetails.getDirectory() + batchDLDetails.getoutputFileName());
 	    Files.copy(archiveFile.toPath(), targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
 	} 
 	
@@ -2356,13 +2329,8 @@ public class transactionOutManagerImpl implements transactionOutManager {
 	    
 	    if(ftpDetails != null) {
 		if(!ftpDetails.getdirectory().equals("")) {
-		    // the file is in output folder already, we need to rebuild path and move it
-		    fileSystem dir = new fileSystem();
-		    String filelocation = transportDetails.getfileLocation();
-		    filelocation = filelocation.replace("/HELProductSuite/universalTranslator/", "");
-		    dir.setDirByName(filelocation);
-
-		    File targetFile = new File(directoryPath + ftpDetails.getdirectory() + batchDLDetails.getoutputFileName());
+		   
+		    File targetFile = new File(myProps.getProperty("ut.directory.utRootDir") + ftpDetails.getdirectory() + batchDLDetails.getoutputFileName());
 		    Files.copy(archiveFile.toPath(), targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
 		}
 	    }

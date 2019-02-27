@@ -83,11 +83,8 @@
         <property name="targetMethod" value="putAll" />
         <property name="arguments">
             <util:properties>
-		<prop key="directory.utRootDir">${ut.directory.utRootDir}</prop>
-		<prop key="directory.registryRootDir">${registry.directory.path}</prop>
                 <prop key="admin.email">${admin.email}</prop>
                 <prop key="server.identity">${server.identity}</prop> 
-                <prop key="directory.massOutputPath">${ut.directory.massOutputPath}</prop>
             </util:properties>
         </property>
     </bean>

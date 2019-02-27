@@ -16,6 +16,8 @@ import com.hel.ut.model.utConfiguration;
 import com.hel.ut.model.configurationConnection;
 import com.hel.ut.reference.fileSystem;
 import java.util.ArrayList;
+import java.util.Properties;
+import javax.annotation.Resource;
 import org.hibernate.criterion.Order;
 import org.hibernate.exception.SQLGrammarException;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,6 +34,9 @@ public class organizationDAOImpl implements organizationDAO {
 
     @Autowired
     private SessionFactory sessionFactory;
+    
+    @Resource(name = "myProps")
+    private Properties myProps;
 
     /**
      * The 'createOrganziation' function will create a new organization
@@ -297,7 +302,7 @@ public class organizationDAOImpl implements organizationDAO {
         //Delete the organization folder within bowlink
         try {
             fileSystem dir = new fileSystem();
-            dir.deleteOrgDirectories(orgDetails.getcleanURL());
+            dir.deleteOrgDirectories(myProps.getProperty("ut.directory.utRootDir") + orgDetails.getcleanURL());
 
             //Delete the organization
             Query deleteOrg = sessionFactory.getCurrentSession().createQuery("delete from Organization where id = :orgId");

@@ -24,7 +24,6 @@ import com.hel.ut.model.configurationMessageSpecs;
 import com.hel.ut.model.configurationSchedules;
 import com.hel.ut.model.watchlist;
 import com.hel.ut.model.watchlistEntry;
-import com.hel.ut.reference.fileSystem;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -37,7 +36,8 @@ import org.hibernate.SessionFactory;
 import org.springframework.web.multipart.MultipartFile;
 import com.hel.ut.service.utConfigurationManager;
 import com.hel.ut.dao.utConfigurationDAO;
-import com.hel.ut.model.configurationFormFields;
+import java.util.Properties;
+import javax.annotation.Resource;
 
 @Service
 public class utConfigurationManagerImpl implements utConfigurationManager {
@@ -50,6 +50,9 @@ public class utConfigurationManagerImpl implements utConfigurationManager {
 
     @Autowired
     private organizationDAO organizationDAO;
+    
+    @Resource(name = "myProps")
+    private Properties myProps;
 
     @Override
     public Integer createConfiguration(utConfiguration configuration) {
@@ -250,10 +253,11 @@ public class utConfigurationManagerImpl implements utConfigurationManager {
 	utConfiguration configDetails = utConfigurationDAO.getConfigurationById(messageSpecs.getconfigId());
 	Organization orgDetails = organizationDAO.getOrganizationById(configDetails.getorgId());
 	String cleanURL = orgDetails.getcleanURL();
-	fileSystem dir = null;
+	
 	boolean processFile = false;
 	String fileName = null;
 	int clearFields = 0;
+	String directory = "";
 	
 	if(messageSpecs.getFile() != null) {
 	    if(!messageSpecs.getFile().isEmpty()) {
@@ -276,16 +280,15 @@ public class utConfigurationManagerImpl implements utConfigurationManager {
 			File newFile = null;
 
 			//Set the directory to save the uploaded message type template to
-			dir = new fileSystem();
-			dir.setDir(cleanURL, "templates");
+			directory = myProps.getProperty("ut.directory.utRootDir") + cleanURL + "/templates/";
 
-			newFile = new File(dir.getDir() + fileName);
+			newFile = new File(directory + fileName);
 
 			if (newFile.exists()) {
 			    int i = 1;
 			    while (newFile.exists()) {
 				int iDot = fileName.lastIndexOf(".");
-				newFile = new File(dir.getDir() + fileName.substring(0, iDot) + "_(" + ++i + ")" + fileName.substring(iDot));
+				newFile = new File(directory + fileName.substring(0, iDot) + "_(" + ++i + ")" + fileName.substring(iDot));
 			    }
 			    fileName = newFile.getName();
 			} else {
@@ -328,10 +331,9 @@ public class utConfigurationManagerImpl implements utConfigurationManager {
 		File newFile = null;
 
 		//Set the directory to save the uploaded message type template to
-		dir = new fileSystem();
-		dir.setDir(cleanURL, "templates");
+		directory = myProps.getProperty("ut.directory.utRootDir") + cleanURL + "/templates/";
 
-		newFile = new File(dir.getDir() + parsingScriptFileName);
+		newFile = new File(directory + parsingScriptFileName);
 
 		if (newFile.exists()) {
 		    newFile.delete();
@@ -361,7 +363,7 @@ public class utConfigurationManagerImpl implements utConfigurationManager {
 
 	if (processFile == true) {
 	    try {
-		loadExcelContents(messageSpecs.getconfigId(), transportDetailId, fileName, dir);
+		loadExcelContents(messageSpecs.getconfigId(), transportDetailId, fileName, directory);
 	    } catch (Exception e1) {
 		e1.printStackTrace();
 		throw new Exception(e1);
@@ -375,11 +377,13 @@ public class utConfigurationManagerImpl implements utConfigurationManager {
      * The 'loadExcelContents' will take the contents of the uploaded excel template file and populate the corresponding utConfiguration form fields table. This function will split up the contents into the appropriate buckets. Buckets (1 - 4) will be separated by spacer rows with in the excel file.
      *
      * @param id value of the latest added utConfiguration
+     * @param transportDetailId
      * @param fileName	file name of the uploaded excel file.
      * @param dir	the directory of the uploaded file
+     * @throws java.lang.Exception
      *
      */
-    public void loadExcelContents(int id, int transportDetailId, String fileName, fileSystem dir) throws Exception {
+    public void loadExcelContents(int id, int transportDetailId, String fileName, String dir) throws Exception {
 	utConfigurationDAO.loadExcelContents(id, transportDetailId, fileName, dir);
     }
 

@@ -15,6 +15,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Properties;
+import javax.annotation.Resource;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
@@ -22,6 +24,9 @@ public class organizationManagerImpl implements organizationManager {
 
     @Autowired
     private organizationDAO organizationDAO;
+    
+    @Resource(name = "myProps")
+    private Properties myProps;
 
     @Override
     public Integer createOrganization(Organization organization) {
@@ -33,7 +38,7 @@ public class organizationManagerImpl implements organizationManager {
         //First get the operating system
         fileSystem dir = new fileSystem();
 
-        dir.creatOrgDirectories(organization.getcleanURL());
+        dir.creatOrgDirectories(myProps.getProperty("ut.directory.utRootDir") + organization.getcleanURL());
 
         return lastId;
     }
@@ -45,7 +50,7 @@ public class organizationManagerImpl implements organizationManager {
         //the organization
         fileSystem dir = new fileSystem();
 
-        dir.creatOrgDirectories(organization.getcleanURL());
+        dir.creatOrgDirectories(myProps.getProperty("ut.directory.utRootDir") + organization.getcleanURL());
         
         MultipartFile file = organization.getFile();
         //If a file is uploaded
@@ -60,12 +65,7 @@ public class organizationManagerImpl implements organizationManager {
                 inputStream = file.getInputStream();
                 File newFile = null;
 
-                //Set the directory to save the uploaded message type template to
-                fileSystem orgdir = new fileSystem();
-
-                orgdir.setDir(organization.getcleanURL(), "templates");
-
-                newFile = new File(orgdir.getDir() + fileName);
+                newFile = new File(myProps.getProperty("ut.directory.utRootDir") + organization.getcleanURL() + "/templates/" + fileName);
 
                 if (newFile.exists()) {
                     newFile.delete();

@@ -1,8 +1,5 @@
 package com.hel.ut.controller;
 
-import com.jcraft.jsch.ChannelSftp;
-import com.jcraft.jsch.JSch;
-import com.jcraft.jsch.Session;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -57,8 +54,7 @@ import com.hel.ut.reference.fileSystem;
 import com.hel.ut.service.sysAdminManager;
 import com.hel.ut.service.userManager;
 
-import java.io.File;
-import java.io.FileInputStream;
+
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.InitBinder;
 
@@ -71,6 +67,8 @@ import com.hel.ut.service.utConfigurationManager;
 import com.hel.ut.service.utConfigurationTransportManager;
 import com.registryKit.registry.configurations.configuration;
 import com.registryKit.registry.configurations.configurationManager;
+import java.util.Properties;
+import javax.annotation.Resource;
 
 @Controller
 @RequestMapping("/administrator/configurations")
@@ -97,6 +95,9 @@ public class adminConfigController {
     
     @Autowired
     private configurationManager registryconfigurationmanager;
+    
+    @Resource(name = "myProps")
+    private Properties myProps;
     
     @InitBinder
     public void initBinder(WebDataBinder binder) {
@@ -691,9 +692,11 @@ public class adminConfigController {
         if (transportDetails.gettransportMethodId() == 3 && !transportDetails.getFTPFields().isEmpty()) {
 	    fileSystem dir = new fileSystem();
 	    
+	    String directory = myProps.getProperty("ut.directory.utRootDir");
+	    
             for (configurationFTPFields ftpFields : transportDetails.getFTPFields()) {
 		
-		dir.creatFTPDirectory(ftpFields.getdirectory().replace("/HELProductSuite/universalTranslator/",""));
+		dir.creatFTPDirectory(directory+ftpFields.getdirectory().replace("/HELProductSuite/universalTranslator/",""));
 		
 		ftpFields.settransportId(transportId);
                 utconfigurationTransportManager.saveTransportFTP(configurationDetails.getorgId(), ftpFields);
@@ -704,9 +707,11 @@ public class adminConfigController {
 	if ((transportDetails.gettransportMethodId() == 10 || transportDetails.gettransportMethodId() == 11) && !transportDetails.getFileDropFields().isEmpty()) {
 	    fileSystem dir = new fileSystem();
 	    
+	    String directory = myProps.getProperty("ut.directory.utRootDir");
+	    
 	     for (configurationFileDropFields fileDropFields : transportDetails.getFileDropFields()) {
 		
-		dir.createFileDroppedDirectory(fileDropFields.getDirectory().replace("/HELProductSuite/universalTranslator/",""));
+		dir.createFileDroppedDirectory(directory+fileDropFields.getDirectory().replace("/HELProductSuite/universalTranslator/",""));
 		
                 fileDropFields.setTransportId(transportId);
                 utconfigurationTransportManager.saveTransportFileDrop(fileDropFields);
@@ -2362,109 +2367,7 @@ public class adminConfigController {
         return mav;
     }
 
-    /**
-     * The 'testFTPConnection.do' method will test the FTP connection paramenters.
-     */
-    @RequestMapping(value = "/testFTPConnection.do", method = RequestMethod.GET)
-    public @ResponseBody
-    String testFTPConnection(@RequestParam int method, @RequestParam int id, @RequestParam int configId) throws Exception {
-
-        Organization orgDetails = organizationmanager.getOrganizationById(utconfigurationmanager.getConfigurationById(configId).getorgId());
-
-        /* get the FTP Details */
-        configurationFTPFields ftpDetails;
-        if (method == 1) {
-            ftpDetails = utconfigurationTransportManager.getTransportFTPDetailsPull(id);
-        } else {
-            ftpDetails = utconfigurationTransportManager.getTransportFTPDetailsPush(id);
-        }
-
-        String connectionResponse = null;
-
-        /* SFTP */
-        if ("SFTP".equals(ftpDetails.getprotocol())) {
-
-            JSch jsch = new JSch();
-            Session session = null;
-            ChannelSftp channel = null;
-            FileInputStream localFileStream = null;
-
-            String user = ftpDetails.getusername();
-            int port = ftpDetails.getport();
-            String host = ftpDetails.getip();
-
-            try {
-                if (ftpDetails.getcertification() != null && !"".equals(ftpDetails.getcertification())) {
-
-                    File newFile = null;
-
-                    fileSystem dir = new fileSystem();
-                    dir.setDir(orgDetails.getcleanURL(), "certificates");
-
-                    jsch.addIdentity(new File(dir.getDir() + ftpDetails.getcertification()).getAbsolutePath());
-                    session = jsch.getSession(user, host, port);
-                } else if (ftpDetails.getpassword() != null && !"".equals(ftpDetails.getpassword())) {
-                    session = jsch.getSession(user, host, port);
-                    session.setPassword(ftpDetails.getpassword());
-                }
-
-                session.setConfig("StrictHostKeyChecking", "no");
-                session.setTimeout(2000);
-
-                session.connect();
-
-                channel = (ChannelSftp) session.openChannel("sftp");
-
-                try {
-                    channel.connect();
-
-                    if (ftpDetails.getdirectory() != null && !"".equals(ftpDetails.getdirectory())) {
-                        try {
-                            channel.cd(ftpDetails.getdirectory());
-                            connectionResponse = "Connected to the Directory " + ftpDetails.getdirectory();
-                        } catch (Exception e) {
-                            connectionResponse = "The Directory " + ftpDetails.getdirectory() + " was not found";
-                        }
-                    } else {
-                        connectionResponse = "connected";
-                    }
-
-                    channel.disconnect();
-                    session.disconnect();
-                } catch (Exception e) {
-                    connectionResponse = "Connecton not valid";
-                    channel.disconnect();
-                    session.disconnect();
-                }
-
-            } catch (Exception e) {
-                connectionResponse = "Connecton not valid";
-                session.disconnect();
-            }
-
-        } 
-	/* FTP OR FTPS */ 
-	else {
-	    
-	    try {
-		JSch jsch = new JSch();
-		java.util.Properties config = new java.util.Properties();
-		config.put("StrictHostKeyChecking", "no");
-		
-		Session ftpsession =  jsch.getSession(ftpDetails.getusername(), ftpDetails.getip(), ftpDetails.getport());
-		ftpsession.setConfig(config);
-		ftpsession.setPassword(ftpDetails.getpassword());
-		ftpsession.connect();
-		connectionResponse = "SFTP Connection Success";
-	    }
-	    catch (Exception ex) {
-		connectionResponse = "SFTP Failed - " + ex.getMessage();
-	    }
-        }
-
-        return connectionResponse;
-
-    }
+    
 
     /**
      * The '/preprocessing' GET request will display the utConfiguration preprocessing page

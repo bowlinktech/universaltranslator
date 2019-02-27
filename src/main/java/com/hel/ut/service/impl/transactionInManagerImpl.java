@@ -89,7 +89,6 @@ import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import javax.annotation.Resource;
-import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.comparator.LastModifiedFileComparator;
 import org.apache.commons.io.filefilter.HiddenFileFilter;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -101,7 +100,6 @@ import com.registryKit.registry.fileUploads.fileUploadManager;
 import com.registryKit.registry.fileUploads.uploadedFile;
 import com.registryKit.registry.submittedMessages.submittedMessage;
 import com.registryKit.registry.submittedMessages.submittedMessageManager;
-import java.security.SecureRandom;
 
 /**
  *
@@ -184,11 +182,6 @@ public class transactionInManagerImpl implements transactionInManager {
     //reject Ids
     private List<Integer> rejectIds = Arrays.asList(13, 14);
     
-    private String directoryPath = System.getProperty("directory.utRootDir");
-
-    private String archivePath = (directoryPath + "archivesIn/");
-
-    private String archiveOutPath = (directoryPath + "archivesOut/");
 
     private List<String> zipExtensions = Arrays.asList("gz", "zip");
 
@@ -246,17 +239,13 @@ public class transactionInManagerImpl implements transactionInManager {
 	    inputStream = file.getInputStream();
 	    File newFile = null;
 
-	    //Set the directory to save the brochures to
-	    fileSystem dir = new fileSystem();
-	    dir.setDir(orgName, "attachments");
-
-	    newFile = new File(dir.getDir() + fileName);
+	    newFile = new File(myProps.getProperty("ut.directory.utRootDir") + orgName + "/attachments/" + fileName);
 
 	    if (newFile.exists()) {
 		int i = 1;
 		while (newFile.exists()) {
 		    int iDot = fileName.lastIndexOf(".");
-		    newFile = new File(dir.getDir() + fileName.substring(0, iDot) + "_(" + ++i + ")" + fileName.substring(iDot));
+		    newFile = new File(myProps.getProperty("ut.directory.utRootDir") + orgName + "/attachments/" + fileName.substring(0, iDot) + "_(" + ++i + ")" + fileName.substring(iDot));
 		}
 		fileName = newFile.getName();
 	    } else {
@@ -984,7 +973,7 @@ public class transactionInManagerImpl implements transactionInManager {
 	    
 	    Integer batchStatusId = 38;
 	    List<Integer> errorStatusIds = Arrays.asList(11, 13, 14, 16);
-	    String processFolderPath = "/HELProductSuite/universalTranslator/loadFiles/";
+	    String processFolderPath = "loadFiles/";
 
 	    try {
 		try {
@@ -1102,19 +1091,16 @@ public class transactionInManagerImpl implements transactionInManager {
 
 		Integer sysError = 0;
 
-		fileSystem dir = new fileSystem();
-		dir.setDirByName("/");
-
 		//2. we load data with my sql
 		String actualFileName = null;
 		String newfilename = null;
 
 		//decoded files will always be in loadFiles folder with UTBatchName 
 		// all files are Base64 encoded at this point
-		String encodedFilePath = dir.setPath(batch.getFileLocation());
+		String encodedFilePath = myProps.getProperty("ut.directory.utRootDir") + batch.getFileLocation().replace("/HELProductSuite/universalTranslator/","");
 		String encodedFileName = "encoded_"+batch.getutBatchName();
 		File encodedFile = new File(encodedFilePath + encodedFileName);
-		String decodedFilePath = dir.setPath(processFolderPath);
+		String decodedFilePath = myProps.getProperty("ut.directory.utRootDir") + processFolderPath;
 		String decodedFileName = batch.getutBatchName();
 		String decodedFileExt = batch.getoriginalFileName().substring(batch.getoriginalFileName().lastIndexOf("."));
 		String decodedFile = decodedFilePath + decodedFileName + decodedFileExt;
@@ -1316,7 +1302,7 @@ public class transactionInManagerImpl implements transactionInManager {
 
 			File actualFile = new File(actualFileName);
 			//we are archiving it
-			File archiveFile = new File(dir.setPathFromRoot(archivePath) + batch.getutBatchName() + "_dec" + actualFileName.substring(actualFileName.lastIndexOf(".")));
+			File archiveFile = new File(myProps.getProperty("ut.directory.utRootDir") + "archivesIn/" + batch.getutBatchName() + "_dec" + actualFileName.substring(actualFileName.lastIndexOf(".")));
 			Path archive = archiveFile.toPath();
 			Path actual = actualFile.toPath();
 			//we keep original file in archive folder
@@ -1738,7 +1724,7 @@ public class transactionInManagerImpl implements transactionInManager {
 
 			// check if directory exists
 			fileSystem fileSystem = new fileSystem();
-			String inPath = fileSystem.setPathFromRoot(sftpHome + ftpPath.getdirectory());
+			String inPath = sftpHome + ftpPath.getdirectory();
 			File f = new File(inPath);
 			if (!f.exists()) {
 			    sftpJob.setNotes(("Directory " + inPath + " does not exist"));
@@ -1794,7 +1780,7 @@ public class transactionInManagerImpl implements transactionInManager {
 	    Organization orgDetails = organizationmanager.getOrganizationById(orgId);
 	    
 	    fileSystem fileSystem = new fileSystem();
-	    String fileInPath = fileSystem.setPathFromRoot(rootPath + configDroppedPath);
+	    String fileInPath = rootPath + configDroppedPath;
 	    File folder = new File(fileInPath);
 
 	    //Retrieve all files in the folder (we only list visible files)
@@ -2088,7 +2074,7 @@ public class transactionInManagerImpl implements transactionInManager {
 				Path source = file.toPath();
 				Path target = newFile.toPath();
 
-				File archiveFile = new File(fileSystem.setPathFromRoot(archivePath) + "archive_"+batchName + fileName.substring(fileName.lastIndexOf(".")));
+				File archiveFile = new File(myProps.getProperty("ut.directory.utRootDir") + "archivesIn/" + "archive_"+batchName + fileName.substring(fileName.lastIndexOf(".")));
 				Path archive = archiveFile.toPath();
 				
 				//we keep original file in archive folder
@@ -2241,21 +2227,18 @@ public class transactionInManagerImpl implements transactionInManager {
 	try {
 	    inputStream = file.getInputStream();
 	    File newFile = null;
-
-	    //Set the directory to save the brochures to
-	    fileSystem dir = new fileSystem();
+	    
 
 	    String filelocation = transportDetails.getfileLocation();
 	    filelocation = filelocation.replace("/HELProductSuite/universalTranslator/", "");
-	    dir.setDirByName(filelocation);
 
-	    newFile = new File(dir.getDir() + fileName);
+	    newFile = new File(myProps.getProperty("ut.directory.utRootDir") + filelocation + fileName);
 
 	    if (newFile.exists()) {
 		int i = 1;
 		while (newFile.exists()) {
 		    int iDot = fileName.lastIndexOf(".");
-		    newFile = new File(dir.getDir() + fileName.substring(0, iDot) + "_(" + ++i + ")" + fileName.substring(iDot));
+		    newFile = new File(myProps.getProperty("ut.directory.utRootDir") + filelocation + fileName.substring(0, iDot) + "_(" + ++i + ")" + fileName.substring(iDot));
 		}
 		fileName = newFile.getName();
 		newFile.createNewFile();
@@ -2337,7 +2320,7 @@ public class transactionInManagerImpl implements transactionInManager {
 			fileSystem fileSystem = new fileSystem();
 			
 			//paths are from root instead of /home
-			String inPath = fileSystem.setPathFromRoot(directoryHome + fileDropInfo.getDirectory().replace("/HELProductSuite/universalTranslator/",""));
+			String inPath = directoryHome + fileDropInfo.getDirectory().replace("/HELProductSuite/universalTranslator/","");
 			File f = new File(inPath);
 			
 			if (!f.exists()) {
@@ -2578,12 +2561,10 @@ public class transactionInManagerImpl implements transactionInManager {
 	    batchInfo.setSenderEmail(ws.getFromAddress());
 
 	    Organization orgDetails = organizationmanager.getOrganizationById(ws.getOrgId());
-	    String writeToFolder = "/HELProductSuite/universalTranslator/" + orgDetails.getcleanURL() + "/input files/";
+	    String writeToFolder = myProps.getProperty("ut.directory.utRootDir") + orgDetails.getcleanURL() + "/input files/";
 	    String fileExt = ".txt";
 	    String fileNamePath = writeToFolder + batchName + fileExt;
-	    //set folder path
-	    fileSystem dir = new fileSystem();
-	    String writeToFile = dir.setPath(fileNamePath);
+	    String writeToFile = fileNamePath;
 
 	    //we reject
 	    if (confTransports.size() != 1) { //should only be one since we don't have file ext
@@ -2663,7 +2644,7 @@ public class transactionInManagerImpl implements transactionInManager {
 		    batchInfo.setuserId(users.get(0).getId());
 		}
 		//write payload to file
-		writeToFile = dir.setPath(fileNamePath);
+		writeToFile = fileNamePath;
 
 		String messageContent = ws.getPayload();
 
@@ -2765,12 +2746,12 @@ public class transactionInManagerImpl implements transactionInManager {
 		    if (ct.getEncodingId() == 2) {
 			//write to temp file
 			String strDecode = filemanager.decodeFileToBase64Binary(file);
-			file = new File(dir.setPathFromRoot(archivePath) + batchName + "_dec" + fileExt);
-			String decodeFilePath = dir.setPathFromRoot(archivePath) + batchName + "_dec" + fileExt;
+			file = new File(myProps.getProperty("ut.directory.utRootDir") + "archivesIn/" + batchName + "_dec" + fileExt);
+			String decodeFilePath = myProps.getProperty("ut.directory.utRootDir") + "archivesIn/" + batchName + "_dec" + fileExt;
 			filemanager.writeFile(decodeFilePath, strDecode);
-			String encodeFilePath = dir.setPathFromRoot(archivePath) + batchName + "_org" + fileExt;
+			String encodeFilePath = myProps.getProperty("ut.directory.utRootDir") + "archivesIn/" + batchName + "_org" + fileExt;
 			filemanager.writeFile(encodeFilePath, ws.getPayload());
-			String encodeArchivePath = dir.setPathFromRoot(archivePath) + batchName + fileExt;
+			String encodeArchivePath = myProps.getProperty("ut.directory.utRootDir") + "archivesIn/" + batchName + fileExt;
 			Files.copy(new File(writeToFile).toPath(), new File(encodeArchivePath).toPath(), REPLACE_EXISTING);
 		    }
 
@@ -2779,6 +2760,7 @@ public class transactionInManagerImpl implements transactionInManager {
 		     * can't check delimiter for certain files, xml, hr etc *
 		     */
 		    if (fileExt.equalsIgnoreCase(".txt")) {
+			fileSystem dir = new fileSystem();
 			int delimCount = (Integer) dir.checkFileDelimiter(file, ct.getDelimChar());
 			if (delimCount < 3) {
 			    statusId = 7;
@@ -3481,12 +3463,12 @@ public class transactionInManagerImpl implements transactionInManager {
 	    batchInfo.setConfigId(configId);
 
 	    Organization orgDetails = organizationmanager.getOrganizationById(APIMessage.getOrgId());
-	    String writeToFolder = "/HELProductSuite/universalTranslator/" + orgDetails.getcleanURL() + "/input files/";
+	    String writeToFolder = myProps.getProperty("ut.directory.utRootDir") + orgDetails.getcleanURL() + "/input files/";
 	    String fileExt = ".txt";
 	    String fileNamePath = writeToFolder + batchName + fileExt;
 	    //set folder path
 	    fileSystem dir = new fileSystem();
-	    String writeToFile = dir.setPath(fileNamePath);
+	    String writeToFile = fileNamePath;
 
 	    //we reject
 	    if (ct == null) {
@@ -3613,7 +3595,7 @@ public class transactionInManagerImpl implements transactionInManager {
 		    batchInfo.setuserId(0);
 
 		    //write payload to file
-		    writeToFile = dir.setPath(fileNamePath);
+		    writeToFile = fileNamePath;
 
 		    String messageContent = APIMessage.getPayload();
 
@@ -3626,20 +3608,20 @@ public class transactionInManagerImpl implements transactionInManager {
 			if (ct.getEncodingId() == 2) {
 			    //write to temp file
 			    String strDecode = filemanager.decodeFileToBase64Binary(file);
-			    file = new File(dir.setPathFromRoot(archivePath) + batchName + "_dec" + fileExt);
-			    String decodeFilePath = dir.setPathFromRoot(archivePath) + batchName + "_dec" + fileExt;
+			    file = new File(myProps.getProperty("ut.directory.utRootDir") + "archivesIn/" + batchName + "_dec" + fileExt);
+			    String decodeFilePath = myProps.getProperty("ut.directory.utRootDir") + "archivesIn/" + batchName + "_dec" + fileExt;
 			    filemanager.writeFile(decodeFilePath, strDecode);
-			    String encodeFilePath = dir.setPathFromRoot(archivePath) + batchName + "_org" + fileExt;
+			    String encodeFilePath = myProps.getProperty("ut.directory.utRootDir") + "archivesIn/" + batchName + "_org" + fileExt;
 			    filemanager.writeFile(encodeFilePath, APIMessage.getPayload());
-			    String encodeArchivePath = dir.setPathFromRoot(archivePath) + batchName + fileExt;
+			    String encodeArchivePath = myProps.getProperty("ut.directory.utRootDir") + "archivesIn/" + batchName + fileExt;
 			    Files.copy(new File(writeToFile).toPath(), new File(encodeArchivePath).toPath(), REPLACE_EXISTING);
 			} else {
-			    file = new File(dir.setPathFromRoot(archivePath) + batchName + "_dec" + fileExt);
-			    String decodeFilePath = dir.setPathFromRoot(archivePath) + batchName + "_dec" + fileExt;
+			    file = new File(myProps.getProperty("ut.directory.utRootDir") + "archivesIn/" + batchName + "_dec" + fileExt);
+			    String decodeFilePath = myProps.getProperty("ut.directory.utRootDir") + "archivesIn/" + batchName + "_dec" + fileExt;
 			    filemanager.writeFile(decodeFilePath, messageContent);
-			    String encodeFilePath = dir.setPathFromRoot(archivePath) + batchName + "_org" + fileExt;
+			    String encodeFilePath = myProps.getProperty("ut.directory.utRootDir") + "archivesIn/" + batchName + "_org" + fileExt;
 			    filemanager.writeFile(encodeFilePath, messageContent);
-			    String encodeArchivePath = dir.setPathFromRoot(archivePath) + batchName + fileExt;
+			    String encodeArchivePath = myProps.getProperty("ut.directory.utRootDir") + "archivesIn/" + batchName + fileExt;
 			    Files.copy(new File(writeToFile).toPath(), new File(encodeArchivePath).toPath(), REPLACE_EXISTING);
 			}
 
@@ -4048,15 +4030,13 @@ public class transactionInManagerImpl implements transactionInManager {
 
 		String filelocation = transportDetails.getfileLocation();
 		filelocation = filelocation.replace("/HELProductSuite/universalTranslator/", "");
-		dir.setDirByName(filelocation);
 
-		File targetFile = new File(dir.getDir() + fileName);
+		File targetFile = new File(myProps.getProperty("ut.directory.utRootDir") + filelocation + fileName);
 		Files.copy(new File(sourceFile).toPath(), targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
 
 		//Copy the file to the archive path as well
-		dir = new fileSystem();
-		File archiveFile = new File(dir.setPathFromRoot(archivePath) + batchDownload.getutBatchName() + "." + transportDetails.getfileExt());
-		File archiveOutFile = new File(dir.setPathFromRoot(archiveOutPath) + batchDownload.getutBatchName() + "." + transportDetails.getfileExt());
+		File archiveFile = new File(myProps.getProperty("ut.directory.utRootDir") + "archivesIn/" + batchDownload.getutBatchName() + "." + transportDetails.getfileExt());
+		File archiveOutFile = new File(myProps.getProperty("ut.directory.utRootDir") + "archivesOut/" + batchDownload.getutBatchName() + "." + transportDetails.getfileExt());
 
 		//at this point, message it not encrypted
 		//we always encrypt the archive file

@@ -23,6 +23,8 @@ import com.hel.ut.model.Crosswalks;
 import com.hel.ut.model.Organization;
 import com.hel.ut.model.validationType;
 import com.hel.ut.reference.fileSystem;
+import java.util.Properties;
+import javax.annotation.Resource;
 
 @Service
 public class messageTypeManagerImpl implements messageTypeManager {
@@ -32,6 +34,9 @@ public class messageTypeManagerImpl implements messageTypeManager {
 
     @Autowired
     private organizationDAO organizationDAO;
+    
+    @Resource(name = "myProps")
+    private Properties myProps;
     
     @Override
     public double findTotalCrosswalks(int orgId) {
@@ -115,19 +120,19 @@ public class messageTypeManagerImpl implements messageTypeManager {
 
         InputStream inputStream = null;
         OutputStream outputStream = null;
-        fileSystem dir = new fileSystem();
+	String directory;
 
         if (crosswalkDetails.getOrgId() > 0) {
             Organization orgDetails = organizationDAO.getOrganizationById(crosswalkDetails.getOrgId());
             cleanURL = orgDetails.getcleanURL();
-            dir.setDir(cleanURL, "crosswalks");
+	    directory = myProps.getProperty("ut.directory.utRootDir") + cleanURL + "/crosswalks/";
         } else {
             //Set the directory to save the uploaded message type template to
-            dir.setMessageTypeCrosswalksDir("libraryFiles");
+	     directory = myProps.getProperty("ut.directory.utRootDir") + "libraryFiles/";
         }
 
         File newFile = null;
-        newFile = new File(dir.getDir() + fileName);
+        newFile = new File(directory + fileName);
 
         try {
             if (!newFile.exists()) {
@@ -157,7 +162,8 @@ public class messageTypeManagerImpl implements messageTypeManager {
 
         //Check to make sure the file contains the selected delimiter
         //Set the directory that holds the crosswalk files
-        int delimCount = (Integer) dir.checkFileDelimiter(dir, fileName, delimChar);
+	fileSystem dir = new fileSystem();
+        int delimCount = (Integer) dir.checkFileDelimiter(directory, fileName, delimChar);
 
         if (delimCount > 0) {
             //Submit the new message type to the database
@@ -187,19 +193,20 @@ public class messageTypeManagerImpl implements messageTypeManager {
 
         InputStream inputStream = null;
         OutputStream outputStream = null;
-        fileSystem dir = new fileSystem();
+        
+	String directory;
 
         if (crosswalkDetails.getOrgId() > 0) {
             Organization orgDetails = organizationDAO.getOrganizationById(crosswalkDetails.getOrgId());
             cleanURL = orgDetails.getcleanURL();
-            dir.setDir(cleanURL, "crosswalks");
+	     directory = myProps.getProperty("ut.directory.utRootDir") + cleanURL + "/crosswalks/";
         } else {
             //Set the directory to save the uploaded message type template to
-            dir.setMessageTypeCrosswalksDir("libraryFiles");
+	    directory = myProps.getProperty("ut.directory.utRootDir") + "libraryFiles/";
         }
 
         File newFile = null;
-        newFile = new File(dir.getDir() + fileName);
+        newFile = new File(directory + fileName);
 
         try {
             inputStream = file.getInputStream();
@@ -228,7 +235,8 @@ public class messageTypeManagerImpl implements messageTypeManager {
 
         //Check to make sure the file contains the selected delimiter
         //Set the directory that holds the crosswalk files
-        int delimCount = (Integer) dir.checkFileDelimiter(dir, fileName, delimChar);
+	fileSystem dir = new fileSystem();
+        int delimCount = (Integer) dir.checkFileDelimiter(directory, fileName, delimChar);
 
         if (delimCount > 0) {
             //Submit the new message type to the database
@@ -264,18 +272,18 @@ public class messageTypeManagerImpl implements messageTypeManager {
     public void loadCrosswalkContents(int id, String fileName, String delim, String cleanURL) throws Exception {
 
         //Set the directory that holds the crosswalk files
-        fileSystem dir = new fileSystem();
+	String directory;
 
         if (cleanURL == null) {
-            dir.setMessageTypeCrosswalksDir("libraryFiles");
+	    directory = myProps.getProperty("ut.directory.utRootDir") + "libraryFiles/";
         } else {
-            dir.setDir(cleanURL, "crosswalks");
+	    directory = myProps.getProperty("ut.directory.utRootDir") + cleanURL + "/crosswalks/";
         }
 
         FileInputStream file = null;
         String[] lineValue = null;
         try {
-            file = new FileInputStream(new File(dir.getDir() + fileName));
+            file = new FileInputStream(new File(directory + fileName));
         } catch (FileNotFoundException e) {
             e.printStackTrace();
             throw new Exception(e);

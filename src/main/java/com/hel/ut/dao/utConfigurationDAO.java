@@ -153,7 +153,7 @@ public interface utConfigurationDAO {
 
     configurationExcelDetails getExcelDetails(Integer configId, Integer orgId) throws Exception;
     
-    void loadExcelContents(int id, int transportDetailId, String fileName, fileSystem dir) throws Exception;
+    void loadExcelContents(int id, int transportDetailId, String fileName, String dir) throws Exception;
     
     void updateExcelConfigDetails(Integer orgId, configurationMessageSpecs messageSpecs) throws Exception;
     

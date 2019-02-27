@@ -1170,13 +1170,15 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
      * The 'loadExcelContents' will take the contents of the uploaded excel template file and populate the corresponding utConfiguration form fields table. This function will split up the contents into the appropriate buckets. Buckets (1 - 4) will be separated by spacer rows with in the excel file.
      *
      * @param id value of the latest added utConfiguration
+     * @param transportDetailId
      * @param fileName	file name of the uploaded excel file.
      * @param dir	the directory of the uploaded file
+     * @throws java.lang.Exception
      *
      */
     @Override
     @Transactional(readOnly = false)
-    public void loadExcelContents(int id, int transportDetailId, String fileName, fileSystem dir) throws Exception {
+    public void loadExcelContents(int id, int transportDetailId, String fileName, String dir) throws Exception {
         String errorMessage = "";
         try {
            
@@ -1188,7 +1190,7 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
             XSSFWorkbook workbook = null;
 
             try {
-                pkg = OPCPackage.open(new File(dir.getDir() + fileName));
+                pkg = OPCPackage.open(new File(dir + fileName));
 
                 workbook = new XSSFWorkbook(pkg);
 

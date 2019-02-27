@@ -7,7 +7,6 @@ package com.hel.ut.service;
 
 import com.hel.ut.model.Organization;
 import com.hel.ut.model.configurationMessageSpecs;
-import com.hel.ut.reference.fileSystem;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -16,6 +15,8 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.Properties;
+import javax.annotation.Resource;
 import org.json.simple.parser.JSONParser;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +34,9 @@ public class JSONtoTxt {
     
     @Autowired
     private utConfigurationManager configurationManager;
+    
+    @Resource(name = "myProps")
+    private Properties myProps;
 
     @Autowired
     private utConfigurationTransportManager configurationTransportManager;
@@ -40,9 +44,8 @@ public class JSONtoTxt {
     public String TranslateJSONtoTxt(String fileLocation, String fileName, int orgId, int configId) throws Exception {
 
         Organization orgDetails = organizationmanager.getOrganizationById(orgId);
-        fileSystem dir = new fileSystem();
-
-        dir.setDir(orgDetails.getcleanURL(), "templates");
+        
+	String directory = myProps.getProperty("ut.directory.utRootDir") + orgDetails.getcleanURL() + "/templates/";
 	
 	String templatefileName = "";
 	
@@ -69,7 +72,7 @@ public class JSONtoTxt {
 	
 	if(!"".equals(templatefileName)) {
 	    
-	    URLClassLoader loader = new URLClassLoader(new URL[]{new URL("file://" + dir.getDir() + templatefileName)});
+	    URLClassLoader loader = new URLClassLoader(new URL[]{new URL("file://" + directory + templatefileName)});
 	    
 	    // Remove the .class extension
 	    Class cls = loader.loadClass(templatefileName.substring(0, templatefileName.lastIndexOf('.')));
@@ -81,14 +84,14 @@ public class JSONtoTxt {
 	    
 	    /* Get the uploaded CCD File */
 	    fileLocation = fileLocation.replace("/Applications/HELProductSuite/universalTranslator/", "").replace("/home/HELProductSuite/universalTranslator/", "").replace("/HELProductSuite/universalTranslator/", "");
-	    dir.setDirByName(fileLocation);
+	    directory = myProps.getProperty("ut.directory.utRootDir") + fileLocation;
 
-	    File jsonFile = new File(dir.getDir() + fileName + ".json");
+	    File jsonFile = new File(directory + fileName + ".json");
 	    
 	    /* Create the txt file that will hold the CCD fields */
 	    newfileName = new StringBuilder().append(jsonFile.getName().substring(0, jsonFile.getName().lastIndexOf("."))).append(".").append("txt").toString();
 
-	    File newFile = new File(dir.getDir() + newfileName);
+	    File newFile = new File(directory + newfileName);
 
 	    if (newFile.exists()) {
 		try {
@@ -97,7 +100,7 @@ public class JSONtoTxt {
 			int i = 1;
 			while (newFile.exists()) {
 			    int iDot = newfileName.lastIndexOf(".");
-			    newFile = new File(dir.getDir() + newfileName.substring(0, iDot) + "_(" + ++i + ")" + newfileName.substring(iDot));
+			    newFile = new File(directory + newfileName.substring(0, iDot) + "_(" + ++i + ")" + newfileName.substring(iDot));
 			}
 			newfileName = newFile.getName();
 			newFile.createNewFile();

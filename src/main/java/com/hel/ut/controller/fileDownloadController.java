@@ -22,9 +22,10 @@ import com.hel.ut.model.utUserActivity;
 import com.hel.ut.service.fileManager;
 import com.hel.ut.service.organizationManager;
 import com.hel.ut.service.userManager;
-import com.hel.ut.reference.fileSystem;
 
 import java.io.File;
+import java.util.Properties;
+import javax.annotation.Resource;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
@@ -44,6 +45,9 @@ public class fileDownloadController {
     
     @Autowired
     private fileManager filemanager;
+    
+    @Resource(name = "myProps")
+    private Properties myProps;
 
     /**
      * Size of a byte buffer to read/write file
@@ -88,34 +92,34 @@ public class fileDownloadController {
         String errorMessage = "";
 
         try {
-            fileSystem dir = new fileSystem();
+            String directory;
 
             if (orgId != null && orgId > 0) {
 
                 Organization organization = organizationManager.getOrganizationById(orgId);
                 String cleanURL = organization.getcleanURL();
-
-                dir.setDir(cleanURL, foldername);
+		
+		directory = myProps.getProperty("ut.directory.utRootDir") + cleanURL + "/" + foldername + "/";
             } else {
-                dir.setDirByName(foldername + "/");
+		directory = myProps.getProperty("ut.directory.utRootDir") + foldername + "/";
             }
 	    
             String mimeType = "";
 	    String actualFileName = "";
 	    
-            File f = new File(dir.getDir() + filename);
+            File f = new File(directory + filename);
 	    
 	    if(utBatchName != null) {
 		
 		if(!f.exists() && !"".equals(utBatchName)) {
-		    f = new File(dir.getDir() + utBatchName);
+		    f = new File(directory + utBatchName);
 		    
 		    if(f.exists()) {
-				mimeType = context.getMimeType(dir.getDir() + utBatchName);
+				mimeType = context.getMimeType(directory + utBatchName);
 				//we don't know when a file is encoding or decoding without having to do queries, it will be easy to try to decode first
-				in = new FileInputStream(dir.getDir() + utBatchName);
+				in = new FileInputStream(directory + utBatchName);
 				try {
-					byte[] fileAsBytes = filemanager.loadFileAsBytesArray(dir.getDir() + utBatchName);
+					byte[] fileAsBytes = filemanager.loadFileAsBytesArray(directory + utBatchName);
 					if (fileAsBytes != null) {
 						byte[] decodedBytes = Base64.decodeBase64(fileAsBytes);
 						in = new ByteArrayInputStream(decodedBytes);
@@ -128,12 +132,12 @@ public class fileDownloadController {
 		    else if(!f.exists() && "txt".equals(FilenameUtils.getExtension(utBatchName))) {
 			utBatchName = utBatchName.replace("txt",FilenameUtils.getExtension(filename));
 			
-			f = new File(dir.getDir() + utBatchName);
+			f = new File(directory + utBatchName);
 			if(f.exists()) {
-			    mimeType = context.getMimeType(dir.getDir() + utBatchName);
-			    in = new FileInputStream(dir.getDir() + utBatchName);
+			    mimeType = context.getMimeType(directory + utBatchName);
+			    in = new FileInputStream(directory + utBatchName);
 			    try {
-					byte[] fileAsBytes = filemanager.loadFileAsBytesArray(dir.getDir() + utBatchName);
+					byte[] fileAsBytes = filemanager.loadFileAsBytesArray(directory + utBatchName);
 					if (fileAsBytes != null) {
 						byte[] decodedBytes = Base64.decodeBase64(fileAsBytes);
 						in = new ByteArrayInputStream(decodedBytes);
@@ -146,10 +150,10 @@ public class fileDownloadController {
 		    }
 		}
 		else {
-		    mimeType = context.getMimeType(dir.getDir() + filename);
-		    in = new FileInputStream(dir.getDir() + filename);
+		    mimeType = context.getMimeType(directory + filename);
+		    in = new FileInputStream(directory + filename);
 		    try {
-				byte[] fileAsBytes = filemanager.loadFileAsBytesArray(dir.getDir() + utBatchName);
+				byte[] fileAsBytes = filemanager.loadFileAsBytesArray(directory + utBatchName);
 				if (fileAsBytes != null) {
 					byte[] decodedBytes = Base64.decodeBase64(fileAsBytes);
 					in = new ByteArrayInputStream(decodedBytes);
@@ -161,10 +165,10 @@ public class fileDownloadController {
 		}
 	    }
 	    else {
-		mimeType = context.getMimeType(dir.getDir() + filename);
-		in = new FileInputStream(dir.getDir() + filename);
+		mimeType = context.getMimeType(directory + filename);
+		in = new FileInputStream(directory + filename);
 		try {
-			byte[] fileAsBytes = filemanager.loadFileAsBytesArray(dir.getDir() + utBatchName);
+			byte[] fileAsBytes = filemanager.loadFileAsBytesArray(directory + utBatchName);
 			if (fileAsBytes != null) {
 				byte[] decodedBytes = Base64.decodeBase64(fileAsBytes);
 				in = new ByteArrayInputStream(decodedBytes);

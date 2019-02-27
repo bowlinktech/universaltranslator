@@ -85,6 +85,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.servlet.view.RedirectView;
 import com.hel.ut.service.utConfigurationManager;
 import com.hel.ut.service.utConfigurationTransportManager;
+import java.util.Properties;
+import javax.annotation.Resource;
 
 /**
  *
@@ -134,9 +136,8 @@ public class adminProcessingActivity {
      */
     private static int maxResults = 10;
     
-     private String directoryPath = System.getProperty("directory.utRootDir");
-
-     private String archivePath = (directoryPath + "archivesIn/");
+    @Resource(name = "myProps")
+    private Properties myProps;
     
 
     /**
@@ -2083,7 +2084,7 @@ public class adminProcessingActivity {
 
                 //generate the report for user to download
                 //need to get report path
-                fileSystem dir = new fileSystem();
+                /*fileSystem dir = new fileSystem();
                 dir.setDirByName("referralActivityExports/");
                 String filePath = dir.getDir();
                 String fileName = export.getFileName();
@@ -2134,7 +2135,7 @@ public class adminProcessingActivity {
                     } catch (Exception e) {
                         throw new Exception("Error with File " + filePath + fileName + ex);
                     }
-                }
+                }*/
             }
 
         } else {
@@ -3623,15 +3624,13 @@ public class adminProcessingActivity {
 		    batchUploads batchUploadDetails = transactionInManager.getBatchDetails(batchDetails.getBatchUploadId());
 		    
 		    //Need to move the archive file back to the loading directory
-		    fileSystem dir = new fileSystem();
-		    dir.setDirByName("/");
-		    File archiveFile = new File(dir.setPathFromRoot(directoryPath + "archivesIn/") + "archive_" + batchUploadDetails.getutBatchName() + batchUploadDetails.getoriginalFileName().substring(batchUploadDetails.getoriginalFileName().lastIndexOf(".")));
-		    File archiveDecFile = new File(dir.setPathFromRoot(directoryPath + "archivesIn/") + batchUploadDetails.getutBatchName() + "_dec" + batchUploadDetails.getoriginalFileName().substring(batchUploadDetails.getoriginalFileName().lastIndexOf(".")));
-		    
+		    File archiveFile = new File(myProps.getProperty("ut.directory.utRootDir") + "archivesIn/" + "archive_" + batchUploadDetails.getutBatchName() + batchUploadDetails.getoriginalFileName().substring(batchUploadDetails.getoriginalFileName().lastIndexOf(".")));
+		    File archiveDecFile = new File(myProps.getProperty("ut.directory.utRootDir") + "archivesIn/" + batchUploadDetails.getutBatchName() + "_dec" + batchUploadDetails.getoriginalFileName().substring(batchUploadDetails.getoriginalFileName().lastIndexOf(".")));
+		   
 		    //Need to get the configuration details and transport method
 		    configurationTransport transportDetails = configurationTransportManager.getTransportDetails(batchUploadDetails.getConfigId());
 		    
-		    File encodedUploadedFile = new File(dir.setPathFromRoot(directoryPath + transportDetails.getfileLocation().replace("/HELProductSuite/universalTranslator/","")) + "encoded_" + batchUploadDetails.getutBatchName());
+		    File encodedUploadedFile = new File(myProps.getProperty("ut.directory.utRootDir") + transportDetails.getfileLocation().replace("/HELProductSuite/universalTranslator/","") + "encoded_" + batchUploadDetails.getutBatchName());
 		    
 		    //File Dropped
 		    if(transportDetails.gettransportMethodId() == 10) {
@@ -3641,7 +3640,7 @@ public class adminProcessingActivity {
 			    for(configurationFileDropFields fileDropDetail : fileDropDetails) {
 				if(fileDropDetail.getMethod() == 1) {
 				    
-				    if(archiveFile.renameTo(new File(dir.setPathFromRoot(directoryPath + fileDropDetail.getDirectory().replace("/HELProductSuite/universalTranslator/","")) + "/" + batchUploadDetails.getoriginalFileName()))) {
+				    if(archiveFile.renameTo(new File(myProps.getProperty("ut.directory.utRootDir") + fileDropDetail.getDirectory().replace("/HELProductSuite/universalTranslator/","") + batchUploadDetails.getoriginalFileName()))) {
 					archiveFile.delete();
 					
 					if(archiveDecFile.exists()) {
@@ -3663,7 +3662,7 @@ public class adminProcessingActivity {
 			    for(configurationFTPFields ftpDetail : ftpDetails) {
 				if(ftpDetail.getmethod()== 1) {
 				    
-				    if(archiveFile.renameTo(new File(dir.setPathFromRoot(directoryPath + ftpDetail.getdirectory().replace("/sFTP","sFTP").replace("/HELProductSuite/universalTranslator/","")) + "/" + batchUploadDetails.getoriginalFileName()))) {
+				    if(archiveFile.renameTo(new File(myProps.getProperty("ut.directory.utRootDir") + ftpDetail.getdirectory().replace("/sFTP","sFTP").replace("/HELProductSuite/universalTranslator/","") + batchUploadDetails.getoriginalFileName()))) {
 					archiveFile.delete();
 					
 					if(archiveDecFile.exists()) {
@@ -3678,7 +3677,7 @@ public class adminProcessingActivity {
 			}
 		    }
 		    else {
-			if(archiveFile.renameTo(new File(dir.setPathFromRoot(directoryPath + transportDetails.getfileLocation().replace("/HELProductSuite/universalTranslator/","")) + batchUploadDetails.getoriginalFileName()))) {
+			if(archiveFile.renameTo(new File(myProps.getProperty("ut.directory.utRootDir") + transportDetails.getfileLocation().replace("/HELProductSuite/universalTranslator/","") + batchUploadDetails.getoriginalFileName()))) {
 			    archiveFile.delete();
 
 			    if(archiveDecFile.exists()) {
