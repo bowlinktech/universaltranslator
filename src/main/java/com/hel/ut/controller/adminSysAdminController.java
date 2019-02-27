@@ -39,6 +39,9 @@ import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.servlet.view.RedirectView;
 import com.hel.ut.service.utConfigurationManager;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 @Controller
 @RequestMapping("/administrator/sysadmin")
@@ -608,26 +611,43 @@ public class adminSysAdminController {
     	
     	utUser userInfo = usermanager.getUserByUserName(authentication.getName());
     	//log user activity
- 	   utUserActivity ua = new utUserActivity();
- 	   ua.setUserId(userInfo.getId());
- 	   ua.setAccessMethod("GET");
- 	   ua.setPageAccess("/getLog");
- 	   ua.setActivity("Download Tomcat Log");
- 	   usermanager.insertUserLog(ua);
+	utUserActivity ua = new utUserActivity();
+	ua.setUserId(userInfo.getId());
+	ua.setAccessMethod("GET");
+	ua.setPageAccess("/getLog");
+	ua.setActivity("Download Tomcat Log");
+	usermanager.insertUserLog(ua);
  	   
     	File logFileDir = new File(System.getProperty("catalina.home"), "logs");
         File logFile = new File(logFileDir, "catalina.out");
-        // get your file as InputStream
-	   InputStream is = new FileInputStream(logFile);
-	   String mimeType = "application/octet-stream";
-	            		  response.setContentType(mimeType);
-	            		  response.setHeader("Content-Transfer-Encoding", "binary");
-	                      response.setHeader("Content-Disposition", "attachment;filename=catalina.out");
-	                      org.apache.commons.io.IOUtils.copy(is, response.getOutputStream());
-	                      response.flushBuffer();
-	            	      is.close();
-	   
-} 
+	
+	if(logFile.exists()) {
+	    // get your file as InputStream
+	    InputStream is = new FileInputStream(logFile);
+	    String mimeType = "application/octet-stream";
+	    response.setContentType(mimeType);
+	    response.setHeader("Content-Transfer-Encoding", "binary");
+	    response.setHeader("Content-Disposition", "attachment;filename=catalina.out");
+	    org.apache.commons.io.IOUtils.copy(is, response.getOutputStream());
+	    response.flushBuffer();
+	    is.close();
+	}
+	else {
+	    DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+	    Date date = new Date();
+	    logFile = new File(logFileDir, "catalina."+dateFormat.format(date)+".log");
+	    if(logFile.exists()) {
+		InputStream is = new FileInputStream(logFile);
+		String mimeType = "application/octet-stream";
+		response.setContentType(mimeType);
+		response.setHeader("Content-Transfer-Encoding", "binary");
+		response.setHeader("Content-Disposition", "attachment;filename=catalina.out");
+		org.apache.commons.io.IOUtils.copy(is, response.getOutputStream());
+		response.flushBuffer();
+		is.close();
+	    }
+	}
+    } 
     
     @RequestMapping(value = "/moveFilePaths", method = RequestMethod.GET)
     public ModelAndView moveFilePaths(HttpServletRequest request, HttpServletResponse response, 
