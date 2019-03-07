@@ -611,6 +611,9 @@ public class transactionInDAOImpl implements transactionInDAO {
 
     /**
      * errorId = 1 is required field missing* we do not re-check REL records
+     * @param cff
+     * @param batchUploadId
+     * @return 
      */
     @Override
     @Transactional(readOnly = false)
@@ -2042,8 +2045,8 @@ public class transactionInDAOImpl implements transactionInDAO {
 
     @Override
     @Transactional(readOnly = false)
-    public void populateAuditReport(Integer batchUploadId, Integer configId)
-	    throws Exception {
+    public void populateAuditReport(Integer batchUploadId, Integer configId) throws Exception {
+	
 	String sql = "call populateAuditReport(:configId, :batchUploadId);";
 	Query query = sessionFactory.getCurrentSession().createSQLQuery(sql);
 	query.setParameter("configId", configId);

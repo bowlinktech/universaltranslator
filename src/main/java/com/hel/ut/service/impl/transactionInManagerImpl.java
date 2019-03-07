@@ -477,6 +477,13 @@ public class transactionInManagerImpl implements transactionInManager {
 	     */
 	    if (systemErrorCount > 0) {
 		setBatchToError(batchUploadId, "System error occurred during processBatch, please review errors in audit report");
+		
+		//clean
+		cleanAuditErrorTable(batch.getId());
+
+		//populate
+		populateAuditReport(batch.getId(), configurationManager.getMessageSpecs(batch.getConfigId()));
+		
 		return false;
 	    }
 
@@ -3265,7 +3272,7 @@ public class transactionInManagerImpl implements transactionInManager {
 
     @Override
     public void populateAuditReport(Integer batchUploadId, configurationMessageSpecs cms) throws Exception {
-
+	
 	//first we run store procedure
 	transactionInDAO.populateAuditReport(batchUploadId, cms.getconfigId());
 	// get distinct fieldNo involved
