@@ -36,8 +36,6 @@ public class MasterService {
    
     public static DataSource getDefaultDataSource() throws IOException {
 	
-	System.out.println("In default");
-	
 	MasterService masterservice = new MasterService();
 	masterservice.loadProperties();
 	String defaultDBName = masterservice.configProp.getProperty("jdbc.defaultUTDBName");
@@ -52,8 +50,6 @@ public class MasterService {
     }
     
     public static DataSource getDataSource(String tenantIdentifier) throws IOException {
-	
-	System.out.println("Tenant Identifier:" + tenantIdentifier);
 	
 	MasterService masterservice = new MasterService();
 	masterservice.loadProperties();
