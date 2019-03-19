@@ -36,28 +36,46 @@ public class MasterService {
    
     public static DataSource getDefaultDataSource() throws IOException {
 	
+	System.out.println("In default");
+	
 	MasterService masterservice = new MasterService();
 	masterservice.loadProperties();
 	String defaultDBName = masterservice.configProp.getProperty("jdbc.defaultUTDBName");
 	
 	DriverManagerDataSource defaultdataSource = new DriverManagerDataSource();
         defaultdataSource.setDriverClassName("com.mysql.cj.jdbc.Driver");
-        defaultdataSource.setUrl("jdbc:mysql://"+masterservice.configProp.getProperty("jdbc.url")+"/"+defaultDBName+"?allowMultiQueries=true");
+        defaultdataSource.setUrl("jdbc:mysql://"+masterservice.configProp.getProperty("jdbc.url")+"/"+defaultDBName+"?allowMultiQueries=true&serverTimezone=EST");
         defaultdataSource.setUsername(masterservice.configProp.getProperty("jdbc.user"));
         defaultdataSource.setPassword(masterservice.configProp.getProperty("jdbc.password"));
 	
 	return defaultdataSource;
     }
     
-    public static ComboPooledDataSource getComboPooledDataSource(String tenantIdentifier) throws IOException {
+    public static DataSource getDataSource(String tenantIdentifier) throws IOException {
+	
+	System.out.println("Tenant Identifier:" + tenantIdentifier);
+	
 	MasterService masterservice = new MasterService();
 	masterservice.loadProperties();
 	
-	/*DriverManagerDataSource defaultdataSource = new DriverManagerDataSource();
+	DriverManagerDataSource defaultdataSource = new DriverManagerDataSource();
         defaultdataSource.setDriverClassName("com.mysql.cj.jdbc.Driver");
-        defaultdataSource.setUrl("jdbc:mysql://"+masterservice.configProp.getProperty("jdbc.url")+"/"+tenantIdentifier+"?allowMultiQueries=true&serverTimezone=UTC");
+        defaultdataSource.setUrl("jdbc:mysql://"+masterservice.configProp.getProperty("jdbc.url")+"/"+tenantIdentifier+"?allowMultiQueries=true&serverTimezone=EST");
         defaultdataSource.setUsername(masterservice.configProp.getProperty("jdbc.user"));
-        defaultdataSource.setPassword(masterservice.configProp.getProperty("jdbc.password"));*/
+        defaultdataSource.setPassword(masterservice.configProp.getProperty("jdbc.password"));
+	
+	return defaultdataSource;
+    }
+    
+    /*public static ComboPooledDataSource getComboPooledDataSource(String tenantIdentifier) throws IOException {
+	MasterService masterservice = new MasterService();
+	masterservice.loadProperties();
+	
+	//DriverManagerDataSource defaultdataSource = new DriverManagerDataSource();
+        //defaultdataSource.setDriverClassName("com.mysql.cj.jdbc.Driver");
+        //defaultdataSource.setUrl("jdbc:mysql://"+masterservice.configProp.getProperty("jdbc.url")+"/"+tenantIdentifier+"?allowMultiQueries=true&serverTimezone=UTC");
+        //defaultdataSource.setUsername(masterservice.configProp.getProperty("jdbc.user"));
+        //defaultdataSource.setPassword(masterservice.configProp.getProperty("jdbc.password"));
 	
 	ComboPooledDataSource cpds = new ComboPooledDataSource(tenantIdentifier);
 	cpds.setJdbcUrl("jdbc:mysql://"+masterservice.configProp.getProperty("jdbc.url")+"/"+tenantIdentifier+"?allowMultiQueries=true");
@@ -76,5 +94,5 @@ public class MasterService {
 	
 	return cpds;
 	
-    }
+    }*/
 }
