@@ -76,7 +76,7 @@
                         <spring:bind path="orgId">
                             <div id="orgDiv" class="form-group ${status.error ? 'has-error' : '' }">
                                 <label class="control-label" for="organization">Organization *</label>
-                                <form:select path="orgId" id="organization" class="form-control half" disabled="${configurationDetails.id == 0 ? 'false' : 'true' }">
+                                <form:select path="orgId" id="organization" class="form-control half">
                                     <option value="">- Select -</option>
                                     <c:forEach items="${organizations}" var="org" varStatus="oStatus">
                                         <option value="${organizations[oStatus.index].id}" <c:if test="${configurationDetails.orgId == organizations[oStatus.index].id}">selected</c:if>>${organizations[oStatus.index].orgName} </option>
@@ -90,7 +90,7 @@
 			<spring:bind path="associatedSourceConfigId">
                             <div id="associatedSourceConfigIdDiv" class="form-group ${status.error ? 'has-error' : '' }" style="display:none">
                                 <label class="control-label" for="associatedSourceConfigId">Associated Source Configuration *</label>
-                                <form:select path="associatedSourceConfigId" id="associatedSourceConfigId" class="form-control half" disabled="${configurationDetails.id == 0 ? 'false' : 'false' }">
+                                <form:select path="associatedSourceConfigId" id="associatedSourceConfigId" class="form-control half">
                                     <option value="">- Select -</option>
                                     <c:forEach items="${sourceConfigurations}" var="sourceConfig">
                                         <option value="${sourceConfig.id}" <c:if test="${configurationDetails.associatedSourceConfigId == sourceConfig.id}">selected</c:if>>${sourceConfig.orgName} - ${sourceConfig.configName} (ID:${sourceConfig.id})</option>
