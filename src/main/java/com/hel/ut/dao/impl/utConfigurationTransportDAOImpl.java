@@ -1185,7 +1185,6 @@ public class utConfigurationTransportDAOImpl implements utConfigurationTransport
      * The 'getConfigurationFieldsToCopy' function will return a list of saved form fields for the selected configuration.
      *
      * @param	configId	Will hold the id of the configuration we want to return fields for
-     * @param transporetDetailId The id of the selected transport method
      *
      * @return	This function will return a list of configuration form fields
      */

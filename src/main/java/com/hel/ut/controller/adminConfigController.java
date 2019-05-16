@@ -649,7 +649,7 @@ public class adminConfigController {
 	    utconfigurationmanager.updateConfiguration(configurationDetails);
 	}
 	
-        /* submit the updates */
+        // submit the updates
         Integer transportId = (Integer) utconfigurationTransportManager.updateTransportDetails(transportDetails);
 	
 	configurationDetails.setThreshold(transportDetails.getThreshold());
@@ -753,7 +753,7 @@ public class adminConfigController {
 
         redirectAttr.addFlashAttribute("savedStatus", "updated");
 	
-	//If transport method == 10 (From HEL Registry onlin form) we can prepoulate the fields from
+	//If transport method == 10 (From HEL Registry online form) we can prepoulate the fields from
 	//the selected configuration. No need to have a custom template uploaded. The file submitted 
 	//to UT with this transport method will always have the same fields set up.
 	if((transportDetails.gettransportMethodId() == 8 || transportDetails.gettransportMethodId() == 10)) {
