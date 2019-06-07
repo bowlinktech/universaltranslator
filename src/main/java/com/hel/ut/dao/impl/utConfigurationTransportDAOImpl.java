@@ -25,6 +25,7 @@ import java.util.Iterator;
 
 import org.springframework.stereotype.Repository;
 import com.hel.ut.dao.utConfigurationTransportDAO;
+import com.hel.ut.model.organizationDirectDetails;
 
 @Repository
 public class utConfigurationTransportDAOImpl implements utConfigurationTransportDAO {
@@ -111,7 +112,7 @@ public class utConfigurationTransportDAOImpl implements utConfigurationTransport
 	 
 	//Source configuration
 	if(configurationType == 1) {
-	    query = sessionFactory.getCurrentSession().createSQLQuery("SELECT id, transportMethod FROM ref_transportMethods where active = 1 and id in (1,3,4,6,9,10,11) order by transportMethod asc");
+	    query = sessionFactory.getCurrentSession().createSQLQuery("SELECT id, transportMethod FROM ref_transportMethods where active = 1 and id in (1,3,4,6,9,10,11,12) order by transportMethod asc");
 	}
 	
 	//Target configuration
@@ -1254,5 +1255,58 @@ public class utConfigurationTransportDAOImpl implements utConfigurationTransport
         query.setParameter("formFieldId", formFieldId);
 
         query.executeUpdate();
+    }
+    
+    /**
+     * The 'getDirectMessagingDetails' function will return the details of the direct message for the passed in DM Domain
+     *
+     * @param DMDomain
+     * @return 
+     * @throws java.lang.Exception 
+     *
+     * @Return	
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public organizationDirectDetails getDirectMessagingDetails(String DMDomain) throws Exception {
+        Query query = sessionFactory.getCurrentSession().createQuery("from organizationDirectDetails where directDomain= :directDomain");
+        query.setParameter("directDomain", DMDomain);
+	
+	if(query.list().size() > 1) {
+	    return (organizationDirectDetails) query.list().get(0);
+	}
+	else {
+	    return (organizationDirectDetails) query.uniqueResult();
+	}
+    };
+    
+     /**
+     * The 'getDirectMessagingDetailsById' function will return the details of the direct message for the passed in organization id
+     *
+     * @param organizationId
+     * @return 
+     * @throws java.lang.Exception 
+     *
+     * @Return	
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public organizationDirectDetails getDirectMessagingDetailsById(Integer organizationId) throws Exception {
+        Query query = sessionFactory.getCurrentSession().createQuery("from organizationDirectDetails where orgId= :organizationId");
+        query.setParameter("organizationId", organizationId);
+	
+	if(query.list().size() > 1) {
+	    return (organizationDirectDetails) query.list().get(0);
+	}
+	else {
+	    return (organizationDirectDetails) query.uniqueResult();
+	}
+    };
+    
+    
+    @Override
+    @Transactional(readOnly = false)
+    public void saveTransportDirectMessageDetails(organizationDirectDetails directDetails) throws Exception {
+	sessionFactory.getCurrentSession().saveOrUpdate(directDetails);
     }
 }

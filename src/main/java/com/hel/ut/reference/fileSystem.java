@@ -269,4 +269,15 @@ public class fileSystem {
         return bytes;
     }
 
+    public void createDirectMessageDirectory(String folderName) {
+	try {
+            File directory = new File(folderName);
+	    if (!directory.exists()) {
+		directory.mkdir();
+	    }
+        } catch (Exception e) {
+	    System.out.println(e.getMessage());
+            e.printStackTrace();
+        }
+    }
 }

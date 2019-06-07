@@ -36,6 +36,9 @@ public class restful {
     @Autowired
     private transactionInManager transactionInManager;
     
+    private String medAlliesUsername = "testtest";
+    private String medAlliesPassword = "testtest";
+    
    
     /**
      * /post/{apiCustomCall} GET Method. Throw an invalid request call. Call should be a POST

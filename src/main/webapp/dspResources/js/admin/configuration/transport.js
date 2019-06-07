@@ -195,6 +195,13 @@ function showCorrectFieldsByTransportMethod(transportMethod) {
 	$('#fileDropDetailsDiv').hide();
     }
     
+    if (transportMethod == 12) {
+	$('#directMessageDetailsDiv').show();
+    }
+    else {
+	$('#directMessageDetailsDiv').hide();
+    }
+    
 }
 
 

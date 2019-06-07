@@ -57,10 +57,30 @@
                                         <c:forEach items="${transportMethods}" var="transMethod" varStatus="tStatus">
 					    <c:choose>
 						<c:when test="${transportMethods[tStatus.index][0] != 8 && transportMethods[tStatus.index][0] != 10 && transportMethods[tStatus.index][0] != 11}">
-						    <option value="${transportMethods[tStatus.index][0]}" <c:if test="${transportDetails.transportMethodId == transportMethods[tStatus.index][0]}">selected</c:if>><c:choose><c:when test="${transportMethods[tStatus.index][0] == 1}"><c:choose><c:when test="${configurationDetails.type == 1}">File Upload</c:when><c:otherwise>File Download</c:otherwise></c:choose></c:when><c:otherwise>${transportMethods[tStatus.index][1]}</c:otherwise></c:choose></option>
+						    <option value="${transportMethods[tStatus.index][0]}" <c:if test="${transportDetails.transportMethodId == transportMethods[tStatus.index][0]}">selected</c:if>>
+							<c:choose>
+							    <c:when test="${transportMethods[tStatus.index][0] == 1}">
+								<c:choose>
+								    <c:when test="${configurationDetails.type == 1}">File Upload</c:when>
+								    <c:otherwise>File Download</c:otherwise>
+								</c:choose>
+							    </c:when>
+							    <c:otherwise>${transportMethods[tStatus.index][1]}</c:otherwise>
+							</c:choose>
+						    </option>
 						</c:when>
 						<c:when test="${(transportMethods[tStatus.index][0] == 8 || transportMethods[tStatus.index][0] == 10 || transportMethods[tStatus.index][0] == 11) && transportDetails.helRegistryId > 0}">
-						    <option value="${transportMethods[tStatus.index][0]}" <c:if test="${transportDetails.transportMethodId == transportMethods[tStatus.index][0]}">selected</c:if>><c:choose><c:when test="${transportMethods[tStatus.index][0] == 1}"><c:choose><c:when test="${configurationDetails.type == 1}">File Upload</c:when><c:otherwise>File Download</c:otherwise></c:choose></c:when><c:otherwise>${transportMethods[tStatus.index][1]}</c:otherwise></c:choose></option>
+						    <option value="${transportMethods[tStatus.index][0]}" <c:if test="${transportDetails.transportMethodId == transportMethods[tStatus.index][0]}">selected</c:if>>
+							<c:choose>
+							    <c:when test="${transportMethods[tStatus.index][0] == 1}">
+								<c:choose>
+								    <c:when test="${configurationDetails.type == 1}">File Upload</c:when>
+								    <c:otherwise>File Download</c:otherwise>
+								</c:choose>
+							    </c:when>
+							    <c:otherwise>${transportMethods[tStatus.index][1]}</c:otherwise>
+							</c:choose>
+						    </option>
 						</c:when>
 					    </c:choose>
                                         </c:forEach>
@@ -333,6 +353,35 @@
 			</div>
 		    </section>
 		</c:if>
+				    
+		<%-- DIRECT MESSAGE Details --%>	
+		<section id="directMessageDetailsDiv" class="panel panel-default" style="display:none">
+		    <div class="panel-heading">
+			<h3 class="panel-title">Direct Message Details</h3>
+		    </div>
+		    <div class="panel-body">
+			<div class="form-container">
+			    <div class="form-group">
+			       <c:set var="directMessageFields" value="${transportDetails.directMessageFields[0]}" />
+			       <input name="directMessageFields[0].id" type="hidden" value="${directMessageFields.id}"  />
+			       <input name="directMessageFields[0].orgId" type="hidden" value="${directMessageFields.orgId}"  />
+			       <input name="directMessageFields[0].dateCreated" type="hidden" value="${directMessageFields.dateCreated}"  />
+			       <label class="control-label" for="hispId">Select the HISP *</label>
+			       <select name="directMessageFields[0].hispId" id="hispId" class="form-control sm-input">
+				   <option value="">- Select -</option>
+				   <c:forEach var="hisp" items="${hisps}">
+				       <option value="${hisp.id}" <c:if test="${directMessageFields.hispId == hisp.id}">selected</c:if>>${hisp.hispName}</option>                                                
+				   </c:forEach>
+			       </select>
+			       <span id="encodingMsg" class="control-label"></span>
+			   </div>
+			   <div class="form-group">
+			       <label class="control-label" for="directDomain">Direct Address Domain *</label>
+			       <input name="directMessageFields[0].directDomain" class="form-control" type="text" maxLength="75" value="${directMessageFields.directDomain}"  />
+			   </div>   
+			</div>
+		    </div>
+		</section>
 				    
 		<%-- FILE DROP Details --%>	
 		<section id="fileDropDetailsDiv" class="panel panel-default" style="display:none">

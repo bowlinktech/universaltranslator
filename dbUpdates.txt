@@ -1,0 +1,33 @@
+CREATE TABLE `universaltranslator`.`hisps` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `status` BIT(1) NOT NULL DEFAULT b'1',
+  `dateCreated` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `hispName` VARCHAR(45) NOT NULL,
+  `utAPIUsername` VARCHAR(45) NULL DEFAULT NULL,
+  `utAPIPassword` VARCHAR(45) NULL DEFAULT NULL,
+  `hispAPIUsername` VARCHAR(45) NULL DEFAULT NULL,
+  `hispAPIPassword` VARCHAR(45) NULL DEFAULT NULL,
+  `hispAPIURL` VARCHAR(255) NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE INDEX `id_UNIQUE` (`id` ASC));
+
+ALTER TABLE `universaltranslator`.`hisps` 
+ADD COLUMN `primaryContact` VARCHAR(45) NULL DEFAULT NULL AFTER `hispAPIURL`,
+ADD COLUMN `primaryContactEmail` VARCHAR(45) NULL DEFAULT NULL AFTER `primaryContact`,
+ADD COLUMN `primaryContactPhone` VARCHAR(45) NULL DEFAULT NULL AFTER `primaryContactEmail`;
+
+CREATE TABLE `universaltranslator`.`organizationdirectdetails` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `orgId` INT NOT NULL DEFAULT '0',
+  `status` BIT(1) NOT NULL DEFAULT b'1',
+  `dateCreated` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `dateModified` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `hispId` INT NOT NULL DEFAULT '0',
+  `directDomain` VARCHAR(75) NOT NULL,
+  `fileTypeId` INT(0) NOT NULL DEFAULT '0',
+  `expectedFileExt` VARCHAR(4) NOT NULL DEFAULT 'xml',
+  PRIMARY KEY (`id`),
+  UNIQUE INDEX `id_UNIQUE` (`id` ASC));
+
+INSERT INTO `universaltranslator`.`ref_transportmethods` (`transportMethod`, `active`) VALUES ('Direct Message from HISP', '1');
+

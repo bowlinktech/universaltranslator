@@ -28,6 +28,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.hel.ut.service.utConfigurationManager;
 import com.hel.ut.service.utConfigurationTransportManager;
 import com.hel.ut.dao.utConfigurationTransportDAO;
+import com.hel.ut.model.organizationDirectDetails;
 import java.util.Properties;
 import javax.annotation.Resource;
 
@@ -574,5 +575,20 @@ public class utConfigurationTransportManagerImpl implements utConfigurationTrans
 		}
 	    }
 	}
+    }
+    
+    @Override
+    public organizationDirectDetails getDirectMessagingDetails(String DMDomain) throws Exception {
+	return configurationTransportDAO.getDirectMessagingDetails(DMDomain);
+    }
+    
+    @Override
+    public organizationDirectDetails getDirectMessagingDetailsById(Integer organizationId) throws Exception {
+	return configurationTransportDAO.getDirectMessagingDetailsById(organizationId);
+    }
+    
+    @Override
+    public void saveTransportDirectMessageDetails(organizationDirectDetails directDetails) throws Exception {
+	configurationTransportDAO.saveTransportDirectMessageDetails(directDetails);
     }
 }
