@@ -15,6 +15,7 @@ import com.hel.ut.model.configurationWebServiceSenders;
 import org.springframework.stereotype.Repository;
 
 import com.hel.ut.model.configurationWebServiceFields;
+import com.hel.ut.model.organizationDirectDetails;
 
 @Repository
 public interface utConfigurationTransportDAO {
@@ -130,5 +131,12 @@ public interface utConfigurationTransportDAO {
     public List<String> getHELConfigurationDetailsBySQL(String sqlStatement) throws Exception;
     
     public void deleteConfigurationFormField(Integer formFieldId) throws Exception;
+    
     public void configurationDataTranslations(Integer formFieldId) throws Exception;
+    
+    organizationDirectDetails getDirectMessagingDetails(String DMDomain) throws Exception;
+    
+    organizationDirectDetails getDirectMessagingDetailsById(Integer organizationId) throws Exception;
+    
+    void saveTransportDirectMessageDetails(organizationDirectDetails directDetails) throws Exception;
 }

@@ -12,6 +12,7 @@ import com.hel.ut.model.configurationTransport;
 import com.hel.ut.model.configurationTransportMessageTypes;
 import com.hel.ut.model.configurationWebServiceFields;
 import com.hel.ut.model.configurationWebServiceSenders;
+import com.hel.ut.model.organizationDirectDetails;
 
 public interface utConfigurationTransportManager {
 
@@ -124,5 +125,11 @@ public interface utConfigurationTransportManager {
     List<configurationFormFields> getConfigurationFieldsToCopy(int configId);
     
     void populateFieldsFromHELConfiguration(Integer configId, Integer transportId, Integer HELRegistryConfigId, String HELSchemaName, boolean reload) throws Exception;
+    
+    organizationDirectDetails getDirectMessagingDetails(String DMDomain) throws Exception;
+    
+    organizationDirectDetails getDirectMessagingDetailsById(Integer organizationId) throws Exception;
+    
+    void saveTransportDirectMessageDetails(organizationDirectDetails directDetails) throws Exception;
 
 }

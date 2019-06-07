@@ -27,6 +27,9 @@ public class configurationTransport {
 
     @Transient
     private List<configurationWebServiceFields> webServiceFields = null;
+    
+     @Transient
+    private List<organizationDirectDetails> directMessageFields = null;
 
     @Transient
     private String delimChar = null;
@@ -490,6 +493,13 @@ public class configurationTransport {
     public void setHelRegistryId(Integer helRegistryId) {
 	this.helRegistryId = helRegistryId;
     }
-    
-    
+
+    public List<organizationDirectDetails> getDirectMessageFields() {
+	return directMessageFields;
+    }
+
+    public void setDirectMessageFields(List<organizationDirectDetails> directMessageFields) {
+	this.directMessageFields = directMessageFields;
+    }
+
 }

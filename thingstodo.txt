@@ -2,7 +2,7 @@
 
 ** DONE ** - Work on passthru configuration type. 
 
- ** DONE ** - Work on calculating log in and log out time correctly.
+** DONE ** - Work on calculating log in and log out time correctly.
 
 - Implement the auto log out feature
 
@@ -17,4 +17,27 @@
 - When on target side field mappings, allow button to preselect the drop down.
 
 ** DONE CM 3/7/19 ** - transactionindetailauditerrors_batchId is not being loaded when errors are found, seems like SP populateAuditReport is not being called.
+
+- Need to add "Direct Messaging" for a transport type
+    - When "Direct Messaging" is selected show the following.
+	- Need to show a drop down of available hisps
+	- Need to ask for the direct message domain
+	- Need to ask for the expected attachment extension
+
+	When SAVE
+	- Need to create a folder if doesn't exist alread in HELProductSuite/universalTranslator/directMessages/ORG NAME NO SPACES
+	- Store these values in a table so when the same org selects "Direct Messaging" for another configuration it pre-populates
+	- Single org will only have a single HISP when sending via direct so one or shouldn't have multiple settings
+
+- "Direct Messaging" API
+    - Should look at the new DM table to match domain created above
+    - Take that domain in order to validate the received file to a organization in order to drop the file to the HELProductSuite/universalTranslator/directMessages/ORG NAME NO SPACES folder
+    - Modify if needed the rest API section to account for Direct Messages
+    - Need to make sure all checks are in place in order to create the entry in the rest API entry
+    - Payload stored should contain the Number of attachments, sending direct message address and any other information we can capture
+    - Need to save the sending direct message somewhere in the batch upload in order to be able to send it back
+
+- Need to review/modify the REST API processing job in order to watch the directMessage folder for files and move them just like we do sFTP files.
+
+- Need to add a place in the system admin to add HISPS (Med Allies would be the first). Need ability to add API credentials to this section
 

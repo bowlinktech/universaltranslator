@@ -59,6 +59,9 @@ import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.InitBinder;
 
 import com.hel.ut.model.configurationWebServiceFields;
+import com.hel.ut.model.hisps;
+import com.hel.ut.model.organizationDirectDetails;
+import com.hel.ut.service.hispManager;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -67,6 +70,7 @@ import com.hel.ut.service.utConfigurationManager;
 import com.hel.ut.service.utConfigurationTransportManager;
 import com.registryKit.registry.configurations.configuration;
 import com.registryKit.registry.configurations.configurationManager;
+import java.util.Date;
 import java.util.Properties;
 import javax.annotation.Resource;
 
@@ -95,6 +99,9 @@ public class adminConfigController {
     
     @Autowired
     private configurationManager registryconfigurationmanager;
+    
+    @Autowired
+    private hispManager hispManager;
     
     @Resource(name = "myProps")
     private Properties myProps;
@@ -557,11 +564,30 @@ public class adminConfigController {
         } else {
             transportDetails.setWebServiceFields(wsFields);
         }
+	
+	//get direct messaging fields
+	organizationDirectDetails  directMessageDetails = utconfigurationTransportManager.getDirectMessagingDetailsById(configurationDetails.getorgId());
+
+	List<organizationDirectDetails> directMessageFields = new ArrayList<>();
+	
+	if(directMessageDetails == null) {
+	    directMessageDetails = new organizationDirectDetails();
+	    directMessageDetails.setOrgId(configurationDetails.getorgId());
+	    
+	    directMessageFields.add(directMessageDetails);
+	}
+	else {
+	    directMessageFields.add(directMessageDetails);
+	}
+	
+	transportDetails.setDirectMessageFields(directMessageFields);
+	
+	mav.addObject("transportDetails", transportDetails);
 
         
         transportDetails.setconfigId(configId);
 	transportDetails.setThreshold(configurationDetails.getThreshold());
-        mav.addObject("transportDetails", transportDetails);
+        
 	
 	if(transportDetails.getRestAPIType() == 2) {
 	    session.setAttribute("showAllConfigOptions",false);
@@ -609,6 +635,10 @@ public class adminConfigController {
 	//Get the list of available rest api types
         List restAPIFunctions = utconfigurationmanager.getrestAPIFunctions(configurationDetails.getorgId());
         mav.addObject("restAPIFunctions", restAPIFunctions);
+	
+	//Get a list of availbale HISPs
+	List<hisps> hisps = hispManager.getAllActiveHisps();
+	mav.addObject("hisps", hisps);
 
         return mav;
     }
@@ -727,6 +757,25 @@ public class adminConfigController {
                 utconfigurationTransportManager.saveTransportWebService(transportDetails.getWebServiceFields().get(0));
             }
         }
+	
+	//Direct Message Transport
+	if(transportDetails.gettransportMethodId() == 12  && !transportDetails.getDirectMessageFields().isEmpty()) {
+	    transportDetails.getDirectMessageFields().get(0).setFileTypeId(transportDetails.getfileType());
+	    transportDetails.getDirectMessageFields().get(0).setExpectedFileExt(transportDetails.getfileExt());
+	    transportDetails.getDirectMessageFields().get(0).setStatus(true);
+	    transportDetails.getDirectMessageFields().get(0).setDateModified(new Date());
+	    
+	    utconfigurationTransportManager.saveTransportDirectMessageDetails(transportDetails.getDirectMessageFields().get(0));
+	    
+	    //Need to check if the folders exist
+	    Organization orgDetails = organizationmanager.getOrganizationById(configurationDetails.getorgId());
+	    fileSystem dir = new fileSystem();
+	    
+	    String directory = myProps.getProperty("ut.directory.utRootDir");
+	    
+	    dir.createDirectMessageDirectory(directory+"directMessages");
+	    dir.createDirectMessageDirectory(directory+"directMessages/"+orgDetails.getCleanURL());
+	}
 
         /**
          * Need to set the associated messages types
