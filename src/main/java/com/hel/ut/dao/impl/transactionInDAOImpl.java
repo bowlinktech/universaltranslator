@@ -32,6 +32,7 @@ import com.hel.ut.model.custom.ConfigErrorInfo;
 import com.hel.ut.model.custom.ConfigForInsert;
 import com.hel.ut.model.custom.IdAndFieldValue;
 import com.hel.ut.model.custom.batchErrorSummary;
+import com.hel.ut.model.directmessagesin;
 import com.hel.ut.model.referralActivityExports;
 import com.hel.ut.service.sysAdminManager;
 import com.hel.ut.service.userManager;
@@ -2938,5 +2939,15 @@ public class transactionInDAOImpl implements transactionInDAO {
 	    return (batchUploads) query.uniqueResult();
 	}
 
+    }
+    
+     @Override
+    @Transactional(readOnly = false)
+    public Integer insertDMMessage(directmessagesin newDirectMessageIn) throws Exception {
+	Integer newRMessageId = null;
+
+	newRMessageId = (Integer) sessionFactory.getCurrentSession().save(newDirectMessageIn);
+
+	return newRMessageId;
     }
 }

@@ -591,4 +591,9 @@ public class utConfigurationTransportManagerImpl implements utConfigurationTrans
     public void saveTransportDirectMessageDetails(organizationDirectDetails directDetails) throws Exception {
 	configurationTransportDAO.saveTransportDirectMessageDetails(directDetails);
     }
+    
+    @Override
+    public configurationTransport findConfigurationByDirectMessagKeyword(Integer orgId, String directMessageToAddress) throws Exception {
+        return configurationTransportDAO.findConfigurationByDirectMessagKeyword(orgId, directMessageToAddress);
+    }
 }

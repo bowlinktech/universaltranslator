@@ -4,11 +4,11 @@
 <application xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.zeroturnaround.com"
              xsi:schemaLocation="http://www.zeroturnaround.com http://www.zeroturnaround.com/alderaan/rebel-2_0.xsd">
     <classpath>
-        <dir name="/Users/chadmccue/NetBeansProjects/HEL Registries/V3/universaltranslator/target/classes"/>
+        <dir name="/Users/chadmccue/NetBeansProjects/universaltranslator/target/classes"/>
     </classpath>
     <web>
         <link target="/">
-            <dir name="/Users/chadmccue/NetBeansProjects/HEL Registries/V3/universaltranslator/src/main/webapp"/>
+            <dir name="/Users/chadmccue/NetBeansProjects/universaltranslator/src/main/webapp"/>
         </link>
     </web>  
 </application>  

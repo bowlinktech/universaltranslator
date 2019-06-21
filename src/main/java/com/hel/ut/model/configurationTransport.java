@@ -149,6 +149,9 @@ public class configurationTransport {
     @Column(name = "helRegistryId", nullable = false)
     private Integer helRegistryId = 0;
     
+    @Column(name = "dmConfigKeyword", nullable = true)
+    private String dmConfigKeyword = "";
+    
     public int getId() {
         return id;
     }
@@ -500,6 +503,14 @@ public class configurationTransport {
 
     public void setDirectMessageFields(List<organizationDirectDetails> directMessageFields) {
 	this.directMessageFields = directMessageFields;
+    }
+
+    public String getDmConfigKeyword() {
+        return dmConfigKeyword;
+    }
+
+    public void setDmConfigKeyword(String dmConfigKeyword) {
+        this.dmConfigKeyword = dmConfigKeyword;
     }
 
 }

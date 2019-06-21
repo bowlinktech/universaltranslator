@@ -1309,4 +1309,21 @@ public class utConfigurationTransportDAOImpl implements utConfigurationTransport
     public void saveTransportDirectMessageDetails(organizationDirectDetails directDetails) throws Exception {
 	sessionFactory.getCurrentSession().saveOrUpdate(directDetails);
     }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public configurationTransport findConfigurationByDirectMessagKeyword(Integer orgId, String directMessageToAddress) throws Exception {
+        
+        String sql = "SELECT * "
+                + "FROM configurationtransportdetails "
+                + "WHERE INSTR(:directMessageToAddress,dmConfigKeyword) > 0 "
+                + "and configId in (select id from configurations where orgId = :organizationId)";
+        
+        Query query = sessionFactory.getCurrentSession().createSQLQuery(sql)
+                .setParameter("organizationId", orgId)
+                .setParameter("directMessageToAddress", directMessageToAddress)
+                .setResultTransformer(Transformers.aliasToBean(configurationTransport.class));
+        
+        return (configurationTransport) query.list().get(0);
+    }
 }

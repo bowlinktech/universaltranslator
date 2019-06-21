@@ -44,6 +44,9 @@ public class organizationDirectDetails {
     
     @Column(name = "expectedFileExt", nullable = false)
     private String expectedFileExt;
+    
+    @Column(name = "dmFindConfig", nullable = false)
+    private int dmFindConfig = 1;
 
     public int getId() {
 	return id;
@@ -116,7 +119,12 @@ public class organizationDirectDetails {
     public void setExpectedFileExt(String expectedFileExt) {
 	this.expectedFileExt = expectedFileExt;
     }
-    
-    
 
+    public int getDmFindConfig() {
+        return dmFindConfig;
+    }
+
+    public void setDmFindConfig(int dmFindConfig) {
+        this.dmFindConfig = dmFindConfig;
+    }
 }

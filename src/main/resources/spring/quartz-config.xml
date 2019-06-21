@@ -6,7 +6,7 @@
         http://www.quartz-scheduler.org/xml/job_scheduling_data_1_8.xsd"
     version="1.8">
     
-    <schedule>
+    <!--<schedule>
         <job>
             <name>CheckOutboundScheduledBatches</name>
             <group>processGroup</group>
@@ -189,6 +189,6 @@
 		<cron-expression>0 0/1 * 1/1 * ? *</cron-expression>
 	    </cron>
 	</trigger>
-    </schedule>
+    </schedule>-->
     
 </job-scheduling-data>

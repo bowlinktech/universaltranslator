@@ -39,6 +39,7 @@ import com.hel.ut.model.custom.ConfigErrorInfo;
 import com.hel.ut.model.custom.ConfigForInsert;
 import com.hel.ut.model.custom.IdAndFieldValue;
 import com.hel.ut.model.custom.batchErrorSummary;
+import com.hel.ut.model.directmessagesin;
 import com.hel.ut.model.referralActivityExports;
 import com.hel.ut.model.systemSummary;
 import com.hel.ut.reference.fileSystem;
@@ -4071,4 +4072,8 @@ public class transactionInManagerImpl implements transactionInManager {
 	 transactionInDAO.resetTransactionCounts(batchUploadId);
     }
     
+    @Override
+    public Integer insertDMMessage(directmessagesin newDirectMessageIn) throws Exception {
+        return transactionInDAO.insertDMMessage(newDirectMessageIn);
+    }
 }
