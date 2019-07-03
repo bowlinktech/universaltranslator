@@ -2950,4 +2950,61 @@ public class transactionInDAOImpl implements transactionInDAO {
 
 	return newRMessageId;
     }
+    
+    @Override
+    @Transactional(readOnly = true)
+    @SuppressWarnings("unchecked")
+    public List<directmessagesin> getDirectAPIMessagesByStatusId(List<Integer> statusIds) {
+	//1 if list of statusId is null, we get all
+	try {
+	    Criteria findDirectAPIMessages = sessionFactory.getCurrentSession().createCriteria(directmessagesin.class);
+	    if (!statusIds.isEmpty()) {
+		findDirectAPIMessages.add(Restrictions.in("statusId", statusIds));
+	    }
+
+	    List<directmessagesin> directAPIMessages = findDirectAPIMessages.list();
+	    return directAPIMessages;
+
+	} catch (Exception ex) {
+	    System.err.println("getDirectAPIMessagesByStatusId " + ex.getCause());
+	    ex.printStackTrace();
+	    return null;
+	}
+
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    @SuppressWarnings("unchecked")
+    public directmessagesin getDirectAPIMessagesById(Integer directMessageId) {
+	//1 if list of statusId is null, we get all
+	try {
+	    Criteria findDirectAPIMessage = sessionFactory.getCurrentSession().createCriteria(directmessagesin.class);
+	    findDirectAPIMessage.add(Restrictions.eq("id", directMessageId));
+
+	    List<directmessagesin> directAPIMessages = findDirectAPIMessage.list();
+	    if (!directAPIMessages.isEmpty()) {
+		return directAPIMessages.get(0);
+	    }
+	} catch (Exception ex) {
+	    System.err.println("getDirectAPIMessagesById " + ex.getCause());
+	    ex.printStackTrace();
+	    return null;
+	}
+	return null;
+    }
+
+    @Override
+    @Transactional(readOnly = false)
+    public Integer updateDirectAPIMessage(directmessagesin directMessage) {
+	try {
+	    sessionFactory.getCurrentSession().update(directMessage);
+	    return 0;
+	} catch (Exception ex) {
+	    ex.printStackTrace();
+	    System.err.println("updateDirectAPIMessage " + ex.getCause());
+	    return 1;
+	}
+
+    }
 }

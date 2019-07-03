@@ -142,7 +142,7 @@
         <job>
             <name>ProcessMassOutputBatches</name>
             <group>processGroup</group>
-            <description>This process will run every 30 seconds on the 5 second of the minute  to check if any loaded files will need to be process</description>
+            <description>This process will run every minute on the 5 second of the minute  to check if any loaded files will need to be process</description>
             <job-class>com.hel.ut.jobs.processMassOutputRecords</job-class>
         </job>
         <trigger>
@@ -159,7 +159,7 @@
         <job>
             <name>ProcessRestAPIMessages</name>
             <group>processGroup</group>
-            <description>This process will run every 2 minutes starting at 8 mins of the hour to check if any RestAPIMessage need to be written to file</description>
+            <description>This process will run every 4 minutes starting at 8 mins of the hour to check if any RestAPIMessage need to be written to file</description>
             <job-class>com.hel.ut.jobs.ProcessRestAPIMessages</job-class>
         </job>
  
@@ -168,7 +168,7 @@
 		<name>ProcessRestAPIMessagesTrigger</name>
 		<job-name>ProcessRestAPIMessages</job-name>
 		<job-group>processGroup</job-group>
-		<cron-expression>0 0/1 * 1/1 * ? *</cron-expression>
+		<cron-expression>0 0/4 * 1/1 * ? *</cron-expression>
 	    </cron>
 	</trigger>
     </schedule>
@@ -177,7 +177,7 @@
         <job>
             <name>processWebServiceMessages</name>
             <group>processGroup</group>
-            <description>This process will run every 5 minutes starting at 8 mins of the hour to check if any WSMessage need to be written to file</description>
+            <description>This process will run every 3 minutes starting at 8 mins of the hour to check if any WSMessage need to be written to file</description>
             <job-class>com.hel.ut.jobs.ProcessWebServiceMessages</job-class>
         </job>
  
@@ -186,9 +186,27 @@
 		<name>processWebServiceMessagesTrigger</name>
 		<job-name>processWebServiceMessages</job-name>
 		<job-group>processGroup</job-group>
-		<cron-expression>0 0/1 * 1/1 * ? *</cron-expression>
+		<cron-expression>0 0/3 * 1/1 * ? *</cron-expression>
 	    </cron>
 	</trigger>
     </schedule>-->
+    
+     <schedule>
+        <job>
+            <name>ProcessDirectAPIMessages</name>
+            <group>processGroup</group>
+            <description>This process will run every 2 minutes starting at 8 mins of the hour to check if any DirectAPIMessage need to be written to file</description>
+            <job-class>ProcessDirectAPIMessages</job-class>
+        </job>
+ 
+	<trigger>
+	    <cron>
+		<name>ProcessDirectAPIMessagesTrigger</name>
+		<job-name>ProcessDirectAPIMessages</job-name>
+		<job-group>processGroup</job-group>
+		<cron-expression>0 0/2 * 1/1 * ? *</cron-expression>
+	    </cron>
+	</trigger>
+    </schedule>
     
 </job-scheduling-data>

@@ -101,6 +101,8 @@ import com.registryKit.registry.fileUploads.fileUploadManager;
 import com.registryKit.registry.fileUploads.uploadedFile;
 import com.registryKit.registry.submittedMessages.submittedMessage;
 import com.registryKit.registry.submittedMessages.submittedMessageManager;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 
 /**
  *
@@ -4075,5 +4077,261 @@ public class transactionInManagerImpl implements transactionInManager {
     @Override
     public Integer insertDMMessage(directmessagesin newDirectMessageIn) throws Exception {
         return transactionInDAO.insertDMMessage(newDirectMessageIn);
+    }
+    
+    /**
+     * This method process direct api messages received. These are messages that has valid senders. 1 for not processed 2 processed - written as text file 3 for rejected 4 for while writing to text ifle processing
+     *
+     * It will gather the list and write to to proper folder as a text file then moveFile process will pick them up and process them using the same codes
+     *
+     **
+     * @return
+     */
+    @Override
+    public void processDirectAPIMessages() {
+
+	try {
+	    List<directmessagesin> directMessageList = getDirectAPIMessagesByStatusId(Arrays.asList(1));
+
+	    if (directMessageList != null) {
+		
+		//Parallel processing of batches
+		ExecutorService executor = Executors.newCachedThreadPool();
+		for (directmessagesin directmessage : directMessageList) {
+		    //we check to make sure again as time could have pass and it could have been processed already
+		    directmessagesin directMessageRecheck = getDirectAPIMessagesById(directmessage.getId());
+		    if (directMessageRecheck.getStatusId() == 1) {
+			executor.execute(new Runnable() {
+			    @Override
+			    public void run() {
+				try {
+				    processDirectAPIMessage(directmessage);
+				} catch (Exception ex) {
+				    Logger.getLogger(transactionInManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
+				}
+			    }
+			});
+		    }
+		}
+	    }
+
+	} catch (Exception ex) {
+	    ex.printStackTrace();
+	    System.err.println("processRestAPIMessages " + ex.toString());
+	    try {
+		sendEmailToAdmin((ex.toString() + "<br/>" + Arrays.toString(ex.getStackTrace())), "Rest API Job Error - main method errored");
+	    } catch (Exception ex1) {
+		ex1.printStackTrace();
+		System.err.println("processRestAPIMessages - can't send email for rest api service job error " + ex1.toString());
+	    }
+	}
+
+    }
+
+    @Override
+    public List<directmessagesin> getDirectAPIMessagesByStatusId(List<Integer> statusIds) {
+	return transactionInDAO.getDirectAPIMessagesByStatusId(statusIds);
+    }
+
+    @Override
+    public directmessagesin getDirectAPIMessagesById(Integer directMessageId) {
+	return transactionInDAO.getDirectAPIMessagesById(directMessageId);
+    }
+
+    /**
+     * this will process each rest api message, it should be less intensive if we treat it like a file upload instead of file drop At the end of this, file should be written to input folder, it should be SSA or SRJ and logged
+     *
+     *
+     * @param directmessage
+     * @return
+     */
+    public void processDirectAPIMessage(directmessagesin directMessage) {
+
+	try {
+	    directMessage.setStatusId(4);
+	    updateDirectAPIMessage(directMessage);
+
+	    configurationTransport ct = configurationtransportmanager.getTransportDetails(directMessage.getConfigId());
+
+	    DateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmssS");
+	    Date date = new Date();
+	    /* Create the batch name (TransportMethodId+OrgId+Date/Time/Seconds) */
+	    String batchName = new StringBuilder().append(12).append("_").append(directMessage.getId()).append("_").append(directMessage.getOrgId()).append(dateFormat.format(date)).toString();
+
+	    Integer encodingId = 1;
+	    Integer batchId = 0;
+	    Integer errorId = 0;
+	    Integer fileSize = 0;
+	    Integer statusId = 0;
+	    Integer configId = directMessage.getConfigId();
+
+	    batchUploads batchInfo = new batchUploads();
+	    batchInfo.setOrgId(directMessage.getOrgId());
+	    batchInfo.settransportMethodId(9);
+	    batchInfo.setstatusId(4);
+	    batchInfo.setstartDateTime(date);
+	    batchInfo.setutBatchName(batchName);
+	    batchInfo.setConfigId(configId);
+	    batchInfo.setoriginalFileName(directMessage.getReferralFileName());
+
+	    Organization orgDetails = organizationmanager.getOrganizationById(directMessage.getOrgId());
+	    String writeToFolder = myProps.getProperty("ut.directory.utRootDir") + orgDetails.getcleanURL() + "/input files/";
+	    String fileExt = "." + FilenameUtils.getExtension(directMessage.getReferralFileName());
+	    String fileNamePath = writeToFolder + batchName + fileExt;
+	    //set folder path
+	    fileSystem dir = new fileSystem();
+	    String writeToFile = fileNamePath;
+	    
+	    String DMFile = myProps.getProperty("ut.directory.utRootDir") + "directMessages/" + orgDetails.getcleanURL() + "/";
+	    batchInfo.setOriginalFolder(DMFile);
+
+	    //we reject
+	    if (ct == null) {
+		batchInfo.setuserId(usermanager.getUserByTypeByOrganization(directMessage.getOrgId()).get(0).getId());
+		batchInfo.setConfigId(0);
+		batchInfo.setFileLocation(writeToFolder);
+		batchInfo.setEncodingId(encodingId);
+		//copy the file
+		FileUtils.copyFile(new File(DMFile+directMessage.getReferralFileName()), new File(writeToFile));
+		if (batchInfo.getConfigId() != 0 && batchInfo.getstatusId() == 2) {
+		    batchInfo.setstatusId(42);
+		}
+		batchId = submitBatchUpload(batchInfo);
+		//insert error
+		errorId = 13;
+		statusId = 7;
+
+	    } else {
+
+		//Get the utConfiguration details
+		utConfiguration configDetails = configurationManager.getConfigurationById(ct.getconfigId());
+
+		encodingId = ct.getEncodingId();
+		fileExt = "." + ct.getfileExt();
+		writeToFolder = ct.getfileLocation();
+		fileNamePath = writeToFolder + batchName + fileExt;
+		fileSize = ct.getmaxFileSize();
+
+		batchInfo.setContainsHeaderRow(ct.getContainsHeaderRow());
+		batchInfo.setDelimChar(ct.getDelimChar());
+		batchInfo.setFileLocation(ct.getfileLocation());
+		batchInfo.setEncodingId(encodingId);
+		batchInfo.setuserId(0);
+
+		//copy file
+		writeToFile = fileNamePath;
+
+		FileUtils.copyFile(new File(DMFile+directMessage.getReferralFileName()), new File(fileNamePath));
+
+		if (statusId != 7) {
+		    //decode and check delimiter
+		    File file = new File(writeToFile);
+
+		    if (ct.getEncodingId() == 2) {
+			//write to temp file
+			String strDecode = filemanager.decodeFileToBase64Binary(file);
+			file = new File(myProps.getProperty("ut.directory.utRootDir") + "archivesIn/" + batchName + "_dec" + fileExt);
+			String decodeFilePath = myProps.getProperty("ut.directory.utRootDir") + "archivesIn/" + batchName + "_dec" + fileExt;
+			filemanager.writeFile(decodeFilePath, strDecode);
+			
+			String encodeFilePath = myProps.getProperty("ut.directory.utRootDir") + "archivesIn/" + batchName + "_org" + fileExt;
+			FileUtils.copyFile(new File(DMFile+directMessage.getReferralFileName()), new File(encodeFilePath));
+			
+			String encodeArchivePath = myProps.getProperty("ut.directory.utRootDir") + "archivesIn/" + batchName + fileExt;
+			Files.copy(new File(writeToFile).toPath(), new File(encodeArchivePath).toPath(), REPLACE_EXISTING);
+		    } 
+		    else {
+			file = new File(myProps.getProperty("ut.directory.utRootDir") + "archivesIn/" + batchName + "_dec" + fileExt);
+			String decodeFilePath = myProps.getProperty("ut.directory.utRootDir") + "archivesIn/" + batchName + "_dec" + fileExt;
+			FileUtils.copyFile(new File(DMFile+directMessage.getReferralFileName()), new File(decodeFilePath));
+			
+			String encodeFilePath = myProps.getProperty("ut.directory.utRootDir") + "archivesIn/" + batchName + "_org" + fileExt;
+			FileUtils.copyFile(new File(DMFile+directMessage.getReferralFileName()), new File(encodeFilePath));
+			
+			String encodeArchivePath = myProps.getProperty("ut.directory.utRootDir") + "archivesIn/" + batchName + fileExt;
+			Files.copy(new File(writeToFile).toPath(), new File(encodeArchivePath).toPath(), REPLACE_EXISTING);
+		    }
+
+		    statusId = 2;
+		    /**
+		     * can't check delimiter for certain files, xml, hr etc *
+		     */
+		    if (fileExt.equalsIgnoreCase(".txt")) {
+			int delimCount = dir.checkFileDelimiter(file, ct.getDelimChar());
+			if (delimCount < 3) {
+			    statusId = 7;
+			    errorId = 15;
+			}
+		    }
+		    //check file size
+		    if (statusId == 2) {
+			long maxFileSize = fileSize * 1000000;
+
+			if (Files.size(file.toPath()) > maxFileSize) {
+			    statusId = 7;
+			    errorId = 12;
+			}
+		    }
+		}
+
+		batchInfo.setstatusId(statusId);
+		batchInfo.setendDateTime(new Date());
+		batchInfo.settotalRecordCount(1); // need to be at least one to show up in activites
+
+		if (batchInfo.getConfigId() != 0 && batchInfo.getstatusId() == 2) {
+
+		    //If utConfiguration is set for passthru
+		    if (configDetails.getConfigurationType() == 2) {
+			batchInfo.setstatusId(24);
+			statusId = 24;
+		    } 
+		    else {
+			batchInfo.setstatusId(42);
+		    }
+		}
+
+		batchId = submitBatchUpload(batchInfo);
+
+		if (statusId != 2 && statusId != 42 && statusId != 24) {
+		    insertProcessingError(errorId, 0, batchId, null, null, null, null, false, false, "");
+		}
+
+		//update message status to done
+		directMessage.setStatusId(2);
+		directMessage.setBatchUploadId(batchId);
+		updateDirectAPIMessage(directMessage);
+	    }
+
+	    //insert log
+	    try {
+		//log user activity
+		utUserActivity ua = new utUserActivity();
+		ua.setUserId(0);
+		ua.setFeatureId(0);
+		ua.setAccessMethod("System");
+		ua.setActivity("System Processed Direct API Message " + directMessage.getId());
+		ua.setBatchUploadId(batchInfo.getId());
+		usermanager.insertUserLog(ua);
+
+	    } catch (Exception ex) {
+		ex.printStackTrace();
+		System.err.println("processDirectAPIMessage - insert user log" + ex.toString());
+	    }
+
+	} catch (Exception ex) {
+	    ex.printStackTrace();
+	    System.err.println("processDirectAPIMessage " + ex.toString());
+	    try {
+		sendEmailToAdmin((ex.toString() + "<br/>" + Arrays.toString(ex.getStackTrace())), "processDirectAPIMessage");
+	    } catch (Exception ex1) {
+		ex1.printStackTrace();
+		System.err.println("processDirectAPIMessage " + ex1.toString());
+	    }
+	}
+    }
+
+    @Override
+    public Integer updateDirectAPIMessage(directmessagesin directMessage) {
+	return transactionInDAO.updateDirectAPIMessage(directMessage);
     }
 }

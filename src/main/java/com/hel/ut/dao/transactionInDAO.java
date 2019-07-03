@@ -270,4 +270,10 @@ public interface transactionInDAO {
     batchUploads getBatchDetailsByOriginalFileName(String batchName) throws Exception;
     
     Integer insertDMMessage(directmessagesin newDirectMessageIn) throws Exception;
+    
+    List<directmessagesin> getDirectAPIMessagesByStatusId(List<Integer> statusIds);
+
+    directmessagesin getDirectAPIMessagesById(Integer directMessageId);
+    
+    Integer updateDirectAPIMessage(directmessagesin directMessage);
 }

@@ -324,4 +324,12 @@ public interface transactionInManager {
     void resetTransactionCounts(Integer batchUploadId) throws Exception;
     
     Integer insertDMMessage(directmessagesin newDirectMessageIn) throws Exception;
+    
+    void processDirectAPIMessages();
+    
+    List<directmessagesin> getDirectAPIMessagesByStatusId(List<Integer> statusIds);
+
+    directmessagesin getDirectAPIMessagesById(Integer directMessageId);
+    
+    Integer updateDirectAPIMessage(directmessagesin directMessage);
 }

@@ -157,7 +157,7 @@ public class directMessaging {
                                                         
                                                         //Check how we will find the configuration
                                                         if(directDetails.getDmFindConfig() == 1) {
-                                                            //Find the configuratoin by dm keyword from target direct address
+                                                            //Find the configuration by dm keyword from target direct address
                                                             configurationTransport transportDetails = configurationtransportmanager.findConfigurationByDirectMessagKeyword(directDetails.getOrgId(), envelopeInfo.getToDirectAddress());
                                                             configId = transportDetails.getconfigId();
                                                         }
