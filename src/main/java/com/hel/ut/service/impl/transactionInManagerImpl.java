@@ -101,6 +101,7 @@ import com.registryKit.registry.fileUploads.fileUploadManager;
 import com.registryKit.registry.fileUploads.uploadedFile;
 import com.registryKit.registry.submittedMessages.submittedMessage;
 import com.registryKit.registry.submittedMessages.submittedMessageManager;
+import java.nio.file.Paths;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 
@@ -4141,12 +4142,10 @@ public class transactionInManagerImpl implements transactionInManager {
     /**
      * this will process each rest api message, it should be less intensive if we treat it like a file upload instead of file drop At the end of this, file should be written to input folder, it should be SSA or SRJ and logged
      *
-     *
-     * @param directmessage
-     * @return
+     * @param directMessage
      */
     public void processDirectAPIMessage(directmessagesin directMessage) {
-
+	
 	try {
 	    directMessage.setStatusId(4);
 	    updateDirectAPIMessage(directMessage);
@@ -4167,7 +4166,7 @@ public class transactionInManagerImpl implements transactionInManager {
 
 	    batchUploads batchInfo = new batchUploads();
 	    batchInfo.setOrgId(directMessage.getOrgId());
-	    batchInfo.settransportMethodId(9);
+	    batchInfo.settransportMethodId(12);
 	    batchInfo.setstatusId(4);
 	    batchInfo.setstartDateTime(date);
 	    batchInfo.setutBatchName(batchName);
@@ -4178,6 +4177,7 @@ public class transactionInManagerImpl implements transactionInManager {
 	    String writeToFolder = myProps.getProperty("ut.directory.utRootDir") + orgDetails.getcleanURL() + "/input files/";
 	    String fileExt = "." + FilenameUtils.getExtension(directMessage.getReferralFileName());
 	    String fileNamePath = writeToFolder + batchName + fileExt;
+	    
 	    //set folder path
 	    fileSystem dir = new fileSystem();
 	    String writeToFile = fileNamePath;
@@ -4220,8 +4220,8 @@ public class transactionInManagerImpl implements transactionInManager {
 
 		//copy file
 		writeToFile = fileNamePath;
-
-		FileUtils.copyFile(new File(DMFile+directMessage.getReferralFileName()), new File(fileNamePath));
+		
+		FileUtils.copyFile(new File(DMFile+directMessage.getReferralFileName()), new File(fileNamePath.replace("/HELProductSuite/universalTranslator/",myProps.getProperty("ut.directory.utRootDir"))));
 
 		if (statusId != 7) {
 		    //decode and check delimiter
@@ -4238,7 +4238,7 @@ public class transactionInManagerImpl implements transactionInManager {
 			FileUtils.copyFile(new File(DMFile+directMessage.getReferralFileName()), new File(encodeFilePath));
 			
 			String encodeArchivePath = myProps.getProperty("ut.directory.utRootDir") + "archivesIn/" + batchName + fileExt;
-			Files.copy(new File(writeToFile).toPath(), new File(encodeArchivePath).toPath(), REPLACE_EXISTING);
+			Files.copy(new File(writeToFile.replace("/HELProductSuite/universalTranslator/",myProps.getProperty("ut.directory.utRootDir"))).toPath(), new File(encodeArchivePath).toPath(), REPLACE_EXISTING);
 		    } 
 		    else {
 			file = new File(myProps.getProperty("ut.directory.utRootDir") + "archivesIn/" + batchName + "_dec" + fileExt);
@@ -4249,7 +4249,7 @@ public class transactionInManagerImpl implements transactionInManager {
 			FileUtils.copyFile(new File(DMFile+directMessage.getReferralFileName()), new File(encodeFilePath));
 			
 			String encodeArchivePath = myProps.getProperty("ut.directory.utRootDir") + "archivesIn/" + batchName + fileExt;
-			Files.copy(new File(writeToFile).toPath(), new File(encodeArchivePath).toPath(), REPLACE_EXISTING);
+			Files.copy(new File(writeToFile.replace("/HELProductSuite/universalTranslator/",myProps.getProperty("ut.directory.utRootDir"))).toPath(), new File(encodeArchivePath).toPath(), REPLACE_EXISTING);
 		    }
 
 		    statusId = 2;

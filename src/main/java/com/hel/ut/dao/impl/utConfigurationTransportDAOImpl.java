@@ -1323,7 +1323,12 @@ public class utConfigurationTransportDAOImpl implements utConfigurationTransport
                 .setParameter("organizationId", orgId)
                 .setParameter("directMessageToAddress", directMessageToAddress)
                 .setResultTransformer(Transformers.aliasToBean(configurationTransport.class));
-        
-        return (configurationTransport) query.list().get(0);
+	
+	if(!query.list().isEmpty()) {
+	    return (configurationTransport) query.list().get(0);
+	}
+	else {
+	    return null;
+	}
     }
 }

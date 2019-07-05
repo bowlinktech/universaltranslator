@@ -196,7 +196,7 @@
             <name>ProcessDirectAPIMessages</name>
             <group>processGroup</group>
             <description>This process will run every 2 minutes starting at 8 mins of the hour to check if any DirectAPIMessage need to be written to file</description>
-            <job-class>ProcessDirectAPIMessages</job-class>
+            <job-class>com.hel.ut.jobs.ProcessDirectAPIMessages</job-class>
         </job>
  
 	<trigger>

@@ -154,12 +154,21 @@ public class directMessaging {
                                                         fos.close();
                                                         
                                                         Integer configId = 0;
+							Integer statusId = 1;
+							String sendingResponse = "Successfully received and saved your message.";
                                                         
                                                         //Check how we will find the configuration
                                                         if(directDetails.getDmFindConfig() == 1) {
                                                             //Find the configuration by dm keyword from target direct address
                                                             configurationTransport transportDetails = configurationtransportmanager.findConfigurationByDirectMessagKeyword(directDetails.getOrgId(), envelopeInfo.getToDirectAddress());
-                                                            configId = transportDetails.getconfigId();
+							    
+							    if(transportDetails != null) {
+								configId = transportDetails.getconfigId();
+							    }
+							    else {
+								statusId = 3;
+								sendingResponse = "Failed to find configuration. OrgId: " + directDetails.getOrgId() + "; To Direct Address: " + envelopeInfo.getToDirectAddress();
+							    }
                                                         }
                                                         
                                                         //Need to create an entry in the received Direct Messages table
@@ -169,13 +178,14 @@ public class directMessaging {
                                                         newDirectMessageIn.setFromDirectAddress(envelopeInfo.getFromDirectAddress());
                                                         newDirectMessageIn.setToDirectAddress(envelopeInfo.getToDirectAddress());
                                                         newDirectMessageIn.setHispId(directDetails.getHispId());
-                                                        newDirectMessageIn.setStatusId(1);
+                                                        newDirectMessageIn.setStatusId(statusId);
                                                         newDirectMessageIn.setReferralFileName(CCDATitle);
                                                         newDirectMessageIn.setOrgId(directDetails.getOrgId());
+							newDirectMessageIn.setSendingResponse(sendingResponse);
                                                         
                                                         Integer newDMMessageID = transactionInManager.insertDMMessage(newDirectMessageIn);
 				
-                                                        if(newDMMessageID > 0) {
+                                                        if(newDMMessageID > 0 && statusId == 1) {
                                                             return new ResponseEntity("Successfully received and processed your message.", HttpStatus.OK);
                                                         }
                                                         else {

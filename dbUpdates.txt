@@ -59,3 +59,6 @@ CHANGE COLUMN `statusId` `statusId` INT(11) NOT NULL DEFAULT '1' ,
 CHANGE COLUMN `batchUploadId` `batchUploadId` INT(11) NOT NULL DEFAULT '0' ,
 CHANGE COLUMN `configId` `configId` INT(11) NOT NULL DEFAULT '0' ;
 
+ALTER TABLE `universaltranslator`.`directmessagesin` 
+ADD COLUMN `sendingResponse` VARCHAR(500) NULL DEFAULT NULL AFTER `orgId`;
+

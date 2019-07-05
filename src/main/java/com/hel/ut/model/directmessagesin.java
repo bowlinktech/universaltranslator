@@ -76,6 +76,9 @@ public class directmessagesin {
     
     @Column(name = "orgId", nullable = true)
     private int orgId = 0;
+    
+     @Column(name = "sendingResponse", nullable = true)
+    private String sendingResponse;
 
     public String getOrgName() {
         return orgName;
@@ -196,6 +199,13 @@ public class directmessagesin {
     public void setOrgId(int orgId) {
         this.orgId = orgId;
     }
+
+    public String getSendingResponse() {
+	return sendingResponse;
+    }
+
+    public void setSendingResponse(String sendingResponse) {
+	this.sendingResponse = sendingResponse;
+    }
    
-    
 }
