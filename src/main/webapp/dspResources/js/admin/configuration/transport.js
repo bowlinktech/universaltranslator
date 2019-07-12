@@ -22,6 +22,15 @@ require(['./main'], function () {
 	    populateHELRegistryConfigs(helRegistryId,helSchemaName);
 	}
 	
+        $(document).on('change','#dmFindConfig',function() {
+            if($(this).val() == 1) {
+                $('.dmConfigKeywordDiv').show();
+            }
+            else {
+                $('#dmConfigKeyword').val("");
+                $('.dmConfigKeywordDiv').hide();
+            }
+        });
 
         /** modal for WS to add sender domains **/
         $('#addEditDomain').click(function () {
@@ -585,6 +594,30 @@ function checkFormFields() {
 	    }
 	    
 	}
+        else if(selMethodId == 12) {
+            
+            if($('#directDomain').val() === "") {
+                $('.directDomainDiv').addClass("has-error");
+		$('#directDomainMsg').addClass("has-error");
+		$('#directDomainMsg').html('This is a required field.');
+		hasErrors = 1;
+            }
+            
+            if($('#dmFindConfig').val() === "") {
+                $('.dmFindConfigDiv').addClass("has-error");
+		$('#dmFindConfigMsg').addClass("has-error");
+		$('#dmFindConfigMsg').html('This is a required field.');
+		hasErrors = 1;
+            }
+            
+            if($('#dmFindConfig').val() == 1 && $('#dmConfigKeyword').val() === "") {
+                $('.dmConfigKeywordDiv').addClass("has-error");
+		$('#dmConfigKeywordMsg').addClass("has-error");
+		$('#dmConfigKeywordMsg').html('This is a required field.');
+		hasErrors = 1;
+            }
+            
+        }
     }
 
     return hasErrors;

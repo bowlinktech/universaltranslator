@@ -156,7 +156,7 @@
 						</c:choose>
 					    </a>
 					</span>
-					<h3>Rejected Transactions</h3>
+					<h3>Total Errors in File</h3>
 				    </div>
 				</section>
 			    </div>
@@ -236,7 +236,15 @@
 					<c:if test="${not empty batchDetails.originalFileName}">
 					    <c:set var="text" value="${fn:split(batchDetails.originalFileName,'.')}" />
 					    <c:set var="ext" value="${text[fn:length(text)-1]}" />
-					    <c:set var="hrefLink" value="/FileDownload/downloadFile.do?filename=archive_${batchDetails.utBatchName}.${ext}&foldername=archivesIn"/>
+					    
+					    <c:choose>
+						<c:when test="${batchDetails.transportMethodId == 9 || batchDetails.transportMethodId == 12}">
+						    <c:set var="hrefLink" value="/FileDownload/downloadFile.do?filename=${batchDetails.utBatchName}.${fn:toLowerCase(ext)}&foldername=archivesIn"/>
+						</c:when>
+						<c:otherwise>
+						    <c:set var="hrefLink" value="/FileDownload/downloadFile.do?filename=archive_${batchDetails.utBatchName}.${fn:toLowerCase(ext)}&foldername=archivesIn"/>
+						</c:otherwise>
+					    </c:choose>
 					    <p><strong>Uploaded File:</strong><br /><a href="${hrefLink}" title="View Original File">${batchDetails.originalFileName}</a></p>
 					</c:if>
 				    </c:otherwise>

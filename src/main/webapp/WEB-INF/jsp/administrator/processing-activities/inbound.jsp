@@ -75,11 +75,11 @@
                                                     <br />
 						    
 						    <c:choose>
-							<c:when test="${batch.transportMethodId == 9}">
-							    <c:set var="hrefLink" value="/FileDownload/downloadFile.do?filename=${batch.utBatchName}.${ext}&foldername=archivesIn"/>
+							<c:when test="${batch.transportMethodId == 9 || batch.transportMethodId == 12}">
+							    <c:set var="hrefLink" value="/FileDownload/downloadFile.do?filename=${batch.utBatchName}.${fn:toLowerCase(ext)}&foldername=archivesIn"/>
 							</c:when>
 							<c:otherwise>
-							    <c:set var="hrefLink" value="/FileDownload/downloadFile.do?filename=archive_${batch.utBatchName}.${ext}&foldername=archivesIn"/>
+							    <c:set var="hrefLink" value="/FileDownload/downloadFile.do?filename=archive_${batch.utBatchName}.${fn:toLowerCase(ext)}&foldername=archivesIn"/>
 							</c:otherwise>
 						    </c:choose>
 
@@ -117,7 +117,7 @@
                                             <td>
                                                 Total Transactions: <strong><fmt:formatNumber value = "${batch.totalRecordCount}" type = "number"/></strong>
 						<br />
-						Total Error Transactions: <strong><fmt:formatNumber value = "${batch.errorRecordCount}" type = "number"/></strong>
+						Total Errors: <strong><fmt:formatNumber value = "${batch.errorRecordCount}" type = "number"/></strong>
                                             </td>
                                             <td class="center-text"><fmt:formatDate value="${batch.dateSubmitted}" type="both" pattern="M/dd/yyyy h:mm:ss a" /></td>
                                             <td>

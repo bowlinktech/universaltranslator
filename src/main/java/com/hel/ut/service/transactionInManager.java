@@ -29,6 +29,7 @@ import com.hel.ut.model.custom.ConfigErrorInfo;
 import com.hel.ut.model.custom.ConfigForInsert;
 import com.hel.ut.model.custom.IdAndFieldValue;
 import com.hel.ut.model.custom.batchErrorSummary;
+import com.hel.ut.model.directmessagesin;
 import com.hel.ut.model.referralActivityExports;
 import com.hel.ut.model.systemSummary;
 
@@ -321,4 +322,14 @@ public interface transactionInManager {
     void batchUploadTableCleanUp() throws Exception;
     
     void resetTransactionCounts(Integer batchUploadId) throws Exception;
+    
+    Integer insertDMMessage(directmessagesin newDirectMessageIn) throws Exception;
+    
+    void processDirectAPIMessages();
+    
+    List<directmessagesin> getDirectAPIMessagesByStatusId(List<Integer> statusIds);
+
+    directmessagesin getDirectAPIMessagesById(Integer directMessageId);
+    
+    Integer updateDirectAPIMessage(directmessagesin directMessage);
 }

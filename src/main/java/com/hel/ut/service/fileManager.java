@@ -20,4 +20,6 @@ public interface fileManager {
     void writeByteArraysToFile(String fileName, byte[] content) throws IOException;
 
     byte[] loadFileAsBytesArray(String fileName) throws Exception;
+    
+    void copyFile(String sourceFile, String targetFile) throws Exception;
 }

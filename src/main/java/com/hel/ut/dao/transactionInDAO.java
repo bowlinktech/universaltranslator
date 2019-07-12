@@ -29,6 +29,7 @@ import com.hel.ut.model.custom.ConfigErrorInfo;
 import com.hel.ut.model.custom.ConfigForInsert;
 import com.hel.ut.model.custom.IdAndFieldValue;
 import com.hel.ut.model.custom.batchErrorSummary;
+import com.hel.ut.model.directmessagesin;
 import com.hel.ut.model.referralActivityExports;
 
 import java.math.BigInteger;
@@ -267,4 +268,12 @@ public interface transactionInDAO {
     void deleteMoveFileLogById(Integer logId) throws Exception;
     
     batchUploads getBatchDetailsByOriginalFileName(String batchName) throws Exception;
+    
+    Integer insertDMMessage(directmessagesin newDirectMessageIn) throws Exception;
+    
+    List<directmessagesin> getDirectAPIMessagesByStatusId(List<Integer> statusIds);
+
+    directmessagesin getDirectAPIMessagesById(Integer directMessageId);
+    
+    Integer updateDirectAPIMessage(directmessagesin directMessage);
 }

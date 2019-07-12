@@ -6,7 +6,11 @@
 package com.hel.ut.restAPI;
 
 import com.hel.ut.model.Organization;
+import com.hel.ut.model.configurationTransport;
+import com.hel.ut.model.directmessagesin;
 import com.hel.ut.model.hisps;
+import com.hel.ut.model.medAlliesReferralAttachmentList;
+import com.hel.ut.model.medAlliesReferralInfo;
 import com.hel.ut.model.organizationDirectDetails;
 import com.hel.ut.service.hispManager;
 import com.hel.ut.service.organizationManager;
@@ -19,10 +23,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.hel.ut.service.utConfigurationTransportManager;
+import com.jayway.jsonpath.Configuration;
+import com.jayway.jsonpath.JsonPath;
+import com.jayway.jsonpath.TypeRef;
+import com.jayway.jsonpath.spi.json.JacksonJsonProvider;
+import com.jayway.jsonpath.spi.mapper.JacksonMappingProvider;
+import java.io.FileOutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 import javax.annotation.Resource;
@@ -30,8 +41,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.bind.annotation.RequestBody;
 
 
 @RestController
@@ -52,124 +62,182 @@ public class directMessaging {
     
     @Resource(name = "myProps")
     private Properties myProps;
-	   
-    /**
-     * The 'consumeDIRECTAPICall' POST method will allow a REST API POST message to be sent for
-     * direct messaging. The post call will take in attachments (referral files) and also have
-     * basic authentication for the API.
-     * 
-     * @param messageFiles - array of attachments.
-     * @param response - return a valid Http response depending on the validation results.
-     * @param request  - request will hold the authorization parameters.
-     * @return 
-     * @throws java.lang.Exception 
-     */
-    @PostMapping("/post/referral")
-    public ResponseEntity<?> consumeDIRECTAPICall(@RequestParam("messageFiles") MultipartFile[] messageFiles,HttpServletResponse response,HttpServletRequest request) throws Exception {
-	
-	String authorization = request.getHeader("Authorization");
-	String sendingDirectAddress = request.getHeader("senderDMAddress");
-	
-	//Make sure the direct message sending address is present
-	if (sendingDirectAddress != null) {
+    
+    @PostMapping("/medallies/post/ereferral")
+    public ResponseEntity<?> consumeMedAllieseReferral(@RequestBody(required = false) String jsonSent,HttpServletResponse response,HttpServletRequest request) throws Exception {
+        
+        String authorization = request.getHeader("Authorization");
+        
+        if (authorization != null) {
+	    String base64Credentials = authorization.substring("Basic".length()).trim();
 	    
-	    //Make sure the direct message sending address is valid
-	    if(sendingDirectAddress.contains("@")) {
+	    String credentials = new String(Base64.getDecoder().decode(base64Credentials), Charset.forName("UTF-8"));
+	    
+	    if (!"".equals(credentials)) {
+
+		final String[] credvalues = credentials.split(":", 2);
 		
-		String DMDomain = sendingDirectAddress.substring(sendingDirectAddress.indexOf("@")+1,sendingDirectAddress.length());
-		
-		organizationDirectDetails directDetails = configurationtransportmanager.getDirectMessagingDetails(DMDomain);
-		
-		if(directDetails != null) {
-		    
-		    Organization orgDetails = organizationmanager.getOrganizationById(directDetails.getOrgId());
-		    
-		    if (authorization != null) {
-			String base64Credentials = authorization.substring("Basic".length()).trim();
+		if(credvalues.length == 2) {
+                    
+                    if(jsonSent == null) {
+                        return new ResponseEntity("Invalid JSON Payload!", HttpStatus.BAD_REQUEST);
+                    }
+                    else if(jsonSent.isEmpty()) {
+                        return new ResponseEntity("Invalid JSON Payload!", HttpStatus.BAD_REQUEST);
+                    }
+                    else {
+                        //Save a copy of the sent JSON message
+                        SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy HH-mm-ss");
+                        Date date = new Date();
+                        String utRootDir = myProps.getProperty("ut.directory.utRootDir");
+                        Path path = Paths.get(utRootDir + "medAlliesArchives/"+dateFormat.format(date)+".json");
+                        Files.write(path, jsonSent.getBytes());
+                        
+                        medAlliesReferralInfo envelopeInfo = null;
+                        List<medAlliesReferralAttachmentList> attachmentList = null;
+                        
+                        //Need to try and put JSON into medallies object
+                        try {
+                            Configuration conf = Configuration.builder().mappingProvider(new JacksonMappingProvider()).jsonProvider(new JacksonJsonProvider()).build();
+                            TypeRef<medAlliesReferralInfo> type = new TypeRef<medAlliesReferralInfo>() {};
+                            envelopeInfo = JsonPath.using(conf).parse(jsonSent).read("$", type);
+                        }
+                        catch (Exception ex) {
+                            //Need to send email of error
+                            return new ResponseEntity("Invalid JSON Payload!", HttpStatus.BAD_REQUEST);
+                        }
+                        
+                        if(envelopeInfo != null) {
+                            //Need to make sure there is an attachment array
+                            try {
+                                Configuration conf = Configuration.builder().mappingProvider(new JacksonMappingProvider()).jsonProvider(new JacksonJsonProvider()).build();
+                                TypeRef<List<medAlliesReferralAttachmentList>> type = new TypeRef<List<medAlliesReferralAttachmentList>>() {};
+                                attachmentList = JsonPath.using(conf).parse(jsonSent).read("$.emailAttachmentList.*", type);    
+                            }
+                            catch (Exception ex) {
+                                //Need to send email of error
+                                return new ResponseEntity("Invalid JSON Attachment List!", HttpStatus.BAD_REQUEST);
+                            }
+                            
+                            if(!attachmentList.isEmpty()) {
+                                
+                                if(envelopeInfo.getToDirectAddress().contains("@")) {
+                                
+                                    if(envelopeInfo.getFromDirectAddress().contains("@")) {
+                                        String DMDomain = envelopeInfo.getFromDirectAddress().substring(envelopeInfo.getFromDirectAddress().indexOf("@")+1,envelopeInfo.getFromDirectAddress().length());
 
-			String credentials = new String(Base64.getDecoder().decode(base64Credentials), Charset.forName("UTF-8"));
+                                        organizationDirectDetails directDetails = configurationtransportmanager.getDirectMessagingDetails(DMDomain);
 
-			if (!"".equals(credentials)) {
+                                        if(directDetails != null) {
+                                            Organization orgDetails = organizationmanager.getOrganizationById(directDetails.getOrgId());
 
-			    final String[] credvalues = credentials.split(":", 2);
+                                            if (!validateHISPCredentials(credvalues, directDetails)) {
+                                                return new ResponseEntity("Invalid Credentials!", HttpStatus.UNAUTHORIZED);
+                                            } 
+                                            else {
+                                                //Find the CCDA in the attachment list (will be the biggest file)
+                                                String CCDAContent = null;
+                                                String CCDATitle = "";
+                                                Integer attachmentSize = 0;
+                                                for(medAlliesReferralAttachmentList attachment : attachmentList) {
+                                                    if(Integer.parseInt(attachment.getAttachmentSize()) > attachmentSize) {
+                                                        CCDAContent = attachment.getAttachmentContent();
+                                                        attachmentSize = Integer.parseInt(attachment.getAttachmentSize());
+                                                        CCDATitle = attachment.getAttachmentTitle();
+                                                    }
+                                                }
 
-			    if(credvalues.length == 2) {
-				if (!validateHISPCredentials(credvalues, directDetails)) {
-				    return new ResponseEntity("Invalid Credentials!", HttpStatus.UNAUTHORIZED);
-				} 
-				else {
+                                                if(CCDAContent != null) {
+                                                    if(FilenameUtils.getExtension(CCDATitle).toLowerCase().equals(directDetails.getExpectedFileExt().toLowerCase())) {
+                                                        FileOutputStream fos = new FileOutputStream(utRootDir + "directMessages/" + orgDetails.getcleanURL() + "/" + CCDATitle);
+                                                        fos.write(Base64.getDecoder().decode(CCDAContent.replace("\n", "")));
+                                                        fos.close();
+                                                        
+                                                        Integer configId = 0;
+							Integer statusId = 1;
+							String sendingResponse = "Successfully received and saved your message.";
+                                                        
+                                                        //Check how we will find the configuration
+                                                        if(directDetails.getDmFindConfig() == 1) {
+                                                            //Find the configuration by dm keyword from target direct address
+                                                            configurationTransport transportDetails = configurationtransportmanager.findConfigurationByDirectMessagKeyword(directDetails.getOrgId(), envelopeInfo.getToDirectAddress());
+							    
+							    if(transportDetails != null) {
+								configId = transportDetails.getconfigId();
+							    }
+							    else {
+								statusId = 3;
+								sendingResponse = "Failed to find configuration. OrgId: " + directDetails.getOrgId() + "; To Direct Address: " + envelopeInfo.getToDirectAddress();
+							    }
+                                                        }
+                                                        
+                                                        //Need to create an entry in the received Direct Messages table
+                                                        directmessagesin newDirectMessageIn = new directmessagesin();
+                                                        newDirectMessageIn.setArchiveFileName("medAlliesArchives/"+dateFormat.format(date)+".json");
+                                                        newDirectMessageIn.setConfigId(configId);
+                                                        newDirectMessageIn.setFromDirectAddress(envelopeInfo.getFromDirectAddress());
+                                                        newDirectMessageIn.setToDirectAddress(envelopeInfo.getToDirectAddress());
+                                                        newDirectMessageIn.setHispId(directDetails.getHispId());
+                                                        newDirectMessageIn.setStatusId(statusId);
+                                                        newDirectMessageIn.setReferralFileName(CCDATitle);
+                                                        newDirectMessageIn.setOrgId(directDetails.getOrgId());
+							newDirectMessageIn.setSendingResponse(sendingResponse);
+                                                        
+                                                        Integer newDMMessageID = transactionInManager.insertDMMessage(newDirectMessageIn);
+				
+                                                        if(newDMMessageID > 0 && statusId == 1) {
+                                                            return new ResponseEntity("Successfully received and processed your message.", HttpStatus.OK);
+                                                        }
+                                                        else {
+                                                            return new ResponseEntity("Failed to process your message.", HttpStatus.EXPECTATION_FAILED);
+                                                        }
 
-				    //Make sure the message contains attachment(s)
-				    List<MultipartFile> files = Arrays.asList(messageFiles);
+                                                    }
+                                                    else {
+                                                        return new ResponseEntity("Received attachment extension (" + FilenameUtils.getExtension(CCDATitle).toLowerCase()+ ") does not match the expected file extension - ." + directDetails.getExpectedFileExt(), HttpStatus.BAD_REQUEST);
+                                                    }
+                                                }
+                                                else {
+                                                    return new ResponseEntity("missing message attachments", HttpStatus.BAD_REQUEST);
+                                                }
+                                            }
+                                        }
+                                        else {
+                                            return new ResponseEntity("sending direct message is invalid - " + envelopeInfo.getFromDirectAddress(), HttpStatus.BAD_REQUEST);
+                                        }
+                                    }
+                                    else {
+                                        return new ResponseEntity("sending direct message is invalid - " + envelopeInfo.getFromDirectAddress(), HttpStatus.BAD_REQUEST);
+                                    }
+                                }
+                                else {
+                                    return new ResponseEntity("recipient direct message is invalid - " + envelopeInfo.getToDirectAddress(), HttpStatus.BAD_REQUEST);
+                                }
+                            }
+                            else {
+                                return new ResponseEntity("missing message attachments", HttpStatus.BAD_REQUEST);
+                            }
+                        }
+                        else {
+                            return new ResponseEntity("Invalid JSON Payload!", HttpStatus.BAD_REQUEST);
+                        }
 
-				    if(files.isEmpty()) {
-					return new ResponseEntity("missing message attachments", HttpStatus.BAD_REQUEST);
-				    }
-				    else {
-					String utRootDir = myProps.getProperty("ut.directory.utRootDir");
-
-					//Need to make sure the file ext in the settings match the file received
-					if(files.size() > 1) {
-					    String validReferralFileName = "";
-					    byte[] bytes = null;
-
-					    //CCDA will always be the largest file size.
-					    long fileSize = 0;
-					    for (MultipartFile file : files) {
-						if(file.getSize() > fileSize) {
-						    fileSize = file.getSize();
-						    validReferralFileName = file.getOriginalFilename();
-						    bytes = file.getBytes();
-						}
-					    }
-					    
-					    if(!"".equals(validReferralFileName) && bytes != null && FilenameUtils.getExtension(validReferralFileName).toLowerCase().equals(directDetails.getExpectedFileExt().toLowerCase())) {
-						Path path = Paths.get(utRootDir + "directMessages/" + orgDetails.getcleanURL() + "/" + validReferralFileName);
-						Files.write(path, bytes);
-
-						return new ResponseEntity("Successfully Received", HttpStatus.OK);
-					    }
-					    else {
-					       return new ResponseEntity("Received attachment does not match the expected file extension - ." + directDetails.getExpectedFileExt(), HttpStatus.BAD_REQUEST);
-					    }
-					}
-					else {
-					    if(FilenameUtils.getExtension(files.get(0).getOriginalFilename().toLowerCase()).equals(directDetails.getExpectedFileExt().toLowerCase())) {
-						byte[] bytes = files.get(0).getOriginalFilename().getBytes();
-						Path path = Paths.get(utRootDir + "directMessages/" + orgDetails.getcleanURL() + "/" + files.get(0).getOriginalFilename());
-						Files.write(path, bytes);
-
-						return new ResponseEntity("Successfully Received", HttpStatus.OK);
-					    }
-					    else {
-					       return new ResponseEntity("Received attachment does not match the expected file extension - ." + directDetails.getExpectedFileExt(), HttpStatus.BAD_REQUEST);
-					    }
-					}
-				    } 
-				}
-			    } else {
-				return new ResponseEntity("Invalid Credentials!", HttpStatus.UNAUTHORIZED);
-			    }
-			} else {
-			    return new ResponseEntity("Invalid Credentials!", HttpStatus.UNAUTHORIZED);
-			}
-		    } else {
-			return new ResponseEntity("Invalid Credentials!", HttpStatus.UNAUTHORIZED);
-		    }
-		}
-		else {
-		    return new ResponseEntity("sending direct message is invalid - " + sendingDirectAddress, HttpStatus.BAD_REQUEST);
-		}
-	    }
-	    else {
-		return new ResponseEntity("sending direct message is invalid - " + sendingDirectAddress, HttpStatus.BAD_REQUEST);
-	    }
-	}
-	else {
-	    return new ResponseEntity("missing sending direct message", HttpStatus.BAD_REQUEST);
-	}
+                    }
+                }
+                else {
+                    return new ResponseEntity("Invalid Credentials!", HttpStatus.UNAUTHORIZED);
+                }
+            }
+            else {
+                return new ResponseEntity("Invalid Credentials!", HttpStatus.UNAUTHORIZED);
+            }
+        }
+        else {
+            return new ResponseEntity("Invalid Credentials!", HttpStatus.UNAUTHORIZED);
+        }
     }
-
+	   
+    
     /**
      * The 'validateHISPCredentials' function will verify the authorization parameters passed in with the 
      * the custom api call. This will validate the credentials and the direct message domain passed.

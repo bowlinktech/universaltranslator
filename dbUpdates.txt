@@ -31,3 +31,34 @@ CREATE TABLE `universaltranslator`.`organizationdirectdetails` (
 
 INSERT INTO `universaltranslator`.`ref_transportmethods` (`transportMethod`, `active`) VALUES ('Direct Message from HISP', '1');
 
+CREATE TABLE `universaltranslator`.`directmessagesin` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `hispId` INT NOT NULL,
+  `fromDirectAddress` VARCHAR(255) NOT NULL,
+  `toDirectAddress` VARCHAR(255) NOT NULL,
+  `archiveFileName` VARCHAR(255) NOT NULL,
+  `referralFileName` VARCHAR(255) NOT NULL,
+  `dateCreated` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `statusId` INT NULL,
+  `batchUploadId` INT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE INDEX `id_UNIQUE` (`id` ASC));
+
+ALTER TABLE `universaltranslator`.`organizationdirectdetails` 
+ADD COLUMN `dmFindConfig` INT(11) NOT NULL DEFAULT '1' AFTER `expectedFileExt`;
+
+ALTER TABLE `universaltranslator`.`configurationtransportdetails` 
+ADD COLUMN `dmConfigKeyword` VARCHAR(45) NULL DEFAULT NULL AFTER `helRegistryId`;
+
+ALTER TABLE `universaltranslator`.`directmessagesin` 
+ADD COLUMN `configId` INT(11) NULL DEFAULT '0' AFTER `batchUploadId`;
+
+ALTER TABLE `universaltranslator`.`directmessagesin` 
+ADD COLUMN `orgId` INT(11) NOT NULL DEFAULT '0' AFTER `configId`,
+CHANGE COLUMN `statusId` `statusId` INT(11) NOT NULL DEFAULT '1' ,
+CHANGE COLUMN `batchUploadId` `batchUploadId` INT(11) NOT NULL DEFAULT '0' ,
+CHANGE COLUMN `configId` `configId` INT(11) NOT NULL DEFAULT '0' ;
+
+ALTER TABLE `universaltranslator`.`directmessagesin` 
+ADD COLUMN `sendingResponse` VARCHAR(500) NULL DEFAULT NULL AFTER `orgId`;
+

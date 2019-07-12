@@ -134,6 +134,13 @@ public class fileManagerImpl implements fileManager {
         writeByteArraysToFile(targetFile, decodedBytes);
 
     }
+    
+    @Override
+    public void copyFile(String sourceFile, String targetFile) throws Exception {
+	byte[] fileAsBytes = loadFileAsBytesArray(sourceFile);
+	
+        writeByteArraysToFile(targetFile, fileAsBytes);
+    }
 
     public void writeByteArraysToFile(String fileName, byte[] content) throws IOException {
 

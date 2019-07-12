@@ -375,10 +375,25 @@
 			       </select>
 			       <span id="encodingMsg" class="control-label"></span>
 			   </div>
-			   <div class="form-group">
+			   <div class="form-group directDomainDiv">
 			       <label class="control-label" for="directDomain">Direct Address Domain *</label>
-			       <input name="directMessageFields[0].directDomain" class="form-control" type="text" maxLength="75" value="${directMessageFields.directDomain}"  />
-			   </div>   
+			       <input name="directMessageFields[0].directDomain" id="directDomain" class="form-control" type="text" maxLength="75" value="${directMessageFields.directDomain}"  />
+                               <span id="directDomainMsg" class="control-label"></span>
+			   </div>  
+                           <div class="form-group dmFindConfigDiv">
+			       <label class="control-label" for="dmFindConfig">How will you determine the configuration? *</label>
+                               <select name="directMessageFields[0].dmFindConfig" id="dmFindConfig" class="form-control sm-input">
+                                   <option value="">- Select </option>
+                                   <option value="1" <c:if test="${directMessageFields.dmFindConfig == 1}">selected="selected"</c:if>>From the direct message to address</option>
+                                   <option value="2" <c:if test="${directMessageFields.dmFindConfig == 2}">selected="selected"</c:if>>From within the referral file</option>
+                               </select>
+                               <span id="dmFindConfigMsg" class="control-label"></span>
+			   </div> 
+                           <div class="form-group dmConfigKeywordDiv" style="display:${directMessageFields.dmFindConfig == 1 ? 'block' : 'none'}">
+			       <label class="control-label" for="dmConfigKeyword">Direct Address Configuration Keyword *</label>
+			       <input name="dmConfigKeyword" id="dmConfigKeyword" class="form-control" type="text" maxLength="45" value="${transportDetails.dmConfigKeyword}"  />
+                               <span id="dmConfigKeywordMsg" class="control-label"></span>
+                            </div>  
 			</div>
 		    </div>
 		</section>

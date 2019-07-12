@@ -32,6 +32,7 @@ import com.hel.ut.model.custom.ConfigErrorInfo;
 import com.hel.ut.model.custom.ConfigForInsert;
 import com.hel.ut.model.custom.IdAndFieldValue;
 import com.hel.ut.model.custom.batchErrorSummary;
+import com.hel.ut.model.directmessagesin;
 import com.hel.ut.model.referralActivityExports;
 import com.hel.ut.service.sysAdminManager;
 import com.hel.ut.service.userManager;
@@ -2936,6 +2937,73 @@ public class transactionInDAOImpl implements transactionInDAO {
 	    return null;
 	} else {
 	    return (batchUploads) query.uniqueResult();
+	}
+
+    }
+    
+     @Override
+    @Transactional(readOnly = false)
+    public Integer insertDMMessage(directmessagesin newDirectMessageIn) throws Exception {
+	Integer newRMessageId = null;
+
+	newRMessageId = (Integer) sessionFactory.getCurrentSession().save(newDirectMessageIn);
+
+	return newRMessageId;
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    @SuppressWarnings("unchecked")
+    public List<directmessagesin> getDirectAPIMessagesByStatusId(List<Integer> statusIds) {
+	//1 if list of statusId is null, we get all
+	try {
+	    Criteria findDirectAPIMessages = sessionFactory.getCurrentSession().createCriteria(directmessagesin.class);
+	    if (!statusIds.isEmpty()) {
+		findDirectAPIMessages.add(Restrictions.in("statusId", statusIds));
+	    }
+
+	    List<directmessagesin> directAPIMessages = findDirectAPIMessages.list();
+	    return directAPIMessages;
+
+	} catch (Exception ex) {
+	    System.err.println("getDirectAPIMessagesByStatusId " + ex.getCause());
+	    ex.printStackTrace();
+	    return null;
+	}
+
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    @SuppressWarnings("unchecked")
+    public directmessagesin getDirectAPIMessagesById(Integer directMessageId) {
+	//1 if list of statusId is null, we get all
+	try {
+	    Criteria findDirectAPIMessage = sessionFactory.getCurrentSession().createCriteria(directmessagesin.class);
+	    findDirectAPIMessage.add(Restrictions.eq("id", directMessageId));
+
+	    List<directmessagesin> directAPIMessages = findDirectAPIMessage.list();
+	    if (!directAPIMessages.isEmpty()) {
+		return directAPIMessages.get(0);
+	    }
+	} catch (Exception ex) {
+	    System.err.println("getDirectAPIMessagesById " + ex.getCause());
+	    ex.printStackTrace();
+	    return null;
+	}
+	return null;
+    }
+
+    @Override
+    @Transactional(readOnly = false)
+    public Integer updateDirectAPIMessage(directmessagesin directMessage) {
+	try {
+	    sessionFactory.getCurrentSession().update(directMessage);
+	    return 0;
+	} catch (Exception ex) {
+	    ex.printStackTrace();
+	    System.err.println("updateDirectAPIMessage " + ex.getCause());
+	    return 1;
 	}
 
     }

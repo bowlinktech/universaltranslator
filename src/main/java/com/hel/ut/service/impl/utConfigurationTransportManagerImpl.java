@@ -438,7 +438,7 @@ public class utConfigurationTransportManagerImpl implements utConfigurationTrans
 	//Need to query to get a list of field for the passed in HELRegistryConfigId
 	String sqlStatement = "select concat(case when a.requiredField = 1 then 'true' else 'false' end,'|',a.validationId,'|',a.dspPos,'|',b.elementName) as fields "
 	    + "from "+HELSchemaName+".registry_configuration_dataelements a inner join "
-	    + HELSchemaName + ".dataElements b on b.id = a.dataElementId "
+	    + "registries.dataElements b on b.id = a.dataElementId "
 	    + "where a.configurationId = " + HELRegistryConfigId + " "
 	    + "order by a.dspPos";
 	
@@ -590,5 +590,10 @@ public class utConfigurationTransportManagerImpl implements utConfigurationTrans
     @Override
     public void saveTransportDirectMessageDetails(organizationDirectDetails directDetails) throws Exception {
 	configurationTransportDAO.saveTransportDirectMessageDetails(directDetails);
+    }
+    
+    @Override
+    public configurationTransport findConfigurationByDirectMessagKeyword(Integer orgId, String directMessageToAddress) throws Exception {
+        return configurationTransportDAO.findConfigurationByDirectMessagKeyword(orgId, directMessageToAddress);
     }
 }
