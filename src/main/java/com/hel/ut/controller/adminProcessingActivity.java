@@ -31,7 +31,6 @@ import com.hel.ut.model.systemSummary;
 import com.hel.ut.model.transactionOutRecords;
 import com.hel.ut.model.transactionRecords;
 import com.hel.ut.model.watchlistEntry;
-import com.hel.ut.reference.fileSystem;
 import com.hel.ut.restAPI.restfulManager;
 import com.hel.ut.security.decryptObject;
 import com.hel.ut.security.encryptObject;
@@ -44,9 +43,6 @@ import com.hel.ut.service.transactionOutManager;
 import com.hel.ut.service.userManager;
 import com.hel.ut.webServices.WSManager;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigInteger;
@@ -90,7 +86,7 @@ import javax.annotation.Resource;
 
 /**
  *
- * @author chadmccue
+ * @author chadmccued
  */
 @Controller
 @RequestMapping("/administrator/processing-activity")
@@ -3454,10 +3450,8 @@ public class adminProcessingActivity {
     /**
      * The 'completeGenericWatchList' function will process the batch according to the option submitted by admin
      * @param session
-     * @param transactionInId
-     * @param batchId
-     * @param authentication
-     * @param batchOption
+     * @param entryId
+     * @param isChecked
      * @return 
      * @throws java.lang.Exception 
      */
@@ -3536,11 +3530,7 @@ public class adminProcessingActivity {
             
             mav.addObject("batchDetails", batchDetails);
 	    
-	    
-            if (batchDetails.gettotalErrorCount()> 0) {
-		//List<batchErrorSummary> batchErrorSummary = transactionOutManager.getBatchErrorSummary(batchDetails.getId());
-		//mav.addObject("batchErrorSummary", batchErrorSummary);
-	    }
+            
 	   
 	    
         } else {

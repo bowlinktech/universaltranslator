@@ -1108,25 +1108,56 @@ public class transactionInManagerImpl implements transactionInManager {
 
 		//decoded files will always be in loadFiles folder with UTBatchName 
 		// all files are Base64 encoded at this point
-		String encodedFilePath = myProps.getProperty("ut.directory.utRootDir") + batch.getFileLocation().replace("/HELProductSuite/universalTranslator/","");
+		String filePath = myProps.getProperty("ut.directory.utRootDir") + batch.getFileLocation().replace("/HELProductSuite/universalTranslator/","");
 		String encodedFileName = "encoded_"+batch.getutBatchName();
-		File encodedFile = new File(encodedFilePath + encodedFileName);
+		
+		if(!encodedFileName.contains(".")) {
+		    encodedFileName += batch.getoriginalFileName().substring(batch.getoriginalFileName().lastIndexOf(".")).toLowerCase();
+		}
+		
+		File encodedFile = new File(filePath + encodedFileName);
+		
 		String decodedFilePath = myProps.getProperty("ut.directory.utRootDir") + processFolderPath;
 		String decodedFileName = batch.getutBatchName();
-		String decodedFileExt = batch.getoriginalFileName().substring(batch.getoriginalFileName().lastIndexOf("."));
-		String decodedFile = decodedFilePath + decodedFileName + decodedFileExt;
+		String decodedFileExt = batch.getoriginalFileName().substring(batch.getoriginalFileName().lastIndexOf(".")).toLowerCase();
 		
-		boolean fileDecoded = false;
-		try {
-		    filemanager.decode((encodedFilePath + encodedFileName), decodedFile);
-		    fileDecoded = true;
-		} catch (Exception ex) {
-		    ex.printStackTrace();
-		    sysErrors = 1;
-		    processingSysErrorId = 17;
-		}
+		boolean fileFound = false;
+		if(encodedFile.exists()) {
+		    String decodedFile = decodedFilePath + decodedFileName + decodedFileExt;
 
-		if (fileDecoded) {
+		    try {
+			filemanager.decode((filePath + encodedFileName), decodedFile);
+			fileFound = true;
+		    } catch (Exception ex) {
+			ex.printStackTrace();
+			sysErrors = 1;
+			processingSysErrorId = 17;
+		    }
+		}
+		else {
+		    String nonencodedFileName = batch.getutBatchName();
+		    
+		    if(!nonencodedFileName.contains(".")) {
+			nonencodedFileName += decodedFileExt;
+		    }
+		    
+		    File nonencodedFile = new File(filePath + nonencodedFileName);
+		    
+		    if(nonencodedFile.exists()) {
+			String decodedFile = decodedFilePath + decodedFileName + decodedFileExt;
+			
+			try {
+			    filemanager.copyFile((filePath + nonencodedFileName), decodedFile);
+			    fileFound = true;
+			} catch (Exception ex) {
+			    ex.printStackTrace();
+			    sysErrors = 1;
+			    processingSysErrorId = 17;
+			}
+		    }
+		}
+		
+		if (fileFound) {
 
 		    Integer delimId = 0;
 
@@ -1142,12 +1173,18 @@ public class transactionInManagerImpl implements transactionInManager {
 		    //For configId of 0, we need to check to see if org has hr or ccd if configId is not 0, we pull up the extension type and rename file if we find more than one file extension set up for org we reject them them file extension will be 4 (hr) or 9 (ccd) info we have from batchUpload - transportMethodId, configId, orgId
 		    if (batch.getConfigId() != 0) {
 			configurationTransport ct = configurationtransportmanager.getTransportDetails(batch.getConfigId());
-			if (ct.getfileType() == 9) {
-			    chagneToExtension = "xml";
-			} else if (ct.getfileType() == 4) {
-			    chagneToExtension = "hr";
-			} else if (ct.getfileType() == 12) {
-			    chagneToExtension = "json";
+			switch (ct.getfileType()) {
+			    case 9:
+				chagneToExtension = "xml";
+				break;
+			    case 4:
+				chagneToExtension = "hr";
+				break;
+			    case 12:
+				chagneToExtension = "json";
+				break;
+			    default:
+				break;
 			}
 			delimId = ct.getfileDelimiter();
 			lineTerminator = ct.getLineTerminator();
@@ -2935,7 +2972,7 @@ public class transactionInManagerImpl implements transactionInManager {
 	ccAddresses.add("chadmccue05@gmail.com");
 
 	//build message
-	String message = "Uploaded File (Batch Id:" + batch.getutBatchName() + ") contains " + batch.geterrorRecordCount() + " rejected transaction(s).";
+	String message = "Uploaded File (Batch Id:" + batch.getutBatchName() + ") contains " + batch.geterrorRecordCount() + " error(s).";
 
 	message = message + "<br/><br/>Environment: " + myProps.getProperty("server.identity");
 	message = message + "<br/><br/>Batch Id: " + batch.getutBatchName();
@@ -4234,20 +4271,10 @@ public class transactionInManagerImpl implements transactionInManager {
 			String decodeFilePath = myProps.getProperty("ut.directory.utRootDir") + "archivesIn/" + batchName + "_dec" + fileExt;
 			filemanager.writeFile(decodeFilePath, strDecode);
 			
-			String encodeFilePath = myProps.getProperty("ut.directory.utRootDir") + "archivesIn/" + batchName + "_org" + fileExt;
-			FileUtils.copyFile(new File(DMFile+directMessage.getReferralFileName()), new File(encodeFilePath));
-			
 			String encodeArchivePath = myProps.getProperty("ut.directory.utRootDir") + "archivesIn/" + batchName + fileExt;
 			Files.copy(new File(writeToFile.replace("/HELProductSuite/universalTranslator/",myProps.getProperty("ut.directory.utRootDir"))).toPath(), new File(encodeArchivePath).toPath(), REPLACE_EXISTING);
 		    } 
 		    else {
-			file = new File(myProps.getProperty("ut.directory.utRootDir") + "archivesIn/" + batchName + "_dec" + fileExt);
-			String decodeFilePath = myProps.getProperty("ut.directory.utRootDir") + "archivesIn/" + batchName + "_dec" + fileExt;
-			FileUtils.copyFile(new File(DMFile+directMessage.getReferralFileName()), new File(decodeFilePath));
-			
-			String encodeFilePath = myProps.getProperty("ut.directory.utRootDir") + "archivesIn/" + batchName + "_org" + fileExt;
-			FileUtils.copyFile(new File(DMFile+directMessage.getReferralFileName()), new File(encodeFilePath));
-			
 			String encodeArchivePath = myProps.getProperty("ut.directory.utRootDir") + "archivesIn/" + batchName + fileExt;
 			Files.copy(new File(writeToFile.replace("/HELProductSuite/universalTranslator/",myProps.getProperty("ut.directory.utRootDir"))).toPath(), new File(encodeArchivePath).toPath(), REPLACE_EXISTING);
 		    }
