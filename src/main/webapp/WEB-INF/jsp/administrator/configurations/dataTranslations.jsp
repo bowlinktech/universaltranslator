@@ -130,6 +130,7 @@
             <section class="panel panel-default">
                 <div class="panel-heading">
                     <div class="pull-right">
+			<a href="#cwDownloadModal" rel="${configurationDetails.id}" data-toggle="modal" class="btn btn-primary btn-xs btn-action createCrosswalkDownload" title="Download Existing Crosswalks">Download Existing Crosswalks</a>
                         <a href="#crosswalkModal" data-toggle="modal" class="btn btn-primary btn-xs btn-action" id="createNewCrosswalk" title="Add New Crosswalk">Add New Crosswalk</a>
                     </div>
                     <h3 class="panel-title">Available Crosswalks</h3>
@@ -149,6 +150,9 @@
     <div class="col-md-12">
         <section class="panel panel-default">
             <div class="panel-heading">
+		<div class="pull-right dtDownloadLink" style="display:none">
+		    <a href="#dtDownloadModal" rel="${configurationDetails.id}" data-toggle="modal" class="btn btn-primary btn-xs btn-action createDataTranslationDownload" title="Download Existing Translations">Download Existing Translations</a>
+		</div>
                 <h3 class="panel-title">Existing Data Translations</h3>
             </div>
             <div class="panel-body">
@@ -166,3 +170,5 @@
 <%-- Provider Address modal --%>
 <div class="modal fade" id="crosswalkModal" role="dialog" tabindex="-1" aria-labeledby="Message Crosswalks" aria-hidden="true" aria-describedby="Message Crosswalks"></div>
 <div class="modal fade" id="macroModal" role="dialog" tabindex="-1" aria-labeledby="Macro Details" aria-hidden="true" aria-describedby="Macro Details"></div>
+<div class="modal fade" id="dtDownloadModal" role="dialog" tabindex="-1" aria-labeledby="Data Translations Download" aria-hidden="true" aria-describedby="Data Translations Download"></div>
+<div class="modal fade" id="cwDownloadModal" role="dialog" tabindex="-1" aria-labeledby="Crosswalks Download" aria-hidden="true" aria-describedby="Crosswalks Download"></div>

@@ -50,6 +50,10 @@
 					    <input type="text" disabled class="form-control" value="${messageSpecs.templateFile}" />
 					    <form:hidden path="templateFile" />
 					</div>
+					<div class="form-group alert alert-danger">
+					    <p style="padding-bottom:10px;">Please download existing data translations before uploading a new template. You will clear out all existing data translations when a new template is uploaded.</p>
+					    <a href="#dtDownloadModal" rel="${configurationDetails.id}" data-toggle="modal" class="btn btn-primary btn-xs btn-action createDataTranslationDownload" title="Download Existing Translations">Download Existing Translations</a>
+					</div>
 				    </c:if>
 				    <spring:bind path="file">
 					<div id="templateFileDiv" class="form-group ${status.error ? 'has-error' : '' }">
@@ -227,5 +231,6 @@
         </div>     
     </div>
 </div>
+<div class="modal fade" id="dtDownloadModal" role="dialog" tabindex="-1" aria-labeledby="Data Translations Download" aria-hidden="true" aria-describedby="Data Translations Download"></div>
 
 

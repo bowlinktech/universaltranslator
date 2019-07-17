@@ -2,6 +2,101 @@
 
 require(['./main'], function () {
     require(['jquery'], function ($) {
+	
+	$(document).on('click', '.createCrosswalkDownload', function() {
+           $.ajax({
+                url: '/administrator/configurations/createCrosswalkDownload',
+                data: {
+		   'configId':$(this).attr('rel')
+		},
+                type: "GET",
+                success: function(data) {
+                    $("#cwDownloadModal").html(data);
+                }
+            });
+        });
+	
+	$(document).on('click', '#generateCWButton', function() {
+	    
+	    var errorFound = 0;
+	    
+	   //Makes sure name is entered and entity is selected
+	   if($('#fileName').val() === "") {
+	       $('#cwnameDiv').addClass("has-error");
+	       errorFound = 1;
+	   }
+	   
+	   if(errorFound == 0) {
+	       $.ajax({
+		    url: '/administrator/configurations/crosswalksDownload',
+		    data: {
+			'configId':$(this).attr('rel'),
+			'fileName': $('#fileName').val()
+		    },
+		    type: "GET",
+		    dataType : 'text',
+		    contentType : 'application/json;charset=UTF-8',
+		    success: function(data) {
+			if(data !== '') {
+			    window.location.href = '/administrator/configurations/downloadDTCWFile/'+ data;
+			    $('#successMsg').show();
+			    //$('#dtDownloadModal').modal('toggle');
+			}
+			else {
+			    $('#errorMsg').show();
+			}
+		    }
+		});
+	   }
+           
+        });
+	
+	$(document).on('click', '.createDataTranslationDownload', function() {
+           $.ajax({
+                url: '/administrator/configurations/createDataTranslationDownload',
+                data: {
+		   'configId':$(this).attr('rel')
+		},
+                type: "GET",
+                success: function(data) {
+                    $("#dtDownloadModal").html(data);
+                }
+            });
+        });
+	
+	$(document).on('click', '#generateDTButton', function() {
+	    
+	    var errorFound = 0;
+	    
+	   //Makes sure name is entered and entity is selected
+	   if($('#fileName').val() === "") {
+	       $('#dtnameDiv').addClass("has-error");
+	       errorFound = 1;
+	   }
+	   
+	   if(errorFound == 0) {
+	       $.ajax({
+		    url: '/administrator/configurations/dataTranslationsDownload',
+		    data: {
+			'configId':$(this).attr('rel'),
+			'fileName': $('#fileName').val()
+		    },
+		    type: "GET",
+		    dataType : 'text',
+		    contentType : 'application/json;charset=UTF-8',
+		    success: function(data) {
+			if(data !== '') {
+			    window.location.href = '/administrator/configurations/downloadDTCWFile/'+ data;
+			    $('#successMsg').show();
+			    //$('#dtDownloadModal').modal('toggle');
+			}
+			else {
+			    $('#errorMsg').show();
+			}
+		    }
+		});
+	   }
+        });
 
         $("input:text,form").attr("autocomplete", "off");
         populateCrosswalks(1);
@@ -321,6 +416,7 @@ function populateExistingTranslations(reload) {
         data: {'reload': reload, 'categoryId': 1},
         success: function (data) {
             $("#existingTranslations").html(data);
+	    $('.dtDownloadLink').show();
         }
     });
 }
