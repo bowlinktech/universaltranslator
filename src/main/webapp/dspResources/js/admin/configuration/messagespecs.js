@@ -3,11 +3,54 @@ require(['./main'], function () {
     require(['jquery'], function ($) {
 
         $("input:text,form").attr("autocomplete", "off");
-
-        //Fade out the updated/created message after being displayed.
-        if ($('.alert').length > 0) {
-            $('.alert').delay(2000).fadeOut(1000);
-        }
+	
+	$(document).on('click', '.createDataTranslationDownload', function() {
+           $.ajax({
+                url: '/administrator/configurations/createDataTranslationDownload',
+                data: {
+		   'configId':$(this).attr('rel')
+		},
+                type: "GET",
+                success: function(data) {
+                    $("#dtDownloadModal").html(data);
+                }
+            });
+        });
+	
+	$(document).on('click', '#generateDTButton', function() {
+	    
+	    var errorFound = 0;
+	    
+	   //Makes sure name is entered and entity is selected
+	   if($('#fileName').val() === "") {
+	       $('#dtnameDiv').addClass("has-error");
+	       errorFound = 1;
+	   }
+	   
+	   if(errorFound == 0) {
+	       $.ajax({
+		    url: '/administrator/configurations/dataTranslationsDownload',
+		    data: {
+			'configId':$(this).attr('rel'),
+			'fileName': $('#fileName').val()
+		    },
+		    type: "GET",
+		    dataType : 'text',
+		    contentType : 'application/json;charset=UTF-8',
+		    success: function(data) {
+			if(data !== '') {
+			    window.location.href = '/administrator/configurations/downloadDTCWFile/'+ data;
+			    $('#successMsg').show();
+			    //$('#dtDownloadModal').modal('toggle');
+			}
+			else {
+			    $('#errorMsg').show();
+			}
+		    }
+		});
+	   }
+           
+        });
 
         //This function will save the messgae type field mappings
         $('#saveDetails').click(function () {

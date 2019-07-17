@@ -684,5 +684,36 @@ public class utConfigurationManagerImpl implements utConfigurationManager {
 	return utConfigurationDAO.getAllTargetConfigurations();
     }
     
+    @Override
+    public List getDataTranslationsForDownload(Integer configId) throws Exception {
+	
+	String sqlStatement = "select configName, category, processOrder, fieldDesc, macroId, macroName, crosswalkId, crosswalkname,  passClear,  fieldA, fieldB, constant1, constant2 "
+	    + "from (select cff.configId configId, case when categoryId = 1 then 'During' when categoryId = 2 then 'Pre' end category,"
+	    + "processOrder, fieldDesc, crosswalkId, IFNULL(name,'') as crosswalkname, macroId, IFNULL(concat(Macro_Short_Name, ' (', formula,')'),'') macroname,"
+	    + "fieldA, fieldB, replace(replace(replace(constant1, '\\\\', '^^'), '''', '|_|'), '\"', '&') constant1 , constant2, case when passclear = 1 then 'Pass' else 'Clear' end passClear "
+	    + "from (select dts.*, name from (select configurationdatatranslations.*, Macro_Short_Name, formula  from configurationdatatranslations left join "
+	    + "(select * from macro_names) macros on macros.id = configurationdatatranslations.macroId where configId = " + configId
+	    + " order by categoryId, processOrder)  dts left join (Select * from crosswalks) cws on cws.id = crosswalkId ) dts inner join "
+	    + "(select * from configurationformfields ) cff on cff.id = fieldId) cff join (select configName, id from configurations) configurations on configurations.id = cff.configId "
+	    + "order by configName, category desc, processOrder";
+	
+	return utConfigurationDAO.getDTCWForDownload(sqlStatement);
+	
+    }
     
+    @Override
+    public List getCrosswalksForDownload (Integer configId) throws Exception {
+	
+	String sqlStatement = "select name,  crosswalkId, sourcevalue, targetvalue, descValue from crosswalks cw join ("
+	    + "select * from rel_crosswalkdata where crosswalkId in ("
+	    + "select distinct crosswalkId from ("
+	    + "select crosswalkId from configurationdatatranslations where configId = " + configId
+	    + " union "
+	    + "select crosswalkId from rel_crosswalkdata where crosswalkId in ("
+	    + "select crosswalkId from configurationdatatranslations where configId = " + configId + " order by processOrder)) cws"
+	    + ")) cwdata on cw.id = cwdata.crosswalkId "
+	    + "order by name, cwdata.id";
+	
+	return utConfigurationDAO.getDTCWForDownload(sqlStatement);
+    }
 }

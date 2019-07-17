@@ -199,4 +199,6 @@ public interface utConfigurationDAO {
     List<utConfiguration>  getAllSourceConfigurations() throws Exception;
     
     List<utConfiguration>  getAllTargetConfigurations() throws Exception;
+    
+    List getDTCWForDownload(String sqlStatement) throws Exception;
 }

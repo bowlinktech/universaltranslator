@@ -196,4 +196,7 @@ public interface utConfigurationManager {
     
     List<utConfiguration>  getAllTargetConfigurations() throws Exception;
     
+    List getDataTranslationsForDownload (Integer configId) throws Exception;
+  
+    List getCrosswalksForDownload (Integer configId) throws Exception;
 }

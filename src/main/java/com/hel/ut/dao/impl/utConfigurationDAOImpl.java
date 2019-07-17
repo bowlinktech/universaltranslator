@@ -1661,5 +1661,15 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
         return targetConfigurations;
     }
     
-    
+     @Override
+    @Transactional(readOnly = false)
+    public List getDTCWForDownload(String sqlStatement) throws Exception {
+	
+	Query query = sessionFactory.getCurrentSession().createSQLQuery(sqlStatement);
+
+	List dataTranslations = query.list();
+	
+	return dataTranslations;
+	
+    }
 }
