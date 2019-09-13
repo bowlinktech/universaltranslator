@@ -101,7 +101,6 @@ import com.registryKit.registry.fileUploads.fileUploadManager;
 import com.registryKit.registry.fileUploads.uploadedFile;
 import com.registryKit.registry.submittedMessages.submittedMessage;
 import com.registryKit.registry.submittedMessages.submittedMessageManager;
-import java.nio.file.Paths;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 
@@ -931,7 +930,7 @@ public class transactionInManagerImpl implements transactionInManager {
     public Integer getRecordCounts(Integer batchId, List<Integer> statusIds, boolean foroutboundProcessing) {
 	return transactionInDAO.getRecordCounts(batchId, statusIds, foroutboundProcessing, true);
     }
-
+    
     @Override
     public Integer getRecordCounts(Integer batchId, List<Integer> statusIds, boolean foroutboundProcessing, boolean inStatusIds) {
 	return transactionInDAO.getRecordCounts(batchId, statusIds, foroutboundProcessing, inStatusIds);
@@ -1166,7 +1165,7 @@ public class transactionInManagerImpl implements transactionInManager {
 		    //If batch is set up for CCD input then we need to translate it to a pipe-delimited text file.
 		    //here we need to check if we should change file to xml or hr for org sometimes org will send hl7 files over or .out or some other extension, they all need to be .hr all ccd file will need to end in xml
 		    //so we check decodedFileName and change it to the proper extension if need be
-		    String chagneToExtension = "";
+		    String changeToExtension = "";
 		    String processFileName = batch.getoriginalFileName();
 		    String lineTerminator = "\\n";
 
@@ -1175,13 +1174,13 @@ public class transactionInManagerImpl implements transactionInManager {
 			configurationTransport ct = configurationtransportmanager.getTransportDetails(batch.getConfigId());
 			switch (ct.getfileType()) {
 			    case 9:
-				chagneToExtension = "xml";
+				changeToExtension = "xml";
 				break;
 			    case 4:
-				chagneToExtension = "hr";
+				changeToExtension = "hr";
 				break;
 			    case 12:
-				chagneToExtension = "json";
+				changeToExtension = "json";
 				break;
 			    default:
 				break;
@@ -1210,19 +1209,19 @@ public class transactionInManagerImpl implements transactionInManager {
 			    }
 			} else if (ctList.size() == 1) {
 			    if (ctList.get(0).getfileType() == 9) {
-				chagneToExtension = "xml";
+				changeToExtension = "xml";
 			    } else if (ctList.get(0).getfileType() == 4) {
-				chagneToExtension = "hr";
+				changeToExtension = "hr";
 			    } else if (ctList.get(0).getfileType() == 12) {
-				chagneToExtension = "json";
+				changeToExtension = "json";
 			    }
 			    delimId = ctList.get(0).getfileDelimiter();
 			    lineTerminator = ctList.get(0).getLineTerminator();
 			}
 		    }
 
-		    if (!"".equals(chagneToExtension)) {
-			processFileName = batch.getutBatchName() + "." + chagneToExtension;
+		    if (!"".equals(changeToExtension)) {
+			processFileName = batch.getutBatchName() + "." + changeToExtension;
 			//we overwrite file 
 			//old file is here actualFileName;
 			//new file is the same name with diff extension
@@ -1813,6 +1812,7 @@ public class transactionInManagerImpl implements transactionInManager {
      * The 'moveFilesPath' method will handle moving files found in the UT dropped configuration folders.
      * 
      * @param rootPath
+     * @param configDroppedPath
      * @param transportMethodId
      * @param orgId
      * @param transportId
@@ -2116,7 +2116,7 @@ public class transactionInManagerImpl implements transactionInManager {
 				createBatchTables(batchId, batchDetails.getConfigId());
 				
 				//we encoded the file if it is not
-				File newFile = new File(rootPath + orgDetails.getcleanURL() + "/input files/encoded_"+batchName);
+				File newFile = new File(rootPath + orgDetails.getcleanURL() + "/input files/encoded_"+batchName + fileName.substring(fileName.lastIndexOf(".")));
 				
 				// now we move file
 				Path source = file.toPath();
@@ -2937,6 +2937,17 @@ public class transactionInManagerImpl implements transactionInManager {
 	String dateTo = df.format(toDate);
 
 	return transactionInDAO.getRejectedCount(dateFrom, dateTo);
+
+    }
+    
+    @Override
+    public BigInteger getRejectedReceivedCount(Date fromDate, Date toDate) throws Exception {
+
+	SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	String dateFrom = df.format(fromDate);
+	String dateTo = df.format(toDate);
+	
+	return transactionInDAO.getRejectedReceivedCount(dateFrom, dateTo);
 
     }
 
