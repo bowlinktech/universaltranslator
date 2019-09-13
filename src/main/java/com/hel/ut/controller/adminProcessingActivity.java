@@ -135,7 +135,6 @@ public class adminProcessingActivity {
     @Resource(name = "myProps")
     private Properties myProps;
     
-
     /**
      *
      * @param session
@@ -189,6 +188,9 @@ public class adminProcessingActivity {
 
         BigInteger totalRejected = transactionInManager.getRejectedCount(fromDate, toDate);
         mav.addObject("totalRejected", totalRejected);
+	
+	BigInteger totalRejectedReceived = transactionInManager.getRejectedReceivedCount(fromDate, toDate);
+        mav.addObject("totalRejectedReceived", totalRejectedReceived);
 	
 	BigInteger totalDeliveredRejected = transactionOutManager.getRejectedCount(fromDate, toDate);
         mav.addObject("totalDeliveredRejected", totalDeliveredRejected);
@@ -251,6 +253,9 @@ public class adminProcessingActivity {
 
         BigInteger totalRejected = transactionInManager.getRejectedCount(fromDate, toDate);
         mav.addObject("totalRejected", totalRejected);
+	
+	BigInteger totalRejectedReceived = transactionInManager.getRejectedReceivedCount(fromDate, toDate);
+        mav.addObject("totalRejectedReceived", totalRejectedReceived);
 	
 	BigInteger totalDeliveredRejected = transactionOutManager.getRejectedCount(fromDate, toDate);
         mav.addObject("totalDeliveredRejected", totalDeliveredRejected);

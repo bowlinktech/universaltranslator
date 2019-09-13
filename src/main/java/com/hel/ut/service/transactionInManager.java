@@ -216,6 +216,8 @@ public interface transactionInManager {
     BigInteger getMessagesSent(Date fromDate, Date toDate) throws Exception;
 
     BigInteger getRejectedCount(Date fromDate, Date toDate) throws Exception;
+    
+    BigInteger getRejectedReceivedCount(Date fromDate, Date toDate) throws Exception;
 
     List<activityReportList> getReferralList(Date fromDate, Date toDate) throws Exception;
 

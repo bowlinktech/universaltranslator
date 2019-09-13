@@ -168,6 +168,8 @@ public interface transactionInDAO {
     List<activityReportList> getReferralList(String fromDate, String toDate) throws Exception;
 
     BigInteger getRejectedCount(String fromDate, String toDate) throws Exception;
+    
+    BigInteger getRejectedReceivedCount(String fromDate, String toDate) throws Exception;
 
     List<referralActivityExports> getReferralActivityExports() throws Exception;
 

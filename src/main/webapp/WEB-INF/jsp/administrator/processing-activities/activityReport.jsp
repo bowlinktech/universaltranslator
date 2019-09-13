@@ -48,6 +48,14 @@
 	    <div class="col-md-3 col-sm-3 col-xs-6">
 		<section class="panel panel-default panel-stats" role="widget" aria-labelleby="Rejected Received">
 		    <div class="panel-body">
+			    <span class="stat-number"><a href="/administrator/processing-activity/inbound"><c:choose><c:when test="${totalRejectedReceived >= 0}"><fmt:formatNumber value = "${totalRejectedReceived}" type = "number"/></c:when><c:otherwise>0</c:otherwise></c:choose></a></span>
+			<h3>Rejected Received</h3>
+		    </div>
+		</section>
+	    </div> 
+	    <div class="col-md-3 col-sm-3 col-xs-6">
+		<section class="panel panel-default panel-stats" role="widget" aria-labelleby="Rejected Transactions">
+		    <div class="panel-body">
 			    <span class="stat-number"><a href="/administrator/processing-activity/rejected"><c:choose><c:when test="${totalRejected >= 0}"><fmt:formatNumber value = "${totalRejected}" type = "number"/></c:when><c:otherwise>0</c:otherwise></c:choose></a></span>
 			<h3>Rejected Transaction<c:if test="${totalRejected == 0 || totalRejected > 1}">s</c:if></h3>
 		    </div>

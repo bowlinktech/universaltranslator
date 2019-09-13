@@ -1816,6 +1816,19 @@ public class transactionInDAOImpl implements transactionInDAO {
 
 	return (BigInteger) getRejectedCount.uniqueResult();
     }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public BigInteger getRejectedReceivedCount(String fromDate, String toDate) throws Exception {
+
+	String sql = "select count(id) as totalMessagesRejected "
+		+ "from batchUploads "
+		+ "where statusId = 7 and (dateSubmitted >= '" + fromDate + "' and dateSubmitted < '" + toDate + "')";
+	
+	Query getRejectedReceivedCount = sessionFactory.getCurrentSession().createSQLQuery(sql);
+
+	return (BigInteger) getRejectedReceivedCount.uniqueResult();
+    }
 
     @Override
     @Transactional(readOnly = true)
@@ -2215,8 +2228,11 @@ public class transactionInDAOImpl implements transactionInDAO {
 		    + "inner join lu_errorcodes c on c.id = e.errorId "
 		    + "where e.batchUploadId = :batchId group by e.errorId");
 
-	    Query query = sessionFactory.getCurrentSession().createSQLQuery(sql).addScalar("errorDisplayText", StandardBasicTypes.STRING).addScalar("errorId", StandardBasicTypes.INTEGER).addScalar("totalErrors", StandardBasicTypes.INTEGER).setResultTransformer(
-		    Transformers.aliasToBean(batchErrorSummary.class));
+	    Query query = sessionFactory.getCurrentSession().createSQLQuery(sql)
+		    .addScalar("errorDisplayText", StandardBasicTypes.STRING)
+		    .addScalar("errorId", StandardBasicTypes.INTEGER)
+		    .addScalar("totalErrors", StandardBasicTypes.INTEGER)
+		    .setResultTransformer(Transformers.aliasToBean(batchErrorSummary.class));
 	    query.setParameter("batchId", batchId);
 
 	    List<batchErrorSummary> batchErrorSummaries = query.list();
