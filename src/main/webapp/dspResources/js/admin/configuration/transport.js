@@ -110,46 +110,90 @@ require(['./main'], function () {
             $('#ccdSampleDiv').hide();
             $('#hl7PDFSampleDiv').hide();
 	    $('#jsonWrapperElementDiv').hide();
-
+	    $('#fileDelimiterDiv').hide();
+	    $('#lineTerminatortDiv').hide();
+	    $('#encodingDiv').hide();
+	    
             var fileType = $(this).val();
             $('#fileDelimiterDiv').show();
 	    $('#lineTerminatortDiv').show();
 
             if (fileType == 2) {
                 $('#fileExt').val('txt');
-            } else if (fileType == 3) {
+		$('#fileDelimiterDiv').show();
+		$('#lineTerminatortDiv').show();
+		$('#encodingDiv').show();
+            } 
+	    else if (fileType == 3) {
                 $('#fileExt').val('csv');
-            } else if (fileType == 4) {
+		$('#fileDelimiterDiv').show();
+		$('#lineTerminatortDiv').show();
+		$('#encodingDiv').show();
+            } 
+	    else if (fileType == 4) {
                 $('#fileExt').val('hr');
+		$('#fileDelimiterDiv').show();
+		$('#lineTerminatortDiv').show();
+		$('#encodingDiv').show();
 
                 if ($('#configType').attr('rel') == 2) {
                     $('#hl7PDFSampleDiv').show();
                 }
-            } else if (fileType == 5) {
+            } 
+	    else if (fileType == 5) {
                 $('#fileExt').val('mdb');
-            } else if (fileType == 6) {
+		$('#fileDelimiterDiv').hide();
+		$('#lineTerminatortDiv').hide();
+		$('#encodingDiv').hide();
+            } 
+	    else if (fileType == 6) {
                 $('#fileExt').val('pdf');
-            } else if (fileType == 7) {
+		$('#fileDelimiterDiv').hide();
+		$('#lineTerminatortDiv').hide();
+		$('#encodingDiv').hide();
+            } 
+	    else if (fileType == 7) {
                 $('#fileExt').val('odbc');
-            } else if (fileType == 8) {
+		$('#fileDelimiterDiv').hide();
+		$('#lineTerminatortDiv').hide();
+		$('#encodingDiv').hide();
+            } 
+	    else if (fileType == 8) {
                 $('#fileExt').val('xls');
-            } else if (fileType == 9) {
+		$('#fileDelimiterDiv').show();
+		$('#lineTerminatortDiv').show();
+		$('#encodingDiv').show();
+            } 
+	    else if (fileType == 9) {
                 $('#fileExt').val('xml');
+		$('#fileDelimiterDiv').hide();
+		$('#lineTerminatortDiv').hide();
+		$('#encodingDiv').hide();
 
                 if ($('#configType').attr('rel') == 2) {
                     $('#ccdDetailsDiv').show();
                 }
 
-            } else if (fileType == 10) {
+            } 
+	    else if (fileType == 10) {
                 $('#fileExt').val('doc');
-	    } else if (fileType == 11) {
+		$('#fileDelimiterDiv').hide();
+		$('#lineTerminatortDiv').hide();
+		$('#encodingDiv').hide();
+	    } 
+	    else if (fileType == 11) {
                 $('#fileExt').val('xlsx');
+		$('#fileDelimiterDiv').show();
+		$('#lineTerminatortDiv').show();
+		$('#encodingDiv').show();
             }
 	    else if (fileType == 12) {
 		$('#jsonWrapperElementDiv').show();
                 $('#fileExt').val('json');
+		$('#fileDelimiterDiv').hide();
+		$('#lineTerminatortDiv').hide();
+		$('#encodingDiv').hide();
             }
-
         });
 
 	$('.zipped').change(function () {
@@ -210,7 +254,6 @@ function showCorrectFieldsByTransportMethod(transportMethod) {
     else {
 	$('#directMessageDetailsDiv').hide();
     }
-    
 }
 
 

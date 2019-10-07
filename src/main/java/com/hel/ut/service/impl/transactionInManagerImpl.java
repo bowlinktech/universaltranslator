@@ -4220,6 +4220,7 @@ public class transactionInManagerImpl implements transactionInManager {
 	    batchInfo.setutBatchName(batchName);
 	    batchInfo.setConfigId(configId);
 	    batchInfo.setoriginalFileName(directMessage.getReferralFileName());
+	    batchInfo.setSenderEmail(directMessage.getFromDirectAddress());
 
 	    Organization orgDetails = organizationmanager.getOrganizationById(directMessage.getOrgId());
 	    String writeToFolder = myProps.getProperty("ut.directory.utRootDir") + orgDetails.getcleanURL() + "/input files/";

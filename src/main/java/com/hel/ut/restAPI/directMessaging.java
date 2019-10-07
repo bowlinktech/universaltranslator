@@ -16,7 +16,7 @@ import com.hel.ut.service.hispManager;
 import com.hel.ut.service.organizationManager;
 import com.hel.ut.service.transactionInManager;
 import java.nio.charset.Charset;
-import java.util.Base64;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,6 +37,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 import javax.annotation.Resource;
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -71,7 +72,7 @@ public class directMessaging {
         if (authorization != null) {
 	    String base64Credentials = authorization.substring("Basic".length()).trim();
 	    
-	    String credentials = new String(Base64.getDecoder().decode(base64Credentials), Charset.forName("UTF-8"));
+	    String credentials = new String(Base64.decodeBase64(base64Credentials), Charset.forName("UTF-8"));
 	    
 	    if (!"".equals(credentials)) {
 
@@ -150,7 +151,14 @@ public class directMessaging {
                                                 if(CCDAContent != null) {
                                                     if(FilenameUtils.getExtension(CCDATitle).toLowerCase().equals(directDetails.getExpectedFileExt().toLowerCase())) {
                                                         FileOutputStream fos = new FileOutputStream(utRootDir + "directMessages/" + orgDetails.getcleanURL() + "/" + CCDATitle);
-                                                        fos.write(Base64.getDecoder().decode(CCDAContent.replace("\n", "")));
+							
+							//Check if content is base64 encoded
+							if(Base64.isBase64(CCDAContent.replace("\n", ""))) {
+							    fos.write(Base64.decodeBase64(CCDAContent.replace("\n", "")));
+							}
+							else {
+							    fos.write(CCDAContent.replace("\n", "").getBytes());
+							}
                                                         fos.close();
                                                         
                                                         Integer configId = 0;
