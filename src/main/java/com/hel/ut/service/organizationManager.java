@@ -32,5 +32,7 @@ public interface organizationManager {
     void deleteOrganization(int orgId);
 
     List<Organization> getAssociatedOrgs(int orgId);
+    
+    List<Organization> getOrganizationsPaged(Integer displayStart, Integer displayRecords, String searchTerm, String sortColumnName, String sortDirection) throws Exception;
 
 }

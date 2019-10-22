@@ -41,3 +41,11 @@
 
 - Need to add a place in the system admin to add HISPS (Med Allies would be the first). Need ability to add API credentials to this section
 
+- Switch dataTables to be server side instead of clients side
+    - ** DONE CM 10/22/19 ** Organizations
+    - Configurations
+    - Processing Activity
+	- Inbound
+	- Outbound
+	- Rest API messages
+

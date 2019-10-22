@@ -148,5 +148,10 @@ public class organizationManagerImpl implements organizationManager {
     public List<Organization> getAssociatedOrgs(int orgId) {
         return organizationDAO.getAssociatedOrgs(orgId);
     }
+    
+    @Override
+    public  List<Organization> getOrganizationsPaged(Integer displayStart, Integer displayRecords, String searchTerm, String sortColumnName, String sortDirection) throws Exception {
+	return organizationDAO.getOrganizationsPaged(displayStart, displayRecords, searchTerm, sortColumnName, sortDirection);
+    }
 
 }
