@@ -38,18 +38,133 @@ require(['./main'], function () {
             });
         });
 	
-	//This will change between inbound and outbound
-        $(document).on('change', '#apiDirection', function (event) {
-            window.location.href = "/administrator/processing-activity/apimessages";
-        });
-
-
-        var oSettings = datatable.fnSettings();
-
-        datatable.fnSort([[6, 'desc']]);
+	$(document).ready(function() {
+	   
+	    var fromDate = $('#fromDate').attr('rel');
+	    var toDate = $('#toDate').attr('rel');
+	    
+	    populateMessages(fromDate,toDate);
+	    
+	});
 
     });
 });
+
+function populateMessages(fromDate,toDate) {
+    
+    var batchName = $('#batchName').val();
+    
+    $('#apimessagesout-table').DataTable().destroy();
+     
+     $('#apimessagesout-table').DataTable({
+	bServerSide: true,
+	bProcessing: false, 
+	deferRender: true,
+	aaSorting: [[6,'desc']],
+	sPaginationType: "bootstrap", 
+	oLanguage: {
+	   sEmptyTable: "There were no sent rest api messages for the selected date range.", 
+	   sSearch: "Filter Results: ",
+	   sLengthMenu: '<select class="form-control" style="width:150px">' +
+		'<option value="10">10 Records</option>' +
+		'<option value="20">20 Records</option>' +
+		'<option value="30">30 Records</option>' +
+		'<option value="40">40 Records</option>' +
+		'<option value="50">50 Records</option>' +
+		'<option value="-1">All</option>' +
+		'</select>',
+	    sProcessing: "<div style='background-color:#64A5D4; height:50px; margin-top:200px'><p style='color:white; padding-top:15px;' class='bolder'>Retrieving Results. Please wait...</p></div>"
+	},
+	sAjaxSource: "/administrator/processing-activity/ajax/getAPIMessagesOut?fromDate="+fromDate+"&toDate="+toDate+"&batchName="+batchName,
+	aoColumns: [
+	    {
+		"mData": "id", 
+		"defaultContent": "",
+		"bSortable":true,
+		"sWidth": "10%",
+		"className": "center-text",
+		"render": function ( data, type, row, meta ) {
+		    return data;
+		}
+	    },
+	    {
+		"mData": "configId", 
+		"defaultContent": "",
+		"bSortable":true,
+		"sWidth": "10%",
+		"className": "center-text",
+		"render": function ( data, type, row, meta ) {
+		   return data;
+		}
+	    },
+	    {
+		"mData": "orgName", 
+		"defaultContent": "",
+		"bSortable":true,
+		"sWidth": "20%",
+		"render": function ( data, type, row, meta ) {
+		   return data;
+		}
+	    },
+	    {
+		"mData": "batchDownloadId", 
+		"defaultContent": "",
+		"bSortable":true,
+		"sWidth": "15%",
+		"render": function ( data, type, row, meta ) {
+		    if(data > 0) {
+			return '<a href="/administrator/processing-activity/outbound/' + row.batchName + '" title="View Outbound Batch">' + row.batchName + '</a>';
+		    }
+		    else {
+			return "N/A";
+		    }
+		}
+	    },
+	    {
+		"mData": "statusName", 
+		"defaultContent": "",
+		"bSortable":true,
+		"sWidth": "10%",
+		"className": "center-text",
+		"render": function ( data, type, row, meta ) {
+		   return data;
+		}
+	    },
+	    {
+		"mData": "errorDisplayText", 
+		"defaultContent": "",
+		"bSortable":true,
+		"sWidth": "10%",
+		"className": "center-text",
+		"render": function ( data, type, row, meta ) {
+		   return data;
+		}
+	    },
+	    {
+		"mData": "dateCreated", 
+		"defaultContent": "",
+		"bSortable":true,
+		"sWidth": "15%",
+		"className": "center-text",
+		"render": function ( data, type, row, meta ) {
+		    var dateC = new Date(row.dateCreated);
+		    var myDateFormatted = ((dateC.getMonth()*1)+1)+'/'+dateC.getDate()+'/'+dateC.getFullYear();
+		    return myDateFormatted;
+		}
+	    },
+	    {
+		"mData": "orgName", 
+		"defaultContent": "",
+		"bSortable":true,
+		"sWidth": "10%",
+		"className": "center-text actions-col",
+		"render": function ( data, type, row, meta ) {
+		   return '<a href="#HeaderModal" data-toggle="modal" class="viewHeader" rel="'+row.id+'" title="View Returned Headers"><span class="glyphicon glyphicon-edit"></span> View Returned Header</a>';
+		}
+	    }
+	 ]
+    });   
+}
 
 
 function searchByDateRange() {
@@ -58,12 +173,7 @@ function searchByDateRange() {
 
     $('#fromDate').val(fromDate);
     $('#toDate').val(toDate);
-
-    $('body').overlay({
-        glyphicon: 'floppy-disk',
-        message: 'Processing...'
-    });
-
-    $('#searchForm').submit();
+    
+    populateMessages(fromDate,toDate);
 
 }

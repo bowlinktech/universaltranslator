@@ -5,6 +5,8 @@
  */
 package com.hel.ut.controller;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import com.hel.ut.model.WSMessagesIn;
 import com.hel.ut.model.activityReportList;
 import com.hel.ut.model.Organization;
@@ -2655,6 +2657,7 @@ public class adminProcessingActivity {
      * The '/apimessages' GET request will serve up the list of inbound rest api messages
      *
      *
+     * @param pathVariables
      * @param session
      * @return 
      * @Objects	(1) An object containing all the found RestAPIMessagesIn
@@ -2690,172 +2693,59 @@ public class adminProcessingActivity {
         mav.addObject("fromDate", fromDate);
         mav.addObject("toDate", toDate);
         mav.addObject("originalDate", originalDate);
-
-        /* Get all ws messages */
-        try {
-
-            Integer fetchCount = 0;
-	    List<RestAPIMessagesIn> restAPIMessagesList = null;
-	    
-	    if (pathVariables.containsKey("batchName")) {
-		restAPIMessagesList = restfulmanager.getRestAPIMessagesInList(fromDate, toDate, 1, pathVariables.get("batchName"));
-	    }
-	    else {
-		restAPIMessagesList = restfulmanager.getRestAPIMessagesInList(fromDate, toDate, fetchCount, "");
-	    }
-
-            if (!restAPIMessagesList.isEmpty()) {
-
-                //we can map the process status so we only have to query once
-                List<TableData> errorCodeList = sysAdminManager.getDataList("lu_ErrorCodes", "");
-                Map<Integer, String> errorMap = new HashMap<Integer, String>();
-                for (TableData error : errorCodeList) {
-                    errorMap.put(error.getId(), error.getDisplayText());
-                }
-
-                //ws status map
-                Map<Integer, String> statusMap = new HashMap<Integer, String>();
-                statusMap.put(1, "To be processed");
-                statusMap.put(2, "Processed");
-                statusMap.put(3, "Rejected");
-                statusMap.put(4, "Being Processed");
-
-                //if we have lots of organization in the future we can tweak this to narrow down to orgs with batches
-                List<Organization> organizations = organizationmanager.getOrganizations();
-                Map<Integer, String> orgMap = new HashMap<Integer, String>();
-                for (Organization org : organizations) {
-                    orgMap.put(org.getId(), org.getOrgName());
-                }
-
-                for (RestAPIMessagesIn restIn : restAPIMessagesList) {
-                    //set error text
-                    restIn.setErrorDisplayText(errorMap.get(restIn.getErrorId()));
-                    //set org name
-                    if (restIn.getOrgId() == 0) {
-                        restIn.setOrgName("No Org Match");
-                    } else {
-                        restIn.setOrgName(orgMap.get(restIn.getOrgId()));
-                    }
-                    //set status
-                    restIn.setStatusName(statusMap.get(restIn.getStatusId()));
-		    
-                    if (restIn.getBatchUploadId() > 0) {
-			batchUploads batchDetails = transactionInManager.getBatchDetails(restIn.getBatchUploadId());
-			if(batchDetails != null) {
-			    restIn.setBatchName(batchDetails.getutBatchName());
-			}
-                        
-                    }
-                }
-            }
-
-            mav.addObject("restAPIMessages", restAPIMessagesList);
-
-       } catch (Exception e) {
-           throw new Exception("Error occurred viewing the inbound rest api messages.", e);
-       }
+	mav.addObject("batchName", pathVariables.get("batchName"));
 
         return mav;
-
     }
-
-    /**
-     * The '/wsMessage' POST request will serve up a list of WSMessages received by the system.
-     *
-     * @param fromDate
-     * @param toDate
-     * @param request
-     * @param session
-     * @param response
-     * @return The list of wsMessages
-     *
-     * @Objects	(1) An object containing all the found wsMessages
-     *
-     * @throws Exception
-     */
-    @RequestMapping(value = "/apimessages", method = RequestMethod.POST)
-    public ModelAndView listRestAPIMessages(@RequestParam Date fromDate, @RequestParam Date toDate,
-            HttpServletRequest request, HttpServletResponse response, HttpSession session) throws Exception {
-
-        int year = 114;
-        int month = 0;
-        int day = 1;
-        Date originalDate = new Date(year, month, day);
-
-        ModelAndView mav = new ModelAndView();
-        mav.setViewName("/administrator/processing-activity/apimessages");
-
-        mav.addObject("fromDate", fromDate);
-        mav.addObject("toDate", toDate);
-        mav.addObject("originalDate", originalDate);
-
-        /* Retrieve search parameters from session */
+    
+    @RequestMapping(value = "/ajax/getAPIMessagesIn", method = RequestMethod.GET)
+    @ResponseBody
+    public String getAPIMessagesIn(HttpServletRequest request, HttpServletResponse response, HttpSession session, @RequestParam Date fromDate, @RequestParam Date toDate, @RequestParam String batchName) throws Exception {
+	
+	Gson gson = new Gson();
+        JsonObject jsonResponse = new JsonObject();
+	Integer iDisplayStart = Integer.parseInt(request.getParameter("iDisplayStart"));
+        Integer iDisplayLength = Integer.parseInt(request.getParameter("iDisplayLength"));
+        String sortColumn = request.getParameter("iSortCol_0");
+        String sortColumnName = request.getParameter("mDataProp_"+sortColumn);
+        String searchTerm = request.getParameter("sSearch").toLowerCase();
+        String sEcho = request.getParameter("sEcho");
+        String sortDirection = request.getParameter("sSortDir_0");
+        Integer totalRecords = 0;
+	
+	//Retrieve search parameters from session 
         searchParameters searchParameters = (searchParameters) session.getAttribute("searchParameters");
         searchParameters.setfromDate(fromDate);
         searchParameters.settoDate(toDate);
         searchParameters.setsection("inbound");
-
-        /* Get all ws in  */
-        try {
-            Integer fetchCount = 0;
-	    List<RestAPIMessagesIn> restAPIMessagesList = restfulmanager.getRestAPIMessagesInList(fromDate, toDate, fetchCount, "");
-
-            if (!restAPIMessagesList.isEmpty()) {
-
-                //we can map the process status so we only have to query once
-                List<TableData> errorCodeList = sysAdminManager.getDataList("lu_ErrorCodes", "");
-                Map<Integer, String> errorMap = new HashMap<Integer, String>();
-                for (TableData error : errorCodeList) {
-                    errorMap.put(error.getId(), error.getDisplayText());
-                }
-
-                //ws status map
-                Map<Integer, String> statusMap = new HashMap<Integer, String>();
-                statusMap.put(1, "To be processed");
-                statusMap.put(2, "Processed");
-                statusMap.put(3, "Rejected");
-
-                //if we have lots of organization in the future we can tweak this to narrow down to orgs with batches
-                List<Organization> organizations = organizationmanager.getOrganizations();
-                Map<Integer, String> orgMap = new HashMap<Integer, String>();
-                for (Organization org : organizations) {
-                    orgMap.put(org.getId(), org.getOrgName());
-                }
-
-                for (RestAPIMessagesIn restIn : restAPIMessagesList) {
-                    //set error text
-                    restIn.setErrorDisplayText(errorMap.get(restIn.getErrorId()));
-                    //set org name
-                    if (restIn.getOrgId() == 0) {
-                        restIn.setOrgName("No Org Match");
-                    } else {
-                        restIn.setOrgName(orgMap.get(restIn.getOrgId()));
-                    }
-                    //set status
-                    restIn.setStatusName(statusMap.get(restIn.getStatusId()));
-                    if (restIn.getBatchUploadId() != 0) {
-			batchUploads batchDetails = transactionInManager.getBatchDetails(restIn.getBatchUploadId());
-			if(batchDetails != null) {
-			    restIn.setBatchName(batchDetails.getutBatchName());
-			}
-                    }
-
-                }
-            }
-
-            mav.addObject("restAPIMessages", restAPIMessagesList);
-
-        } catch (Exception e) {
-            throw new Exception("Error occurred viewing the inbound rest api messages.", e);
-        }
-
-        return mav;
+	
+	if(!"".equals(batchName)) {
+	    searchTerm = batchName;
+	}
+	
+        // Get all ws in 
+        List<RestAPIMessagesIn> restAPIMessagesList = restfulmanager.getRestAPIMessagesInListPaged(fromDate, toDate,iDisplayStart, iDisplayLength, searchTerm, sortColumnName, sortDirection);
+	
+	if(restAPIMessagesList.isEmpty()) {
+	    totalRecords = 0;
+	}
+	else {
+	    totalRecords = restAPIMessagesList.get(0).getTotalMessages();
+	}
+	
+	jsonResponse.addProperty("sEcho", sEcho);
+        jsonResponse.addProperty("iTotalRecords", totalRecords);
+        jsonResponse.addProperty("iTotalDisplayRecords", totalRecords);
+        jsonResponse.add("aaData", gson.toJsonTree(restAPIMessagesList));
+	
+        return jsonResponse.toString();
     }
     
     /**
      * The '/apimessagesOut' GET request will serve up the list of outbound rest api messages
      *
      *
+     * @param pathVariables
      * @param session
      * @return 
      * @Objects	(1) An object containing all the found RestAPIMessagesIn
@@ -2891,164 +2781,52 @@ public class adminProcessingActivity {
         mav.addObject("fromDate", fromDate);
         mav.addObject("toDate", toDate);
         mav.addObject("originalDate", originalDate);
-
-        /* Get all ws messages */
-       // try {
-
-            Integer fetchCount = 0;
-	    
-	    List<RestAPIMessagesOut> restAPIMessagesList = null;
-	    
-	    if (pathVariables.containsKey("batchName")) {
-		restAPIMessagesList = restfulmanager.getRestAPIMessagesOutList(fromDate, toDate, 1, pathVariables.get("batchName"));
-	    }
-	    else {
-		restAPIMessagesList = restfulmanager.getRestAPIMessagesOutList(fromDate, toDate, fetchCount, "");
-	    }
-	    
-            if (!restAPIMessagesList.isEmpty()) {
-
-                //we can map the process status so we only have to query once
-                List<TableData> errorCodeList = sysAdminManager.getDataList("lu_ErrorCodes", "");
-                Map<Integer, String> errorMap = new HashMap<Integer, String>();
-                for (TableData error : errorCodeList) {
-                    errorMap.put(error.getId(), error.getDisplayText());
-                }
-
-                //ws status map
-                Map<Integer, String> statusMap = new HashMap<Integer, String>();
-                statusMap.put(1, "To be processed");
-                statusMap.put(2, "Processed");
-                statusMap.put(3, "Rejected");
-                statusMap.put(4, "Being Process");
-
-                //if we have lots of organization in the future we can tweak this to narrow down to orgs with batches
-                List<Organization> organizations = organizationmanager.getOrganizations();
-                Map<Integer, String> orgMap = new HashMap<Integer, String>();
-                for (Organization org : organizations) {
-                    orgMap.put(org.getId(), org.getOrgName());
-                }
-
-                for (RestAPIMessagesOut restOut : restAPIMessagesList) {
-                    //set error text
-                    restOut.setErrorDisplayText(errorMap.get(restOut.getErrorId()));
-                    //set org name
-                    if (restOut.getOrgId() == 0) {
-                        restOut.setOrgName("No Org Match");
-                    } else {
-                        restOut.setOrgName(orgMap.get(restOut.getOrgId()));
-                    }
-                    //set status
-                    restOut.setStatusName(statusMap.get(restOut.getStatusId()));
-
-                    if (restOut.getBatchDownloadId() != 0) {
-			batchDownloads batchDLDetails = transactionOutManager.getBatchDetails(restOut.getBatchDownloadId());
-			
-			if(batchDLDetails != null) {
-			    restOut.setBatchName(batchDLDetails.getutBatchName());
-			}
-                    }
-                }
-            }
-
-            mav.addObject("restAPIMessages", restAPIMessagesList);
-
-       // } catch (Exception e) {
-           // throw new Exception("Error occurred viewing the sent rest api messages.", e);
-      // }
+	mav.addObject("batchName", pathVariables.get("batchName"));
 
         return mav;
 
     }
 
-    /**
-     * The '/apimessagesOut' POST request will serve up a list of WSMessages sent by the IL system.
-     *
-     * @param fromDate
-     * @param toDate
-     * @param request
-     * @param session
-     * @param response
-     * @return The list of wsMessages
-     *
-     * @Objects	(1) An object containing all the found wsMessages
-     *
-     * @throws Exception
-     */
-    @RequestMapping(value = "/apimessagesOut", method = RequestMethod.POST)
-    public ModelAndView listOutBoundRestAPIMessages(@RequestParam Date fromDate, @RequestParam Date toDate,
-            HttpServletRequest request, HttpServletResponse response, HttpSession session) throws Exception {
-
-        int year = 114;
-        int month = 0;
-        int day = 1;
-        Date originalDate = new Date(year, month, day);
-
-        ModelAndView mav = new ModelAndView();
-        mav.setViewName("/administrator/processing-activity/apimessagesOut");
-
-        mav.addObject("fromDate", fromDate);
-        mav.addObject("toDate", toDate);
-        mav.addObject("originalDate", originalDate);
-
-        /* Retrieve search parameters from session */
+    @RequestMapping(value = "/ajax/getAPIMessagesOut", method = RequestMethod.GET)
+    @ResponseBody
+    public String getAPIMessagesOut(HttpServletRequest request, HttpServletResponse response, HttpSession session, @RequestParam Date fromDate, @RequestParam Date toDate, @RequestParam String batchName) throws Exception {
+	
+	Gson gson = new Gson();
+        JsonObject jsonResponse = new JsonObject();
+	Integer iDisplayStart = Integer.parseInt(request.getParameter("iDisplayStart"));
+        Integer iDisplayLength = Integer.parseInt(request.getParameter("iDisplayLength"));
+        String sortColumn = request.getParameter("iSortCol_0");
+        String sortColumnName = request.getParameter("mDataProp_"+sortColumn);
+        String searchTerm = request.getParameter("sSearch").toLowerCase();
+        String sEcho = request.getParameter("sEcho");
+        String sortDirection = request.getParameter("sSortDir_0");
+        Integer totalRecords = 0;
+	
+	//Retrieve search parameters from session 
         searchParameters searchParameters = (searchParameters) session.getAttribute("searchParameters");
         searchParameters.setfromDate(fromDate);
         searchParameters.settoDate(toDate);
         searchParameters.setsection("inbound");
-
-        /* Get all ws in  */
-        try {
-            Integer fetchCount = 0;
-	    List<RestAPIMessagesOut> restAPIMessagesList = restfulmanager.getRestAPIMessagesOutList(fromDate, toDate, fetchCount, "");
-
-            if (!restAPIMessagesList.isEmpty()) {
-
-                //we can map the process status so we only have to query once
-                List<TableData> errorCodeList = sysAdminManager.getDataList("lu_ErrorCodes", "");
-                Map<Integer, String> errorMap = new HashMap<Integer, String>();
-                for (TableData error : errorCodeList) {
-                    errorMap.put(error.getId(), error.getDisplayText());
-                }
-
-                //ws status map
-                Map<Integer, String> statusMap = new HashMap<Integer, String>();
-                statusMap.put(1, "To be processed");
-                statusMap.put(2, "Processed");
-                statusMap.put(3, "Rejected");
-
-                //if we have lots of organization in the future we can tweak this to narrow down to orgs with batches
-                List<Organization> organizations = organizationmanager.getOrganizations();
-                Map<Integer, String> orgMap = new HashMap<Integer, String>();
-                for (Organization org : organizations) {
-                    orgMap.put(org.getId(), org.getOrgName());
-                }
-
-                for (RestAPIMessagesOut restOut : restAPIMessagesList) {
-                    //set error text
-                    restOut.setErrorDisplayText(errorMap.get(restOut.getErrorId()));
-                    //set org name
-                    if (restOut.getOrgId() == 0) {
-                        restOut.setOrgName("No Org Match");
-                    } else {
-                        restOut.setOrgName(orgMap.get(restOut.getOrgId()));
-                    }
-                    //set status
-                    restOut.setStatusName(statusMap.get(restOut.getStatusId()));
-                    if (restOut.getBatchDownloadId()!= 0) {
-                        restOut.setBatchName(transactionOutManager.getBatchDetails(restOut.getBatchDownloadId()).getutBatchName());
-                    }
-
-                }
-            }
-
-            mav.addObject("restAPIMessages", restAPIMessagesList);
-
-        } catch (Exception e) {
-            throw new Exception("Error occurred viewing the sent rest api messages.", e);
-        }
-
-        return mav;
+	
+	if(!"".equals(batchName)) {
+	    searchTerm = batchName;
+	}
+	
+        List<RestAPIMessagesOut> restAPIMessagesList = restfulmanager.getRestAPIMessagesOutListPaged(fromDate, toDate,iDisplayStart, iDisplayLength, searchTerm, sortColumnName, sortDirection);
+	
+	if(restAPIMessagesList.isEmpty()) {
+	    totalRecords = 0;
+	}
+	else {
+	    totalRecords = restAPIMessagesList.get(0).getTotalMessages();
+	}
+	
+	jsonResponse.addProperty("sEcho", sEcho);
+        jsonResponse.addProperty("iTotalRecords", totalRecords);
+        jsonResponse.addProperty("iTotalDisplayRecords", totalRecords);
+        jsonResponse.add("aaData", gson.toJsonTree(restAPIMessagesList));
+	
+        return jsonResponse.toString();
     }
 
     /**

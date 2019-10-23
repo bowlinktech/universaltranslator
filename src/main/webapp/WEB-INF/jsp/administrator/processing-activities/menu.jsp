@@ -15,7 +15,8 @@
             <sec:authorize access="hasAnyRole('ROLE_ADMIN')">
 		<li role="menuitem" ${param['page'] == 'invalidout' ? 'class="active"' : ''}><a href="/administrator/processing-activity/invalidOut" title="Invalid Outbound Batches">Invalid Outbound Batches</a></li>
                 <%--<li role="menuitem" ${param['page'] == 'wsmessage' ? 'class="active"' : ''}><a href="/administrator/processing-activity/wsmessage" title="Web Service Messages">Web Service Messages</a></li>--%>
-		<li role="menuitem" ${param['page'] == 'apimessages' ? 'class="active"' : ''}><a href="/administrator/processing-activity/apimessages" title="Rest API Messages">Rest API Messages</a></li>
+		<li role="menuitem" ${param['page'] == 'apimessages' ? 'class="active"' : ''}><a href="/administrator/processing-activity/apimessages" title="Rest API Messages">Rest API Messages In</a></li>
+		<li role="menuitem" ${param['page'] == 'apimessagesout' ? 'class="active"' : ''}><a href="/administrator/processing-activity/apimessagesOut" title="Rest API Messages">Rest API Messages Out</a></li>
             </sec:authorize>  
             <%--<li role="menuitem" ${param['page'] == 'refActivityExport' ? 'class="active"' : ''}><a href="/administrator/processing-activity/referralActivityExport" title="Referral Activity Export">Referral Activity Export</a></li>--%>
         </ul>

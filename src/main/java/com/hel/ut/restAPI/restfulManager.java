@@ -1061,5 +1061,13 @@ public class restfulManager {
     public RestAPIMessagesOut getRestAPIMessagesOut(Integer messageId) throws Exception {
 	return RestAPIDAO.getRestAPIMessagesOut(messageId);
     }
+    
+    public List<RestAPIMessagesIn> getRestAPIMessagesInListPaged(Date fromDate, Date toDate, Integer displayStart, Integer displayRecords, String searchTerm, String sortColumnName, String sortDirection) throws Exception {
+	return RestAPIDAO.getRestAPIMessagesInListPaged(fromDate,toDate,displayStart,displayRecords,searchTerm,sortColumnName,sortDirection);
+    }
+
+    public List<RestAPIMessagesOut> getRestAPIMessagesOutListPaged(Date fromDate, Date toDate, Integer displayStart, Integer displayRecords, String searchTerm, String sortColumnName, String sortDirection) throws Exception {
+	return RestAPIDAO.getRestAPIMessagesOutListPaged(fromDate,toDate,displayStart,displayRecords,searchTerm,sortColumnName,sortDirection);
+    }
 
 }
