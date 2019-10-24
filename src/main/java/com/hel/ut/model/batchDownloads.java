@@ -25,7 +25,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 public class batchDownloads {
 
     @Transient
-    private Integer totalTransactions = 0, threshold = 100, totalBatchDownloads = 0, totalDelivered = 0;
+    private Integer totalTransactions = 0, threshold = 100, totalBatchDownloads = 0, totalDelivered = 0, totalMessages = 0;
 
     @Transient
     private String statusValue, usersName, orgName, configName, transportMethod,fromBatchName,fromBatchFile, tgtorgName, originalFileName, dashboardRowColor = "table-secondary";
@@ -91,189 +91,61 @@ public class batchDownloads {
     
     @Column(name = "batchUploadId", nullable = false)
     private int batchUploadId;
-    
-    public int getId() {
-        return id;
+
+    public Integer getTotalTransactions() {
+	return totalTransactions;
     }
 
-    public void setId(int id) {
-        this.id = id;
+    public void setTotalTransactions(Integer totalTransactions) {
+	this.totalTransactions = totalTransactions;
     }
 
-    public int getOrgId() {
-        return orgId;
+    public Integer getThreshold() {
+	return threshold;
     }
 
-    public void setOrgId(int orgId) {
-        this.orgId = orgId;
+    public void setThreshold(Integer threshold) {
+	this.threshold = threshold;
     }
 
-    public int getuserId() {
-        return userId;
+    public Integer getTotalBatchDownloads() {
+	return totalBatchDownloads;
     }
 
-    public void setuserId(int userId) {
-        this.userId = userId;
+    public void setTotalBatchDownloads(Integer totalBatchDownloads) {
+	this.totalBatchDownloads = totalBatchDownloads;
     }
 
-    public String getutBatchName() {
-        return utBatchName;
+    public Integer getTotalDelivered() {
+	return totalDelivered;
     }
 
-    public void setutBatchName(String utBatchName) {
-        this.utBatchName = utBatchName;
+    public void setTotalDelivered(Integer totalDelivered) {
+	this.totalDelivered = totalDelivered;
     }
 
-    public int gettransportMethodId() {
-        return transportMethodId;
+    public String getStatusValue() {
+	return statusValue;
     }
 
-    public void settransportMethodId(int transportMethodId) {
-        this.transportMethodId = transportMethodId;
+    public void setStatusValue(String statusValue) {
+	this.statusValue = statusValue;
     }
 
-    public String getoutputFileName() {
-        return outputFileName;
+    public String getUsersName() {
+	return usersName;
     }
 
-    public void setoutputFileName(String outputFileName) {
-        this.outputFileName = outputFileName;
+    public void setUsersName(String usersName) {
+	this.usersName = usersName;
     }
 
-    public int getstatusId() {
-        return statusId;
+    public String getOrgName() {
+	return orgName;
     }
 
-    public void setstatusId(int statusId) {
-        this.statusId = statusId;
-    }
-
-    public Date getstartDateTime() {
-        return startDateTime;
-    }
-
-    public void setstartDateTime(Date startDateTime) {
-        this.startDateTime = startDateTime;
-    }
-
-    public Date getendDateTime() {
-        return endDateTime;
-    }
-
-    public void setendDateTime(Date endDateTime) {
-        this.endDateTime = endDateTime;
-    }
-
-    public int gettotalRecordCount() {
-        return totalRecordCount;
-    }
-
-    public void settotalRecordCount(int totalRecordCount) {
-        this.totalRecordCount = totalRecordCount;
-    }
-
-    public boolean getdeleted() {
-        return deleted;
-    }
-
-    public void setdeleted(boolean deleted) {
-        this.deleted = deleted;
-    }
-
-    public int gettotalErrorCount() {
-        return totalErrorCount;
-    }
-
-    public void settotalErrorCount(int totalErrorCount) {
-        this.totalErrorCount = totalErrorCount;
-    }
-
-    public Date getdateCreated() {
-        return dateCreated;
-    }
-
-    public void setdateCreated(Date dateCreated) {
-        this.dateCreated = dateCreated;
-    }
-
-    public void settotalTransactions(int totalTransactions) {
-        this.totalTransactions = totalTransactions;
-    }
-
-    public int gettotalTransactions() {
-        return totalTransactions;
-    }
-
-    public String getstatusValue() {
-        return statusValue;
-    }
-
-    public void setstatusValue(String statusValue) {
-        this.statusValue = statusValue;
-    }
-
-    public String getusersName() {
-        return usersName;
-    }
-
-    public void setusersName(String usersName) {
-        this.usersName = usersName;
-    }
-
-    public boolean getmergeable() {
-        return mergeable;
-    }
-
-    public void setmergeable(boolean mergeable) {
-        this.mergeable = mergeable;
-    }
-
-    public Date getlastDownloaded() {
-        return lastDownloaded;
-    }
-
-    public void setlastDownloaded(Date lastDownloaded) {
-        this.lastDownloaded = lastDownloaded;
-    }
-
-    public String getorgName() {
-        return orgName;
-    }
-
-    public void setorgName(String orgName) {
-        this.orgName = orgName;
-    }
-
-    public String gettransportMethod() {
-        return transportMethod;
-    }
-
-    public void settransportMethod(String transportMethod) {
-        this.transportMethod = transportMethod;
-    }
-
-    public String getFromBatchName() {
-        return fromBatchName;
-    }
-
-    public void setFromBatchName(String fromBatchName) {
-        this.fromBatchName = fromBatchName;
-    }
-
-    public String getFromBatchFile() {
-        return fromBatchFile;
-    }
-
-    public void setFromBatchFile(String fromBatchFile) {
-        this.fromBatchFile = fromBatchFile;
-    }
-
-    public int getFromOrgId() {
-        return fromOrgId;
-    }
-
-    public void setFromOrgId(int fromOrgId) {
-        this.fromOrgId = fromOrgId;
+    public void setOrgName(String orgName) {
+	this.orgName = orgName;
     }
 
     public String getConfigName() {
@@ -284,6 +156,30 @@ public class batchDownloads {
 	this.configName = configName;
     }
 
+    public String getTransportMethod() {
+	return transportMethod;
+    }
+
+    public void setTransportMethod(String transportMethod) {
+	this.transportMethod = transportMethod;
+    }
+
+    public String getFromBatchName() {
+	return fromBatchName;
+    }
+
+    public void setFromBatchName(String fromBatchName) {
+	this.fromBatchName = fromBatchName;
+    }
+
+    public String getFromBatchFile() {
+	return fromBatchFile;
+    }
+
+    public void setFromBatchFile(String fromBatchFile) {
+	this.fromBatchFile = fromBatchFile;
+    }
+
     public String getTgtorgName() {
 	return tgtorgName;
     }
@@ -292,12 +188,28 @@ public class batchDownloads {
 	this.tgtorgName = tgtorgName;
     }
 
-    public Date getLastDownloaded() {
-	return lastDownloaded;
+    public String getOriginalFileName() {
+	return originalFileName;
     }
 
-    public void setLastDownloaded(Date lastDownloaded) {
-	this.lastDownloaded = lastDownloaded;
+    public void setOriginalFileName(String originalFileName) {
+	this.originalFileName = originalFileName;
+    }
+
+    public String getDashboardRowColor() {
+	return dashboardRowColor;
+    }
+
+    public void setDashboardRowColor(String dashboardRowColor) {
+	this.dashboardRowColor = dashboardRowColor;
+    }
+
+    public int getFromOrgId() {
+	return fromOrgId;
+    }
+
+    public void setFromOrgId(int fromOrgId) {
+	this.fromOrgId = fromOrgId;
     }
 
     public int getErrorRecordCount() {
@@ -316,28 +228,124 @@ public class batchDownloads {
 	this.dateSubmitted = dateSubmitted;
     }
 
-    public String getOriginalFileName() {
-	return originalFileName;
+    public int getId() {
+	return id;
     }
 
-    public void setOriginalFileName(String originalFileName) {
-	this.originalFileName = originalFileName;
+    public void setId(int id) {
+	this.id = id;
     }
 
-    public Integer getThreshold() {
-	return threshold;
+    public int getOrgId() {
+	return orgId;
     }
 
-    public void setThreshold(Integer threshold) {
-	this.threshold = threshold;
+    public void setOrgId(int orgId) {
+	this.orgId = orgId;
     }
 
-    public String getDashboardRowColor() {
-	return dashboardRowColor;
+    public int getUserId() {
+	return userId;
     }
 
-    public void setDashboardRowColor(String dashboardRowColor) {
-	this.dashboardRowColor = dashboardRowColor;
+    public void setUserId(int userId) {
+	this.userId = userId;
+    }
+
+    public String getUtBatchName() {
+	return utBatchName;
+    }
+
+    public void setUtBatchName(String utBatchName) {
+	this.utBatchName = utBatchName;
+    }
+
+    public int getTransportMethodId() {
+	return transportMethodId;
+    }
+
+    public void setTransportMethodId(int transportMethodId) {
+	this.transportMethodId = transportMethodId;
+    }
+
+    public String getOutputFileName() {
+	return outputFileName;
+    }
+
+    public void setOutputFileName(String outputFileName) {
+	this.outputFileName = outputFileName;
+    }
+
+    public Date getDateCreated() {
+	return dateCreated;
+    }
+
+    public void setDateCreated(Date dateCreated) {
+	this.dateCreated = dateCreated;
+    }
+
+    public Date getStartDateTime() {
+	return startDateTime;
+    }
+
+    public void setStartDateTime(Date startDateTime) {
+	this.startDateTime = startDateTime;
+    }
+
+    public Date getEndDateTime() {
+	return endDateTime;
+    }
+
+    public void setEndDateTime(Date endDateTime) {
+	this.endDateTime = endDateTime;
+    }
+
+    public int getStatusId() {
+	return statusId;
+    }
+
+    public void setStatusId(int statusId) {
+	this.statusId = statusId;
+    }
+
+    public int getTotalRecordCount() {
+	return totalRecordCount;
+    }
+
+    public void setTotalRecordCount(int totalRecordCount) {
+	this.totalRecordCount = totalRecordCount;
+    }
+
+    public int getTotalErrorCount() {
+	return totalErrorCount;
+    }
+
+    public void setTotalErrorCount(int totalErrorCount) {
+	this.totalErrorCount = totalErrorCount;
+    }
+
+    public boolean isDeleted() {
+	return deleted;
+    }
+
+    public void setDeleted(boolean deleted) {
+	this.deleted = deleted;
+    }
+
+    public boolean isMergeable() {
+	return mergeable;
+    }
+
+    public void setMergeable(boolean mergeable) {
+	this.mergeable = mergeable;
+    }
+
+    public Date getLastDownloaded() {
+	return lastDownloaded;
+    }
+
+    public void setLastDownloaded(Date lastDownloaded) {
+	this.lastDownloaded = lastDownloaded;
     }
 
     public int getConfigId() {
@@ -356,21 +364,12 @@ public class batchDownloads {
 	this.batchUploadId = batchUploadId;
     }
 
-    public Integer getTotalBatchDownloads() {
-	return totalBatchDownloads;
+    public Integer getTotalMessages() {
+	return totalMessages;
     }
 
-    public void setTotalBatchDownloads(Integer totalBatchDownloads) {
-	this.totalBatchDownloads = totalBatchDownloads;
+    public void setTotalMessages(Integer totalMessages) {
+	this.totalMessages = totalMessages;
     }
-
-    public Integer getTotalDelivered() {
-	return totalDelivered;
-    }
-
-    public void setTotalDelivered(Integer totalDelivered) {
-	this.totalDelivered = totalDelivered;
-    }
-    
     
 }

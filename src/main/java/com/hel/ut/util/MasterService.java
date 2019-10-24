@@ -10,8 +10,6 @@ package com.hel.ut.util;
  * @author chadmccue
  */
 
-import com.mchange.v2.c3p0.ComboPooledDataSource;
-import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -19,8 +17,6 @@ import java.io.InputStream;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import javax.sql.DataSource;
 import java.util.Properties;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class MasterService {
     

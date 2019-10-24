@@ -283,7 +283,9 @@ public class adminProcessingActivity {
     @RequestMapping(value={ "/inbound", "/inbound/{batchName}" }, method = RequestMethod.GET)
     public ModelAndView listInBoundBatches(@PathVariable Map<String, String> pathVariables, HttpSession session) throws Exception {
 
-        int year = 114;
+        utUser userInfo = (utUser) session.getAttribute("userDetails");
+	
+	int year = 114;
         int month = 0;
         int day = 1;
         Date originalDate = new Date(year, month, day);
@@ -296,11 +298,12 @@ public class adminProcessingActivity {
 
         ModelAndView mav = new ModelAndView();
         mav.setViewName("/administrator/processing-activity/inbound");
-
+	
         if ("".equals(searchParameters.getsection()) || !"inbound".equals(searchParameters.getsection())) {
             searchParameters.setfromDate(fromDate);
             searchParameters.settoDate(toDate);
             searchParameters.setsection("inbound");
+	    session.setAttribute("searchParameters", searchParameters);
         } else {
             fromDate = searchParameters.getfromDate();
             toDate = searchParameters.gettoDate();
@@ -309,202 +312,67 @@ public class adminProcessingActivity {
         mav.addObject("fromDate", fromDate);
         mav.addObject("toDate", toDate);
         mav.addObject("originalDate", originalDate);
+	mav.addObject("batchName", pathVariables.get("batchName"));
+	mav.addObject("userRole", userInfo.getRoleId());
 
         /* Get system inbound summary */
         systemSummary summaryDetails = transactionInManager.generateSystemInboundSummary();
         mav.addObject("summaryDetails", summaryDetails);
 
-        /* Get all inbound transactions */
-        try {
-
-            Integer fetchCount = 0;
-	    
-	    List<batchUploads> uploadedBatches = null;
-	    
-	    if (pathVariables.containsKey("batchName")) {
-		uploadedBatches = transactionInManager.getAllUploadedBatches(null, null, 1, pathVariables.get("batchName"));
-	    }
-	    else {
-		uploadedBatches = transactionInManager.getAllUploadedBatches(fromDate, toDate, fetchCount, "");
-	    }
-
-            if (!uploadedBatches.isEmpty()) {
-		
-		//we can map the process status so we only have to query once
-                List<utConfiguration> configurationList = configurationManager.getConfigurations();
-                Map<Integer, String> cMap = new HashMap<Integer, String>();
-		Map<Integer, Integer> cTypeMap = new HashMap<Integer, Integer>();
-                for (utConfiguration c : configurationList) {
-                    cMap.put(c.getId(), c.getconfigName());
-		    cTypeMap.put(c.getId(), c.getConfigurationType());
-                }
-		
-                //we can map the process status so we only have to query once
-                List<lu_ProcessStatus> processStatusList = sysAdminManager.getAllProcessStatus();
-                Map<Integer, String> psMap = new HashMap<Integer, String>();
-                for (lu_ProcessStatus ps : processStatusList) {
-                    psMap.put(ps.getId(), ps.getDisplayCode());
-                }
-
-                //same with transport method names
-                List<TransportMethod> transporthMethods = configurationTransportManager.getTransportMethods(Arrays.asList(0, 1));
-                Map<Integer, String> tmMap = new HashMap<Integer, String>();
-                for (TransportMethod tms : transporthMethods) {
-                    tmMap.put(tms.getId(), tms.getTransportMethod());
-                }
-
-                //if we have lots of organization in the future we can tweak this to narrow down to orgs with batches
-                List<Organization> organizations = organizationmanager.getOrganizations();
-                Map<Integer, String> orgMap = new HashMap<Integer, String>();
-                for (Organization org : organizations) {
-                    orgMap.put(org.getId(), org.getOrgName());
-                }
-
-                //same goes for users
-                List<utUser> users = usermanager.getAllUsers();
-                Map<Integer, String> userMap = new HashMap<Integer, String>();
-                for (utUser user : users) {
-                    userMap.put(user.getId(), (user.getFirstName() + " " + user.getLastName()));
-                }
-
-                for (batchUploads batch : uploadedBatches) {
-
-                    //the count is in totalRecordCount already, can skip re-count
-                    // batch.settotalTransactions(transactionInManager.getRecordCounts(batch.getId(), statusIds, false, false));
-                    batch.setstatusValue(psMap.get(batch.getstatusId()));
-
-                    batch.setorgName(orgMap.get(batch.getOrgId()));
-
-                    batch.settransportMethod(tmMap.get(batch.gettransportMethodId()));
-
-                    batch.setusersName(userMap.get(batch.getuserId()));
-		    
-		    batch.setConfigName(cMap.get(batch.getConfigId()));
-		    
-		    batch.setInboundBatchConfigurationType(cTypeMap.get(batch.getConfigId()));
-
-                }
-            }
-
-            mav.addObject("batches", uploadedBatches);
-
-        } catch (Exception e) {
-            throw new Exception("Error occurred viewing the all uploaded batches.", e);
-        }
-
         return mav;
-
     }
-
-    /**
-     * The '/inbound' POST request will serve up the existing list of generated referrals and feedback reports based on a search or date
-     *
-     * @param page	The page parameter will hold the page to view when pagination is built.
-     * @return The list of inbound batch list
-     *
-     * @Objects	(1) An object containing all the found batches
-     *
-     * @throws Exception
-     */
-    @RequestMapping(value = "/inbound", method = RequestMethod.POST)
-    public ModelAndView listInBoundBatches(@RequestParam Date fromDate, @RequestParam Date toDate, HttpServletRequest request, HttpServletResponse response, HttpSession session) throws Exception {
-
-        int year = 114;
-        int month = 0;
-        int day = 1;
-        Date originalDate = new Date(year, month, day);
-
-        ModelAndView mav = new ModelAndView();
-        mav.setViewName("/administrator/processing-activity/inbound");
-
-        mav.addObject("fromDate", fromDate);
-        mav.addObject("toDate", toDate);
-        mav.addObject("originalDate", originalDate);
-
-        /* Retrieve search parameters from session */
+    
+    @RequestMapping(value = "/ajax/getBatchUploads", method = RequestMethod.GET)
+    @ResponseBody
+    public String getBatchUploads(HttpServletRequest request, HttpServletResponse response, HttpSession session, @RequestParam Date fromDate, @RequestParam Date toDate, @RequestParam String batchName) throws Exception {
+	
+	Gson gson = new Gson();
+        JsonObject jsonResponse = new JsonObject();
+	Integer iDisplayStart = Integer.parseInt(request.getParameter("iDisplayStart"));
+        Integer iDisplayLength = Integer.parseInt(request.getParameter("iDisplayLength"));
+        String sortColumn = request.getParameter("iSortCol_0");
+        String sortColumnName = request.getParameter("mDataProp_"+sortColumn);
+        String searchTerm = request.getParameter("sSearch").toLowerCase();
+        String sEcho = request.getParameter("sEcho");
+        String sortDirection = request.getParameter("sSortDir_0");
+        Integer totalRecords = 0;
+	
+	//Retrieve search parameters from session 
         searchParameters searchParameters = (searchParameters) session.getAttribute("searchParameters");
         searchParameters.setfromDate(fromDate);
         searchParameters.settoDate(toDate);
         searchParameters.setsection("inbound");
-
-        /* Get system inbound summary */
-        systemSummary summaryDetails = transactionInManager.generateSystemInboundSummary();
-        mav.addObject("summaryDetails", summaryDetails);
-
-        /* Get all inbound transactions */
-        try {
-
-            Integer fetchCount = 0;
-            /* Need to get a list of all uploaded batches */
-            List<batchUploads> uploadedBatches = transactionInManager.getAllUploadedBatches(fromDate, toDate, fetchCount, "");
-
-            if (!uploadedBatches.isEmpty()) {
-		
-		//we can map the process status so we only have to query once
-                List<utConfiguration> configurationList = configurationManager.getConfigurations();
-                Map<Integer, String> cMap = new HashMap<Integer, String>();
-		Map<Integer, Integer> cTypeMap = new HashMap<Integer, Integer>();
-                for (utConfiguration c : configurationList) {
-                    cMap.put(c.getId(), c.getconfigName());
-		    cTypeMap.put(c.getId(), c.getConfigurationType());
-                }
-		
-                //we can map the process status so we only have to query once
-                List<lu_ProcessStatus> processStatusList = sysAdminManager.getAllProcessStatus();
-                Map<Integer, String> psMap = new HashMap<Integer, String>();
-                for (lu_ProcessStatus ps : processStatusList) {
-                    psMap.put(ps.getId(), ps.getDisplayCode());
-                }
-
-                //same with transport method names
-                List<TransportMethod> transporthMethods = configurationTransportManager.getTransportMethods(Arrays.asList(0, 1));
-                Map<Integer, String> tmMap = new HashMap<Integer, String>();
-                for (TransportMethod tms : transporthMethods) {
-                    tmMap.put(tms.getId(), tms.getTransportMethod());
-                }
-
-                //if we have lots of organization in the future we can tweak this to narrow down to orgs with batches
-                List<Organization> organizations = organizationmanager.getOrganizations();
-                Map<Integer, String> orgMap = new HashMap<Integer, String>();
-                for (Organization org : organizations) {
-                    orgMap.put(org.getId(), org.getOrgName());
-                }
-
-                //same goes for users
-                List<utUser> users = usermanager.getAllUsers();
-                Map<Integer, String> userMap = new HashMap<Integer, String>();
-                for (utUser user : users) {
-                    userMap.put(user.getId(), (user.getFirstName() + " " + user.getLastName()));
-                }
-
-                for (batchUploads batch : uploadedBatches) {
-
-                    batch.setstatusValue(psMap.get(batch.getstatusId()));
-
-                    batch.setorgName(orgMap.get(batch.getOrgId()));
-
-                    batch.settransportMethod(tmMap.get(batch.gettransportMethodId()));
-
-                    batch.setusersName(userMap.get(batch.getuserId()));
-		    
-		    batch.setConfigName(cMap.get(batch.getConfigId()));
-		    
-		    batch.setInboundBatchConfigurationType(cTypeMap.get(batch.getConfigId()));
-                }
-            }
-
-            mav.addObject("batches", uploadedBatches);
-
-        } catch (Exception e) {
-            throw new Exception("Error occurred viewing the all uploaded batches.", e);
-        }
-
-        return mav;
+	
+	if(!"".equals(batchName)) {
+	    searchTerm = batchName;
+	    fromDate = null;
+	    toDate = null;
+	}
+	
+        // Get all ws in 
+        List<batchUploads> batchUploadList = transactionInManager.getAllUploadBatchesPaged(fromDate, toDate,iDisplayStart, iDisplayLength, searchTerm, sortColumnName, sortDirection);
+	
+	if(batchUploadList.isEmpty()) {
+	    totalRecords = 0;
+	}
+	else {
+	    totalRecords = batchUploadList.get(0).getTotalMessages();
+	}
+	
+	jsonResponse.addProperty("sEcho", sEcho);
+        jsonResponse.addProperty("iTotalRecords", totalRecords);
+        jsonResponse.addProperty("iTotalDisplayRecords", totalRecords);
+        jsonResponse.add("aaData", gson.toJsonTree(batchUploadList));
+	
+        return jsonResponse.toString();
     }
+    
+
 
     /**
      * The '/outbound' GET request will serve up the existing list of generated referrals and feedback reports to for the target
      *
+     * @param pathVariables
      * @param session
      * @return The list of inbound batch list
      *
@@ -514,6 +382,9 @@ public class adminProcessingActivity {
      */
     @RequestMapping(value={ "/outbound", "/outbound/{batchName}" }, method = RequestMethod.GET)
     public ModelAndView listOutBoundBatches(@PathVariable Map<String, String> pathVariables, HttpSession session) throws Exception {
+	
+	utUser userInfo = (utUser) session.getAttribute("userDetails");
+	
 	int year = 114;
         int month = 0;
         int day = 1;
@@ -527,9 +398,9 @@ public class adminProcessingActivity {
 
         ModelAndView mav = new ModelAndView();
         mav.setViewName("/administrator/processing-activity/outbound");
-
-        if ("".equals(searchParameters.getsection()) || !"outbound".equals(searchParameters.getsection())) {
-            searchParameters.setfromDate(fromDate);
+	
+	if ("".equals(searchParameters.getsection()) || !"outbound".equals(searchParameters.getsection())) {
+	    searchParameters.setfromDate(fromDate);
             searchParameters.settoDate(toDate);
             searchParameters.setsection("outbound");
         } else {
@@ -540,218 +411,60 @@ public class adminProcessingActivity {
         mav.addObject("fromDate", fromDate);
         mav.addObject("toDate", toDate);
         mav.addObject("originalDate", originalDate);
+	mav.addObject("batchName", pathVariables.get("batchName"));
+	mav.addObject("userRole", userInfo.getRoleId());
 
         /* Get system oubound summary */
         systemSummary summaryDetails = transactionOutManager.generateSystemOutboundSummary();
         mav.addObject("summaryDetails", summaryDetails);
-
-        // Get all inbound transactions 
-        //try {
-	    
-	    List<batchDownloads> Batches = null;
-	    
-	    if (pathVariables.containsKey("batchName")) {
-		Batches = transactionOutManager.getAllBatches(null, null, pathVariables.get("batchName"));
-	    }
-	    else {
-		Batches = transactionOutManager.getAllBatches(fromDate, toDate, "");
-	    }
-	    
-
-            List<Integer> statusIds = new ArrayList();
-
-            if (!Batches.isEmpty()) {
-		
-		//we can map the process status so we only have to query once
-                List<utConfiguration> configurationList = configurationManager.getConfigurations();
-                Map<Integer, String> cMap = new HashMap<Integer, String>();
-                for (utConfiguration c : configurationList) {
-                    cMap.put(c.getId(), c.getconfigName());
-                }
-
-                //we can map the process status so we only have to query once
-                List<lu_ProcessStatus> processStatusList = sysAdminManager.getAllProcessStatus();
-                Map<Integer, String> psMap = new HashMap<Integer, String>();
-                for (lu_ProcessStatus ps : processStatusList) {
-                    psMap.put(ps.getId(), ps.getDisplayCode());
-                }
-
-                //same with transport method names
-                List<TransportMethod> transporthMethods = configurationTransportManager.getTransportMethods(Arrays.asList(0, 1));
-                Map<Integer, String> tmMap = new HashMap<Integer, String>();
-                for (TransportMethod tms : transporthMethods) {
-                    tmMap.put(tms.getId(), tms.getTransportMethod());
-                }
-
-                //if we have lots of organization in the future we can tweak this to narrow down to orgs with batches
-                List<Organization> organizations = organizationmanager.getOrganizations();
-                Map<Integer, String> orgMap = new HashMap<Integer, String>();
-                for (Organization org : organizations) {
-                    orgMap.put(org.getId(), org.getOrgName());
-                }
-
-                //same goes for users
-                List<utUser> users = usermanager.getAllUsers();
-                Map<Integer, String> userMap = new HashMap<Integer, String>();
-                for (utUser user : users) {
-                    userMap.put(user.getId(), (user.getFirstName() + " " + user.getLastName()));
-                }
-
-                for (batchDownloads batch : Batches) {
-
-		    String fileDownloadExt = batch.getoutputFileName().substring(batch.getoutputFileName().lastIndexOf(".") + 1);
-		    String newfileName = new StringBuilder().append(batch.getutBatchName()).append(".").append(fileDownloadExt).toString();
-		    
-		    batch.setoutputFileName(newfileName);
-
-                    batch.setstatusValue(psMap.get(batch.getstatusId()));
-
-                    batch.setorgName(orgMap.get(batch.getOrgId()));
-
-                    batch.settransportMethod(tmMap.get(batch.gettransportMethodId()));
-
-                    batch.setusersName(userMap.get(batch.getuserId()));
-		    
-		    batchUploads batchUploadDetails = transactionInManager.getBatchDetails(batch.getBatchUploadId());
-
-		    batch.setFromBatchName(batchUploadDetails.getutBatchName());
-		    if (batchUploadDetails.gettransportMethodId() == 5 || batchUploadDetails.gettransportMethodId() == 1) {
-			String fileExt = batchUploadDetails.getoriginalFileName().substring(batchUploadDetails.getoriginalFileName().lastIndexOf(".") + 1);
-			String newsrcfileName = new StringBuilder().append(batchUploadDetails.getutBatchName()).append(".").append(fileExt).toString();
-			batch.setFromBatchFile(newsrcfileName);
-		    }
-		    batch.setFromOrgId(batchUploadDetails.getOrgId());
-
-		    batch.setConfigName(cMap.get(batch.getConfigId()));
-                }
-            }
-
-            mav.addObject("batches", Batches);
-
-        //} catch (Exception e) {
-            //throw new Exception("Error occurred viewing the all downloaded batches. Error:" + e.getMessage(), e);
-        //}
 
         return mav;
 
     }
 
-    /**
-     * The '/outbound' POST request will serve up the existing list of generated referrals and feedback reports for a target based on a search or date
-     *
-     * @param fromDate
-     * @param toDate
-     * @param request
-     * @param response
-     * @param session
-     * @return The list of inbound batch list
-     *
-     * @Objects	(1) An object containing all the found batches
-     *
-     * @throws Exception
-     */
-    @RequestMapping(value = "/outbound", method = RequestMethod.POST)
-    public ModelAndView listOutBoundBatches(@RequestParam Date fromDate, @RequestParam Date toDate, HttpServletRequest request, HttpServletResponse response, HttpSession session) throws Exception {
-
-        int year = 114;
-        int month = 0;
-        int day = 1;
-        Date originalDate = new Date(year, month, day);
-
-        ModelAndView mav = new ModelAndView();
-        mav.setViewName("/administrator/processing-activity/outbound");
-
-        mav.addObject("fromDate", fromDate);
-        mav.addObject("toDate", toDate);
-        mav.addObject("originalDate", originalDate);
-
-        /* Retrieve search parameters from session */
+    @RequestMapping(value = "/ajax/getBatchDownloads", method = RequestMethod.GET)
+    @ResponseBody
+    public String getBatchDownloads(HttpServletRequest request, HttpServletResponse response, HttpSession session, @RequestParam Date fromDate, @RequestParam Date toDate, @RequestParam String batchName) throws Exception {
+	
+	Gson gson = new Gson();
+        JsonObject jsonResponse = new JsonObject();
+	Integer iDisplayStart = Integer.parseInt(request.getParameter("iDisplayStart"));
+        Integer iDisplayLength = Integer.parseInt(request.getParameter("iDisplayLength"));
+        String sortColumn = request.getParameter("iSortCol_0");
+        String sortColumnName = request.getParameter("mDataProp_"+sortColumn);
+        String searchTerm = request.getParameter("sSearch").toLowerCase();
+        String sEcho = request.getParameter("sEcho");
+        String sortDirection = request.getParameter("sSortDir_0");
+        Integer totalRecords = 0;
+	
+	//Retrieve search parameters from session 
         searchParameters searchParameters = (searchParameters) session.getAttribute("searchParameters");
         searchParameters.setfromDate(fromDate);
         searchParameters.settoDate(toDate);
         searchParameters.setsection("outbound");
-
-        /* Get system oubound summary */
-        systemSummary summaryDetails = transactionOutManager.generateSystemOutboundSummary();
-        mav.addObject("summaryDetails", summaryDetails);
 	
-        /* Get all oubound transactions */
-        try {
-            /* Need to get a list of all uploaded batches */
-            List<batchDownloads> Batches = transactionOutManager.getAllBatches(fromDate, toDate, "");
-
-            List<Integer> statusIds = new ArrayList();
-	    
-	    //we can map the process status so we only have to query once
-	    List<utConfiguration> configurationList = configurationManager.getConfigurations();
-	    Map<Integer, String> cMap = new HashMap<Integer, String>();
-	    for (utConfiguration c : configurationList) {
-		cMap.put(c.getId(), c.getconfigName());
-	    }
-
-            //we can map the process status so we only have to query once
-            List<lu_ProcessStatus> processStatusList = sysAdminManager.getAllProcessStatus();
-            Map<Integer, String> psMap = new HashMap<Integer, String>();
-            for (lu_ProcessStatus ps : processStatusList) {
-                psMap.put(ps.getId(), ps.getDisplayCode());
-            }
-
-            //same with transport method names
-            List<TransportMethod> transporthMethods = configurationTransportManager.getTransportMethods(Arrays.asList(0, 1));
-            Map<Integer, String> tmMap = new HashMap<Integer, String>();
-            for (TransportMethod tms : transporthMethods) {
-                tmMap.put(tms.getId(), tms.getTransportMethod());
-            }
-
-            //if we have lots of organization in the future we can tweak this to narrow down to orgs with batches
-            List<Organization> organizations = organizationmanager.getOrganizations();
-            Map<Integer, String> orgMap = new HashMap<Integer, String>();
-            for (Organization org : organizations) {
-                orgMap.put(org.getId(), org.getOrgName());
-            }
-
-            //same goes for users
-            List<utUser> users = usermanager.getAllUsers();
-            Map<Integer, String> userMap = new HashMap<Integer, String>();
-            for (utUser user : users) {
-                userMap.put(user.getId(), (user.getFirstName() + " " + user.getLastName()));
-            }
-
-            if (!Batches.isEmpty()) {
-                for (batchDownloads batch : Batches) {
-		    String fileDownloadExt = batch.getoutputFileName().substring(batch.getoutputFileName().lastIndexOf(".") + 1);
-		    String newfileName = new StringBuilder().append(batch.getutBatchName()).append(".").append(fileDownloadExt).toString();
-		    
-		    batch.setoutputFileName(newfileName);
-
-                    batch.setstatusValue(psMap.get(batch.getstatusId()));
-
-                    batch.setorgName(orgMap.get(batch.getOrgId()));
-
-                    batch.settransportMethod(tmMap.get(batch.gettransportMethodId()));
-
-                    batch.setusersName(userMap.get(batch.getuserId()));
-		    
-		    batch.setConfigName(cMap.get(batch.getConfigId()));
-		    
-		    batchUploads batchUploadDetails = transactionInManager.getBatchDetails(batch.getBatchUploadId());
- 
-		    batch.setFromBatchName(batchUploadDetails.getutBatchName());
-		    if (batchUploadDetails.gettransportMethodId() == 5 || batchUploadDetails.gettransportMethodId() == 1) {
-			String fileExt = batchUploadDetails.getoriginalFileName().substring(batchUploadDetails.getoriginalFileName().lastIndexOf(".") + 1);
-			String newsrcfileName = new StringBuilder().append(batchUploadDetails.getutBatchName()).append(".").append(fileExt).toString();
-			batch.setFromBatchFile(newsrcfileName);
-		    }
-                }
-            }
-
-            mav.addObject("batches", Batches);
-
-        } catch (Exception e) {
-            throw new Exception("Error occurred viewing the all downloaded batches. Error:" + e.getMessage(), e);
-        }
-
-        return mav;
+	if(!"".equals(batchName)) {
+	    searchTerm = batchName;
+	    fromDate = null;
+	    toDate = null;
+	}
+	
+        // Get all ws in 
+        List<batchDownloads> batchDownloadList = transactionOutManager.getAllSentBatchesPaged(fromDate, toDate,iDisplayStart, iDisplayLength, searchTerm, sortColumnName, sortDirection);
+	
+	if(batchDownloadList.isEmpty()) {
+	    totalRecords = 0;
+	}
+	else {
+	    totalRecords = batchDownloadList.get(0).getTotalMessages();
+	}
+	
+	jsonResponse.addProperty("sEcho", sEcho);
+        jsonResponse.addProperty("iTotalRecords", totalRecords);
+        jsonResponse.addProperty("iTotalDisplayRecords", totalRecords);
+        jsonResponse.add("aaData", gson.toJsonTree(batchDownloadList));
+	
+        return jsonResponse.toString();
     }
 
 
@@ -934,7 +647,7 @@ public class adminProcessingActivity {
         if (batchDetails != null) {
 
             Organization orgDetails = organizationmanager.getOrganizationById(batchDetails.getOrgId());
-            batchDetails.setorgName(orgDetails.getOrgName());
+            batchDetails.setOrgName(orgDetails.getOrgName());
 
             mav.addObject("batchDetails", batchDetails);
 
@@ -1011,7 +724,7 @@ public class adminProcessingActivity {
         if (batchDetails != null) {
 	    
 	    Organization orgDetails = organizationmanager.getOrganizationById(batchDetails.getOrgId());
-            batchDetails.setorgName(orgDetails.getOrgName());
+            batchDetails.setOrgName(orgDetails.getOrgName());
 	    
 	    List<batchDownloads> associatedDownloadBatches = transactionOutManager.getDownloadBatchesByBatchUploadId(batchDetails.getId());
 	    
@@ -1020,42 +733,42 @@ public class adminProcessingActivity {
 		    StringBuilder sbl = new StringBuilder(); 
 		    
 		    associatedDownloadBatches.forEach(batchDownload -> {
-			sbl.append(batchDownload.getutBatchName()).append(",");
+			sbl.append(batchDownload.getUtBatchName()).append(",");
 		    });
 		    
 		    batchDetails.setRelatedBatchDownloadIds(sbl.toString());
 		}
 	    }
 	    
-            lu_ProcessStatus processStatus = sysAdminManager.getProcessStatusById(batchDetails.getstatusId());
-            batchDetails.setstatusValue(processStatus.getDisplayCode());
+            lu_ProcessStatus processStatus = sysAdminManager.getProcessStatusById(batchDetails.getStatusId());
+            batchDetails.setStatusValue(processStatus.getDisplayCode());
 
             List<Integer> cancelStatusList = Arrays.asList(21, 22, 23, 1, 8, 35, 28);
-            if (!cancelStatusList.contains(batchDetails.getstatusId())) {
+            if (!cancelStatusList.contains(batchDetails.getStatusId())) {
                 canCancel = true;
             }
 
             List<Integer> resetStatusList = Arrays.asList(2, 22, 23, 1, 8, 35, 28); //DNP (21) is not a final status for admin
-            if (!resetStatusList.contains(batchDetails.getstatusId())) {
+            if (!resetStatusList.contains(batchDetails.getStatusId())) {
                 canReset = true;
             }
 
-            if (batchDetails.getstatusId() == 5 || batchDetails.getstatusId() == 64) {
+            if (batchDetails.getStatusId() == 5 || batchDetails.getStatusId() == 64) {
                 // now we check so we don't have to make a db hit if batch status is not 5 
                 if (transactionInManager.getRecordCounts(batchDetails.getId(), Arrays.asList(11, 12, 13, 16), false, false) == 0) {
                     canSend = true;
                 }
             }
 
-            if (batchDetails.getstatusId() == 5 && transactionInManager.getRecordCounts(batchDetails.getId(), Arrays.asList(14), false, true) > 0) {
+            if (batchDetails.getStatusId() == 5 && transactionInManager.getRecordCounts(batchDetails.getId(), Arrays.asList(14), false, true) > 0) {
                 canEdit = true;
             }
 
             /**
              * we need to check sbp (4), tbc (25) status, 38 SBL - if server is restarted and somehow the file hangs in SBP, we want to give them option to reset if sbp/tbc start time is about two hours, that should be sufficient indication that a file is stuck we don't want to reset or cancel in the middle of the processing
              */
-            if (batchDetails.getstatusId() == 4 || batchDetails.getstatusId() == 25 || batchDetails.getstatusId() == 38) {
-                Date d1 = batchDetails.getstartDateTime();
+            if (batchDetails.getStatusId() == 4 || batchDetails.getStatusId() == 25 || batchDetails.getStatusId() == 38) {
+                Date d1 = batchDetails.getStartDateTime();
                 Date d2 = new Date();
                 //in milliseconds
                 long diff = d2.getTime() - d1.getTime();
@@ -1074,7 +787,7 @@ public class adminProcessingActivity {
             }
             mav.addObject("batchDetails", batchDetails);
 	    
-            if (batchDetails.geterrorRecordCount() > 0) {
+            if (batchDetails.getErrorRecordCount()> 0) {
 		List<batchErrorSummary> batchErrorSummary = transactionInManager.getBatchErrorSummary(batchDetails.getId());
 		mav.addObject("batchErrorSummary", batchErrorSummary);
 	    }
@@ -1085,7 +798,7 @@ public class adminProcessingActivity {
 		if(associatedDownloadBatches != null) {
 		    if(!associatedDownloadBatches.isEmpty()) {
 			for(batchDownloads batchDownload : associatedDownloadBatches) {
-			    if(batchDownload.getstatusId() == 28) {
+			    if(batchDownload.getStatusId() == 28) {
 			       canCancel = false;
 			   } 
 			}
@@ -1104,7 +817,7 @@ public class adminProcessingActivity {
         mav.addObject("canSend", canSend);
 	mav.addObject("batchDownload",false);
 	
-	if(canReset || canCancel || canEdit || canSend || batchDetails.getstatusId() == 2 || batchDetails.getstatusId() == 3 || batchDetails.getstatusId() == 36) {
+	if(canReset || canCancel || canEdit || canSend || batchDetails.getStatusId() == 2 || batchDetails.getStatusId() == 3 || batchDetails.getStatusId() == 36) {
 	    showButtons = true;
 	}
 	
@@ -1171,10 +884,10 @@ public class adminProcessingActivity {
 	    else if (batchOption.equalsIgnoreCase("releaseBatch")) {
                 strBatchOption = "Released Batch";
 		
-		if(batchDetails.getstatusId() == 64) {
+		if(batchDetails.getStatusId() == 64) {
 		    transactionInManager.updateBatchStatus(batchId, 42, "startDateTime");
 		}
-		else if (batchDetails.getstatusId() == 5) {
+		else if (batchDetails.getStatusId() == 5) {
                     transactionInManager.updateBatchStatus(batchId, 4, "startDateTime");
                     //check once again to make sure all transactions are in final status
                     if (transactionInManager.getRecordCounts(batchId, Arrays.asList(11, 12, 13, 16), false, false) == 0) {
@@ -1186,7 +899,7 @@ public class adminProcessingActivity {
             } 
 	    else if (batchOption.equalsIgnoreCase("rejectMessage")) {
                 strBatchOption = "Rejected Transaction";
-                if (batchDetails.getstatusId() == 5) {
+                if (batchDetails.getStatusId() == 5) {
 		    //Delete batch transaction tables
 		    transactionInManager.deleteBatchTransactionTables(batchId);
 		    
@@ -1371,7 +1084,7 @@ public class adminProcessingActivity {
                     wsIn.setStatusName(statusMap.get(wsIn.getStatusId()));
 
                     if (wsIn.getBatchUploadId() != 0) {
-                        wsIn.setBatchName(transactionInManager.getBatchDetails(wsIn.getBatchUploadId()).getutBatchName());
+                        wsIn.setBatchName(transactionInManager.getBatchDetails(wsIn.getBatchUploadId()).getUtBatchName());
                     }
                 }
             }
@@ -1457,7 +1170,7 @@ public class adminProcessingActivity {
                     //set status
                     wsIn.setStatusName(statusMap.get(wsIn.getStatusId()));
                     if (wsIn.getBatchUploadId() != 0) {
-                        wsIn.setBatchName(transactionInManager.getBatchDetails(wsIn.getBatchUploadId()).getutBatchName());
+                        wsIn.setBatchName(transactionInManager.getBatchDetails(wsIn.getBatchUploadId()).getUtBatchName());
                     }
 
                 }
@@ -1586,13 +1299,13 @@ public class adminProcessingActivity {
 
                     //the count is in totalRecordCount already, can skip re-count
                     // batch.settotalTransactions(transactionInManager.getRecordCounts(batch.getId(), statusIds, false, false));
-                    batch.setstatusValue(psMap.get(batch.getstatusId()));
+                    batch.setStatusValue(psMap.get(batch.getStatusId()));
 
-                    batch.setorgName(orgMap.get(batch.getOrgId()));
+                    batch.setOrgName(orgMap.get(batch.getOrgId()));
 
-                    batch.settransportMethod(tmMap.get(batch.gettransportMethodId()));
+                    batch.setTransportMethod(tmMap.get(batch.getTransportMethodId()));
 
-                    batch.setusersName(userMap.get(batch.getuserId()));
+                    batch.setUsersName(userMap.get(batch.getUserId()));
 		    
 		    batch.setConfigName(cMap.get(batch.getConfigId()));
 
@@ -1687,13 +1400,13 @@ public class adminProcessingActivity {
 
                     //the count is in totalRecordCount already, can skip re-count
                     // batch.settotalTransactions(transactionInManager.getRecordCounts(batch.getId(), statusIds, false, false));
-                    batch.setstatusValue(psMap.get(batch.getstatusId()));
+                    batch.setStatusValue(psMap.get(batch.getStatusId()));
 
-                    batch.setorgName(orgMap.get(batch.getOrgId()));
+                    batch.setOrgName(orgMap.get(batch.getOrgId()));
 
-                    batch.settransportMethod(tmMap.get(batch.gettransportMethodId()));
+                    batch.setTransportMethod(tmMap.get(batch.getTransportMethodId()));
 
-                    batch.setusersName(userMap.get(batch.getuserId()));
+                    batch.setUsersName(userMap.get(batch.getUserId()));
 		    
 		    batch.setConfigName(cMap.get(batch.getConfigId()));
 
@@ -1770,7 +1483,7 @@ public class adminProcessingActivity {
                     }
 
                     if (wsOut.getBatchDownloadId() != 0) {
-                        wsOut.setBatchName(transactionOutManager.getBatchDetails(wsOut.getBatchDownloadId()).getutBatchName());
+                        wsOut.setBatchName(transactionOutManager.getBatchDetails(wsOut.getBatchDownloadId()).getUtBatchName());
                     }
                 }
             }
@@ -1942,7 +1655,7 @@ public class adminProcessingActivity {
                     }
 
                     if (wsOut.getBatchDownloadId() != 0) {
-                        wsOut.setBatchName(transactionOutManager.getBatchDetails(wsOut.getBatchDownloadId()).getutBatchName());
+                        wsOut.setBatchName(transactionOutManager.getBatchDetails(wsOut.getBatchDownloadId()).getUtBatchName());
                     }
                 }
             }
@@ -2030,7 +1743,7 @@ public class adminProcessingActivity {
                     wsIn.setStatusName(statusMap.get(wsIn.getStatusId()));
 
                     if (wsIn.getBatchUploadId() != 0) {
-                        wsIn.setBatchName(transactionInManager.getBatchDetails(wsIn.getBatchUploadId()).getutBatchName());
+                        wsIn.setBatchName(transactionInManager.getBatchDetails(wsIn.getBatchUploadId()).getUtBatchName());
                     }
                 }
             }
@@ -2233,8 +1946,8 @@ public class adminProcessingActivity {
 	
 	if(batchDetails != null) {
 	    
-	    if(batchDetails.getoriginalFileName() != null) {
-		if(batchDetails.getoriginalFileName().lastIndexOf('.') > 0) {
+	    if(batchDetails.getOriginalFileName() != null) {
+		if(batchDetails.getOriginalFileName().lastIndexOf('.') > 0) {
 		    /* Need to check to see if uploaded file exists in RR program uploads */
 		    //existingProgramImport = importmanager.getProgramImportByAssignedName(batchDetails.getoriginalFileName().substring(0, batchDetails.getoriginalFileName().lastIndexOf('.')), 0);
 		}
@@ -2500,13 +2213,13 @@ public class adminProcessingActivity {
 
                     //the count is in totalRecordCount already, can skip re-count
                     // batch.settotalTransactions(transactionInManager.getRecordCounts(batch.getId(), statusIds, false, false));
-                    batch.setstatusValue(psMap.get(batch.getstatusId()));
+                    batch.setStatusValue(psMap.get(batch.getStatusId()));
 
-                    batch.setorgName(orgMap.get(batch.getOrgId()));
+                    batch.setOrgName(orgMap.get(batch.getOrgId()));
 
-                    batch.settransportMethod(tmMap.get(batch.gettransportMethodId()));
+                    batch.setTransportMethod(tmMap.get(batch.getTransportMethodId()));
 
-                    batch.setusersName(userMap.get(batch.getuserId()));
+                    batch.setUsersName(userMap.get(batch.getUserId()));
 		    
 		    batch.setConfigName(cMap.get(batch.getConfigId()));
 
@@ -2615,25 +2328,25 @@ public class adminProcessingActivity {
 
                 for (batchDownloads batch : invalidOutboundBatches) {
 
-		    String fileDownloadExt = batch.getoutputFileName().substring(batch.getoutputFileName().lastIndexOf(".") + 1);
-		    String newfileName = new StringBuilder().append(batch.getutBatchName()).append(".").append(fileDownloadExt).toString();
+		    String fileDownloadExt = batch.getOutputFileName().substring(batch.getOutputFileName().lastIndexOf(".") + 1);
+		    String newfileName = new StringBuilder().append(batch.getUtBatchName()).append(".").append(fileDownloadExt).toString();
 		    
-		    batch.setoutputFileName(newfileName);
+		    batch.setOutputFileName(newfileName);
 
-                    batch.setstatusValue(psMap.get(batch.getstatusId()));
+                    batch.setStatusValue(psMap.get(batch.getStatusId()));
 
-                    batch.setorgName(orgMap.get(batch.getOrgId()));
+                    batch.setOrgName(orgMap.get(batch.getOrgId()));
 
-                    batch.settransportMethod(tmMap.get(batch.gettransportMethodId()));
+                    batch.setTransportMethod(tmMap.get(batch.getTransportMethodId()));
 
-                    batch.setusersName(userMap.get(batch.getuserId()));
+                    batch.setUsersName(userMap.get(batch.getUserId()));
 		    
 		    batchUploads batchUploadDetails = transactionInManager.getBatchDetails(batch.getBatchUploadId());
 
-		    batch.setFromBatchName(batchUploadDetails.getutBatchName());
-		    if (batchUploadDetails.gettransportMethodId() == 5 || batchUploadDetails.gettransportMethodId() == 1) {
-			String fileExt = batchUploadDetails.getoriginalFileName().substring(batchUploadDetails.getoriginalFileName().lastIndexOf(".") + 1);
-			String newsrcfileName = new StringBuilder().append(batchUploadDetails.getutBatchName()).append(".").append(fileExt).toString();
+		    batch.setFromBatchName(batchUploadDetails.getUtBatchName());
+		    if (batchUploadDetails.getTransportMethodId() == 5 || batchUploadDetails.getTransportMethodId() == 1) {
+			String fileExt = batchUploadDetails.getOriginalFileName().substring(batchUploadDetails.getOriginalFileName().lastIndexOf(".") + 1);
+			String newsrcfileName = new StringBuilder().append(batchUploadDetails.getUtBatchName()).append(".").append(fileExt).toString();
 			batch.setFromBatchFile(newsrcfileName);
 		    }
 		    batch.setFromOrgId(batchUploadDetails.getOrgId());
@@ -2952,13 +2665,13 @@ public class adminProcessingActivity {
 
                 for (batchUploads batch : uploadedBatches) {
 
-                    batch.setstatusValue(psMap.get(batch.getstatusId()));
+                    batch.setStatusValue(psMap.get(batch.getStatusId()));
 
-                    batch.setorgName(orgMap.get(batch.getOrgId()));
+                    batch.setOrgName(orgMap.get(batch.getOrgId()));
 
-                    batch.settransportMethod(tmMap.get(batch.gettransportMethodId()));
+                    batch.setTransportMethod(tmMap.get(batch.getTransportMethodId()));
 
-                    batch.setusersName(userMap.get(batch.getuserId()));
+                    batch.setUsersName(userMap.get(batch.getUserId()));
 		    
 		    batch.setConfigName(cMap.get(batch.getConfigId()));
 		    
@@ -2966,36 +2679,36 @@ public class adminProcessingActivity {
 		    
 		    //Set row color
 		    //table-primary,table-success,table-info,table-warning,table-danger,table-secondary
-		    if(batch.getstatusId() == 24 || batch.getstatusId() == 23) {
-			if(batch.geterrorRecordCount() == batch.gettotalRecordCount()) {
+		    if(batch.getStatusId() == 24 || batch.getStatusId() == 23) {
+			if(batch.getErrorRecordCount() == batch.getTotalRecordCount()) {
 			    batch.setDashboardRowColor("table-danger");
-			    batch.setstatusValue(batch.getstatusValue() + "<br />" + "<b>File Failed Threshold</b>");
+			    batch.setStatusValue(batch.getStatusValue() + "<br />" + "<b>File Failed Threshold</b>");
 			}
-			else if(batch.geterrorRecordCount() > 0) {
-			    int percent = (batch.geterrorRecordCount() * 100 / batch.gettotalRecordCount());
+			else if(batch.getErrorRecordCount() > 0) {
+			    int percent = (batch.getErrorRecordCount() * 100 / batch.getTotalRecordCount());
 			    if(percent > cThresholdMap.get(batch.getConfigId())) {
 				batch.setDashboardRowColor("table-danger");
-				batch.setstatusValue(batch.getstatusValue() + "<br />" + "<b>File Failed Threshold</b>");
+				batch.setStatusValue(batch.getStatusValue() + "<br />" + "<b>File Failed Threshold</b>");
 			    }
 			    else {
 				batch.setDashboardRowColor("table-warning");
-				batch.setstatusValue(batch.getstatusValue() + "<br />" + "<b>File Contains Errors</b>");
+				batch.setStatusValue(batch.getStatusValue() + "<br />" + "<b>File Contains Errors</b>");
 			    }
 			}
 			else {
 			    batch.setDashboardRowColor("table-success");
-			    batch.setstatusValue(batch.getstatusValue() + "<br />" + "<b>File Processed Successfully</b>");
+			    batch.setStatusValue(batch.getStatusValue() + "<br />" + "<b>File Processed Successfully</b>");
 			}
 		    }
-		    else if(IntStream.of(failedStatusIds).anyMatch(x -> x == batch.getstatusId())) {
+		    else if(IntStream.of(failedStatusIds).anyMatch(x -> x == batch.getStatusId())) {
 			batch.setDashboardRowColor("table-danger");
-			batch.setstatusValue(batch.getstatusValue() + "<br />" + "<b>File Failed to Process</b>");
+			batch.setStatusValue(batch.getStatusValue() + "<br />" + "<b>File Failed to Process</b>");
 		    }
-		    else if(batch.geterrorRecordCount() > 0) {
-			int percent = (batch.geterrorRecordCount() * 100 / batch.gettotalRecordCount());
+		    else if(batch.getErrorRecordCount() > 0) {
+			int percent = (batch.getErrorRecordCount() * 100 / batch.getTotalRecordCount());
 			if(percent > cThresholdMap.get(batch.getConfigId())) {
 			    batch.setDashboardRowColor("table-danger");
-			    batch.setstatusValue(batch.getstatusValue() + "<br />" + "<b>File Failed Threshold</b>");
+			    batch.setStatusValue(batch.getStatusValue() + "<br />" + "<b>File Failed Threshold</b>");
 			}
 		    }
 		    
@@ -3014,10 +2727,10 @@ public class adminProcessingActivity {
 		    for(watchlistEntry entry : watchlistEntries) {
 			
 			batchUploads watchlistEntry = new batchUploads();
-			watchlistEntry.setorgName(orgMap.get(entry.getOrgId()));
-			watchlistEntry.settransportMethod(tmMap.get(entry.getTransportMethodId()));
+			watchlistEntry.setOrgName(orgMap.get(entry.getOrgId()));
+			watchlistEntry.setTransportMethod(tmMap.get(entry.getTransportMethodId()));
 			watchlistEntry.setConfigName(cMap.get(entry.getConfigId()));
-			watchlistEntry.setdateSubmitted(entry.getDateCreated());
+			watchlistEntry.setDateSubmitted(entry.getDateCreated());
 			
 			watchlistEntry.setDashboardRowColor("table-primary");
 			watchlistEntry.setUploadType("Watch List Entry");
@@ -3111,20 +2824,20 @@ public class adminProcessingActivity {
 
                 for (batchDownloads batch : outboundBatches) {
 
-                    batch.setstatusValue(psMap.get(batch.getstatusId()));
+                    batch.setStatusValue(psMap.get(batch.getStatusId()));
 
-                    batch.setorgName(orgMap.get(batch.getOrgId()));
+                    batch.setOrgName(orgMap.get(batch.getOrgId()));
 
-                    batch.settransportMethod(tmMap.get(batch.gettransportMethodId()));
+                    batch.setTransportMethod(tmMap.get(batch.getTransportMethodId()));
 
-                    batch.setusersName(userMap.get(batch.getuserId()));
+                    batch.setUsersName(userMap.get(batch.getUserId()));
 		    
 		    batchUploads batchUploadDetails = transactionInManager.getBatchDetails(batch.getBatchUploadId());
-		    batch.setFromBatchName(batchUploadDetails.getutBatchName());
+		    batch.setFromBatchName(batchUploadDetails.getUtBatchName());
 		    
-		    if (batchUploadDetails.gettransportMethodId() == 5 || batchUploadDetails.gettransportMethodId() == 1) {
-			String fileExt = batchUploadDetails.getoriginalFileName().substring(batchUploadDetails.getoriginalFileName().lastIndexOf(".") + 1);
-			String newsrcfileName = new StringBuilder().append(batchUploadDetails.getutBatchName()).append(".").append(fileExt).toString();
+		    if (batchUploadDetails.getTransportMethodId() == 5 || batchUploadDetails.getTransportMethodId() == 1) {
+			String fileExt = batchUploadDetails.getOriginalFileName().substring(batchUploadDetails.getOriginalFileName().lastIndexOf(".") + 1);
+			String newsrcfileName = new StringBuilder().append(batchUploadDetails.getUtBatchName()).append(".").append(fileExt).toString();
 			batch.setFromBatchFile(newsrcfileName);
 		    }
 		    batch.setFromOrgId(batchUploadDetails.getOrgId());
@@ -3133,23 +2846,23 @@ public class adminProcessingActivity {
 		    
 		    //Set row color
 		    //table-primary,table-success,table-info,table-warning,table-danger,table-secondary
-		    if(batch.getstatusId() == 28) {
-			if(batch.gettotalErrorCount()== batch.gettotalRecordCount()) {
+		    if(batch.getStatusId() == 28) {
+			if(batch.getTotalErrorCount()== batch.getTotalRecordCount()) {
 			    batch.setDashboardRowColor("table-danger");
-			    batch.setstatusValue(batch.getstatusValue() + "<br />" + "<b>File Failed Threshold</b>");
+			    batch.setStatusValue(batch.getStatusValue() + "<br />" + "<b>File Failed Threshold</b>");
 			}
-			else if(batch.gettotalErrorCount() > 0) {
+			else if(batch.getTotalErrorCount() > 0) {
 			    batch.setDashboardRowColor("table-warning");
-			    batch.setstatusValue(batch.getstatusValue() + "<br />" + "<b>File Contains Errors</b>");
+			    batch.setStatusValue(batch.getStatusValue() + "<br />" + "<b>File Contains Errors</b>");
 			}
 			else {
 			    batch.setDashboardRowColor("table-success");
-			    batch.setstatusValue(batch.getstatusValue() + "<br />" + "<b>File Processed Successfully</b>");
+			    batch.setStatusValue(batch.getStatusValue() + "<br />" + "<b>File Processed Successfully</b>");
 			}
 		    }
-		    else if(IntStream.of(failedStatusIds).anyMatch(x -> x == batch.getstatusId())) {
+		    else if(IntStream.of(failedStatusIds).anyMatch(x -> x == batch.getStatusId())) {
 			batch.setDashboardRowColor("table-danger");
-			batch.setstatusValue(batch.getstatusValue() + "<br />" + "<b>File Failed to Process</b>");
+			batch.setStatusValue(batch.getStatusValue() + "<br />" + "<b>File Failed to Process</b>");
 		    }
                 }
             }
@@ -3201,7 +2914,7 @@ public class adminProcessingActivity {
 		    for(watchlistEntry entry : watchlistEntries) {
 			
 			batchUploads watchlistEntry = new batchUploads();
-			watchlistEntry.setdateSubmitted(entry.getDateCreated());
+			watchlistEntry.setDateSubmitted(entry.getDateCreated());
 			
 			if(entry.isWatchListCompleted()) {
 			    watchlistEntry.setDashboardRowColor("table-success");
@@ -3290,22 +3003,22 @@ public class adminProcessingActivity {
             batchDetails.setTgtorgName(orgDetails.getOrgName());
 	    
 	    Organization srcorgDetails = organizationmanager.getOrganizationById(batchUploadDetails.getOrgId());
-            batchDetails.setorgName(srcorgDetails.getOrgName());
+            batchDetails.setOrgName(srcorgDetails.getOrgName());
 	    
-            lu_ProcessStatus processStatus = sysAdminManager.getProcessStatusById(batchDetails.getstatusId());
-            batchDetails.setstatusValue(processStatus.getDisplayCode());
+            lu_ProcessStatus processStatus = sysAdminManager.getProcessStatusById(batchDetails.getStatusId());
+            batchDetails.setStatusValue(processStatus.getDisplayCode());
 
             List<Integer> cancelStatusList = Arrays.asList(25,30,61,64,59);
-            if (cancelStatusList.contains(batchDetails.getstatusId())) {
+            if (cancelStatusList.contains(batchDetails.getStatusId())) {
                 canCancel = true;
             }
 
             List<Integer> resetStatusList = Arrays.asList(28,30,31,41,58); //DNP (21) is not a final status for admin
-            if (resetStatusList.contains(batchDetails.getstatusId())) {
+            if (resetStatusList.contains(batchDetails.getStatusId())) {
                 canReset = true;
             }
 	    
-	    if(batchDetails.getstatusId() == 64 || batchDetails.getstatusId() == 59) {
+	    if(batchDetails.getStatusId() == 64 || batchDetails.getStatusId() == 59) {
 		canSend = true;
 	    }
 	    
@@ -3397,13 +3110,13 @@ public class adminProcessingActivity {
 		    batchUploads batchUploadDetails = transactionInManager.getBatchDetails(batchDetails.getBatchUploadId());
 		    
 		    //Need to move the archive file back to the loading directory
-		    File archiveFile = new File(myProps.getProperty("ut.directory.utRootDir") + "archivesIn/" + "archive_" + batchUploadDetails.getutBatchName() + batchUploadDetails.getoriginalFileName().substring(batchUploadDetails.getoriginalFileName().lastIndexOf(".")));
-		    File archiveDecFile = new File(myProps.getProperty("ut.directory.utRootDir") + "archivesIn/" + batchUploadDetails.getutBatchName() + "_dec" + batchUploadDetails.getoriginalFileName().substring(batchUploadDetails.getoriginalFileName().lastIndexOf(".")));
+		    File archiveFile = new File(myProps.getProperty("ut.directory.utRootDir") + "archivesIn/" + "archive_" + batchUploadDetails.getUtBatchName() + batchUploadDetails.getOriginalFileName().substring(batchUploadDetails.getOriginalFileName().lastIndexOf(".")));
+		    File archiveDecFile = new File(myProps.getProperty("ut.directory.utRootDir") + "archivesIn/" + batchUploadDetails.getUtBatchName() + "_dec" + batchUploadDetails.getOriginalFileName().substring(batchUploadDetails.getOriginalFileName().lastIndexOf(".")));
 		   
 		    //Need to get the configuration details and transport method
 		    configurationTransport transportDetails = configurationTransportManager.getTransportDetails(batchUploadDetails.getConfigId());
 		    
-		    File encodedUploadedFile = new File(myProps.getProperty("ut.directory.utRootDir") + transportDetails.getfileLocation().replace("/HELProductSuite/universalTranslator/","") + "encoded_" + batchUploadDetails.getutBatchName());
+		    File encodedUploadedFile = new File(myProps.getProperty("ut.directory.utRootDir") + transportDetails.getfileLocation().replace("/HELProductSuite/universalTranslator/","") + "encoded_" + batchUploadDetails.getUtBatchName());
 		    
 		    //File Dropped
 		    if(transportDetails.gettransportMethodId() == 10) {
@@ -3413,7 +3126,7 @@ public class adminProcessingActivity {
 			    for(configurationFileDropFields fileDropDetail : fileDropDetails) {
 				if(fileDropDetail.getMethod() == 1) {
 				    
-				    if(archiveFile.renameTo(new File(myProps.getProperty("ut.directory.utRootDir") + fileDropDetail.getDirectory().replace("/HELProductSuite/universalTranslator/","") + batchUploadDetails.getoriginalFileName()))) {
+				    if(archiveFile.renameTo(new File(myProps.getProperty("ut.directory.utRootDir") + fileDropDetail.getDirectory().replace("/HELProductSuite/universalTranslator/","") + batchUploadDetails.getOriginalFileName()))) {
 					archiveFile.delete();
 					
 					if(archiveDecFile.exists()) {
@@ -3435,7 +3148,7 @@ public class adminProcessingActivity {
 			    for(configurationFTPFields ftpDetail : ftpDetails) {
 				if(ftpDetail.getmethod()== 1) {
 				    
-				    if(archiveFile.renameTo(new File(myProps.getProperty("ut.directory.utRootDir") + ftpDetail.getdirectory().replace("/sFTP","sFTP").replace("/HELProductSuite/universalTranslator/","") + batchUploadDetails.getoriginalFileName()))) {
+				    if(archiveFile.renameTo(new File(myProps.getProperty("ut.directory.utRootDir") + ftpDetail.getdirectory().replace("/sFTP","sFTP").replace("/HELProductSuite/universalTranslator/","") + batchUploadDetails.getOriginalFileName()))) {
 					archiveFile.delete();
 					
 					if(archiveDecFile.exists()) {
@@ -3450,7 +3163,7 @@ public class adminProcessingActivity {
 			}
 		    }
 		    else {
-			if(archiveFile.renameTo(new File(myProps.getProperty("ut.directory.utRootDir") + transportDetails.getfileLocation().replace("/HELProductSuite/universalTranslator/","") + batchUploadDetails.getoriginalFileName()))) {
+			if(archiveFile.renameTo(new File(myProps.getProperty("ut.directory.utRootDir") + transportDetails.getfileLocation().replace("/HELProductSuite/universalTranslator/","") + batchUploadDetails.getOriginalFileName()))) {
 			    archiveFile.delete();
 
 			    if(archiveDecFile.exists()) {

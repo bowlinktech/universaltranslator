@@ -278,4 +278,6 @@ public interface transactionInDAO {
     directmessagesin getDirectAPIMessagesById(Integer directMessageId);
     
     Integer updateDirectAPIMessage(directmessagesin directMessage);
+    
+    List<batchUploads> getAllUploadBatchesPaged(Date fromDate, Date toDate, Integer displayStart, Integer displayRecords, String searchTerm, String sortColumnName, String sortDirection) throws Exception;
 }

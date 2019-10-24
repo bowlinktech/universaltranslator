@@ -30,6 +30,8 @@
                                 <input type="hidden" name="fromDate" id="fromDate" rel="<fmt:formatDate value="${fromDate}" type="date" pattern="MM/dd/yyyy" />" rel2="<fmt:formatDate value="${originalDate}" type="date" pattern="MM/dd/yyyy" />" value="${fromDate}" />
                                 <input type="hidden" name="toDate" id="toDate" rel="<fmt:formatDate value="${toDate}" type="date" pattern="MM/dd/yyyy" />" value="${toDate}" />
                                 <input type="hidden" name="page" id="page" value="${currentPage}" />
+				<input type="hidden" name="batchName" id="batchName" value="${batchName}" />
+				<input type="hidden" name="userRole" id="userRole" value="${userRole}" />
                             </div>
                         </form:form>
                     </div>
@@ -40,100 +42,19 @@
                         <i class="glyphicon glyphicon-calendar"></i>
                         <span class="date-label"><fmt:formatDate value="${fromDate}" type="date" pattern="MMMM dd, yyyy" /> - <fmt:formatDate value="${toDate}" type="date" pattern="MMMM dd, yyyy" /></span> <b class="caret"></b>
                     </div>
-                    <table class="table table-striped table-hover table-default" <c:if test="${not empty batches}">id="dataTable"</c:if>>
-                            <thead>
-                                <tr>
-                                    <th scope="col">Organization</th>
-                                    <th scope="col">Batch Details</th>
-                                    <th scope="col">Associated Inbound Batch</th>
-                                    <th scope="col" class="center-text">Transport Method</th>
-                                    <th scope="col" class="center-text">Status</th>
-                                    <th scope="col" class="center-text"># of Transactions</th>
-                                    <th scope="col" class="center-text">Date Delivered</th>
-                                    <th scope="col"></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                            <c:choose>
-                                <c:when test="${not empty batches}">
-                                    <c:forEach var="batch" items="${batches}">
-                                        <tr  style="cursor: pointer">
-                                            <td scope="row">
-                                                ${batch.orgName}
-                                            </td>
-                                            <td>
-						<strong>${batch.configName}</strong><br />
-                                                ${batch.utBatchName}
-                                                <c:if test="${not empty batch.outputFileName 
-						    && (
-						    batch.statusId == 28 || 
-						    batch.statusId == 58 || 
-						    batch.statusId == 30)}">
-                                                    <br />
-                                                    <a href="/FileDownload/downloadFile.do?filename=${batch.outputFileName}&utBatchName=${batch.outputFileName}&foldername=archivesOut&orgId=0" title="View Original File">
-                                                        Download Outbound File
-                                                    </a>
-                                                </c:if>
-                                            </td>
-                                            <td>
-						<a href="<c:url value='/administrator/processing-activity/inbound/${batch.fromBatchName}' />" title="View Inbound Batch" role="button">${batch.fromBatchName}</a>
-                                                <c:if test="${not empty batch.fromBatchFile}">
-                                                    <br />
-                                                    <a href="/FileDownload/downloadFile.do?filename=${batch.fromBatchFile}&foldername=archivesIn&orgId=0" title="View Uploaded Source File">
-                                                        Download Uploaded File
-                                                    </a>
-                                                </c:if>
-                                            </td>
-                                            <td class="center-text">
-                                                <c:choose>
-                                                    <c:when test="${batch.transportMethod == 'File Upload'}">
-                                                        File Download
-                                                    </c:when>
-                                                    <c:when test="${batch.transportMethodId == '6'}">
-                                                        <a href="/administrator/processing-activity/wsmessageOut/${batch.utBatchName}" title="View Web Services Status">${batch.transportMethod}</a>
-                                                    </c:when>
-						    <c:when test="${batch.transportMethodId == '9'}">
-							<a href="/administrator/processing-activity/apimessagesOut/${batch.utBatchName}" title="View Rest API Message">${batch.transportMethod}</a>
-						    </c:when>	
-                                                    <c:otherwise>
-                                                        ${batch.transportMethod}
-                                                    </c:otherwise>
-                                                </c:choose>
-                                            </td>
-                                            <td class="center-text">
-                                                <a href="#statusModal" data-toggle="modal" class="viewStatus" rel="${batch.statusId}" title="View this Status">${batch.statusValue}</a>
-                                            </td>
-                                            <td class="center-text">
-                                                Total Transactions: <strong><fmt:formatNumber value = "${batch.totalRecordCount}" type = "number"/></strong>
-						<br />
-						Total Error Transactions: <strong><fmt:formatNumber value = "${batch.totalErrorCount}" type = "number"/></strong>
-                                            </td>
-                                            <td class="center-text"><fmt:formatDate value="${batch.dateCreated}" type="both" pattern="M/dd/yyyy h:mm:ss a" /></td>
-                                            <td>
-						<div class="dropdown pull-left">
-						    <button class="btn btn-sm btn-default dropdown-toggle" type="button" data-toggle="dropdown">
-							<i class="fa fa-cog"></i>
-						    </button>
-						    <ul class="dropdown-menu pull-right">
-							<c:if test="${batch.transportMethodId != 2}">
-							    <li>
-								<a href="<c:url value='/administrator/processing-activity/outbound/auditReport/${batch.utBatchName}' />" title="View Audit Report">
-								    <span class="glyphicon glyphicon-edit"></span>
-								    View Audit Report
-								</a>
-							    </li>
-							</c:if>
-						    </ul>
-						</div>
-                                            </td>
-                                        </tr>
-                                    </c:forEach>     
-                                </c:when>   
-                                <c:otherwise>
-                                    <tr><td colspan="8" class="center-text">There were no files sent out in the date range selected.</td></tr>
-                                </c:otherwise>
-                            </c:choose>           
-                        </tbody>
+                    <table class="table table-striped table-hover table-default" id="batchdownloads-table">
+			<thead>
+			    <tr>
+				<th scope="col">Organization</th>
+				<th scope="col">Batch Details</th>
+				<th scope="col">Associated Inbound Batch</th>
+				<th scope="col" class="center-text">Transport Method</th>
+				<th scope="col" class="center-text">Status</th>
+				<th scope="col"># of Transactions</th>
+				<th scope="col" class="center-text">Date Delivered</th>
+				<th scope="col"></th>
+			    </tr>
+			</thead>
                     </table>
                 </div>
             </div>

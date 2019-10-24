@@ -25,7 +25,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 public class batchUploads {
 
     @Transient
-    private Integer totalTransactions = 0,transTotalNotFinal = 10, totalOpen = 0, totalClosed = 0, threshold = 100, watchListEntryId = 0, inboundBatchConfigurationType = 1;
+    private Integer totalTransactions = 0,transTotalNotFinal = 10, totalOpen = 0, totalClosed = 0, threshold = 100, watchListEntryId = 0, inboundBatchConfigurationType = 1, totalMessages = 0;
 
     @Transient
     private String statusValue, usersName, 
@@ -105,276 +105,36 @@ public class batchUploads {
     @Column(name = "senderEmail", nullable = false)
     private String senderEmail;
 
-    public boolean isContainsHeaderRow() {
-        return containsHeaderRow;
+    public Integer getTotalTransactions() {
+	return totalTransactions;
     }
 
-    public void setContainsHeaderRow(boolean containsHeaderRow) {
-        this.containsHeaderRow = containsHeaderRow;
-    }
-
-    public String getFileLocation() {
-        return fileLocation;
-    }
-
-    public void setFileLocation(String fileLocation) {
-        this.fileLocation = fileLocation;
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public int getOrgId() {
-        return orgId;
-    }
-
-    public void setOrgId(int orgId) {
-        this.orgId = orgId;
-    }
-
-    public int getuserId() {
-        return userId;
-    }
-
-    public void setuserId(int userId) {
-        this.userId = userId;
-    }
-
-    public String getutBatchConfName() {
-        return utBatchConfName;
-    }
-
-    public void setutBatchConfName(String utBatchConfName) {
-        this.utBatchConfName = utBatchConfName;
-    }
-
-    public String getutBatchName() {
-        return utBatchName;
-    }
-
-    public void setutBatchName(String utBatchName) {
-        this.utBatchName = utBatchName;
-    }
-
-    public int gettransportMethodId() {
-        return transportMethodId;
-    }
-
-    public void settransportMethodId(int transportMethodId) {
-        this.transportMethodId = transportMethodId;
-    }
-
-    public String getoriginalFileName() {
-        return originalFileName;
-    }
-
-    public void setoriginalFileName(String originalFileName) {
-        this.originalFileName = originalFileName;
-    }
-
-    public int getstatusId() {
-        return statusId;
-    }
-
-    public void setstatusId(int statusId) {
-        this.statusId = statusId;
-    }
-
-    public Date getstartDateTime() {
-        return startDateTime;
-    }
-
-    public void setstartDateTime(Date startDateTime) {
-        this.startDateTime = startDateTime;
-    }
-
-    public Date getendDateTime() {
-        return endDateTime;
-    }
-
-    public void setendDateTime(Date endDateTime) {
-        this.endDateTime = endDateTime;
-    }
-
-    public int gettotalRecordCount() {
-        return totalRecordCount;
-    }
-
-    public void settotalRecordCount(int totalRecordCount) {
-        this.totalRecordCount = totalRecordCount;
-    }
-
-    public boolean getdeleted() {
-        return deleted;
-    }
-
-    public void setdeleted(boolean deleted) {
-        this.deleted = deleted;
-    }
-
-    public int geterrorRecordCount() {
-        return errorRecordCount;
-    }
-
-    public void seterrorRecordCount(int errorRecordCount) {
-        this.errorRecordCount = errorRecordCount;
-    }
-
-    public Date getdateSubmitted() {
-        return dateSubmitted;
-    }
-
-    public void setdateSubmitted(Date dateSubmitted) {
-        this.dateSubmitted = dateSubmitted;
-    }
-    
-    public void settotalTransactions(int totalTransactions) {
-        this.totalTransactions = totalTransactions;
-    }
-
-    public int gettotalTransactions() {
-        return totalTransactions;
-    }
-
-    public String getstatusValue() {
-        return statusValue;
-    }
-
-    public void setstatusValue(String statusValue) {
-        this.statusValue = statusValue;
-    }
-
-    public String getusersName() {
-        return usersName;
-    }
-
-    public void setusersName(String usersName) {
-        this.usersName = usersName;
-    }
-
-    public Integer getConfigId() {
-        return configId;
-    }
-
-    public void setConfigId(Integer configId) {
-        this.configId = configId;
-    }
-
-    public String getDelimChar() {
-        return delimChar;
-    }
-
-    public void setDelimChar(String delimChar) {
-        this.delimChar = delimChar;
-    }
-
-    public String getorgName() {
-        return orgName;
-    }
-
-    public void setorgName(String orgName) {
-        this.orgName = orgName;
-    }
-
-    public String gettransportMethod() {
-        return transportMethod;
-    }
-
-    public void settransportMethod(String transportMethod) {
-        this.transportMethod = transportMethod;
-    }
-
-    public String getConfigName() {
-        return configName;
-    }
-
-    public void setConfigName(String configName) {
-        this.configName = configName;
+    public void setTotalTransactions(Integer totalTransactions) {
+	this.totalTransactions = totalTransactions;
     }
 
     public Integer getTransTotalNotFinal() {
-        return transTotalNotFinal;
+	return transTotalNotFinal;
     }
 
     public void setTransTotalNotFinal(Integer transTotalNotFinal) {
-        this.transTotalNotFinal = transTotalNotFinal;
-    }
-
-    public String getOriginalFolder() {
-        return originalFolder;
-    }
-
-    public void setOriginalFolder(String originalFolder) {
-        this.originalFolder = originalFolder;
-    }
-
-    public Integer getEncodingId() {
-        return encodingId;
-    }
-
-    public void setEncodingId(Integer encodingId) {
-        this.encodingId = encodingId;
-    }
-
-    public String getSenderEmail() {
-        return senderEmail;
-    }
-
-    public void setSenderEmail(String senderEmail) {
-        this.senderEmail = senderEmail;
-    }
-
-    public String getUploadType() {
-        return uploadType;
-    }
-
-    public void setUploadType(String uploadType) {
-        this.uploadType = uploadType;
-    }
-
-    public String getReferringBatch() {
-        return referringBatch;
-    }
-
-    public void setReferringBatch(String referringBatch) {
-        this.referringBatch = referringBatch;
+	this.transTotalNotFinal = transTotalNotFinal;
     }
 
     public Integer getTotalOpen() {
-        return totalOpen;
+	return totalOpen;
     }
 
     public void setTotalOpen(Integer totalOpen) {
-        this.totalOpen = totalOpen;
+	this.totalOpen = totalOpen;
     }
 
     public Integer getTotalClosed() {
-        return totalClosed;
+	return totalClosed;
     }
 
     public void setTotalClosed(Integer totalClosed) {
-        this.totalClosed = totalClosed;
-    }
-
-    public String getTgtorgName() {
-	return tgtorgName;
-    }
-
-    public void setTgtorgName(String tgtorgName) {
-	this.tgtorgName = tgtorgName;
-    }
-
-    public String getDashboardRowColor() {
-	return dashboardRowColor;
-    }
-
-    public void setDashboardRowColor(String dashboardRowColor) {
-	this.dashboardRowColor = dashboardRowColor;
+	this.totalClosed = totalClosed;
     }
 
     public Integer getThreshold() {
@@ -385,28 +145,108 @@ public class batchUploads {
 	this.threshold = threshold;
     }
 
-    public String getEntryMessage() {
-	return entryMessage;
-    }
-
-    public void setEntryMessage(String entryMessage) {
-	this.entryMessage = entryMessage;
-    }
-
-    public boolean isWatchListCompleted() {
-	return watchListCompleted;
-    }
-
-    public void setWatchListCompleted(boolean watchListCompleted) {
-	this.watchListCompleted = watchListCompleted;
-    }
-
     public Integer getWatchListEntryId() {
 	return watchListEntryId;
     }
 
     public void setWatchListEntryId(Integer watchListEntryId) {
 	this.watchListEntryId = watchListEntryId;
+    }
+
+    public Integer getInboundBatchConfigurationType() {
+	return inboundBatchConfigurationType;
+    }
+
+    public void setInboundBatchConfigurationType(Integer inboundBatchConfigurationType) {
+	this.inboundBatchConfigurationType = inboundBatchConfigurationType;
+    }
+
+    public Integer getTotalMessages() {
+	return totalMessages;
+    }
+
+    public void setTotalMessages(Integer totalMessages) {
+	this.totalMessages = totalMessages;
+    }
+
+    public String getStatusValue() {
+	return statusValue;
+    }
+
+    public void setStatusValue(String statusValue) {
+	this.statusValue = statusValue;
+    }
+
+    public String getUsersName() {
+	return usersName;
+    }
+
+    public void setUsersName(String usersName) {
+	this.usersName = usersName;
+    }
+
+    public String getTgtorgName() {
+	return tgtorgName;
+    }
+
+    public void setTgtorgName(String tgtorgName) {
+	this.tgtorgName = tgtorgName;
+    }
+
+    public String getOrgName() {
+	return orgName;
+    }
+
+    public void setOrgName(String orgName) {
+	this.orgName = orgName;
+    }
+
+    public String getTransportMethod() {
+	return transportMethod;
+    }
+
+    public void setTransportMethod(String transportMethod) {
+	this.transportMethod = transportMethod;
+    }
+
+    public String getConfigName() {
+	return configName;
+    }
+
+    public void setConfigName(String configName) {
+	this.configName = configName;
+    }
+
+    public String getUploadType() {
+	return uploadType;
+    }
+
+    public void setUploadType(String uploadType) {
+	this.uploadType = uploadType;
+    }
+
+    public String getReferringBatch() {
+	return referringBatch;
+    }
+
+    public void setReferringBatch(String referringBatch) {
+	this.referringBatch = referringBatch;
+    }
+
+    public String getDashboardRowColor() {
+	return dashboardRowColor;
+    }
+
+    public void setDashboardRowColor(String dashboardRowColor) {
+	this.dashboardRowColor = dashboardRowColor;
+    }
+
+    public String getEntryMessage() {
+	return entryMessage;
+    }
+
+    public void setEntryMessage(String entryMessage) {
+	this.entryMessage = entryMessage;
     }
 
     public String getRelatedBatchDownloadIds() {
@@ -417,12 +257,181 @@ public class batchUploads {
 	this.relatedBatchDownloadIds = relatedBatchDownloadIds;
     }
 
-    public Integer getInboundBatchConfigurationType() {
-	return inboundBatchConfigurationType;
+    public boolean isWatchListCompleted() {
+	return watchListCompleted;
     }
 
-    public void setInboundBatchConfigurationType(Integer inboundBatchConfigurationType) {
-	this.inboundBatchConfigurationType = inboundBatchConfigurationType;
+    public void setWatchListCompleted(boolean watchListCompleted) {
+	this.watchListCompleted = watchListCompleted;
     }
+
+    public int getId() {
+	return id;
+    }
+
+    public void setId(int id) {
+	this.id = id;
+    }
+
+    public int getOrgId() {
+	return orgId;
+    }
+
+    public void setOrgId(int orgId) {
+	this.orgId = orgId;
+    }
+
+    public int getUserId() {
+	return userId;
+    }
+
+    public void setUserId(int userId) {
+	this.userId = userId;
+    }
+
+    public String getUtBatchConfName() {
+	return utBatchConfName;
+    }
+
+    public void setUtBatchConfName(String utBatchConfName) {
+	this.utBatchConfName = utBatchConfName;
+    }
+
+    public String getUtBatchName() {
+	return utBatchName;
+    }
+
+    public void setUtBatchName(String utBatchName) {
+	this.utBatchName = utBatchName;
+    }
+
+    public int getTransportMethodId() {
+	return transportMethodId;
+    }
+
+    public void setTransportMethodId(int transportMethodId) {
+	this.transportMethodId = transportMethodId;
+    }
+
+    public String getOriginalFileName() {
+	return originalFileName;
+    }
+
+    public void setOriginalFileName(String originalFileName) {
+	this.originalFileName = originalFileName;
+    }
+
+    public int getStatusId() {
+	return statusId;
+    }
+
+    public void setStatusId(int statusId) {
+	this.statusId = statusId;
+    }
+
+    public Date getStartDateTime() {
+	return startDateTime;
+    }
+
+    public void setStartDateTime(Date startDateTime) {
+	this.startDateTime = startDateTime;
+    }
+
+    public Date getEndDateTime() {
+	return endDateTime;
+    }
+
+    public void setEndDateTime(Date endDateTime) {
+	this.endDateTime = endDateTime;
+    }
+
+    public int getTotalRecordCount() {
+	return totalRecordCount;
+    }
+
+    public void setTotalRecordCount(int totalRecordCount) {
+	this.totalRecordCount = totalRecordCount;
+    }
+
+    public boolean isDeleted() {
+	return deleted;
+    }
+
+    public void setDeleted(boolean deleted) {
+	this.deleted = deleted;
+    }
+
+    public int getErrorRecordCount() {
+	return errorRecordCount;
+    }
+
+    public void setErrorRecordCount(int errorRecordCount) {
+	this.errorRecordCount = errorRecordCount;
+    }
+
+    public Date getDateSubmitted() {
+	return dateSubmitted;
+    }
+
+    public void setDateSubmitted(Date dateSubmitted) {
+	this.dateSubmitted = dateSubmitted;
+    }
+
+    public Integer getConfigId() {
+	return configId;
+    }
+
+    public void setConfigId(Integer configId) {
+	this.configId = configId;
+    }
+
+    public boolean isContainsHeaderRow() {
+	return containsHeaderRow;
+    }
+
+    public void setContainsHeaderRow(boolean containsHeaderRow) {
+	this.containsHeaderRow = containsHeaderRow;
+    }
+
+    public String getDelimChar() {
+	return delimChar;
+    }
+
+    public void setDelimChar(String delimChar) {
+	this.delimChar = delimChar;
+    }
+
+    public String getFileLocation() {
+	return fileLocation;
+    }
+
+    public void setFileLocation(String fileLocation) {
+	this.fileLocation = fileLocation;
+    }
+
+    public String getOriginalFolder() {
+	return originalFolder;
+    }
+
+    public void setOriginalFolder(String originalFolder) {
+	this.originalFolder = originalFolder;
+    }
+
+    public Integer getEncodingId() {
+	return encodingId;
+    }
+
+    public void setEncodingId(Integer encodingId) {
+	this.encodingId = encodingId;
+    }
+
+    public String getSenderEmail() {
+	return senderEmail;
+    }
+
+    public void setSenderEmail(String senderEmail) {
+	this.senderEmail = senderEmail;
+    }
+
     
 }

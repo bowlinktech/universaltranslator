@@ -206,8 +206,6 @@ public class RestAPIDAOImpl implements RestAPIDAO {
 	sqlQuery += "order by "+sortColumnName+" "+sortDirection;
         sqlQuery += " limit " + displayStart + ", " + displayRecords;
 	
-	System.out.println(sqlQuery);
-	
 	Query query = sessionFactory.getCurrentSession().createSQLQuery(sqlQuery)
 	    .addScalar("id", StandardBasicTypes.INTEGER)
 	    .addScalar("statusName", StandardBasicTypes.STRING)

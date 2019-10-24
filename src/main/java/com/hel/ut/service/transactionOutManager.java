@@ -106,4 +106,6 @@ public interface transactionOutManager {
     
     boolean chechForTransactionInTable(Integer batchUploadId) throws Exception;
     
+    List<batchDownloads> getAllSentBatchesPaged(Date fromDate, Date toDate, Integer displayStart, Integer displayRecords, String searchTerm, String sortColumnName, String sortDirection) throws Exception;
+    
 }

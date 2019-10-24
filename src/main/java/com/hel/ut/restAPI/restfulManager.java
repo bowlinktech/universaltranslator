@@ -134,12 +134,12 @@ public class restfulManager {
 
 	    String fileName = null;
 
-	    int findExt = batchFileInfo.getoutputFileName().lastIndexOf(".");
+	    int findExt = batchFileInfo.getOutputFileName().lastIndexOf(".");
 
 	    if (findExt >= 0) {
-		fileName = batchFileInfo.getoutputFileName();
+		fileName = batchFileInfo.getOutputFileName();
 	    } else {
-		fileName = new StringBuilder().append(batchFileInfo.getoutputFileName()).append(".").append(transportDetails.getfileExt()).toString();
+		fileName = new StringBuilder().append(batchFileInfo.getOutputFileName()).append(".").append(transportDetails.getfileExt()).toString();
 	    }
 	    
 	    //Submit the restAPImessageOut
@@ -285,7 +285,7 @@ public class restfulManager {
 
 				message = message + "<br/><br/>Sending Organization: " + sendingOrgName;
 
-				message = message + "<br/><br/>Total Transactions: " + batchFileInfo.gettotalRecordCount();
+				message = message + "<br/><br/>Total Transactions: " + batchFileInfo.getTotalRecordCount();
 
 				if (!"".equals(responseMessage)) {
 				    message = message + "<br/><br/>API Response Message: " + responseMessage;
@@ -433,12 +433,12 @@ public class restfulManager {
 
 	    String fileName = null;
 
-	    int findExt = batchFileInfo.getoutputFileName().lastIndexOf(".");
+	    int findExt = batchFileInfo.getOutputFileName().lastIndexOf(".");
 
 	    if (findExt >= 0) {
-		fileName = batchFileInfo.getoutputFileName();
+		fileName = batchFileInfo.getOutputFileName();
 	    } else {
-		fileName = new StringBuilder().append(batchFileInfo.getoutputFileName()).append(".").append(transportDetails.getfileExt()).toString();
+		fileName = new StringBuilder().append(batchFileInfo.getOutputFileName()).append(".").append(transportDetails.getfileExt()).toString();
 	    }
 
 	    String filelocation = transportDetails.getfileLocation();
@@ -628,7 +628,7 @@ public class restfulManager {
 
 				message = message + "<br/><br/>Sending Organization: " + sendingOrgName;
 
-				message = message + "<br/><br/>Total Transactions: " + batchFileInfo.gettotalRecordCount();
+				message = message + "<br/><br/>Total Transactions: " + batchFileInfo.getTotalRecordCount();
 
 				if (!"".equals(responseMessage)) {
 				    message = message + "<br/><br/>API Response Message: " + responseMessage;
@@ -777,12 +777,12 @@ public class restfulManager {
 
 	    String fileName = null;
 
-	    int findExt = batchFileInfo.getoutputFileName().lastIndexOf(".");
+	    int findExt = batchFileInfo.getOutputFileName().lastIndexOf(".");
 
 	    if (findExt >= 0) {
-		fileName = batchFileInfo.getoutputFileName();
+		fileName = batchFileInfo.getOutputFileName();
 	    } else {
-		fileName = new StringBuilder().append(batchFileInfo.getoutputFileName()).append(".").append(transportDetails.getfileExt()).toString();
+		fileName = new StringBuilder().append(batchFileInfo.getOutputFileName()).append(".").append(transportDetails.getfileExt()).toString();
 	    }
 	    
 	    //Submit the restAPImessageOut
@@ -925,7 +925,7 @@ public class restfulManager {
 
 				message = message + "<br/><br/>Sending Organization: " + sendingOrgName;
 
-				message = message + "<br/><br/>Total Transactions: " + batchFileInfo.gettotalRecordCount();
+				message = message + "<br/><br/>Total Transactions: " + batchFileInfo.getTotalRecordCount();
 
 				if (!"".equals(responseMessage)) {
 				    message = message + "<br/><br/>API Response Message: " + responseMessage;

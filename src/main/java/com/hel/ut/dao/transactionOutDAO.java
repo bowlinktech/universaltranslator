@@ -14,7 +14,6 @@ import com.hel.ut.model.configurationTransport;
 import com.hel.ut.model.targetOutputRunLogs;
 import com.hel.ut.model.transactionOutRecords;
 import com.hel.ut.model.custom.ConfigOutboundForInsert;
-import com.hel.ut.model.custom.batchErrorSummary;
 
 import java.math.BigInteger;
 import java.util.Date;
@@ -113,5 +112,7 @@ public interface transactionOutDAO {
     void submitBatchDownloadChanges(batchDownloads batchDownload) throws Exception;
     
     boolean chechForTransactionInTable(Integer batchUploadId) throws Exception;
+    
+    List<batchDownloads> getAllSentBatchesPaged(Date fromDate, Date toDate, Integer displayStart, Integer displayRecords, String searchTerm, String sortColumnName, String sortDirection) throws Exception;
     
 }

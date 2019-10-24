@@ -20,7 +20,7 @@ public class CurrentTenantIdentifierResolverImpl implements CurrentTenantIdentif
     @Override
     public String resolveCurrentTenantIdentifier() {
         ServletRequestAttributes attr = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
-        String database = "universaltranslator";
+        String database = "universaltranslator_local";
 	
 	if (attr != null) {
 	    if(attr.getRequest().getParameter("tenantId") != null) {

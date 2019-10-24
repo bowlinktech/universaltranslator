@@ -3021,6 +3021,92 @@ public class transactionInDAOImpl implements transactionInDAO {
 	    System.err.println("updateDirectAPIMessage " + ex.getCause());
 	    return 1;
 	}
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public List<batchUploads> getAllUploadBatchesPaged(Date fromDate, Date toDate, Integer displayStart, Integer displayRecords, String searchTerm, String sortColumnName, String sortDirection) throws Exception {
+	
+	String dateSQLString = "";
+	String dateSQLStringTotal = "";
+	
+	if(fromDate !=  null && toDate != null) {
+	    if(!"".equals(fromDate)) {
+		dateSQLString += "a.dateSubmitted between '"+mysqlDateFormat.format(fromDate)+"' ";
+		dateSQLStringTotal += "dateSubmitted between '"+mysqlDateFormat.format(fromDate)+"' ";
+
+		if(!"".equals(toDate)) {
+		    dateSQLString += "AND '"+mysqlDateFormat.format(toDate)+"'";
+		    dateSQLStringTotal += "AND '"+mysqlDateFormat.format(toDate)+"'";
+		}
+		else {
+		    dateSQLString += "AND '"+mysqlDateFormat.format(fromDate)+" 23:59:59'";
+		    dateSQLStringTotal += "AND '"+mysqlDateFormat.format(fromDate)+" 23:59:59'";
+		}
+	    }
+	    else {
+		if(!"".equals(toDate)) {
+		    dateSQLString += "a.dateSubmitted between '"+mysqlDateFormat.format(toDate)+"' ";
+		    dateSQLString += "AND '"+mysqlDateFormat.format(toDate)+" 23:59:59'";
+		}
+		else {
+		    dateSQLString += "a.id > 0";
+		}
+	    }
+	}
+	else {
+	    dateSQLString += "a.id > 0";
+	    dateSQLStringTotal = "utBatchName = '" + searchTerm + "'";
+	}
+	
+	
+	String sqlQuery = "select id, utBatchName, transportMethodId, originalFileName, totalRecordCount, errorRecordCount, configName, inboundBatchConfigurationType, statusId, dateSubmitted,"
+		+ "statusValue, orgName, transportMethod, totalMessages "
+		+ "FROM ("
+		+ "select a.id , a.utBatchName, a.transportMethodId, a.originalFileName, a.totalRecordCount, a.errorRecordCount, b.configName, b.configurationType as inboundBatchConfigurationType,"
+		+ "a.statusId, a.dateSubmitted, c.endUserDisplayCode as statusValue, d.orgName, e.transportMethod,"
+		+ "(select count(id) as total from batchuploads where "+dateSQLStringTotal+") as totalMessages "
+		+ "FROM batchuploads a inner join "
+		+ "configurations b on b.id = a.configId inner join "
+		+ "lu_processstatus c on c.id = a.statusId inner join "
+		+ "organizations d on d.id = a.orgId inner join "
+		+ "ref_transportmethods e on e.id = a.transportMethodId "
+		+ "where " + dateSQLString + ") as inboundBatches ";
+	
+	if(!"".equals(searchTerm)){
+	    sqlQuery += " where ("
+	    + "id like '%"+searchTerm+"%' "
+	    + "OR orgName like '%"+searchTerm+"%' "
+	    + "OR configName like '%"+searchTerm+"%' "
+	    + "OR utBatchName like '%"+searchTerm+"%' "
+	    + "OR statusValue like '%"+searchTerm+"%' "
+	    + "OR transportMethod like '%"+searchTerm+"%'"
+	    + ") ";
+	}	
+	
+	sqlQuery += "order by "+sortColumnName+" "+sortDirection;
+        sqlQuery += " limit " + displayStart + ", " + displayRecords;
+	
+	Query query = sessionFactory.getCurrentSession().createSQLQuery(sqlQuery)
+	    .addScalar("id", StandardBasicTypes.INTEGER)
+	    .addScalar("utBatchName", StandardBasicTypes.STRING)
+	    .addScalar("transportMethodId", StandardBasicTypes.INTEGER)
+	    .addScalar("originalFileName", StandardBasicTypes.STRING)
+	    .addScalar("totalRecordCount", StandardBasicTypes.INTEGER)
+	    .addScalar("errorRecordCount", StandardBasicTypes.INTEGER)
+	    .addScalar("configName", StandardBasicTypes.STRING)
+	    .addScalar("inboundBatchConfigurationType", StandardBasicTypes.INTEGER)
+	    .addScalar("statusId", StandardBasicTypes.INTEGER)
+	    .addScalar("dateSubmitted", StandardBasicTypes.TIMESTAMP)
+	    .addScalar("statusValue", StandardBasicTypes.STRING)
+	    .addScalar("orgName", StandardBasicTypes.STRING)
+	    .addScalar("transportMethod", StandardBasicTypes.STRING)
+	    .addScalar("totalMessages", StandardBasicTypes.INTEGER)
+	    .setResultTransformer(Transformers.aliasToBean(batchUploads.class));
+	
+	List<batchUploads> batchUploadMessages = query.list();
+	
+        return batchUploadMessages;
 
     }
 }

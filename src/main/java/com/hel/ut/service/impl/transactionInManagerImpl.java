@@ -333,9 +333,9 @@ public class transactionInManagerImpl implements transactionInManager {
 	//get batch details
 	batchUploads batch = getBatchDetails(batchUploadId);
 
-	if (batch.getorgName() == null || "".equals(batch.getorgName())) {
+	if (batch.getOrgName() == null || "".equals(batch.getOrgName())) {
 	    Organization sendingOrgDetails = organizationmanager.getOrganizationById(batch.getOrgId());
-	    batch.setorgName(sendingOrgDetails.getOrgName());
+	    batch.setOrgName(sendingOrgDetails.getOrgName());
 	}
 
 	List<configurationConnection> batchTargetList = null;
@@ -353,13 +353,13 @@ public class transactionInManagerImpl implements transactionInManager {
 	List<configurationTransport> handlingDetails = getHandlingDetailsByBatch(batchUploadId);
 
 	// we should only insert for batches that are just loaded
-	if (batch.getstatusId() == 36 || batch.getstatusId() == 43) {
+	if (batch.getStatusId() == 36 || batch.getStatusId() == 43) {
 	    insertTargets = true;
 	}
 	
 	batchUploads updatedBatchDetails = getBatchDetails(batchUploadId);
 	
-	if ((batch.getstatusId() == 3 || batch.getstatusId() == 6 || batch.getstatusId() == 36 || batch.getstatusId() == 43)) {
+	if ((batch.getStatusId() == 3 || batch.getStatusId() == 6 || batch.getStatusId() == 36 || batch.getStatusId() == 43)) {
 
 	    //insert log
 	    try {
@@ -493,9 +493,9 @@ public class transactionInManagerImpl implements transactionInManager {
 	    //1 = Post errors to ERG 
 	    //2 = Reject record on error 
 	    //3 = Reject submission on error 4 = Pass through errors
-	    if (getRecordCounts(batchUploadId, finalStatusIds, false, false) > 0 && batch.getstatusId() == 6) {
+	    if (getRecordCounts(batchUploadId, finalStatusIds, false, false) > 0 && batch.getStatusId() == 6) {
 		//we stop here as batch is not in final status and release batch was triggered
-		batch.setstatusId(5);
+		batch.setStatusId(5);
 		batchStatusId = 5;
 		updateRecordCounts(batchUploadId, new ArrayList<Integer>(), false, "totalRecordCount");
 		updateRecordCounts(batchUploadId, errorStatusIds, false, "errorRecordCount");
@@ -504,14 +504,14 @@ public class transactionInManagerImpl implements transactionInManager {
 	    }
 
 	    // if auto and batch contains transactions that are not final status
-	    if (batch.getstatusId() == 6 || (handlingDetails.get(0).getautoRelease()
+	    if (batch.getStatusId() == 6 || (handlingDetails.get(0).getautoRelease()
 		    && (handlingDetails.get(0).geterrorHandling() == 2
 		    || handlingDetails.get(0).geterrorHandling() == 4
 		    || handlingDetails.get(0).geterrorHandling() == 1))) {
 
 		if (handlingDetails.get(0).getautoRelease() && handlingDetails.get(0).geterrorHandling() == 1 && getRecordCounts(batchUploadId, finalStatusIds, false, false) > 0) {
 		    //post records to ERG
-		    batch.setstatusId(5);
+		    batch.setStatusId(5);
 		    batchStatusId = 5;
 		    updateRecordCounts(batchUploadId, new ArrayList<Integer>(), false, "totalRecordCount");
 		    updateRecordCounts(batchUploadId, errorStatusIds, false, "errorRecordCount");
@@ -559,7 +559,7 @@ public class transactionInManagerImpl implements transactionInManager {
 	     */
 	    updatedBatchDetails = getBatchDetails(batchUploadId);
 	    
-	    if (updatedBatchDetails.geterrorRecordCount() > 0) {
+	    if (updatedBatchDetails.getErrorRecordCount() > 0) {
 		sendRejectNotification(updatedBatchDetails);
 	    }
 
@@ -572,14 +572,14 @@ public class transactionInManagerImpl implements transactionInManager {
 	if (batchStatusId == 24) {
 	    
 	    //If no errors found then create the batch download entries
-	    if(updatedBatchDetails.geterrorRecordCount() == 0) {
+	    if(updatedBatchDetails.getErrorRecordCount() == 0) {
 		targetsInserted = true;
 		noTargetsFound = assignBatchDLId(batchUploadId, batch.getConfigId());
 	    }
 
 	    //If errors are found and the error handling is set to send only non errored transactions
 	    //and there are successful tranasctions to send create the batch download entries
-	    else if(handlingDetails.get(0).geterrorHandling() == 2 && (updatedBatchDetails.geterrorRecordCount() < updatedBatchDetails.gettotalRecordCount())) {
+	    else if(handlingDetails.get(0).geterrorHandling() == 2 && (updatedBatchDetails.getErrorRecordCount() < updatedBatchDetails.getTotalRecordCount())) {
 		targetsInserted = true;
 		noTargetsFound = assignBatchDLId(batchUploadId, batch.getConfigId());
 	    }
@@ -979,7 +979,7 @@ public class transactionInManagerImpl implements transactionInManager {
 	batchUploads batch = getBatchDetails(batchId);
 
 	//we recheck status in case it was picked up in a loop
-	if (batch.getstatusId() == 2 || batch.getstatusId() == 42) {
+	if (batch.getStatusId() == 2 || batch.getStatusId() == 42) {
 	    
 	    Integer batchStatusId = 38;
 	    List<Integer> errorStatusIds = Arrays.asList(11, 13, 14, 16);
@@ -1039,7 +1039,7 @@ public class transactionInManagerImpl implements transactionInManager {
 			boolean fromRegistryFileUpload = false;
 			
 			//Check if there is file upload (from HEL Registry) entry
-			uploadedFile existingRegistryUploadedFile = fileuploadmanager.getUploadedFileBySQL(HELSchemaName,batch.getoriginalFileName());
+			uploadedFile existingRegistryUploadedFile = fileuploadmanager.getUploadedFileBySQL(HELSchemaName,batch.getOriginalFileName());
 			
 			if (existingRegistryUploadedFile != null) {
 			    fromRegistryFileUpload = true;
@@ -1047,7 +1047,7 @@ public class transactionInManagerImpl implements transactionInManager {
 			}
 			
 			if(!fromRegistryFileUpload) {
-			    submittedMessage existingRegistrySubmittedMessage = submittedmessagemanager.getSubmittedMessageBySQL(HELSchemaName,batch.getoriginalFileName());
+			    submittedMessage existingRegistrySubmittedMessage = submittedmessagemanager.getSubmittedMessageBySQL(HELSchemaName,batch.getOriginalFileName());
 
 			    if (existingRegistrySubmittedMessage != null) {
 				submittedmessagemanager.updateSubmittedMessage(HELSchemaName,existingRegistrySubmittedMessage.getId(),23,batchId);
@@ -1075,13 +1075,13 @@ public class transactionInManagerImpl implements transactionInManager {
 				submittedMessage newSubmittedMessage = new submittedMessage();
 				newSubmittedMessage.setUtBatchUploadId(batchId);
 				newSubmittedMessage.setRegistryConfigId(HELRegistryConfigId);
-				newSubmittedMessage.setUploadedFileName(batch.getoriginalFileName());
-				newSubmittedMessage.setAssignedFileName(batch.getutBatchName());
-				newSubmittedMessage.setInFileExt(FilenameUtils.getExtension(batch.getoriginalFileName()));
+				newSubmittedMessage.setUploadedFileName(batch.getOriginalFileName());
+				newSubmittedMessage.setAssignedFileName(batch.getUtBatchName());
+				newSubmittedMessage.setInFileExt(FilenameUtils.getExtension(batch.getOriginalFileName()));
 				newSubmittedMessage.setStatusId(23);
 				newSubmittedMessage.setTransportId(1);
 				newSubmittedMessage.setSystemUserId(0);
-				newSubmittedMessage.setTotalRows(batch.gettotalRecordCount());
+				newSubmittedMessage.setTotalRows(batch.getTotalRecordCount());
 				newSubmittedMessage.setSourceOrganizationId(organizationDetails.getHelRegistryOrgId());
 				newSubmittedMessage.setAssignedMessageNumber(messageName);
 
@@ -1108,17 +1108,17 @@ public class transactionInManagerImpl implements transactionInManager {
 		//decoded files will always be in loadFiles folder with UTBatchName 
 		// all files are Base64 encoded at this point
 		String filePath = myProps.getProperty("ut.directory.utRootDir") + batch.getFileLocation().replace("/HELProductSuite/universalTranslator/","");
-		String encodedFileName = "encoded_"+batch.getutBatchName();
+		String encodedFileName = "encoded_"+batch.getUtBatchName();
 		
 		if(!encodedFileName.contains(".")) {
-		    encodedFileName += batch.getoriginalFileName().substring(batch.getoriginalFileName().lastIndexOf(".")).toLowerCase();
+		    encodedFileName += batch.getOriginalFileName().substring(batch.getOriginalFileName().lastIndexOf(".")).toLowerCase();
 		}
 		
 		File encodedFile = new File(filePath + encodedFileName);
 		
 		String decodedFilePath = myProps.getProperty("ut.directory.utRootDir") + processFolderPath;
-		String decodedFileName = batch.getutBatchName();
-		String decodedFileExt = batch.getoriginalFileName().substring(batch.getoriginalFileName().lastIndexOf(".")).toLowerCase();
+		String decodedFileName = batch.getUtBatchName();
+		String decodedFileExt = batch.getOriginalFileName().substring(batch.getOriginalFileName().lastIndexOf(".")).toLowerCase();
 		
 		boolean fileFound = false;
 		if(encodedFile.exists()) {
@@ -1134,7 +1134,7 @@ public class transactionInManagerImpl implements transactionInManager {
 		    }
 		}
 		else {
-		    String nonencodedFileName = batch.getutBatchName();
+		    String nonencodedFileName = batch.getUtBatchName();
 		    
 		    if(!nonencodedFileName.contains(".")) {
 			nonencodedFileName += decodedFileExt;
@@ -1166,7 +1166,7 @@ public class transactionInManagerImpl implements transactionInManager {
 		    //here we need to check if we should change file to xml or hr for org sometimes org will send hl7 files over or .out or some other extension, they all need to be .hr all ccd file will need to end in xml
 		    //so we check decodedFileName and change it to the proper extension if need be
 		    String changeToExtension = "";
-		    String processFileName = batch.getoriginalFileName();
+		    String processFileName = batch.getOriginalFileName();
 		    String lineTerminator = "\\n";
 
 		    //For configId of 0, we need to check to see if org has hr or ccd if configId is not 0, we pull up the extension type and rename file if we find more than one file extension set up for org we reject them them file extension will be 4 (hr) or 9 (ccd) info we have from batchUpload - transportMethodId, configId, orgId
@@ -1193,10 +1193,10 @@ public class transactionInManagerImpl implements transactionInManager {
 			//should restrict this to only 4/9
 			//see if the users has any 4/9 fileType, we don't need to worry about changing extension if org doesn't
 
-			List<configurationTransport> ctList = configurationtransportmanager.getConfigurationTransportFileExtByFileType(batch.getOrgId(), batch.gettransportMethodId(), null, Arrays.asList(1), true, false);
+			List<configurationTransport> ctList = configurationtransportmanager.getConfigurationTransportFileExtByFileType(batch.getOrgId(), batch.getTransportMethodId(), null, Arrays.asList(1), true, false);
 			if (ctList.size() > 1) {
 			    //it is ok to have multiple if they are not using file type 4/9, so we check again
-			    List<configurationTransport> ctList2 = configurationtransportmanager.getConfigurationTransportFileExtByFileType(batch.getOrgId(), batch.gettransportMethodId(), Arrays.asList(4, 9), Arrays.asList(1), true, false);
+			    List<configurationTransport> ctList2 = configurationtransportmanager.getConfigurationTransportFileExtByFileType(batch.getOrgId(), batch.getTransportMethodId(), Arrays.asList(4, 9), Arrays.asList(1), true, false);
 			    if (!ctList2.isEmpty()) { //they have multiple file types defined along with hr or ccd, we fail them
 				//clean up
 				File tempLoadFile = new File(actualFileName);
@@ -1221,7 +1221,7 @@ public class transactionInManagerImpl implements transactionInManager {
 		    }
 
 		    if (!"".equals(changeToExtension)) {
-			processFileName = batch.getutBatchName() + "." + changeToExtension;
+			processFileName = batch.getUtBatchName() + "." + changeToExtension;
 			//we overwrite file 
 			//old file is here actualFileName;
 			//new file is the same name with diff extension
@@ -1240,7 +1240,7 @@ public class transactionInManagerImpl implements transactionInManager {
 			} else if (newfilename.equals("FILE IS NOT XML ERROR")) {
 			    updateBatchStatus(batchId, 7, "endDateTime");
 			    insertProcessingError(22, null, batchId, null, null, null, null, false, false, "XML format is invalid.");
-			    sendEmailToAdmin((new Date() + "<br/>Please login and review. Load batch failed.  <br/>Batch Id -  " + batch.getId() + "<br/> UT Batch Name " + batch.getutBatchName() + " <br/>Original batch file name - " + batch.getoriginalFileName()), "Load xml Batch Failed");
+			    sendEmailToAdmin((new Date() + "<br/>Please login and review. Load batch failed.  <br/>Batch Id -  " + batch.getId() + "<br/> UT Batch Name " + batch.getUtBatchName() + " <br/>Original batch file name - " + batch.getOriginalFileName()), "Load xml Batch Failed");
 			}
 
 			actualFileName = (decodedFilePath + newfilename);
@@ -1256,7 +1256,7 @@ public class transactionInManagerImpl implements transactionInManager {
 			if (newfilename.equals("ERRORERRORERROR")) {
 			    updateBatchStatus(batchId, 39, "endDateTime");
 			    insertProcessingError(5, null, batchId, null, null, null, null, false, false, "Error at applying jar template");
-			    sendEmailToAdmin((new Date() + "<br/>Please login and review. Load batch failed.  <br/>Batch Id -  " + batch.getId() + "<br/> UT Batch Name " + batch.getutBatchName() + " <br/>Original batch file name - " + batch.getoriginalFileName()), "Load .hr Batch Failed");
+			    sendEmailToAdmin((new Date() + "<br/>Please login and review. Load batch failed.  <br/>Batch Id -  " + batch.getId() + "<br/> UT Batch Name " + batch.getUtBatchName() + " <br/>Original batch file name - " + batch.getOriginalFileName()), "Load .hr Batch Failed");
 			}
 			actualFileName = (decodedFilePath + newfilename);
 			//we remove temp load file 
@@ -1274,11 +1274,11 @@ public class transactionInManagerImpl implements transactionInManager {
 			if (newfilename.equals("ERRORERRORERROR")) {
 			    updateBatchStatus(batchId, 39, "endDateTime");
 			    insertProcessingError(5, null, batchId, null, null, null, null, false, false, "Error translating xlsx / xls file");
-			    sendEmailToAdmin((new Date() + "<br/>Please login and review. Load batch failed.  <br/>Batch Id -  " + batch.getId() + "<br/> UT Batch Name " + batch.getutBatchName() + " <br/>Original batch file name - " + batch.getoriginalFileName()), "Load Excel Batch Failed");
+			    sendEmailToAdmin((new Date() + "<br/>Please login and review. Load batch failed.  <br/>Batch Id -  " + batch.getId() + "<br/> UT Batch Name " + batch.getUtBatchName() + " <br/>Original batch file name - " + batch.getOriginalFileName()), "Load Excel Batch Failed");
 			} else if (newfilename.equals("FILE IS NOT excel ERROR")) {
 			    updateBatchStatus(batchId, 7, "endDateTime");
 			    insertProcessingError(22, null, batchId, null, null, null, null, false, false, "Excel format is invalid.");
-			    sendEmailToAdmin((new Date() + "<br/>Please login and review. Load batch failed.  <br/>Batch Id -  " + batch.getId() + "<br/> UT Batch Name " + batch.getutBatchName() + " <br/>Original batch file name - " + batch.getoriginalFileName()), "Load Excel Batch Failed");
+			    sendEmailToAdmin((new Date() + "<br/>Please login and review. Load batch failed.  <br/>Batch Id -  " + batch.getId() + "<br/> UT Batch Name " + batch.getUtBatchName() + " <br/>Original batch file name - " + batch.getOriginalFileName()), "Load Excel Batch Failed");
 			}
 			actualFileName = (decodedFilePath + newfilename);
 			//we remove temp load file 
@@ -1298,7 +1298,7 @@ public class transactionInManagerImpl implements transactionInManager {
 			} else if (newfilename.equals("FILE IS NOT JSON ERROR")) {
 			    updateBatchStatus(batchId, 7, "endDateTime");
 			    insertProcessingError(22, null, batchId, null, null, null, null, false, false, "JSON format is invalid.");
-			    sendEmailToAdmin((new Date() + "<br/>Please login and review. Load batch failed.  <br/>Batch Id -  " + batch.getId() + "<br/> UT Batch Name " + batch.getutBatchName() + " <br/>Original batch file name - " + batch.getoriginalFileName()), "Load xml Batch Failed");
+			    sendEmailToAdmin((new Date() + "<br/>Please login and review. Load batch failed.  <br/>Batch Id -  " + batch.getId() + "<br/> UT Batch Name " + batch.getUtBatchName() + " <br/>Original batch file name - " + batch.getOriginalFileName()), "Load xml Batch Failed");
 			}
 
 			actualFileName = (decodedFilePath + newfilename);
@@ -1331,7 +1331,7 @@ public class transactionInManagerImpl implements transactionInManager {
 			if (errorHere > 0) {
 			    insertProcessingError(7, null, batchId, null, null, null, null, false, false, "insertLoadData, please login and check logs.");
 			    try {
-				sendEmailToAdmin(("load error for batch - " + batch.getoriginalFileName() + " - " + batch.getutBatchName()), "insertLoadData Error");
+				sendEmailToAdmin(("load error for batch - " + batch.getOriginalFileName() + " - " + batch.getUtBatchName()), "insertLoadData Error");
 			    } catch (Exception ex) {
 				ex.printStackTrace();
 			    }
@@ -1349,7 +1349,7 @@ public class transactionInManagerImpl implements transactionInManager {
 
 			File actualFile = new File(actualFileName);
 			//we are archiving it
-			File archiveFile = new File(myProps.getProperty("ut.directory.utRootDir") + "archivesIn/" + batch.getutBatchName() + "_dec" + actualFileName.substring(actualFileName.lastIndexOf(".")));
+			File archiveFile = new File(myProps.getProperty("ut.directory.utRootDir") + "archivesIn/" + batch.getUtBatchName() + "_dec" + actualFileName.substring(actualFileName.lastIndexOf(".")));
 			Path archive = archiveFile.toPath();
 			Path actual = actualFile.toPath();
 			//we keep original file in archive folder
@@ -1380,7 +1380,7 @@ public class transactionInManagerImpl implements transactionInManager {
 			String batchRecord = "";
 
 			//1. we get all configs for user - user might not have permission to submit but someone else in org does
-			List<configurationMessageSpecs> configurationMessageSpecs = configurationtransportmanager.getConfigurationMessageSpecsForOrgTransport(batch.getOrgId(), batch.gettransportMethodId(), false);
+			List<configurationMessageSpecs> configurationMessageSpecs = configurationtransportmanager.getConfigurationMessageSpecsForOrgTransport(batch.getOrgId(), batch.getTransportMethodId(), false);
 			
 			if(configurationMessageSpecs != null) {
 			    if(!configurationMessageSpecs.isEmpty()) {
@@ -1678,7 +1678,7 @@ public class transactionInManagerImpl implements transactionInManager {
 	 * user can view audit report if 1. uploaded by user 2. file type uploaded was for multiple types and user has configurations 3. user is in connection sender list for batch's configId
 	 */
 	try {
-	    if (batchInfo.getuserId() == userInfo.getId()) {
+	    if (batchInfo.getUserId() == userInfo.getId()) {
 		hasPermission = true;
 	    } else if (batchInfo.getConfigId() == 0 && hasConfigurations) {
 		hasPermission = true;
@@ -1889,9 +1889,9 @@ public class transactionInManagerImpl implements transactionInManager {
 				
 				if(batchDetails != null) {
 				    newBatchRecord = false;
-				    batchDetails.setstatusId(4);
-				    batchDetails.setstartDateTime(date);
-				    batchDetails.setutBatchName(batchName);
+				    batchDetails.setStatusId(4);
+				    batchDetails.setStartDateTime(date);
+				    batchDetails.setUtBatchName(batchName);
 				    
 				    batchId = batchDetails.getId();
 				    
@@ -1900,14 +1900,14 @@ public class transactionInManagerImpl implements transactionInManager {
 				else {
 				    batchUploads batchInfo = new batchUploads();
 				    batchInfo.setOrgId(orgId);
-				    batchInfo.settransportMethodId(transportMethodId);
-				    batchInfo.setstatusId(4);
-				    batchInfo.setstartDateTime(date);
-				    batchInfo.setutBatchName(batchName);
+				    batchInfo.setTransportMethodId(transportMethodId);
+				    batchInfo.setStatusId(4);
+				    batchInfo.setStartDateTime(date);
+				    batchInfo.setUtBatchName(batchName);
 				    batchInfo.setOriginalFolder(rootPath + configDroppedPath);
-				    batchInfo.setuserId(0);
+				    batchInfo.setUserId(0);
 				    batchInfo.setConfigId(0);
-				    batchInfo.setoriginalFileName(fileName);
+				    batchInfo.setOriginalFileName(fileName);
 				    batchInfo.setFileLocation(rootPath + configDroppedPath);
 				    
 				    batchId = submitBatchUpload(batchInfo);
@@ -1961,9 +1961,9 @@ public class transactionInManagerImpl implements transactionInManager {
 					    batchDetails.setDelimChar(transports.get(0).getDelimChar());
 					    batchDetails.setFileLocation(ct.getfileLocation());
 					    batchDetails.setOrgId(orgId);
-					    batchDetails.setoriginalFileName(fileName);
+					    batchDetails.setOriginalFileName(fileName);
 					    batchDetails.setEncodingId(encodingId);
-					    batchDetails.setuserId(0);
+					    batchDetails.setUserId(0);
 
 					    transactionInDAO.updateBatchUpload(batchDetails);
 					}
@@ -1988,7 +1988,7 @@ public class transactionInManagerImpl implements transactionInManager {
 				    //we reject file is multiple encodings/delimiters are found for extension type as we won't know how to decode it and read delimiter
 				    if (encodings.size() != 1) {
 					if(newBatchRecord) {
-					    batchDetails.setuserId(usermanager.getUserByTypeByOrganization(orgId).get(0).getId());
+					    batchDetails.setUserId(usermanager.getUserByTypeByOrganization(orgId).get(0).getId());
 					    transactionInDAO.updateBatchUpload(batchDetails);
 					}
 					statusId = 7;
@@ -2016,13 +2016,13 @@ public class transactionInManagerImpl implements transactionInManager {
 					    batchDetails.setConfigId(configId);
 					    batchDetails.setFileLocation(rootPath + configDroppedPath);
 					    batchDetails.setOrgId(orgId);
-					    batchDetails.setoriginalFileName(fileName);
-					    batchDetails.setuserId(0);
+					    batchDetails.setOriginalFileName(fileName);
+					    batchDetails.setUserId(0);
 					    batchDetails.setEncodingId(encodingId);
 					}
 					
-					if (batchDetails.getConfigId() != 0 && batchDetails.getstatusId() == 2) {
-					   batchDetails.setstatusId(42);
+					if (batchDetails.getConfigId() != 0 && batchDetails.getStatusId() == 2) {
+					   batchDetails.setStatusId(42);
 					}
 					
 					transactionInDAO.updateBatchUpload(batchDetails);
@@ -2035,8 +2035,8 @@ public class transactionInManagerImpl implements transactionInManager {
 					    batchDetails.setConfigId(configId);
 					    batchDetails.setFileLocation(rootPath + configDroppedPath);
 					    batchDetails.setOrgId(orgId);
-					    batchDetails.setoriginalFileName(fileName);
-					    batchDetails.setuserId(0);
+					    batchDetails.setOriginalFileName(fileName);
+					    batchDetails.setUserId(0);
 					    batchDetails.setEncodingId(encodingId);
 					    
 					    transactionInDAO.updateBatchUpload(batchDetails);
@@ -2053,7 +2053,7 @@ public class transactionInManagerImpl implements transactionInManager {
 
 					if (containsHeaderRowCount.size() != 1) {
 					    if(newBatchRecord) {
-						batchDetails.setuserId(usermanager.getUserByTypeByOrganization(orgId).get(0).getId());
+						batchDetails.setUserId(usermanager.getUserByTypeByOrganization(orgId).get(0).getId());
 						transactionInDAO.updateBatchUpload(batchDetails);
 					    }
 					    statusId = 7;
@@ -2084,13 +2084,13 @@ public class transactionInManagerImpl implements transactionInManager {
 						batchDetails.setConfigId(configId);
 						batchDetails.setFileLocation(fileLocation);
 						batchDetails.setOrgId(orgId);
-						batchDetails.setoriginalFileName(fileName);
-						batchDetails.setuserId(0);
+						batchDetails.setOriginalFileName(fileName);
+						batchDetails.setUserId(0);
 						batchDetails.setEncodingId(encodingId);
 					    }
 					    
-					    if (batchDetails.getConfigId() != 0 && batchDetails.getstatusId() == 2) {
-						batchDetails.setstatusId(42);
+					    if (batchDetails.getConfigId() != 0 && batchDetails.getStatusId() == 2) {
+						batchDetails.setStatusId(42);
 					    }
 					    
 					    transactionInDAO.updateBatchUpload(batchDetails);
@@ -2602,10 +2602,10 @@ public class transactionInManagerImpl implements transactionInManager {
 
 	    batchUploads batchInfo = new batchUploads();
 	    batchInfo.setOrgId(ws.getOrgId());
-	    batchInfo.settransportMethodId(6);
-	    batchInfo.setstatusId(4);
-	    batchInfo.setstartDateTime(date);
-	    batchInfo.setutBatchName(batchName);
+	    batchInfo.setTransportMethodId(6);
+	    batchInfo.setStatusId(4);
+	    batchInfo.setStartDateTime(date);
+	    batchInfo.setUtBatchName(batchName);
 	    batchInfo.setSenderEmail(ws.getFromAddress());
 
 	    Organization orgDetails = organizationmanager.getOrganizationById(ws.getOrgId());
@@ -2617,19 +2617,19 @@ public class transactionInManagerImpl implements transactionInManager {
 	    //we reject
 	    if (confTransports.size() != 1) { //should only be one since we don't have file ext
 		//no source transport is associated with this method / file
-		batchInfo.setuserId(usermanager.getUserByTypeByOrganization(ws.getOrgId()).get(0).getId());
+		batchInfo.setUserId(usermanager.getUserByTypeByOrganization(ws.getOrgId()).get(0).getId());
 		batchInfo.setConfigId(0);
-		batchInfo.setoriginalFileName(batchName + fileExt);
+		batchInfo.setOriginalFileName(batchName + fileExt);
 		batchInfo.setFileLocation(writeToFolder);
 		batchInfo.setEncodingId(encodingId);
 		//write the file
 		filemanager.writeFile(writeToFile, ws.getPayload());
-		if (batchInfo.getConfigId() != 0 && batchInfo.getstatusId() == 2) {
+		if (batchInfo.getConfigId() != 0 && batchInfo.getStatusId() == 2) {
 		    /**
 		     * check for mass translation *
 		     */
 		    if (configurationtransportmanager.getTransportDetails(batchInfo.getConfigId()).isMassTranslation()) {
-			batchInfo.setstatusId(42);
+			batchInfo.setStatusId(42);
 		    }
 		}
 		batchId = (Integer) submitBatchUpload(batchInfo);
@@ -2665,7 +2665,7 @@ public class transactionInManagerImpl implements transactionInManager {
 		batchInfo.setDelimChar(ct.getDelimChar());
 		batchInfo.setFileLocation(ct.getfileLocation());
 		batchInfo.setOrgId(ws.getOrgId());
-		batchInfo.setoriginalFileName(batchName + fileExt);
+		batchInfo.setOriginalFileName(batchName + fileExt);
 		batchInfo.setEncodingId(encodingId);
 
 		//find user 
@@ -2685,11 +2685,11 @@ public class transactionInManagerImpl implements transactionInManager {
 		//if we can't find a user to assign the batch to - we have to error the file
 		if (users.size() == 0) {
 		    //we assign to admin
-		    batchInfo.setuserId(1);
+		    batchInfo.setUserId(1);
 		    statusId = 7;
 		    errorId = 27;
 		} else {
-		    batchInfo.setuserId(users.get(0).getId());
+		    batchInfo.setUserId(users.get(0).getId());
 		}
 		//write payload to file
 		writeToFile = fileNamePath;
@@ -2828,15 +2828,15 @@ public class transactionInManagerImpl implements transactionInManager {
 			}
 		    }
 		}
-		batchInfo.setstatusId(statusId);
-		batchInfo.setendDateTime(new Date());
-		batchInfo.settotalRecordCount(1); // need to be at least one to show up in activites
-		if (batchInfo.getConfigId() != 0 && batchInfo.getstatusId() == 2) {
+		batchInfo.setStatusId(statusId);
+		batchInfo.setEndDateTime(new Date());
+		batchInfo.setTotalRecordCount(1); // need to be at least one to show up in activites
+		if (batchInfo.getConfigId() != 0 && batchInfo.getStatusId() == 2) {
 		    /**
 		     * check for mass translation *
 		     */
 		    if (configurationtransportmanager.getTransportDetails(batchInfo.getConfigId()).isMassTranslation()) {
-			batchInfo.setstatusId(42);
+			batchInfo.setStatusId(42);
 		    }
 		}
 		batchId = (Integer) submitBatchUpload(batchInfo);
@@ -2983,13 +2983,13 @@ public class transactionInManagerImpl implements transactionInManager {
 	ccAddresses.add("chadmccue05@gmail.com");
 
 	//build message
-	String message = "Uploaded File (Batch Id:" + batch.getutBatchName() + ") contains " + batch.geterrorRecordCount() + " error(s).";
+	String message = "Uploaded File (Batch Id:" + batch.getUtBatchName() + ") contains " + batch.getErrorRecordCount() + " error(s).";
 
 	message = message + "<br/><br/>Environment: " + myProps.getProperty("server.identity");
-	message = message + "<br/><br/>Batch Id: " + batch.getutBatchName();
-	message = message + "<br/><br/>Total Transactions: " + batch.gettotalRecordCount();
-	message = message + "<br/>Total Errors: " + batch.geterrorRecordCount();
-	message += "<br /><br />Sending Organization: " + batch.getorgName();
+	message = message + "<br/><br/>Batch Id: " + batch.getUtBatchName();
+	message = message + "<br/><br/>Total Transactions: " + batch.getTotalRecordCount();
+	message = message + "<br/>Total Errors: " + batch.getErrorRecordCount();
+	message += "<br /><br />Sending Organization: " + batch.getOrgName();
 
 	List<Transaction> transactions = getTransactionsByStatusId(batch.getId(), rejectIds, 5);
 	
@@ -3060,7 +3060,7 @@ public class transactionInManagerImpl implements transactionInManager {
 	    batchUploads stuckBatchDetails = getBatchDetails(batchInProcess.get(0).getId());
 	    //check how long first batch is going
 	    //if more than 2 hours need to email 
-	    LocalDateTime d1 = LocalDateTime.ofInstant(stuckBatchDetails.getstartDateTime().toInstant(), ZoneId.systemDefault());
+	    LocalDateTime d1 = LocalDateTime.ofInstant(stuckBatchDetails.getStartDateTime().toInstant(), ZoneId.systemDefault());
 	    LocalDateTime d2 = LocalDateTime.now();
 	    long diffHours = java.time.Duration.between(d1, d2).toHours();
 	    run = false;
@@ -3071,7 +3071,7 @@ public class transactionInManagerImpl implements transactionInManager {
 		//see if this batch has been retried
 		batchRetry br = getBatchRetryByUploadId(stuckBatchDetails.getId(), 38);
 		String subject = "Retrying Batch loadMassBatches ";
-		String msgBody = "Batch " + stuckBatchDetails.getId() + " (" + stuckBatchDetails.getutBatchName() + ") will be retried.";
+		String msgBody = "Batch " + stuckBatchDetails.getId() + " (" + stuckBatchDetails.getUtBatchName() + ") will be retried.";
 		if (br == null) {
 		    //we retry this batch
 		    br = new batchRetry();
@@ -3110,7 +3110,7 @@ public class transactionInManagerImpl implements transactionInManager {
 			System.err.println("transactionId - insert user log" + ex.toString());
 		    }
 		    subject = "Batch set to Need to Review - processMassBatches ";
-		    msgBody = "Batch " + stuckBatchDetails.getId() + " (" + stuckBatchDetails.getutBatchName() + ") needs to be reviewed.";
+		    msgBody = "Batch " + stuckBatchDetails.getId() + " (" + stuckBatchDetails.getUtBatchName() + ") needs to be reviewed.";
 		    //58
 		    updateBatchStatus(stuckBatchDetails.getId(), 58, "endDateTime");
 		}
@@ -3122,7 +3122,7 @@ public class transactionInManagerImpl implements transactionInManager {
 		mail.setmessageSubject(subject + " " + myProps.getProperty("server.identity"));
 		StringBuilder emailBody = new StringBuilder();
 		emailBody.append("<br/>Current Time " + d2.toString());
-		emailBody.append("<br/><br/>" + msgBody + "<br/>File Name is  - " + stuckBatchDetails.getoriginalFileName() + ".");
+		emailBody.append("<br/><br/>" + msgBody + "<br/>File Name is  - " + stuckBatchDetails.getOriginalFileName() + ".");
 		emailBody.append("<br/>" + batchInProcess.size() + " batch(es) with status 38 in queue.<br/>");
 		mail.setmessageBody(emailBody.toString());
 		emailManager.sendEmail(mail);
@@ -3175,7 +3175,7 @@ public class transactionInManagerImpl implements transactionInManager {
 
 		if (stuckBatchDetails != null) {
 
-		    d1 = LocalDateTime.ofInstant(stuckBatchDetails.getstartDateTime().toInstant(), ZoneId.systemDefault());
+		    d1 = LocalDateTime.ofInstant(stuckBatchDetails.getStartDateTime().toInstant(), ZoneId.systemDefault());
 		    d2 = LocalDateTime.now();
 
 		    diffHours = java.time.Duration.between(d1, d2).toHours();
@@ -3185,7 +3185,7 @@ public class transactionInManagerImpl implements transactionInManager {
 			//see if this batch has been retried
 			batchRetry br = getBatchRetryByUploadId(stuckBatchDetails.getId(), 4);
 			String subject = "Retrying Batch - processMassBatches";
-			String msgBody = "Batch " + stuckBatchDetails.getId() + " (" + stuckBatchDetails.getutBatchName() + ") will be retried.";
+			String msgBody = "Batch " + stuckBatchDetails.getId() + " (" + stuckBatchDetails.getUtBatchName() + ") will be retried.";
 
 			if (br == null) {
 			    //we retry this batch
@@ -3226,7 +3226,7 @@ public class transactionInManagerImpl implements transactionInManager {
 				System.err.println("System Set Batch (id: " + stuckBatchDetails.getId() + ") To Retry insert user log error " + ex.toString());
 			    }
 			    subject = "Batch set to Need to Review - processMassBatches ";
-			    msgBody = "Batch " + stuckBatchDetails.getId() + " (" + stuckBatchDetails.getutBatchName() + ") needs to be reviewed.";
+			    msgBody = "Batch " + stuckBatchDetails.getId() + " (" + stuckBatchDetails.getUtBatchName() + ") needs to be reviewed.";
 			    updateBatchStatus(stuckBatchDetails.getId(), 58, "endDateTime");
 			}
 			//we notify admin
@@ -3237,7 +3237,7 @@ public class transactionInManagerImpl implements transactionInManager {
 			mail.setmessageSubject(subject + " " + myProps.getProperty("server.identity"));
 			StringBuilder emailBody = new StringBuilder();
 			emailBody.append("<br/>Current Time " + d2.toString());
-			emailBody.append("<br/><br/>" + msgBody + "<br/>File Name is  - " + stuckBatchDetails.getoriginalFileName() + ".");
+			emailBody.append("<br/><br/>" + msgBody + "<br/>File Name is  - " + stuckBatchDetails.getOriginalFileName() + ".");
 			emailBody.append("<br/>" + batchInProcess.size() + " batch(es) with status 4 in queue.<br/>");
 			mail.setmessageBody(emailBody.toString());
 			emailManager.sendEmail(mail);
@@ -3515,10 +3515,10 @@ public class transactionInManagerImpl implements transactionInManager {
 
 	    batchUploads batchInfo = new batchUploads();
 	    batchInfo.setOrgId(APIMessage.getOrgId());
-	    batchInfo.settransportMethodId(9);
-	    batchInfo.setstatusId(4);
-	    batchInfo.setstartDateTime(date);
-	    batchInfo.setutBatchName(batchName);
+	    batchInfo.setTransportMethodId(9);
+	    batchInfo.setStatusId(4);
+	    batchInfo.setStartDateTime(date);
+	    batchInfo.setUtBatchName(batchName);
 	    batchInfo.setConfigId(configId);
 
 	    Organization orgDetails = organizationmanager.getOrganizationById(APIMessage.getOrgId());
@@ -3531,15 +3531,15 @@ public class transactionInManagerImpl implements transactionInManager {
 
 	    //we reject
 	    if (ct == null) {
-		batchInfo.setuserId(usermanager.getUserByTypeByOrganization(APIMessage.getOrgId()).get(0).getId());
+		batchInfo.setUserId(usermanager.getUserByTypeByOrganization(APIMessage.getOrgId()).get(0).getId());
 		batchInfo.setConfigId(0);
-		batchInfo.setoriginalFileName(batchName + fileExt);
+		batchInfo.setOriginalFileName(batchName + fileExt);
 		batchInfo.setFileLocation(writeToFolder);
 		batchInfo.setEncodingId(encodingId);
 		//write the file
 		filemanager.writeFile(writeToFile, APIMessage.getPayload());
-		if (batchInfo.getConfigId() != 0 && batchInfo.getstatusId() == 2) {
-		    batchInfo.setstatusId(42);
+		if (batchInfo.getConfigId() != 0 && batchInfo.getStatusId() == 2) {
+		    batchInfo.setStatusId(42);
 		}
 		batchId = submitBatchUpload(batchInfo);
 		//insert error
@@ -3649,9 +3649,9 @@ public class transactionInManagerImpl implements transactionInManager {
 		    batchInfo.setContainsHeaderRow(ct.getContainsHeaderRow());
 		    batchInfo.setDelimChar(ct.getDelimChar());
 		    batchInfo.setFileLocation(ct.getfileLocation());
-		    batchInfo.setoriginalFileName(batchName + fileExt);
+		    batchInfo.setOriginalFileName(batchName + fileExt);
 		    batchInfo.setEncodingId(encodingId);
-		    batchInfo.setuserId(0);
+		    batchInfo.setUserId(0);
 
 		    //write payload to file
 		    writeToFile = fileNamePath;
@@ -3706,19 +3706,19 @@ public class transactionInManagerImpl implements transactionInManager {
 			}
 		    }
 
-		    batchInfo.setstatusId(statusId);
-		    batchInfo.setendDateTime(new Date());
-		    batchInfo.settotalRecordCount(1); // need to be at least one to show up in activites
+		    batchInfo.setStatusId(statusId);
+		    batchInfo.setEndDateTime(new Date());
+		    batchInfo.setTotalRecordCount(1); // need to be at least one to show up in activites
 		    
-		    if (batchInfo.getConfigId() != 0 && batchInfo.getstatusId() == 2) {
+		    if (batchInfo.getConfigId() != 0 && batchInfo.getStatusId() == 2) {
 
 			//If utConfiguration is set for passthru
 			if (configDetails.getConfigurationType() == 2) {
-			    batchInfo.setstatusId(24);
+			    batchInfo.setStatusId(24);
 			    statusId = 24;
 			} 
 			else {
-			    batchInfo.setstatusId(42);
+			    batchInfo.setStatusId(42);
 			}
 		    }
 		    
@@ -3807,10 +3807,10 @@ public class transactionInManagerImpl implements transactionInManager {
 	    targetsInserted = true;
 
 	    for (batchDownloads pendingBatches : pendingResetBatchDownloads) {
-		pendingBatches.setstatusId(61);
-		pendingBatches.settotalErrorCount(0);
-		pendingBatches.settotalRecordCount(0);
-		pendingBatches.setstartDateTime(new Date());
+		pendingBatches.setStatusId(61);
+		pendingBatches.setTotalErrorCount(0);
+		pendingBatches.setTotalRecordCount(0);
+		pendingBatches.setStartDateTime(new Date());
 
 		transactionOutDAO.submitBatchDownloadChanges(pendingBatches);
 	    }
@@ -3854,7 +3854,7 @@ public class transactionInManagerImpl implements transactionInManager {
 		Organization targetOrg = organizationmanager.getOrganizationById(configDetails.getorgId());
 		
 		//We need to check to see if the configuration is looking for the target in specific column
-		List<configurationMessageSpecs> configurationMessageSpecs = configurationtransportmanager.getConfigurationMessageSpecsForOrgTransport(batchUploadDetails.getOrgId(), batchUploadDetails.gettransportMethodId(), true);
+		List<configurationMessageSpecs> configurationMessageSpecs = configurationtransportmanager.getConfigurationMessageSpecsForOrgTransport(batchUploadDetails.getOrgId(), batchUploadDetails.getTransportMethodId(), true);
 
 		if(configurationMessageSpecs != null) {
 		    if(!configurationMessageSpecs.isEmpty()) {
@@ -3893,33 +3893,33 @@ public class transactionInManagerImpl implements transactionInManager {
 		    batchDownloads batchDownload = new batchDownloads();
 
 		    //set batch download details
-		    batchDownload.setutBatchName(utbatchName);
+		    batchDownload.setUtBatchName(utbatchName);
 
 
 		    //Need to get the schedule for the configuration to find out if the targets need to be processed automatically
 		    configurationSchedules configurationScheduleDetails = configurationManager.getScheduleDetails(configId);
 
 		    if(configurationScheduleDetails.gettype() == 5) {
-		       batchDownload.setstatusId(61);
+		       batchDownload.setStatusId(61);
 		    }
 		    else if (configurationScheduleDetails.gettype() == 1) {
-			batchDownload.setstatusId(64);
+			batchDownload.setStatusId(64);
 		    }
 		    else {
-			batchDownload.setstatusId(59);
+			batchDownload.setStatusId(59);
 		    }
 
 		    //we determine output file name
-		    batchDownload.setoutputFileName(transactionoutmanager.generateDLBatchName(transportDetails, configDetails, batchUploadDetails, date) + "." + transportDetails.getfileExt());
-		    batchDownload.setmergeable(false);
-		    batchDownload.setstartDateTime(new Date());
-		    batchDownload.settransportMethodId(transportDetails.gettransportMethodId());
+		    batchDownload.setOutputFileName(transactionoutmanager.generateDLBatchName(transportDetails, configDetails, batchUploadDetails, date) + "." + transportDetails.getfileExt());
+		    batchDownload.setMergeable(false);
+		    batchDownload.setStartDateTime(new Date());
+		    batchDownload.setTransportMethodId(transportDetails.gettransportMethodId());
 		    batchDownload.setOrgId(useTargetOrgId);
-		    batchDownload.setuserId(userId);
-		    batchDownload.settotalErrorCount(0);
-		    batchDownload.settotalRecordCount(0);
-		    batchDownload.setdeleted(false);
-		    batchDownload.setdateCreated(new Date());
+		    batchDownload.setUserId(userId);
+		    batchDownload.setTotalErrorCount(0);
+		    batchDownload.setTotalRecordCount(0);
+		    batchDownload.setDeleted(false);
+		    batchDownload.setDateCreated(new Date());
 		    batchDownload.setBatchUploadId(batchUploadId);
 		    batchDownload.setConfigId(configId);
 
@@ -4059,22 +4059,22 @@ public class transactionInManagerImpl implements transactionInManager {
 		batchDownloads batchDownload = new batchDownloads();
 
 		//set batch download details
-		batchDownload.setutBatchName(utbatchName);
+		batchDownload.setUtBatchName(utbatchName);
 		
 		//set the batch to a completed status (passthru requires no processing)
-		batchDownload.setstatusId(28);
+		batchDownload.setStatusId(28);
 
 		//we determine output file name
-		batchDownload.setoutputFileName(transactionoutmanager.generateDLBatchName(transportDetails, tgtconfigDetails, batchDetails, date) + "." + transportDetails.getfileExt());
-		batchDownload.setmergeable(false);
-		batchDownload.setstartDateTime(new Date());
-		batchDownload.settransportMethodId(transportDetails.gettransportMethodId());
+		batchDownload.setOutputFileName(transactionoutmanager.generateDLBatchName(transportDetails, tgtconfigDetails, batchDetails, date) + "." + transportDetails.getfileExt());
+		batchDownload.setMergeable(false);
+		batchDownload.setStartDateTime(new Date());
+		batchDownload.setTransportMethodId(transportDetails.gettransportMethodId());
 		batchDownload.setOrgId(tgtconfigDetails.getorgId());
-		batchDownload.setuserId(0);
-		batchDownload.settotalErrorCount(0);
-		batchDownload.settotalRecordCount(1);
-		batchDownload.setdeleted(false);
-		batchDownload.setdateCreated(new Date());
+		batchDownload.setUserId(0);
+		batchDownload.setTotalErrorCount(0);
+		batchDownload.setTotalRecordCount(1);
+		batchDownload.setDeleted(false);
+		batchDownload.setDateCreated(new Date());
 		batchDownload.setConfigId(tgtconfigDetails.getId());
 		batchDownload.setBatchUploadId(batchDetails.getId());
 		
@@ -4084,7 +4084,7 @@ public class transactionInManagerImpl implements transactionInManager {
 		batchDownloads batchDLDetails = transactionOutDAO.getBatchDetails(batchDLId);
 
 		//Need to copy the source file into the target location (final target location to send from.
-		String fileName = new StringBuilder().append(batchDLDetails.getoutputFileName()).toString();
+		String fileName = new StringBuilder().append(batchDLDetails.getOutputFileName()).toString();
 		fileSystem dir = new fileSystem();
 
 		String filelocation = transportDetails.getfileLocation();
@@ -4094,8 +4094,8 @@ public class transactionInManagerImpl implements transactionInManager {
 		Files.copy(new File(sourceFile).toPath(), targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
 
 		//Copy the file to the archive path as well
-		File archiveFile = new File(myProps.getProperty("ut.directory.utRootDir") + "archivesIn/" + batchDownload.getutBatchName() + "." + transportDetails.getfileExt());
-		File archiveOutFile = new File(myProps.getProperty("ut.directory.utRootDir") + "archivesOut/" + batchDownload.getutBatchName() + "." + transportDetails.getfileExt());
+		File archiveFile = new File(myProps.getProperty("ut.directory.utRootDir") + "archivesIn/" + batchDownload.getUtBatchName() + "." + transportDetails.getfileExt());
+		File archiveOutFile = new File(myProps.getProperty("ut.directory.utRootDir") + "archivesOut/" + batchDownload.getUtBatchName() + "." + transportDetails.getfileExt());
 
 		//at this point, message it not encrypted
 		//we always encrypt the archive file
@@ -4214,12 +4214,12 @@ public class transactionInManagerImpl implements transactionInManager {
 
 	    batchUploads batchInfo = new batchUploads();
 	    batchInfo.setOrgId(directMessage.getOrgId());
-	    batchInfo.settransportMethodId(12);
-	    batchInfo.setstatusId(4);
-	    batchInfo.setstartDateTime(date);
-	    batchInfo.setutBatchName(batchName);
+	    batchInfo.setTransportMethodId(12);
+	    batchInfo.setStatusId(4);
+	    batchInfo.setStartDateTime(date);
+	    batchInfo.setUtBatchName(batchName);
 	    batchInfo.setConfigId(configId);
-	    batchInfo.setoriginalFileName(directMessage.getReferralFileName());
+	    batchInfo.setOriginalFileName(directMessage.getReferralFileName());
 	    batchInfo.setSenderEmail(directMessage.getFromDirectAddress());
 
 	    Organization orgDetails = organizationmanager.getOrganizationById(directMessage.getOrgId());
@@ -4236,14 +4236,14 @@ public class transactionInManagerImpl implements transactionInManager {
 
 	    //we reject
 	    if (ct == null) {
-		batchInfo.setuserId(usermanager.getUserByTypeByOrganization(directMessage.getOrgId()).get(0).getId());
+		batchInfo.setUserId(usermanager.getUserByTypeByOrganization(directMessage.getOrgId()).get(0).getId());
 		batchInfo.setConfigId(0);
 		batchInfo.setFileLocation(writeToFolder);
 		batchInfo.setEncodingId(encodingId);
 		//copy the file
 		FileUtils.copyFile(new File(DMFile+directMessage.getReferralFileName()), new File(writeToFile));
-		if (batchInfo.getConfigId() != 0 && batchInfo.getstatusId() == 2) {
-		    batchInfo.setstatusId(42);
+		if (batchInfo.getConfigId() != 0 && batchInfo.getStatusId() == 2) {
+		    batchInfo.setStatusId(42);
 		}
 		batchId = submitBatchUpload(batchInfo);
 		//insert error
@@ -4265,7 +4265,7 @@ public class transactionInManagerImpl implements transactionInManager {
 		batchInfo.setDelimChar(ct.getDelimChar());
 		batchInfo.setFileLocation(ct.getfileLocation());
 		batchInfo.setEncodingId(encodingId);
-		batchInfo.setuserId(0);
+		batchInfo.setUserId(0);
 
 		//copy file
 		writeToFile = fileNamePath;
@@ -4313,19 +4313,19 @@ public class transactionInManagerImpl implements transactionInManager {
 		    }
 		}
 
-		batchInfo.setstatusId(statusId);
-		batchInfo.setendDateTime(new Date());
-		batchInfo.settotalRecordCount(1); // need to be at least one to show up in activites
+		batchInfo.setStatusId(statusId);
+		batchInfo.setEndDateTime(new Date());
+		batchInfo.setTotalRecordCount(1); // need to be at least one to show up in activites
 
-		if (batchInfo.getConfigId() != 0 && batchInfo.getstatusId() == 2) {
+		if (batchInfo.getConfigId() != 0 && batchInfo.getStatusId() == 2) {
 
 		    //If utConfiguration is set for passthru
 		    if (configDetails.getConfigurationType() == 2) {
-			batchInfo.setstatusId(24);
+			batchInfo.setStatusId(24);
 			statusId = 24;
 		    } 
 		    else {
-			batchInfo.setstatusId(42);
+			batchInfo.setStatusId(42);
 		    }
 		}
 
@@ -4372,5 +4372,10 @@ public class transactionInManagerImpl implements transactionInManager {
     @Override
     public Integer updateDirectAPIMessage(directmessagesin directMessage) {
 	return transactionInDAO.updateDirectAPIMessage(directMessage);
+    }
+    
+    @Override
+    public List<batchUploads> getAllUploadBatchesPaged(Date fromDate, Date toDate, Integer displayStart, Integer displayRecords, String searchTerm, String sortColumnName, String sortDirection) throws Exception {
+	return transactionInDAO.getAllUploadBatchesPaged(fromDate,toDate, displayStart, displayRecords, searchTerm, sortColumnName, sortDirection);
     }
 }
