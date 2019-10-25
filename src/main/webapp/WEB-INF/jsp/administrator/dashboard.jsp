@@ -68,7 +68,23 @@
 				    <h3 class="panel-title">Inbound Messages</h3>
 				</div>
 			       <div class="panel-body">
-				   <div class="form-container scrollable inboundMessages"></div>
+				   <div class="form-container scrollable">
+				       <table class="table table-dash-bordered table-default" id="inbounddataTable">
+					    <thead class="thead-light">
+						<tr>
+						    <th scope="col" class="center-text">Type</th>
+						    <th scope="col" class="center-text">Date/Time</th>
+						    <th scope="col" class="center-text">Trans. ID</th>
+						    <th scope="col" class="center-text">Source</th>
+						    <th scope="col" class="center-text">Message Type</th>
+						    <th scope="col" class="center-text">Interface</th>
+						    <th scope="col" class="center-text">Total Trans.</th>
+						    <th scope="col" class="center-text">Total Errors</th>
+						    <th scope="col" class="center-text">Threshold</th>
+						</tr>
+					    </thead>
+				       </table>
+				   </div>
 			       </div>
 			   </section>
 			</div>
@@ -81,7 +97,23 @@
 				    <h3 class="panel-title">Outbound Messages</h3>
 				</div>
 				<div class="panel-body">
-				    <div class="form-container scrollable outboundMessages"></div>
+				    <div class="form-container scrollable">
+					<table class="table table-dash-bordered table-default" id="outbounddataTable">
+					    <thead class="thead-light">
+						<tr>
+						    <th scope="col" class="center-text">Type</th>
+						    <th scope="col" class="center-text">Date/Time</th>
+						    <th scope="col" class="center-text">Trans. ID</th>
+						    <th scope="col" class="center-text">Target</th>
+						    <th scope="col" class="center-text">Message Type</th>
+						    <th scope="col" class="center-text">Interface</th>
+						    <th scope="col" class="center-text">Total Trans.</th>
+						    <th scope="col" class="center-text">Total Errors</th>
+						    <th scope="col" class="center-text">Threshold</th>
+						</tr>
+					    </thead>
+					 </table>
+				    </div>
 				</div>
 			   </section>
 			</div>

@@ -28,7 +28,7 @@ public class batchDownloads {
     private Integer totalTransactions = 0, threshold = 100, totalBatchDownloads = 0, totalDelivered = 0, totalMessages = 0;
 
     @Transient
-    private String statusValue, usersName, orgName, configName, transportMethod,fromBatchName,fromBatchFile, tgtorgName, originalFileName, dashboardRowColor = "table-secondary";
+    private String statusValue, usersName, orgName, configName, transportMethod,fromBatchName,fromBatchFile, tgtorgName, originalFileName, dashboardRowColor = "table-secondary", endUserDisplayText;
 
     @Transient
     private int fromOrgId, errorRecordCount = 0;
@@ -371,5 +371,14 @@ public class batchDownloads {
     public void setTotalMessages(Integer totalMessages) {
 	this.totalMessages = totalMessages;
     }
+
+    public String getEndUserDisplayText() {
+	return endUserDisplayText;
+    }
+
+    public void setEndUserDisplayText(String endUserDisplayText) {
+	this.endUserDisplayText = endUserDisplayText;
+    }
+    
     
 }

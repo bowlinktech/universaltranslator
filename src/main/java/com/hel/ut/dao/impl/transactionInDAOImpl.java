@@ -3060,11 +3060,11 @@ public class transactionInDAOImpl implements transactionInDAO {
 	}
 	
 	
-	String sqlQuery = "select id, utBatchName, transportMethodId, originalFileName, totalRecordCount, errorRecordCount, configName, inboundBatchConfigurationType, statusId, dateSubmitted,"
-		+ "statusValue, orgName, transportMethod, totalMessages "
+	String sqlQuery = "select id, utBatchName, transportMethodId, originalFileName, totalRecordCount, errorRecordCount, configName, threshold, inboundBatchConfigurationType, statusId, dateSubmitted,"
+		+ "statusValue, endUserDisplayText, orgName, transportMethod, totalMessages, 'On Demand' as uploadType "
 		+ "FROM ("
-		+ "select a.id , a.utBatchName, a.transportMethodId, a.originalFileName, a.totalRecordCount, a.errorRecordCount, b.configName, b.configurationType as inboundBatchConfigurationType,"
-		+ "a.statusId, a.dateSubmitted, c.endUserDisplayCode as statusValue, d.orgName, e.transportMethod,"
+		+ "select a.id , a.utBatchName, a.transportMethodId, a.originalFileName, a.totalRecordCount, a.errorRecordCount, b.configName, b.threshold, b.configurationType as inboundBatchConfigurationType,"
+		+ "a.statusId, a.dateSubmitted, c.endUserDisplayCode as statusValue, c.endUserDisplayText as endUserDisplayText,d.orgName, e.transportMethod,"
 		+ "(select count(id) as total from batchuploads where "+dateSQLStringTotal+") as totalMessages "
 		+ "FROM batchuploads a inner join "
 		+ "configurations b on b.id = a.configId inner join "
@@ -3095,6 +3095,7 @@ public class transactionInDAOImpl implements transactionInDAO {
 	    .addScalar("totalRecordCount", StandardBasicTypes.INTEGER)
 	    .addScalar("errorRecordCount", StandardBasicTypes.INTEGER)
 	    .addScalar("configName", StandardBasicTypes.STRING)
+	    .addScalar("threshold", StandardBasicTypes.INTEGER)
 	    .addScalar("inboundBatchConfigurationType", StandardBasicTypes.INTEGER)
 	    .addScalar("statusId", StandardBasicTypes.INTEGER)
 	    .addScalar("dateSubmitted", StandardBasicTypes.TIMESTAMP)
@@ -3102,6 +3103,8 @@ public class transactionInDAOImpl implements transactionInDAO {
 	    .addScalar("orgName", StandardBasicTypes.STRING)
 	    .addScalar("transportMethod", StandardBasicTypes.STRING)
 	    .addScalar("totalMessages", StandardBasicTypes.INTEGER)
+	    .addScalar("uploadType", StandardBasicTypes.STRING)
+	    .addScalar("endUserDisplayText", StandardBasicTypes.STRING)
 	    .setResultTransformer(Transformers.aliasToBean(batchUploads.class));
 	
 	List<batchUploads> batchUploadMessages = query.list();

@@ -5,7 +5,6 @@
  */
 package com.hel.ut.model;
 
-import com.hel.ut.validator.NoHtml;
 import java.util.Date;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -28,7 +27,7 @@ public class watchlistEntry {
     private int transportMethodId = 0;
     
     @Transient
-    private String entryMessage = "";
+    private String entryMessage = "", orgName, configName, transportMethod;
     
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -124,6 +123,30 @@ public class watchlistEntry {
 
     public void setWatchListCompleted(boolean watchListCompleted) {
 	this.watchListCompleted = watchListCompleted;
+    }
+
+    public String getOrgName() {
+	return orgName;
+    }
+
+    public void setOrgName(String orgName) {
+	this.orgName = orgName;
+    }
+
+    public String getConfigName() {
+	return configName;
+    }
+
+    public void setConfigName(String configName) {
+	this.configName = configName;
+    }
+
+    public String getTransportMethod() {
+	return transportMethod;
+    }
+
+    public void setTransportMethod(String transportMethod) {
+	this.transportMethod = transportMethod;
     }
     
     

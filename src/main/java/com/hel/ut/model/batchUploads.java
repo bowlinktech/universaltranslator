@@ -28,7 +28,7 @@ public class batchUploads {
     private Integer totalTransactions = 0,transTotalNotFinal = 10, totalOpen = 0, totalClosed = 0, threshold = 100, watchListEntryId = 0, inboundBatchConfigurationType = 1, totalMessages = 0;
 
     @Transient
-    private String statusValue, usersName, 
+    private String statusValue, usersName, endUserDisplayText = "",
 	    tgtorgName, orgName, transportMethod, configName, uploadType = "",
 	    referringBatch = "", dashboardRowColor = "table-secondary", 
 	    entryMessage = "", relatedBatchDownloadIds;
@@ -431,6 +431,14 @@ public class batchUploads {
 
     public void setSenderEmail(String senderEmail) {
 	this.senderEmail = senderEmail;
+    }
+
+    public String getEndUserDisplayText() {
+	return endUserDisplayText;
+    }
+
+    public void setEndUserDisplayText(String endUserDisplayText) {
+	this.endUserDisplayText = endUserDisplayText;
     }
 
     

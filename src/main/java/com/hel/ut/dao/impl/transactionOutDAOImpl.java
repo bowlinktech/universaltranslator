@@ -1308,11 +1308,11 @@ public class transactionOutDAOImpl implements transactionOutDAO {
 	}
 	
 	
-	String sqlQuery = "select id, utBatchName, transportMethodId, outputFileName, totalRecordCount, totalErrorCount, configName, statusId, dateCreated,"
-		+ "statusValue, orgName, transportMethod, fromBatchName, fromBatchFile, totalMessages "
+	String sqlQuery = "select id, utBatchName, transportMethodId, outputFileName, totalRecordCount, totalErrorCount, configName, threshold, statusId, dateCreated,"
+		+ "statusValue, endUserDisplayText, orgName, transportMethod, fromBatchName, fromBatchFile, totalMessages "
 		+ "FROM ("
-		+ "select a.id, a.utBatchName, a.transportMethodId, a.outputFileName, a.totalRecordCount, a.totalErrorCount, b.configName,"
-		+ "a.statusId, a.dateCreated, c.endUserDisplayCode as statusValue, d.orgName, e.transportMethod, f.utBatchName as fromBatchName,"
+		+ "select a.id, a.utBatchName, a.transportMethodId, a.outputFileName, a.totalRecordCount, a.totalErrorCount, b.configName, b.threshold,"
+		+ "a.statusId, a.dateCreated, c.endUserDisplayCode as statusValue, c.endUserDisplayText as endUserDisplayText, d.orgName, e.transportMethod, f.utBatchName as fromBatchName,"
 		+ "case when f.transportMethodId = 5 THEN CONCAT(f.utBatchName,'.',SUBSTRING_INDEX(f.originalFileName,'.',-1)) "
 		+ "when f.transportMethodId = 1 THEN CONCAT(f.utBatchName,'.',SUBSTRING_INDEX(f.originalFileName,'.',-1)) "
 		+ "else '' end as fromBatchFile,"
