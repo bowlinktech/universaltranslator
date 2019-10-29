@@ -29,6 +29,11 @@ import com.hel.ut.service.utConfigurationManager;
 import com.hel.ut.service.utConfigurationTransportManager;
 import com.hel.ut.dao.utConfigurationTransportDAO;
 import com.hel.ut.model.organizationDirectDetails;
+import com.hel.ut.model.utConfiguration;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.Reader;
+import java.util.ArrayList;
 import java.util.Properties;
 import javax.annotation.Resource;
 
@@ -58,7 +63,7 @@ public class utConfigurationTransportManagerImpl implements utConfigurationTrans
     }
 
     @Override
-    public Integer updateTransportDetails(configurationTransport transportDetails) throws Exception {
+    public Integer updateTransportDetails(utConfiguration configurationDetails, configurationTransport transportDetails) throws Exception {
 
         MultipartFile CCDTemplatefile = transportDetails.getCcdTemplatefile();
         //If a file is uploaded
@@ -95,11 +100,15 @@ public class utConfigurationTransportManagerImpl implements utConfigurationTrans
 
                 //Set the filename to the file name
                 transportDetails.setCcdSampleTemplate(CCDTemplatefileName);
+		
+		//If configuration is a target, populate the CCD data elements from the uploaded file.
+		if(configurationDetails.getType() == 2 && "xml".equals(transportDetails.getfileExt())) {
+		    insertCCDDataElements(configurationDetails.getId(),newCCDTemplateFile);
+		}
 
             } catch (IOException e) {
                 e.printStackTrace();
                 throw new Exception(e);
-
             }
 
         }
@@ -110,7 +119,7 @@ public class utConfigurationTransportManagerImpl implements utConfigurationTrans
 
         return transportDetailId;
     }
-
+    
     @SuppressWarnings("rawtypes")
     public List getTransportMethods() {
         return configurationTransportDAO.getTransportMethods();
@@ -595,5 +604,58 @@ public class utConfigurationTransportManagerImpl implements utConfigurationTrans
     @Override
     public configurationTransport findConfigurationByDirectMessagKeyword(Integer orgId, String directMessageToAddress) throws Exception {
         return configurationTransportDAO.findConfigurationByDirectMessagKeyword(orgId, directMessageToAddress);
+    }
+    
+    /**
+     * The 'insertCCDDataELements' method will take in the configId and uploaded CCD Template file and scan the file
+     * for all CCD data elements and create entries in the ccdelements table.
+     * @param configId
+     * @param ccdTemplateFile 
+     */
+    private void insertCCDDataElements(Integer configId, File ccdTemplateFile) throws Exception {
+	
+	String sqlQuery = "insert into configurationccdelements (configId, element, fieldValue, defaultValue) values ";
+	
+	Reader fileReader = new FileReader(ccdTemplateFile);
+        BufferedReader bufReader = new BufferedReader(fileReader);
+
+	StringBuilder sb = new StringBuilder();
+        String line = bufReader.readLine();
+	String lineSubString = "";
+	ArrayList<String> substrings = new ArrayList<String>();
+        while( line != null){
+            
+	    if(line.contains("[@") && line.contains("@]")) {
+		lineSubString = line.substring(line.indexOf("[@"),line.indexOf("@]")+2);
+		
+		if(!substrings.isEmpty()) {
+		    if(substrings.indexOf(lineSubString) == -1) {
+			sqlQuery += "("+configId+",'"+lineSubString+"','',''),";
+			substrings.add(lineSubString);
+		    }
+		}
+		else {
+		    substrings.add(lineSubString);
+		    sqlQuery += "("+configId+",'"+lineSubString+"','',''),";
+		}
+		
+	    }
+	    
+            line = bufReader.readLine();
+        }
+	
+	bufReader.close();
+	
+	sqlQuery = sqlQuery.replaceAll(",$", "");
+	
+	try {
+	    configurationTransportDAO.executeConfigTransportSQL("delete from configurationccdelements where configId = " + configId);
+	    configurationTransportDAO.executeConfigTransportSQL(sqlQuery);
+	}
+	catch (Exception ex) {
+	    sqlQuery = "delete from configurationccdelements where configId = " + configId;
+	    configurationTransportDAO.executeConfigTransportSQL(sqlQuery);
+	}
+
     }
 }

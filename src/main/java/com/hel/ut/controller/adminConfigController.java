@@ -690,7 +690,7 @@ public class adminConfigController {
 	}
 	
         // submit the updates
-        Integer transportId = (Integer) utconfigurationTransportManager.updateTransportDetails(transportDetails);
+        Integer transportId = utconfigurationTransportManager.updateTransportDetails(configurationDetails,transportDetails);
 	
 	configurationDetails.setThreshold(transportDetails.getThreshold());
 	utconfigurationmanager.updateConfiguration(configurationDetails);
@@ -769,7 +769,7 @@ public class adminConfigController {
         }
 	
 	//Direct Message Transport
-	if(transportDetails.gettransportMethodId() == 12  && !transportDetails.getDirectMessageFields().isEmpty()) {
+	if(transportDetails.gettransportMethodId() == 12 && configurationDetails.getType() == 1 && !transportDetails.getDirectMessageFields().isEmpty()) {
 	    transportDetails.getDirectMessageFields().get(0).setFileTypeId(transportDetails.getfileType());
 	    transportDetails.getDirectMessageFields().get(0).setExpectedFileExt(transportDetails.getfileExt());
 	    transportDetails.getDirectMessageFields().get(0).setStatus(true);
@@ -2693,7 +2693,10 @@ public class adminConfigController {
     /**
      * The '/editCCDElement' function will handle displaying the edit CCD Element screen.
      *
+     * @param session
+     * @param elementId
      * @return This function will display the new ccd element overlay
+     * @throws java.lang.Exception
      */
     @RequestMapping(value = "/editCCDElement", method = RequestMethod.GET)
     public @ResponseBody
@@ -2721,7 +2724,7 @@ public class adminConfigController {
     /**
      * The '/saveCCDElement' POST request will handle submitting the new HL7 Segment Element
      *
-     * @param configurationCCDElements The object containing the CCD Element form fields
+     * @param ccdElement
      * @param redirectAttr	The variable that will hold values that can be read after the redirect
      *
      * @return	Will return the CCD Customization page on "Save"
@@ -2828,6 +2831,8 @@ public class adminConfigController {
 	//Save new Configuration
 	Integer id = (Integer) utconfigurationmanager.createConfiguration(newConfig);
 	
+	utConfiguration newconfigDetails = utconfigurationmanager.getConfigurationById(id);
+	
 	//Get the existing transport details
 	configurationTransport transportDetails = utconfigurationTransportManager.getTransportDetails(configId);
 	
@@ -2844,7 +2849,7 @@ public class adminConfigController {
 	newTransportDetails.setHelSchemaName(transportDetails.getHelSchemaName());
 	newTransportDetails.setHelRegistryId(transportDetails.getHelRegistryId());
 	
-	Integer transportDetailId = utconfigurationTransportManager.updateTransportDetails(newTransportDetails);
+	Integer transportDetailId = utconfigurationTransportManager.updateTransportDetails(newconfigDetails,newTransportDetails);
 	
 	configurationTransportMessageTypes newConfigTransportMessageType = new configurationTransportMessageTypes();
 	newConfigTransportMessageType.setconfigId(id);

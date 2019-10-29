@@ -117,7 +117,7 @@ public class utConfigurationTransportDAOImpl implements utConfigurationTransport
 	
 	//Target configuration
 	else {
-	    query = sessionFactory.getCurrentSession().createSQLQuery("SELECT id, transportMethod FROM ref_transportMethods where active = 1 and id in (3,6,8,9) order by transportMethod asc");
+	    query = sessionFactory.getCurrentSession().createSQLQuery("SELECT id, transportMethod FROM ref_transportMethods where active = 1 and id in (3,6,8,9,12) order by transportMethod asc");
 	}
 	
         return query.list();
@@ -1330,5 +1330,20 @@ public class utConfigurationTransportDAOImpl implements utConfigurationTransport
 	else {
 	    return null;
 	}
+    }
+    
+    /**
+     * 
+     * @param sqlStatement
+     * @return
+     * @throws Exception 
+     */
+    @Override
+    @Transactional(readOnly = false)
+    public void executeConfigTransportSQL(String sqlStatement) throws Exception {
+	
+	Query query = sessionFactory.getCurrentSession().createSQLQuery(sqlStatement);
+	query.executeUpdate();
+	
     }
 }

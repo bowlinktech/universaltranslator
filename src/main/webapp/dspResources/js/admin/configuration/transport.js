@@ -88,7 +88,7 @@ require(['./main'], function () {
             //Need to make sure all required fields are marked if empty.
             var hasErrors = 0;
             hasErrors = checkFormFields();
-
+	    
             if (hasErrors == 0) {
                 $('#transportDetails').submit();
             }
@@ -289,7 +289,6 @@ function checkFormFields() {
         }
     }
     
-
     if (selMethodId == 1 || selMethodId == 3 || selMethodId == 6 || selMethodId == 8 || selMethodId == 9 || selMethodId == 10  || selMethodId == 11) {
 
 	//Make sure the file size is numeric and greate than 0
@@ -635,30 +634,67 @@ function checkFormFields() {
 	    if(hasErrors != 1) {
 		
 	    }
-	    
 	}
         else if(selMethodId == 12) {
-            
-            if($('#directDomain').val() === "") {
-                $('.directDomainDiv').addClass("has-error");
-		$('#directDomainMsg').addClass("has-error");
-		$('#directDomainMsg').html('This is a required field.');
-		hasErrors = 1;
-            }
-            
-            if($('#dmFindConfig').val() === "") {
-                $('.dmFindConfigDiv').addClass("has-error");
-		$('#dmFindConfigMsg').addClass("has-error");
-		$('#dmFindConfigMsg').html('This is a required field.');
-		hasErrors = 1;
-            }
-            
-            if($('#dmFindConfig').val() == 1 && $('#dmConfigKeyword').val() === "") {
-                $('.dmConfigKeywordDiv').addClass("has-error");
-		$('#dmConfigKeywordMsg').addClass("has-error");
-		$('#dmConfigKeywordMsg').html('This is a required field.');
-		hasErrors = 1;
-            }
+	   
+	    if(type == 1) {
+		if($('#directDomain').val() === "") {
+		    $('.directDomainDiv').addClass("has-error");
+		    $('#directDomainMsg').addClass("has-error");
+		    $('#directDomainMsg').html('This is a required field.');
+		    hasErrors = 1;
+		}
+
+		if($('#dmFindConfig').val() === "") {
+		    $('.dmFindConfigDiv').addClass("has-error");
+		    $('#dmFindConfigMsg').addClass("has-error");
+		    $('#dmFindConfigMsg').html('This is a required field.');
+		    hasErrors = 1;
+		}
+
+		if($('#dmFindConfig').val() == 1 && $('#dmConfigKeyword').val() === "") {
+		    $('.dmConfigKeywordDiv').addClass("has-error");
+		    $('#dmConfigKeywordMsg').addClass("has-error");
+		    $('#dmConfigKeywordMsg').html('This is a required field.');
+		    hasErrors = 1;
+		}
+	    }
+	    else {
+		//Make sure the file type is XML (CCD)
+		if ($('#fileType').val() === "" || $('#fileType').val() != 9) {
+		    $('#fileTypeDiv').addClass("has-error");
+		    $('#fileTypeMsg').addClass("has-error");
+		    $('#fileTypeMsg').html('The file type must be xml (CCD) when sending direct to a hisp.');
+		    hasErrors = 1;
+		}
+		
+		//Make sure the file extension is XML
+		if ($('#fileExt').val() === "" || $('#fileExt').val().toLowerCase() !== "xml") {
+		    $('#fileTypeDiv').addClass("has-error");
+		    $('#fileTypeMsg').addClass("has-error");
+		    $('#fileTypeMsg').html('The file extension must be xml when sending direct to a hisp.');
+		    hasErrors = 1;
+		}
+		
+		
+		//Make sure the CCD Output template is uploaded
+		if($('#ccdSampleTemplate').length > 0) {
+		    if($('#ccdSampleTemplate').val() === "" && $("ccdTemplatefile").val() === "") {
+			$('#ccdDetailsDiv').addClass("has-error");
+			$('#ccdTemplateMsg').addClass("has-error");
+			$('#ccdTemplateMsg').html('The CCDA template file must be uploaded when sending direct to a hisp.');
+			hasErrors = 1;
+		    }
+		}
+		else {
+		    if($("#ccdTemplatefile").val() === "") {
+			$('#ccdDetailsDiv').addClass("has-error");
+			$('#ccdTemplateMsg').addClass("has-error");
+			$('#ccdTemplateMsg').html('The CCDA template file must be uploaded when sending direct to a hisp.');
+			hasErrors = 1;
+		    }
+		}
+	    }
             
         }
     }
