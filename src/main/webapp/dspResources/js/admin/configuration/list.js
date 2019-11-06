@@ -22,7 +22,8 @@ require(['./main'], function () {
 			    '</select>'
 		}
 	    });
-	    sourceconfigdatatable.fnSort([[4, 'desc']]);
+	    targetconfigdatatable.fnSetColumnVis(5,false);
+	    sourceconfigdatatable.fnSort([[5, 'desc']]);
 	}
 	catch(err) {}
 	
@@ -44,7 +45,8 @@ require(['./main'], function () {
 			    '</select>'
 		}
 	    });
-	    targetconfigdatatable.fnSort([[5, 'desc']]);
+	    targetconfigdatatable.fnSetColumnVis(6,false);
+	    targetconfigdatatable.fnSort([[6, 'desc']]);
 	}
 	catch(err) {}
 

@@ -1,0 +1,114 @@
+ALTER TABLE `universaltranslator_local`.`batchuploads` 
+CHANGE COLUMN `senderEmail` `senderEmail` VARCHAR(255) NULL DEFAULT NULL ,
+ADD COLUMN `recipientEmail` VARCHAR(255) NULL DEFAULT NULL AFTER `senderEmail`;
+
+CREATE TABLE `directmessagesout` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `hispId` int(11) NOT NULL,
+  `fromDirectAddress` varchar(255) NOT NULL,
+  `toDirectAddress` varchar(255) NOT NULL,
+  `outputFileName` varchar(255) NOT NULL,
+  `dateCreated` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `statusId` int(11) NOT NULL DEFAULT '1',
+  `batchUploadId` int(11) NOT NULL DEFAULT '0',
+  `batchDownloadId` int(11) NOT NULL DEFAULT '0',
+  `configId` int(11) NOT NULL DEFAULT '0',
+  `orgId` int(11) NOT NULL DEFAULT '0',
+  `responseStatus` int(11) DEFAULT NULL,
+  `responseMessage` varchar(500) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `id_UNIQUE` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=latin1;
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `yyyymmddstripTime`(in configId int, 
+in batchId int, in srcField varchar(10),
+in fieldA varchar(10), in fieldB varchar(10), in con1 varchar(255), 
+in con2 varchar(255), in macroId int, in foroutboundProcessing boolean, in passClear int, in transactionId int)
+proc_main:begin
+
+
+
+call setInboundOutBoundTables (foroutboundProcessing,batchId);
+SELECT 
+    @translatedTable,
+    @transactionTable,
+    @batchTable,
+    @batchIdType, 
+    @errorTable
+INTO @translatedTable , @transactionTable , @batchTable , @batchIdType , @errorTable;
+
+call getFinalStatusIds;
+SELECT @finalStatusIds INTO @finalStatusIds;
+
+if (transactionId = 0) then
+set @stmt = concat("update ", @translatedTable," set ",fieldA," = case when length(replace(replace(", fieldA,",'\n',''),'\r','')) = 17 then substring(", fieldA,",1,8) else substring(", fieldA,",1,10) end where configId = ",configId," and batchUploadId = ",batchId," and statusId not in (",@finalStatusIds,");");
+
+END if;
+
+if (transactionId != 0) then
+set @stmt = concat("update ", @translatedTable," set ",fieldA," = case when length(replace(replace(", fieldA,",'\n',''),'\r','')) = 17 then substring(", fieldA,",1,8) else substring(", fieldA,",1,10) end where ", @transactionTable ,"Id = ",transactionId, ";");
+END if;
+
+
+PREPARE stmt from @stmt;
+EXECUTE stmt;
+
+
+if (passClear = 2) THEN
+BEGIN
+
+END;
+END IF;
+
+SELECT '';
+
+end proc_main
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `yyyymmddToDate`(in configId int, 
+in batchId int, in srcField varchar(10),
+in fieldA varchar(10), in fieldB varchar(10), in con1 varchar(255), 
+in con2 varchar(255), in macroId int, in foroutboundProcessing boolean, in passClear int, in transactionId int)
+proc_main:begin
+
+
+
+call setInboundOutBoundTables (foroutboundProcessing,batchId);
+select @translatedTable, @transactionTable, @batchTable, @batchIdType , @errorTable
+into @translatedTable, @transactionTable, @batchTable, @batchIdType , @errorTable;
+
+call getFinalStatusIds;
+select @finalStatusIds into @finalStatusIds;
+
+
+if (con1 = '') then
+set con1 = '-';
+end if;
+
+if (transactionId = 0) then
+set @stmt = concat("update ", @translatedTable," set ",fieldA,
+" = concat(substring(", fieldA,", 1, 4), '",con1,"', substring(",fieldA,", 5,2), '",con1,"', substring(",fieldA,", 7,2))
+ where  configId = ",configId," and batchUploadId = ",batchId," and statusId not in (",@finalStatusIds,");");
+
+
+END if;
+
+if (transactionId != 0) then
+set @stmt = concat("update ", @translatedTable," set ",fieldA,
+" = concat(substring(", fieldA,", 1, 4), '",con1,"', substring(",fieldA,", 5,2), '",con1,"', substring(",fieldA,", 7,2)) 
+where ", @transactionTable ,"Id = ",transactionId, ";");
+END if;
+
+
+PREPARE stmt from @stmt;
+EXECUTE stmt;
+
+
+if (passClear = 2) THEN
+BEGIN
+
+END;
+END IF;
+
+select '';
+
+end proc_main

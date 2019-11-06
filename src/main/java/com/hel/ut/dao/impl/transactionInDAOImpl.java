@@ -873,7 +873,7 @@ public class transactionInDAOImpl implements transactionInDAO {
 	
 	try {
 	    
-	    String sql = ("CALL universaltranslator." + macro.getFormula() + " (:configId, :batchId, :srcField, "
+	    String sql = ("CALL " + macro.getFormula() + " (:configId, :batchId, :srcField, "
 		    + ":fieldA, :fieldB, :con1, :con2, :macroId, :foroutboundProcessing, :passClear, 0);");
 	    
 	    Query query = sessionFactory.getCurrentSession().createSQLQuery(sql);
@@ -3004,6 +3004,27 @@ public class transactionInDAOImpl implements transactionInDAO {
 	    }
 	} catch (Exception ex) {
 	    System.err.println("getDirectAPIMessagesById " + ex.getCause());
+	    ex.printStackTrace();
+	    return null;
+	}
+	return null;
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    @SuppressWarnings("unchecked")
+    public directmessagesin getDirectAPIMessagesByBatchUploadId(Integer BatchUploadId) {
+	//1 if list of statusId is null, we get all
+	try {
+	    Criteria findDirectAPIMessage = sessionFactory.getCurrentSession().createCriteria(directmessagesin.class);
+	    findDirectAPIMessage.add(Restrictions.eq("batchUploadId", BatchUploadId));
+
+	    List<directmessagesin> directAPIMessages = findDirectAPIMessage.list();
+	    if (!directAPIMessages.isEmpty()) {
+		return directAPIMessages.get(0);
+	    }
+	} catch (Exception ex) {
+	    System.err.println("getDirectAPIMessagesByBatchUploadId " + ex.getCause());
 	    ex.printStackTrace();
 	    return null;
 	}

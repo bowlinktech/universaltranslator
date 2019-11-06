@@ -1042,6 +1042,7 @@ public class restfulManager {
 
     }
 
+    
     public List<RestAPIMessagesIn> getRestAPIMessagesInList(Date fromDate, Date toDate, Integer fetchSize, String batchName) throws Exception {
 	return RestAPIDAO.getRestAPIMessagesInList(fromDate, toDate, fetchSize, batchName);
     }

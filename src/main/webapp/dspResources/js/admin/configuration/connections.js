@@ -11,7 +11,7 @@ require(['./main'], function () {
 	if($("#dataTable" ).length > 0) {
 	    var oSettings = datatable.fnSettings();
         
-	    datatable.fnSort( [ [2,'desc'] ] );
+	    datatable.fnSort( [ [3,'desc'] ] );
 	    
 	}
 	

@@ -36,9 +36,14 @@ import com.hel.ut.model.pendingDeliveryTargets;
 import com.hel.ut.model.systemSummary;
 import com.hel.ut.model.transactionOutRecords;
 import com.hel.ut.model.custom.ConfigOutboundForInsert;
+import com.hel.ut.model.directmessagesout;
+import com.hel.ut.model.hisps;
+import com.hel.ut.model.organizationDirectDetails;
 import com.hel.ut.reference.fileSystem;
+import com.hel.ut.restAPI.directManager;
 import com.hel.ut.restAPI.restfulManager;
 import com.hel.ut.service.fileManager;
+import com.hel.ut.service.hispManager;
 import com.hel.ut.service.organizationManager;
 import com.hel.ut.service.transactionInManager;
 import com.hel.ut.service.transactionOutManager;
@@ -161,6 +166,13 @@ public class transactionOutManagerImpl implements transactionOutManager {
     
     @Autowired
     private submittedMessageManager submittedmessagemanager;
+    
+    @Autowired
+    private hispManager hispManager;
+    
+     @Autowired
+    private directManager directManager;
+
 
     private int processingSysErrorId = 5;
     
@@ -347,7 +359,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
 		Logger.getLogger(transactionOutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
 	    }
 
-	    /* If a CCD file is to be generated */
+	    // If a CCD file is to be generated
 	    if (CCD == true) {
 
 		Organization orgDetails = organizationManager.getOrganizationById(batchDetails.getOrgId());
@@ -371,7 +383,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
 
 			if (!"".equals(element.getDefaultValue())) {
 			    if ("~currDate~".equals(element.getDefaultValue())) {
-				SimpleDateFormat date_format = new SimpleDateFormat("yyyyMMdd");
+				SimpleDateFormat date_format = new SimpleDateFormat("yyyyMMddHms");
 				String date = date_format.format(batchDetails.getDateCreated());
 				contentToUpdate = contentToUpdate.replace(element.getElement(), date);
 			    } else {
@@ -399,10 +411,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
 		    }
 		}
 
-		/**
-		 * need to see if we need to encrypt file here
-		 *
-		 */
+		// need to see if we need to encrypt file here
 		if (!encrypt) {
 		    Files.write(newFilePath, contentToUpdate.getBytes());
 		} else {
@@ -2076,12 +2085,35 @@ public class transactionOutManagerImpl implements transactionOutManager {
 		method.invoke(restfulManager, batchDownload.getId(), transportDetails);
 
 	    }
+	    // REST API VIA DIRECT
+	    else if (transportDetails.gettransportMethodId() == 12) {
+
+		//we need to update our totals
+		transactionInManager.updateRecordCounts(batchDownload.getId(), rejectIds, true, "totalErrorCount");
+		transactionInManager.updateRecordCounts(batchDownload.getId(), new ArrayList<Integer>(), true, "totalRecordCount");
+		
+		organizationDirectDetails directDetails = configurationTransportManager.getDirectMessagingDetailsById(configDetails.getorgId());
+		
+		String methodName = "";
+		
+		if(directDetails != null) {
+		    hisps hispDetails = hispManager.getHispById(directDetails.getHispId());
+		    
+		    methodName = "senddirectOut"+hispDetails.getHispName().toLowerCase().replaceAll(" ","");
+		    Class<?>[] paramTypes = {int.class, configurationTransport.class};
+		    Method method = directManager.getClass().getMethod(methodName, paramTypes);
+		    method.invoke(directManager, batchDownload.getId(), transportDetails, hispDetails);
+		}
+		else {
+		     updateTargetBatchStatus(batchDownload.getId(), 58, "endDateTime");
+		}
+	    }
 
 	    //now we delete massoutput file
 	    massOutFile.delete();
 	}
 
-	if (transportDetails.gettransportMethodId() != 9) {
+	if (transportDetails.gettransportMethodId() != 9 && transportDetails.gettransportMethodId() != 12) {
 	    //restful manager already took care of status
 
 	    //we need to update our totals
@@ -2493,5 +2525,10 @@ public class transactionOutManagerImpl implements transactionOutManager {
     @Override
     public List<batchDownloads> getAllSentBatchesPaged(Date fromDate, Date toDate, Integer displayStart, Integer displayRecords, String searchTerm, String sortColumnName, String sortDirection) throws Exception {
 	return transactionOutDAO.getAllSentBatchesPaged(fromDate,toDate, displayStart, displayRecords, searchTerm, sortColumnName, sortDirection);
+    }
+    
+    @Override
+    public void insertDMMessage(directmessagesout newDirectMessageOut) throws Exception {
+        transactionOutDAO.insertDMMessage(newDirectMessageOut);
     }
 }

@@ -67,3 +67,4 @@
     </div>
 </div>
 <div class="modal fade" id="statusModal" role="dialog" tabindex="-1" aria-labeledby="Status Details" aria-hidden="true" aria-describedby="Status Details"></div>
+<div class="modal fade" id="directModal" role="dialog" tabindex="-1" aria-labeledby="Direct Message Details" aria-hidden="true" aria-describedby="Direct Message Details"></div>

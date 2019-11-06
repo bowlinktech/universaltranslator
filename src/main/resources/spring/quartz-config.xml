@@ -135,7 +135,7 @@
 	</trigger>
     </schedule>
     
-     <schedule>
+      <!--<schedule>
         <job>
             <name>ProcessDirectAPIMessages</name>
             <group>processGroup</group>
@@ -151,7 +151,7 @@
 		<cron-expression>0 0/2 * 1/1 * ? *</cron-expression>
 	    </cron>
 	</trigger>
-    </schedule>
+    </schedule>-->
     
     <schedule>
         <job>

@@ -16,6 +16,7 @@ import com.hel.ut.model.configurationFormFields;
 import com.hel.ut.model.configurationSchedules;
 import com.hel.ut.model.configurationTransport;
 import com.hel.ut.model.custom.ConfigOutboundForInsert;
+import com.hel.ut.model.directmessagesout;
 import com.hel.ut.model.targetOutputRunLogs;
 import com.hel.ut.model.transactionOutRecords;
 import com.hel.ut.service.sysAdminManager;
@@ -1364,4 +1365,11 @@ public class transactionOutDAOImpl implements transactionOutDAO {
         return batchSentMessages;
 
     }
+    
+    @Override
+    @Transactional(readOnly = false)
+    public void insertDMMessage(directmessagesout newDirectMessageOut) throws Exception {
+	sessionFactory.getCurrentSession().save(newDirectMessageOut);
+    }
+    
 }

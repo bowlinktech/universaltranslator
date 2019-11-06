@@ -1233,7 +1233,20 @@ public class transactionInManagerImpl implements transactionInManager {
 		    }
 
 		    if (processFileName.endsWith(".xml")) {
-			newfilename = ccdtotxt.TranslateCCDtoTxt(decodedFilePath, decodedFileName, batch.getOrgId(), batch.getConfigId());
+			
+			String targetOrgName = "";
+			
+			//Check if the source transport method is direct
+			if(batch.getTransportMethodId() == 12) {
+			    directmessagesin directDetails = transactionInDAO.getDirectAPIMessagesByBatchUploadId(batch.getId());
+			    
+			    if(directDetails != null) {
+				targetOrgName = directDetails.getToDirectAddress();
+			    }
+			}
+			
+			newfilename = ccdtotxt.TranslateCCDtoTxt(decodedFilePath, decodedFileName, batch.getOrgId(), batch.getConfigId(), targetOrgName);
+			
 			if (newfilename.equals("ERRORERRORERROR")) {
 			    updateBatchStatus(batchId, 39, "endDateTime");
 			    insertProcessingError(5, null, batchId, null, null, null, null, false, false, "Error at applying jar template");
@@ -4141,7 +4154,7 @@ public class transactionInManagerImpl implements transactionInManager {
 
 	try {
 	    List<directmessagesin> directMessageList = getDirectAPIMessagesByStatusId(Arrays.asList(1));
-
+	    
 	    if (directMessageList != null) {
 		
 		//Parallel processing of batches
@@ -4186,6 +4199,11 @@ public class transactionInManagerImpl implements transactionInManager {
     public directmessagesin getDirectAPIMessagesById(Integer directMessageId) {
 	return transactionInDAO.getDirectAPIMessagesById(directMessageId);
     }
+    
+    @Override
+    public directmessagesin getDirectAPIMessagesByBatchUploadId(Integer BatchUploadId) {
+	return transactionInDAO.getDirectAPIMessagesByBatchUploadId(BatchUploadId);
+    }
 
     /**
      * this will process each rest api message, it should be less intensive if we treat it like a file upload instead of file drop At the end of this, file should be written to input folder, it should be SSA or SRJ and logged
@@ -4208,7 +4226,7 @@ public class transactionInManagerImpl implements transactionInManager {
 	    Integer encodingId = 1;
 	    Integer batchId = 0;
 	    Integer errorId = 0;
-	    Integer fileSize = 0;
+	    Integer maxfileSize = 0;
 	    Integer statusId = 0;
 	    Integer configId = directMessage.getConfigId();
 
@@ -4221,6 +4239,7 @@ public class transactionInManagerImpl implements transactionInManager {
 	    batchInfo.setConfigId(configId);
 	    batchInfo.setOriginalFileName(directMessage.getReferralFileName());
 	    batchInfo.setSenderEmail(directMessage.getFromDirectAddress());
+	    batchInfo.setRecipientEmail(directMessage.getToDirectAddress());
 
 	    Organization orgDetails = organizationmanager.getOrganizationById(directMessage.getOrgId());
 	    String writeToFolder = myProps.getProperty("ut.directory.utRootDir") + orgDetails.getcleanURL() + "/input files/";
@@ -4259,7 +4278,7 @@ public class transactionInManagerImpl implements transactionInManager {
 		fileExt = "." + ct.getfileExt();
 		writeToFolder = ct.getfileLocation();
 		fileNamePath = writeToFolder + batchName + fileExt;
-		fileSize = ct.getmaxFileSize();
+		maxfileSize = ct.getmaxFileSize();
 
 		batchInfo.setContainsHeaderRow(ct.getContainsHeaderRow());
 		batchInfo.setDelimChar(ct.getDelimChar());
@@ -4304,9 +4323,11 @@ public class transactionInManagerImpl implements transactionInManager {
 		    }
 		    //check file size
 		    if (statusId == 2) {
-			long maxFileSize = fileSize * 1000000;
-
-			if (Files.size(file.toPath()) > maxFileSize) {
+			double uploadedFileSizeInBytes = file.length();
+			double uploadedFileSizeInKB = (uploadedFileSizeInBytes / 1024);
+			double uploadedFileSizeInMB = (uploadedFileSizeInKB / 1024);
+			
+			if (uploadedFileSizeInMB > maxfileSize) {
 			    statusId = 7;
 			    errorId = 12;
 			}

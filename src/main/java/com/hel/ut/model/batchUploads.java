@@ -104,6 +104,10 @@ public class batchUploads {
     @NoHtml
     @Column(name = "senderEmail", nullable = false)
     private String senderEmail;
+    
+    @NoHtml
+    @Column(name = "recipientEmail", nullable = false)
+    private String recipientEmail;
 
     public Integer getTotalTransactions() {
 	return totalTransactions;
@@ -441,5 +445,12 @@ public class batchUploads {
 	this.endUserDisplayText = endUserDisplayText;
     }
 
-    
+    public String getRecipientEmail() {
+	return recipientEmail;
+    }
+
+    public void setRecipientEmail(String recipientEmail) {
+	this.recipientEmail = recipientEmail;
+    }
+
 }

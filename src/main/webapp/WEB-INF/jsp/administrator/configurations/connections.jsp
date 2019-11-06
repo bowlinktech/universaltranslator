@@ -34,6 +34,7 @@
                                     <th scope="col">Source Details</th>
                                     <th scope="col">Target Details</th>
                                     <th scope="col" class="center-text">Date Created</th>
+				    <th scope="col" style="display:none"></th>
                                     <th scope="col" class="center-text">Status</th>
                                     <th scope="col" class="center-text"></th>
                                 </tr>
@@ -58,6 +59,7 @@
 						Transport Method: <strong>${connection.tgtConfigDetails.gettransportMethod()}</strong>
                                             </td>
                                             <td class="center-text"><fmt:formatDate value="${connection.dateCreated}" type="date" pattern="M/dd/yyyy" /></td>
+					    <td class="center-text" style="display:none">${connection.dateCreated}</td>
                                             <td class="center-text actions-col">
                                                 <c:choose>
                                                     <c:when test="${connection.status == true}">

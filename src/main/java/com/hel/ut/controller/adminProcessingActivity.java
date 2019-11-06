@@ -26,6 +26,7 @@ import com.hel.ut.model.wsMessagesOut;
 import com.hel.ut.model.custom.TableData;
 import com.hel.ut.model.custom.batchErrorSummary;
 import com.hel.ut.model.custom.searchParameters;
+import com.hel.ut.model.directmessagesin;
 import com.hel.ut.model.fieldSelectOptions;
 import com.hel.ut.model.lutables.lu_ProcessStatus;
 import com.hel.ut.model.referralActivityExports;
@@ -3034,4 +3035,24 @@ public class adminProcessingActivity {
         return true;
     }
     
+    
+    /**
+     * The '/viewDirectDetails{batchUploadId}' function will return the details of the selected batch uploaded message received from a HISP via DIRECT. The results will be displayed in the overlay.
+     *
+     * @Param	batchUploadId This will hold the id of the selected batch uploaded message
+     *
+     * @Return	This function will return the direct details view.
+     */
+    @RequestMapping(value = "/viewDirectDetails{batchUploadId}", method = RequestMethod.GET)
+    public @ResponseBody
+    ModelAndView viewDirectDetails(@PathVariable int batchUploadId) throws Exception {
+
+        ModelAndView mav = new ModelAndView();
+        mav.setViewName("/administrator/processing-activities/directHISPDetails");
+
+        directmessagesin directMessageDetails = transactionInManager.getDirectAPIMessagesById(batchUploadId);
+	mav.addObject("directMessageDetails",directMessageDetails);
+
+        return mav;
+    }
 }

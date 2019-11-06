@@ -23,6 +23,17 @@ require(['./main'], function () {
                 }
             });
         });
+	
+	//Function to display the details of the selected batch received from a direct HISP
+	$(document).on('click', '.viewDirectDetails', function () {
+            $.ajax({
+                url: '/administrator/processing-activity/viewDirectDetails' + $(this).attr('rel'),
+                type: "GET",
+                success: function (data) {
+                    $("#directModal").html(data);
+                }
+            });
+        });
 
         $(document).on('click', '.deleteTransactions', function() {
             
@@ -144,6 +155,9 @@ function populateMessages(fromDate,toDate) {
 		"render": function ( data, type, row, meta ) {
 		    if(data ==='Rest API') {
 			return '<a href="/administrator/processing-activity/apimessages/'+row.utBatchName+'" title="View Rest API Message">'+data+'</a>';
+		    }
+		    else if (data === 'Direct Message from HISP') {
+			return '<a href="#directModal" data-toggle="modal" class="viewDirectDetails" rel="'+row.id+'" title="View Direct Message Details">'+data+'</a>';
 		    }
 		    else {
 			return data;

@@ -39,8 +39,8 @@ public class CCDtoTxt {
     @Autowired
     private utConfigurationTransportManager configurationTransportManager;
 
-    public String TranslateCCDtoTxt(String fileLocation, String ccdFileName, int orgId, int configId) throws Exception {
-
+    public String TranslateCCDtoTxt(String fileLocation, String ccdFileName, int orgId, int configId, String targetOrgName) throws Exception {
+	
         Organization orgDetails = organizationmanager.getOrganizationById(orgId);
 	
 	String directory = myProps.getProperty("ut.directory.utRootDir") + orgDetails.getcleanURL() + "/templates/";
@@ -72,13 +72,21 @@ public class CCDtoTxt {
 	    
 	    URLClassLoader loader = new URLClassLoader(new URL[]{new URL("file://" + directory + templatefileName)});
 	    
+	    Class cls = null;
+	    
 	    // Remove the .class extension
-	    Class cls = loader.loadClass(templatefileName.substring(0, templatefileName.lastIndexOf('.')));
+	    try {
+		cls = loader.loadClass(templatefileName.substring(0, templatefileName.lastIndexOf('.')));
+	    }
+	    catch (Exception ex) {
+		ex.printStackTrace();
+	    }
+	    
 	    Constructor constructor = cls.getConstructor();
-
+	    
 	    Object CCDObj = constructor.newInstance();
-
-	    Method myMethod = cls.getMethod("CCDtoTxt", new Class[]{File.class});
+	    
+	    Method myMethod = cls.getMethod("CCDtoTxt", new Class[]{File.class, String.class});
 	    
 	    /* Get the uploaded CCD File */
 	    fileLocation = fileLocation.replace("/Applications/HELProductSuite/universalTranslator/", "").replace("/home/HELProductSuite/universalTranslator/", "").replace("/HELProductSuite/universalTranslator/", "");
@@ -117,12 +125,12 @@ public class CCDtoTxt {
 
 	    try {
 		FileWriter fw = new FileWriter(newFile, true);
-
-		/* END */
-		String fileRecords = (String) myMethod.invoke(CCDObj, new Object[]{ccdFile});
+		
+		String fileRecords = (String) myMethod.invoke(CCDObj, new Object[]{ccdFile, targetOrgName});
 		if (fileRecords.equalsIgnoreCase("")) {
 		    newfileName = "FILE IS NOT XML ERROR";
 		}
+		
 		fw.write(fileRecords);
 
 		fw.close();

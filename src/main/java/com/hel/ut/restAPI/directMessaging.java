@@ -194,7 +194,11 @@ public class directMessaging {
                                                         Integer newDMMessageID = transactionInManager.insertDMMessage(newDirectMessageIn);
 				
                                                         if(newDMMessageID > 0 && statusId == 1) {
+							    //Call the method to start processing this message immediately
+							    transactionInManager.processDirectAPIMessages();
+							    
                                                             return new ResponseEntity("Successfully received and processed your message.", HttpStatus.OK);
+							    
                                                         }
                                                         else {
                                                             return new ResponseEntity("Failed to process your message.", HttpStatus.EXPECTATION_FAILED);
