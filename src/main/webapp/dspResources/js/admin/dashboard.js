@@ -125,7 +125,6 @@ function getInboundMessages() {
 		$(row).attr('data-html', 'true');
 		$(row).attr('title', 'File Status');
 
-
 		if(data.statusId == 23 || data.statusId == 24) {
 		    if(data.errorRecordCount == data.totalRecordCount) {
 			$(row).addClass('table-danger');
@@ -178,7 +177,7 @@ function getInboundMessages() {
 		"defaultContent": "",
 		"bSortable":true,
 		"sWidth": "10%",
-		"className": "center-text table-success",
+		"className": "center-text",
 		"render": function ( data, type, row, meta ) {
 		    var dateC = new Date(data);
 		    var minutes = dateC.getMinutes();
