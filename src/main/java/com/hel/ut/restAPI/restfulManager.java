@@ -134,12 +134,12 @@ public class restfulManager {
 
 	    String fileName = null;
 
-	    int findExt = batchFileInfo.getoutputFileName().lastIndexOf(".");
+	    int findExt = batchFileInfo.getOutputFileName().lastIndexOf(".");
 
 	    if (findExt >= 0) {
-		fileName = batchFileInfo.getoutputFileName();
+		fileName = batchFileInfo.getOutputFileName();
 	    } else {
-		fileName = new StringBuilder().append(batchFileInfo.getoutputFileName()).append(".").append(transportDetails.getfileExt()).toString();
+		fileName = new StringBuilder().append(batchFileInfo.getOutputFileName()).append(".").append(transportDetails.getfileExt()).toString();
 	    }
 	    
 	    //Submit the restAPImessageOut
@@ -285,7 +285,7 @@ public class restfulManager {
 
 				message = message + "<br/><br/>Sending Organization: " + sendingOrgName;
 
-				message = message + "<br/><br/>Total Transactions: " + batchFileInfo.gettotalRecordCount();
+				message = message + "<br/><br/>Total Transactions: " + batchFileInfo.getTotalRecordCount();
 
 				if (!"".equals(responseMessage)) {
 				    message = message + "<br/><br/>API Response Message: " + responseMessage;
@@ -433,12 +433,12 @@ public class restfulManager {
 
 	    String fileName = null;
 
-	    int findExt = batchFileInfo.getoutputFileName().lastIndexOf(".");
+	    int findExt = batchFileInfo.getOutputFileName().lastIndexOf(".");
 
 	    if (findExt >= 0) {
-		fileName = batchFileInfo.getoutputFileName();
+		fileName = batchFileInfo.getOutputFileName();
 	    } else {
-		fileName = new StringBuilder().append(batchFileInfo.getoutputFileName()).append(".").append(transportDetails.getfileExt()).toString();
+		fileName = new StringBuilder().append(batchFileInfo.getOutputFileName()).append(".").append(transportDetails.getfileExt()).toString();
 	    }
 
 	    String filelocation = transportDetails.getfileLocation();
@@ -628,7 +628,7 @@ public class restfulManager {
 
 				message = message + "<br/><br/>Sending Organization: " + sendingOrgName;
 
-				message = message + "<br/><br/>Total Transactions: " + batchFileInfo.gettotalRecordCount();
+				message = message + "<br/><br/>Total Transactions: " + batchFileInfo.getTotalRecordCount();
 
 				if (!"".equals(responseMessage)) {
 				    message = message + "<br/><br/>API Response Message: " + responseMessage;
@@ -777,12 +777,12 @@ public class restfulManager {
 
 	    String fileName = null;
 
-	    int findExt = batchFileInfo.getoutputFileName().lastIndexOf(".");
+	    int findExt = batchFileInfo.getOutputFileName().lastIndexOf(".");
 
 	    if (findExt >= 0) {
-		fileName = batchFileInfo.getoutputFileName();
+		fileName = batchFileInfo.getOutputFileName();
 	    } else {
-		fileName = new StringBuilder().append(batchFileInfo.getoutputFileName()).append(".").append(transportDetails.getfileExt()).toString();
+		fileName = new StringBuilder().append(batchFileInfo.getOutputFileName()).append(".").append(transportDetails.getfileExt()).toString();
 	    }
 	    
 	    //Submit the restAPImessageOut
@@ -925,7 +925,7 @@ public class restfulManager {
 
 				message = message + "<br/><br/>Sending Organization: " + sendingOrgName;
 
-				message = message + "<br/><br/>Total Transactions: " + batchFileInfo.gettotalRecordCount();
+				message = message + "<br/><br/>Total Transactions: " + batchFileInfo.getTotalRecordCount();
 
 				if (!"".equals(responseMessage)) {
 				    message = message + "<br/><br/>API Response Message: " + responseMessage;
@@ -1042,6 +1042,7 @@ public class restfulManager {
 
     }
 
+    
     public List<RestAPIMessagesIn> getRestAPIMessagesInList(Date fromDate, Date toDate, Integer fetchSize, String batchName) throws Exception {
 	return RestAPIDAO.getRestAPIMessagesInList(fromDate, toDate, fetchSize, batchName);
     }
@@ -1060,6 +1061,14 @@ public class restfulManager {
 
     public RestAPIMessagesOut getRestAPIMessagesOut(Integer messageId) throws Exception {
 	return RestAPIDAO.getRestAPIMessagesOut(messageId);
+    }
+    
+    public List<RestAPIMessagesIn> getRestAPIMessagesInListPaged(Date fromDate, Date toDate, Integer displayStart, Integer displayRecords, String searchTerm, String sortColumnName, String sortDirection) throws Exception {
+	return RestAPIDAO.getRestAPIMessagesInListPaged(fromDate,toDate,displayStart,displayRecords,searchTerm,sortColumnName,sortDirection);
+    }
+
+    public List<RestAPIMessagesOut> getRestAPIMessagesOutListPaged(Date fromDate, Date toDate, Integer displayStart, Integer displayRecords, String searchTerm, String sortColumnName, String sortDirection) throws Exception {
+	return RestAPIDAO.getRestAPIMessagesOutListPaged(fromDate,toDate,displayStart,displayRecords,searchTerm,sortColumnName,sortDirection);
     }
 
 }

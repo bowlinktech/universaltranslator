@@ -677,8 +677,8 @@
         <put-attribute name="page-section" value="section-processing" />
         <put-attribute name="title" value="Administrator - Processing Activities" />
         <put-attribute name="header" value="/WEB-INF/jsp/common/adminHeader.jsp?sect=activity" />
-        <put-attribute name="actions" value="/WEB-INF/jsp/administrator/processing-activities/actionBar.jsp?page=apimessages" />
-        <put-attribute name="menu" value="/WEB-INF/jsp/administrator/processing-activities/menu.jsp?page=apimessages" />
+        <put-attribute name="actions" value="/WEB-INF/jsp/administrator/processing-activities/actionBar.jsp?page=apimessagesout" />
+        <put-attribute name="menu" value="/WEB-INF/jsp/administrator/processing-activities/menu.jsp?page=apimessagesout" />
         <put-attribute name="body" value="/WEB-INF/jsp/administrator/processing-activities/apimessagesOut.jsp" />
         <put-attribute name="jscript" value="/dspResources/js/admin/processing-activities/apimessagesOut.js" />
     </definition>

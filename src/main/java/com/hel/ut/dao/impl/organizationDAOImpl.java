@@ -20,6 +20,7 @@ import java.util.Properties;
 import javax.annotation.Resource;
 import org.hibernate.criterion.Order;
 import org.hibernate.exception.SQLGrammarException;
+import org.hibernate.transform.Transformers;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
@@ -385,6 +386,57 @@ public class organizationDAOImpl implements organizationDAO {
 
         return orgs.list();
 
+    }
+    
+    /**
+     * 
+     * @param displayStart
+     * @param displayRecords
+     * @param searchTerm
+     * @param sortColumnName
+     * @param sortDirection
+     * @return
+     * @throws Exception 
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public List<Organization> getOrganizationsPaged(Integer displayStart, Integer displayRecords, String searchTerm, String sortColumnName, String sortDirection) throws Exception {
+        
+	
+	String query = "select id, orgName, address, address2, city, state, postalCode, fax, phone, dateCreated, cleanURL, orgType, helRegistryId, organizationType "
+	    + "FROM (select id, orgName, address, address2, city, state, postalCode, fax, phone, dateCreated, cleanURL, orgType, helRegistryId, "
+	    + "CASE WHEN orgType = 1 THEN 'Health Care Provider' "
+		 + "WHEN orgType = 2 THEN 'Community Based Organization' "
+		 + "WHEN orgType = 3 THEN 'Health Management Information System' "
+		 + "WHEN orgType = 4 THEN 'Data Warehouse' "
+		 + "ELSE 'Internal Health-e-link Registry' "
+	    + "END AS organizationType "
+	    + "from organizations) as orgs where cleanURL <> '' ";
+	
+	if(!"".equals(searchTerm)){
+	    query += " and ("
+	    + "address like '%"+searchTerm+"%' "
+	    + "OR address2 like '%"+searchTerm+"%' "
+	    + "OR city like '%"+searchTerm+"%' "
+	    + "OR state like '%"+searchTerm+"%' "
+	    + "OR postalCode like '%"+searchTerm+"%' "
+	    + "OR dateCreated like '%"+searchTerm+"%' "
+	    + "OR orgName like '%"+searchTerm+"%'"
+	    + "OR organizationType like '%"+searchTerm+"%'"
+	    + ") ";
+	}	
+		
+        query += "order by "+sortColumnName+" "+sortDirection;
+        query += " limit :displayStart , :displayRecords";
+	
+        Query q1 = sessionFactory.getCurrentSession().createSQLQuery(query);
+        
+        q1.setParameter("displayStart", displayStart);
+        q1.setParameter("displayRecords", displayRecords);
+	
+        q1.setResultTransformer(Transformers.aliasToBean(Organization.class));
+
+        return q1.list();
     }
 
 }

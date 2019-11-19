@@ -36,9 +36,14 @@ import com.hel.ut.model.pendingDeliveryTargets;
 import com.hel.ut.model.systemSummary;
 import com.hel.ut.model.transactionOutRecords;
 import com.hel.ut.model.custom.ConfigOutboundForInsert;
+import com.hel.ut.model.directmessagesout;
+import com.hel.ut.model.hisps;
+import com.hel.ut.model.organizationDirectDetails;
 import com.hel.ut.reference.fileSystem;
+import com.hel.ut.restAPI.directManager;
 import com.hel.ut.restAPI.restfulManager;
 import com.hel.ut.service.fileManager;
+import com.hel.ut.service.hispManager;
 import com.hel.ut.service.organizationManager;
 import com.hel.ut.service.transactionInManager;
 import com.hel.ut.service.transactionOutManager;
@@ -161,6 +166,13 @@ public class transactionOutManagerImpl implements transactionOutManager {
     
     @Autowired
     private submittedMessageManager submittedmessagemanager;
+    
+    @Autowired
+    private hispManager hispManager;
+    
+     @Autowired
+    private directManager directManager;
+
 
     private int processingSysErrorId = 5;
     
@@ -285,12 +297,12 @@ public class transactionOutManagerImpl implements transactionOutManager {
 	    json = true;
 	}
 
-	int findExt = batchDetails.getoutputFileName().lastIndexOf(".");
+	int findExt = batchDetails.getOutputFileName().lastIndexOf(".");
 
 	if (findExt >= 0) {
-	    fileName = batchDetails.getoutputFileName();
+	    fileName = batchDetails.getOutputFileName();
 	} else {
-	    fileName = new StringBuilder().append(batchDetails.getoutputFileName()).append(".").append(transportDetails.getfileExt()).toString();
+	    fileName = new StringBuilder().append(batchDetails.getOutputFileName()).append(".").append(transportDetails.getfileExt()).toString();
 	}
 
 	File newFile = new File(directory + fileName);
@@ -347,7 +359,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
 		Logger.getLogger(transactionOutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
 	    }
 
-	    /* If a CCD file is to be generated */
+	    // If a CCD file is to be generated
 	    if (CCD == true) {
 
 		Organization orgDetails = organizationManager.getOrganizationById(batchDetails.getOrgId());
@@ -371,8 +383,8 @@ public class transactionOutManagerImpl implements transactionOutManager {
 
 			if (!"".equals(element.getDefaultValue())) {
 			    if ("~currDate~".equals(element.getDefaultValue())) {
-				SimpleDateFormat date_format = new SimpleDateFormat("yyyyMMdd");
-				String date = date_format.format(batchDetails.getdateCreated());
+				SimpleDateFormat date_format = new SimpleDateFormat("yyyyMMddHms");
+				String date = date_format.format(batchDetails.getDateCreated());
 				contentToUpdate = contentToUpdate.replace(element.getElement(), date);
 			    } else {
 				contentToUpdate = contentToUpdate.replace(element.getElement(), element.getDefaultValue());
@@ -399,10 +411,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
 		    }
 		}
 
-		/**
-		 * need to see if we need to encrypt file here
-		 *
-		 */
+		// need to see if we need to encrypt file here
 		if (!encrypt) {
 		    Files.write(newFilePath, contentToUpdate.getBytes());
 		} else {
@@ -469,7 +478,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
 
 							if ("~currDate~".equals(CCDelement.getDefaultValue())) {
 							    SimpleDateFormat date_format = new SimpleDateFormat("yyyyMMdd");
-							    String date = date_format.format(batchDetails.getdateCreated());
+							    String date = date_format.format(batchDetails.getDateCreated());
 
 							    map1.put(new DataFieldName(elementName), date);
 
@@ -556,7 +565,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
 						    if (!"".equals(CCDelement.getDefaultValue())) {
 							if ("~currDate~".equals(CCDelement.getDefaultValue())) {
 							    SimpleDateFormat date_format = new SimpleDateFormat("yyyyMMdd");
-							    String date = date_format.format(batchDetails.getdateCreated());
+							    String date = date_format.format(batchDetails.getDateCreated());
 							    contentToUpdate = contentToUpdate.replace(CCDelement.getElement(), date);
 							} else {
 							    contentToUpdate = contentToUpdate.replace(CCDelement.getElement(), CCDelement.getDefaultValue());
@@ -641,7 +650,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
 					if (!"".equals(element.getdefaultValue()) && element.getdefaultValue() != null) {
 					    if ("~currDate~".equals(element.getdefaultValue())) {
 						SimpleDateFormat date_format = new SimpleDateFormat("yyyyMMdd");
-						String date = date_format.format(batchDetails.getdateCreated());
+						String date = date_format.format(batchDetails.getDateCreated());
 						hl7recordRow.append(date);
 					    } else {
 						hl7recordRow.append(element.getdefaultValue());
@@ -1500,7 +1509,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
 	DateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmssS");
 
 	String batchName = "";
-	String sourceFileName = batchUploadDetails.getoriginalFileName();
+	String sourceFileName = batchUploadDetails.getOriginalFileName();
 	
 	if (transportDetails.gettargetFileName() == null) {
 	    // Create the batch name (OrgId+MessageTypeId)
@@ -1611,14 +1620,14 @@ public class transactionOutManagerImpl implements transactionOutManager {
 	    for (batchDownloads runningOutputBatch : batchInProcess) {
 		batchDownloads stuckBatchDetails = getBatchDetails(runningOutputBatch.getId());
 
-		d1 = LocalDateTime.ofInstant(stuckBatchDetails.getstartDateTime().toInstant(), ZoneId.systemDefault());
+		d1 = LocalDateTime.ofInstant(stuckBatchDetails.getStartDateTime().toInstant(), ZoneId.systemDefault());
 		d2 = LocalDateTime.now();
 
 		diffHours = java.time.Duration.between(d1, d2).toHours();
 
 		boolean retry = false;
 		//we check the status, if 30, we retry right away
-		if (stuckBatchDetails.getstatusId() == 30) {
+		if (stuckBatchDetails.getStatusId() == 30) {
 		    retry = true;
 		} else if (diffHours >= 1) {
 		    retry = true;
@@ -1631,7 +1640,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
 		    //see if this batch has been retried
 		    batchDLRetry br = getBatchDLRetryByDownloadId(stuckBatchDetails.getId(), 4);
 		    String subject = "Retrying DL Batch - processMassOutputBatches";
-		    String msgBody = "Download Batch " + stuckBatchDetails.getId() + " (" + stuckBatchDetails.getutBatchName() + ") will be retried.";
+		    String msgBody = "Download Batch " + stuckBatchDetails.getId() + " (" + stuckBatchDetails.getUtBatchName() + ") will be retried.";
 		    if (br == null) {
 			//we retry this batch
 			br = new batchDLRetry();
@@ -1671,7 +1680,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
 			    System.err.println("Set DL Batch (Id: " + stuckBatchDetails.getId() + ") - insert user log " + ex.toString());
 			}
 			subject = "Batch set to Need to Review - processMassOutput ";
-			msgBody = "Batch " + stuckBatchDetails.getId() + " (" + stuckBatchDetails.getutBatchName() + ") needs to be reviewed.";
+			msgBody = "Batch " + stuckBatchDetails.getId() + " (" + stuckBatchDetails.getUtBatchName() + ") needs to be reviewed.";
 			//58
 			updateTargetBatchStatus(stuckBatchDetails.getId(), 58, "endDateTime");
 		    }
@@ -1684,7 +1693,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
 		    StringBuilder emailBody = new StringBuilder();
 		    emailBody.append("<br/>Current Time " + d2.toString());
 		    emailBody.append("<br/><br/>" + msgBody);
-		    emailBody.append("<br/><br/>" + batchInProcess.size() + " download batch(es) with status " + batchInProcess.get(0).getstatusId() + " in queue.<br/>");
+		    emailBody.append("<br/><br/>" + batchInProcess.size() + " download batch(es) with status " + batchInProcess.get(0).getStatusId() + " in queue.<br/>");
 		    mail.setmessageBody(emailBody.toString());
 		    emailMessageManager.sendEmail(mail);
 		}
@@ -1826,7 +1835,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
 	     //mysql is the fastest way to output a file, but the permissions are tricky we write 
 	     //to massoutfiles where both tomcat and mysql has permission. 
 	     //Then we can create, copy and delete
-	    File massOutFile = new File(myProps.getProperty("ut.directory.massOutputPath") + batchDownload.getutBatchName() + "." + fileExt);
+	    File massOutFile = new File(myProps.getProperty("ut.directory.massOutputPath") + batchDownload.getUtBatchName() + "." + fileExt);
 
 	    //check to see if file is there, if so remove old file
 	    if (massOutFile.exists()) {
@@ -1856,7 +1865,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
 		    Path path = Paths.get(myProps.getProperty("ut.directory.utRootDir") + orgDetails.getcleanURL() + "/templates/" + ccdSampleTemplate);
 		    String ccdSampleContent = new String(Files.readAllBytes(path));
 
-		    Path newFilePath = Paths.get(myProps.getProperty("ut.directory.massOutputPath") + batchDownload.getutBatchName() + "." + fileExt);
+		    Path newFilePath = Paths.get(myProps.getProperty("ut.directory.massOutputPath") + batchDownload.getUtBatchName() + "." + fileExt);
 
 		    Files.write(newFilePath, ccdSampleContent.getBytes());
 
@@ -1945,7 +1954,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
 		}
 
 	    } else {
-		Integer writeOutCome = writeOutputToTextFile(transportDetails, batchDownload.getId(), myProps.getProperty("ut.directory.massOutputPath") + batchDownload.getutBatchName() + "." + fileExt, configFields);
+		Integer writeOutCome = writeOutputToTextFile(transportDetails, batchDownload.getId(), myProps.getProperty("ut.directory.massOutputPath") + batchDownload.getUtBatchName() + "." + fileExt, configFields);
 	    }
 
 	    if (!massOutFile.exists()) {
@@ -1959,7 +1968,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
 	    }
 
 	    //cp file to archiveOut and correct putput folder
-	    File archiveFile = new File(myProps.getProperty("ut.directory.utRootDir") + "archivesOut/" + batchDownload.getutBatchName() + "." + fileExt);
+	    File archiveFile = new File(myProps.getProperty("ut.directory.utRootDir") + "archivesOut/" + batchDownload.getUtBatchName() + "." + fileExt);
 
 	    //at this point, message it not encrypted
 	    //we always encrypt the archive file
@@ -1993,18 +2002,18 @@ public class transactionOutManagerImpl implements transactionOutManager {
 			String registryFolderName = registryDetails.getRegistryName().toLowerCase().replaceAll(" ","-");
 			
 			
-			File targetFile = new File(myProps.getProperty("registry.directory.path") + registryFolderName + "/loadFiles/" + batchDownload.getutBatchName() + "." + fileExt);
+			File targetFile = new File(myProps.getProperty("registry.directory.path") + registryFolderName + "/loadFiles/" + batchDownload.getUtBatchName() + "." + fileExt);
 			Files.copy(archiveFile.toPath(), targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
 			
 			//Check to see if a submitted message entry was made, if not we need to create one.
-			submittedMessage existingRegistrySubmittedMessage = submittedmessagemanager.getSubmittedMessageBySQL(registryDetails.getDbschemaname(),batchUploadDetails.getoriginalFileName());
+			submittedMessage existingRegistrySubmittedMessage = submittedmessagemanager.getSubmittedMessageBySQL(registryDetails.getDbschemaname(),batchUploadDetails.getOriginalFileName());
 			
 			boolean createSubmittedMessage = false;
 			
 			if(existingRegistrySubmittedMessage != null){
 			    if(existingRegistrySubmittedMessage.getId() > 0) {
 				//Need to update the Registry submitted message entry to capture the created file name
-				submittedmessagemanager.updateSubmittedMessage(registryDetails.getDbschemaname(),batchDownload.getBatchUploadId(),batchDownload.getutBatchName() + "." + fileExt,utOrgDetails.getHelRegistryOrgId());
+				submittedmessagemanager.updateSubmittedMessage(registryDetails.getDbschemaname(),batchDownload.getBatchUploadId(),batchDownload.getUtBatchName() + "." + fileExt,utOrgDetails.getHelRegistryOrgId());
 			    }
 			    else {
 				createSubmittedMessage = true;
@@ -2031,16 +2040,16 @@ public class transactionOutManagerImpl implements transactionOutManager {
 			    submittedMessage newSubmittedMessage = new submittedMessage();
 			    newSubmittedMessage.setUtBatchUploadId(batchUploadDetails.getId());
 			    newSubmittedMessage.setRegistryConfigId(transportDetails.getHelRegistryConfigId());
-			    newSubmittedMessage.setUploadedFileName(batchUploadDetails.getoriginalFileName());
-			    newSubmittedMessage.setAssignedFileName(batchUploadDetails.getutBatchName());
-			    newSubmittedMessage.setInFileExt(FilenameUtils.getExtension(batchUploadDetails.getoriginalFileName()));
+			    newSubmittedMessage.setUploadedFileName(batchUploadDetails.getOriginalFileName());
+			    newSubmittedMessage.setAssignedFileName(batchUploadDetails.getUtBatchName());
+			    newSubmittedMessage.setInFileExt(FilenameUtils.getExtension(batchUploadDetails.getOriginalFileName()));
 			    newSubmittedMessage.setStatusId(23);
 			    newSubmittedMessage.setTransportId(8);
 			    newSubmittedMessage.setSystemUserId(0);
-			    newSubmittedMessage.setTotalRows(batchUploadDetails.gettotalRecordCount());
+			    newSubmittedMessage.setTotalRows(batchUploadDetails.getTotalRecordCount());
 			    newSubmittedMessage.setSourceOrganizationId(organizationDetails.getHelRegistryOrgId());
 			    newSubmittedMessage.setTargetOrganizationId(utOrgDetails.getHelRegistryOrgId());
-			    newSubmittedMessage.setReceivedFileName(batchDownload.getutBatchName() + "." + fileExt);
+			    newSubmittedMessage.setReceivedFileName(batchDownload.getUtBatchName() + "." + fileExt);
 			    newSubmittedMessage.setAssignedMessageNumber(messageName);
 
 			    submittedmessagemanager.submitSubmittedMessage(registryDetails.getDbschemaname(),newSubmittedMessage);
@@ -2058,7 +2067,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
 		/* Get the File Drop Details */
 		configurationFTPFields FTPPushDetails = configurationTransportManager.getTransportFTPDetailsPush(transportDetails.getId());
 
-		File targetFile = new File(myProps.getProperty("ut.directory.utRootDir") + FTPPushDetails.getdirectory()+ batchDownload.getoutputFileName());
+		File targetFile = new File(myProps.getProperty("ut.directory.utRootDir") + FTPPushDetails.getdirectory()+ batchDownload.getOutputFileName());
 		
 		Files.copy(archiveFile.toPath(), targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
 		
@@ -2076,12 +2085,35 @@ public class transactionOutManagerImpl implements transactionOutManager {
 		method.invoke(restfulManager, batchDownload.getId(), transportDetails);
 
 	    }
+	    // REST API VIA DIRECT
+	    else if (transportDetails.gettransportMethodId() == 12) {
+
+		//we need to update our totals
+		transactionInManager.updateRecordCounts(batchDownload.getId(), rejectIds, true, "totalErrorCount");
+		transactionInManager.updateRecordCounts(batchDownload.getId(), new ArrayList<Integer>(), true, "totalRecordCount");
+		
+		organizationDirectDetails directDetails = configurationTransportManager.getDirectMessagingDetailsById(configDetails.getorgId());
+		
+		String methodName = "";
+		
+		if(directDetails != null) {
+		    hisps hispDetails = hispManager.getHispById(directDetails.getHispId());
+		    
+		    methodName = "senddirectOut"+hispDetails.getHispName().toLowerCase().replaceAll(" ","");
+		    Class<?>[] paramTypes = {int.class, configurationTransport.class};
+		    Method method = directManager.getClass().getMethod(methodName, paramTypes);
+		    method.invoke(directManager, batchDownload.getId(), transportDetails, hispDetails);
+		}
+		else {
+		     updateTargetBatchStatus(batchDownload.getId(), 58, "endDateTime");
+		}
+	    }
 
 	    //now we delete massoutput file
 	    massOutFile.delete();
 	}
 
-	if (transportDetails.gettransportMethodId() != 9) {
+	if (transportDetails.gettransportMethodId() != 9 && transportDetails.gettransportMethodId() != 12) {
 	    //restful manager already took care of status
 
 	    //we need to update our totals
@@ -2095,7 +2127,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
 	//Get the batch details again to make sure the status is 28 if so delete all the generated tables
 	batchDownloads downloadBatchDetails = getBatchDetails(batchDownload.getId());
 	
-	if(downloadBatchDetails.getstatusId() == 28) {
+	if(downloadBatchDetails.getStatusId() == 28) {
 	    
 	    //Need to check if the source message came from a HEL registry but the target is not sending back to the registry. In this case
 	    //We need to mark the message in the registry as complete and insert the target link.
@@ -2105,7 +2137,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
 		
 		if(sourceTransportDetails.getHelSchemaName() != null) {
 		    if(!"".equals(sourceTransportDetails.getHelSchemaName())) {
-			submittedMessage existingRegistrySubmittedMessage = submittedmessagemanager.getSubmittedMessageBySQL(sourceTransportDetails.getHelSchemaName(),batchUploadDetails.getoriginalFileName());
+			submittedMessage existingRegistrySubmittedMessage = submittedmessagemanager.getSubmittedMessageBySQL(sourceTransportDetails.getHelSchemaName(),batchUploadDetails.getOriginalFileName());
 
 			if (existingRegistrySubmittedMessage != null) {
 			    submittedmessagemanager.updateSubmittedMessage(sourceTransportDetails.getHelSchemaName(),existingRegistrySubmittedMessage.getId(),28,batchUploadDetails.getId());
@@ -2206,7 +2238,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
 			    sb.append("<br /><br />");
 			    sb.append("Configuration: ").append(configDetails.getconfigName());
 			    sb.append("<br />");
-			    sb.append("Total Records: ").append(batchDownload.gettotalRecordCount());
+			    sb.append("Total Records: ").append(batchDownload.getTotalRecordCount());
 			    msg.setmessageBody(sb.toString());
 
 			    /* Send the email */
@@ -2317,7 +2349,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
 	   // Get the File Drop Details
 	   configurationFileDropFields fileDropDetails = configurationTransportManager.getTransFileDropDetailsPush(transportDetails.getId());
 
-	    File targetFile = new File(myProps.getProperty("ut.directory.utRootDir") + fileDropDetails.getDirectory() + batchDLDetails.getoutputFileName());
+	    File targetFile = new File(myProps.getProperty("ut.directory.utRootDir") + fileDropDetails.getDirectory() + batchDLDetails.getOutputFileName());
 	    Files.copy(archiveFile.toPath(), targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
 	} 
 	
@@ -2330,7 +2362,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
 	    if(ftpDetails != null) {
 		if(!ftpDetails.getdirectory().equals("")) {
 		   
-		    File targetFile = new File(myProps.getProperty("ut.directory.utRootDir") + ftpDetails.getdirectory() + batchDLDetails.getoutputFileName());
+		    File targetFile = new File(myProps.getProperty("ut.directory.utRootDir") + ftpDetails.getdirectory() + batchDLDetails.getOutputFileName());
 		    Files.copy(archiveFile.toPath(), targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
 		}
 	    }
@@ -2488,5 +2520,15 @@ public class transactionOutManagerImpl implements transactionOutManager {
     @Override
     public boolean chechForTransactionInTable(Integer batchUploadId) throws Exception {
 	return transactionOutDAO.chechForTransactionInTable(batchUploadId);
+    }
+    
+    @Override
+    public List<batchDownloads> getAllSentBatchesPaged(Date fromDate, Date toDate, Integer displayStart, Integer displayRecords, String searchTerm, String sortColumnName, String sortDirection) throws Exception {
+	return transactionOutDAO.getAllSentBatchesPaged(fromDate,toDate, displayStart, displayRecords, searchTerm, sortColumnName, sortDirection);
+    }
+    
+    @Override
+    public void insertDMMessage(directmessagesout newDirectMessageOut) throws Exception {
+        transactionOutDAO.insertDMMessage(newDirectMessageOut);
     }
 }

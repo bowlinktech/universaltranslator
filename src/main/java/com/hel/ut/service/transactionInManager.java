@@ -333,5 +333,9 @@ public interface transactionInManager {
 
     directmessagesin getDirectAPIMessagesById(Integer directMessageId);
     
+    directmessagesin getDirectAPIMessagesByBatchUploadId(Integer BatchUploadId);
+    
     Integer updateDirectAPIMessage(directmessagesin directMessage);
+    
+    List<batchUploads> getAllUploadBatchesPaged(Date fromDate, Date toDate, Integer displayStart, Integer displayRecords, String searchTerm, String sortColumnName, String sortDirection) throws Exception;
 }

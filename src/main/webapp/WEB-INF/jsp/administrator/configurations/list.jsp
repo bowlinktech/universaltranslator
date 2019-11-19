@@ -43,6 +43,7 @@
 						<th scope="col">Configuration Name</th>
 						<th scope="col" class="center-text">Transport Method</th>
 						<th scope="col" class="center-text">Date Created</th>
+						<th scope="col" style="display:none"></th>
 						<th scope="col"></th>
 					    </tr>
 					</thead>
@@ -66,6 +67,9 @@
 							</td>
 							<td class="center-text">
 							    <fmt:formatDate value="${config.dateCreated}" type="date" pattern="M/dd/yyyy" />
+							</td>
+							<td class="center-text"  style="display:none">
+							   ${config.dateCreated}
 							</td>
 							<td>
 							    <div class="dropdown pull-left">
@@ -129,6 +133,7 @@
 						<th scope="col">Associated Source Configuration</th>
 						<th scope="col" class="center-text">Transport Method</th>
 						<th scope="col" class="center-text">Date Created</th>
+						<th style="display:none"></th>
 						<th scope="col"></th>
 					    </tr>
 					</thead>
@@ -152,6 +157,9 @@
 							</td>
 							<td class="center-text">
 							    <fmt:formatDate value="${config.dateCreated}" type="date" pattern="M/dd/yyyy" />
+							</td>
+							<td class="center-text" style="display:none">
+							   ${config.dateCreated}
 							</td>
 							<td>
 							    <div class="dropdown pull-left">

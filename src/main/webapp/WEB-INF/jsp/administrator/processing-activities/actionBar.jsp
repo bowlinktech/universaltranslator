@@ -29,8 +29,11 @@
                         <a href="javascript:void(0);" title="Web Service Messages" class="unstyled-link">Web Service Messages</a>
                     </c:when>
 		    <c:when test="${param['page'] == 'apimessages'}">
-                        <a href="javascript:void(0);" title="Rest API Messages" class="unstyled-link">Rest API Messages</a>
-                    </c:when>	
+                        <a href="javascript:void(0);" title="Rest API Messages" class="unstyled-link">Rest API Messages In</a>
+                    </c:when>
+		   <c:when test="${param['page'] == 'apimessagesout'}">
+                        <a href="javascript:void(0);" title="Rest API Messages" class="unstyled-link">Rest API Messages Out</a>
+                    </c:when>
 		    <c:when test="${param['page'] == 'report'}">
                         <a href="javascript:void(0);" title="Activity Report" class="unstyled-link">Activity Report</a>
                     </c:when>

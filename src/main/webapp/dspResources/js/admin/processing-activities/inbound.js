@@ -23,11 +23,17 @@ require(['./main'], function () {
                 }
             });
         });
-
-        var oSettings = datatable.fnSettings();
-        
-        datatable.fnSort( [ [5,'desc'] ] );
 	
+	//Function to display the details of the selected batch received from a direct HISP
+	$(document).on('click', '.viewDirectDetails', function () {
+            $.ajax({
+                url: '/administrator/processing-activity/viewDirectDetails' + $(this).attr('rel'),
+                type: "GET",
+                success: function (data) {
+                    $("#directModal").html(data);
+                }
+            });
+        });
 
         $(document).on('click', '.deleteTransactions', function() {
             
@@ -54,9 +60,183 @@ require(['./main'], function () {
             }
             
         });
+	
+	$(document).ready(function() {
+	   
+	    var fromDate = $('#fromDate').attr('rel');
+	    var toDate = $('#toDate').attr('rel');
+	    
+	    populateMessages(fromDate,toDate);
+	    
+	});
 
     });
 });
+
+function populateMessages(fromDate,toDate) {
+    
+    var batchName = $('#batchName').val();
+    
+    var userRole = $('#userRole').val();
+    
+    $('#batchuploads-table').DataTable().destroy();
+     
+     $('#batchuploads-table').DataTable({
+	bServerSide: true,
+	bProcessing: true, 
+	deferRender: true,
+	aaSorting: [[5,'desc']],
+	sPaginationType: "bootstrap", 
+	oLanguage: {
+	   sEmptyTable: "There were no files submitted for the selected date range.", 
+	   sSearch: "Filter Results: ",
+	   sLengthMenu: '<select class="form-control" style="width:150px">' +
+		'<option value="10">10 Records</option>' +
+		'<option value="20">20 Records</option>' +
+		'<option value="30">30 Records</option>' +
+		'<option value="40">40 Records</option>' +
+		'<option value="50">50 Records</option>' +
+		'<option value="-1">All</option>' +
+		'</select>',
+	    sProcessing: "<div style='background-color:#64A5D4; height:50px; margin-top:200px'><p style='color:white; padding-top:15px;' class='bolder'>Retrieving Results. Please wait...</p></div>"
+	},
+	sAjaxSource: "/administrator/processing-activity/ajax/getBatchUploads?fromDate="+fromDate+"&toDate="+toDate+"&batchName="+batchName,
+	aoColumns: [
+	    {
+		"mData": "orgName", 
+		"defaultContent": "",
+		"bSortable":true,
+		"sWidth": "20%",
+		"render": function ( data, type, row, meta ) {
+		    return data;
+		}
+	    },
+	    {
+		"mData": "configName", 
+		"defaultContent": "",
+		"bSortable":true,
+		"sWidth": "20%",
+		"render": function ( data, type, row, meta ) {
+		    var returnData = '';
+		    if(data !== '') {
+			returnData = '<strong>'+data+'</strong><br />';
+		    }
+		    else {
+			returnData = '<strong>Invalid File</strong><br />';
+		    }
+		    returnData += row.utBatchName;
+		    
+		    if(row.transportMethodId != 2) {
+		    
+			if(row.transportMethodId == 9 || row.transportMethodId == 12) {
+			   returnData += '<br /><a href="/FileDownload/downloadFile.do?filename='+row.utBatchName+'.'+row.originalFileName.split('.')[1]+'&foldername=archivesIn" title="View Original File">'+row.originalFileName+'</a>';
+			}
+			else if (row.transportMethodId == 6) {
+			    returnData += '<br /><a href="/FileDownload/downloadFile.do?filename='+row.utBatchName+'_dec.'+row.originalFileName.split('.')[1]+'&foldername=archivesIn" title="View Original File">'+row.originalFileName+'</a>';
+			}
+			else {
+			   returnData += '<br /><a href="/FileDownload/downloadFile.do?filename=archive_'+row.utBatchName+'.'+row.originalFileName.split('.')[1]+'&foldername=archivesIn" title="View Original File">'+row.originalFileName+'</a>'; 
+			}
+			
+			if(row.inboundBatchConfigurationType == 1 && (row.transportMethodId == 10 || row.transportMethodId == 3 || row.transportMethodId == 6 || row.transportMethodId == 9)) {
+			   returnData += '<br /><a href="/FileDownload/downloadFile.do?filename='+row.utBatchName+'_dec.txt&foldername=archivesIn" title="View Pipe File">Translated File - '+row.utBatchName+'</a>';
+			}
+		    }
+		    
+		   return returnData;
+		}
+	    },
+	    {
+		"mData": "transportMethod", 
+		"defaultContent": "",
+		"bSortable":true,
+		"sWidth": "20%",
+		"className": "center-text",
+		"render": function ( data, type, row, meta ) {
+		    if(data ==='Rest API') {
+			return '<a href="/administrator/processing-activity/apimessages/'+row.utBatchName+'" title="View Rest API Message">'+data+'</a>';
+		    }
+		    else if (data === 'Direct Message from HISP') {
+			return '<a href="#directModal" data-toggle="modal" class="viewDirectDetails" rel="'+row.id+'" title="View Direct Message Details">'+data+'</a>';
+		    }
+		    else {
+			return data;
+		    }
+		}
+	    },
+	    {
+		"mData": "statusValue", 
+		"defaultContent": "",
+		"bSortable":true,
+		"sWidth": "10%",
+		"className": "center-text",
+		"render": function ( data, type, row, meta ) {
+		   return '<a href="#statusModal" data-toggle="modal" class="viewStatus" rel="'+row.statusId+'" title="View this Status">'+data+'</a>';
+		}
+	    },
+	    {
+		"mData": "totalRecordCount", 
+		"defaultContent": "",
+		"bSortable":false,
+		"sWidth": "15%",
+		"render": function ( data, type, row, meta ) {
+		    var returnData = 'Total Transactions: <strong>';
+		    returnData += commaSeparateNumber(data) + '</strong><br />';
+		    returnData += 'Total Errors: <strong>'+ commaSeparateNumber(row.errorRecordCount) + '</strong>';
+		   return returnData;
+		}
+	    },
+	    {
+		"mData": "dateSubmitted", 
+		"defaultContent": "",
+		"bSortable":true,
+		"sWidth": "10%",
+		"className": "center-text",
+		"render": function ( data, type, row, meta ) {
+		    var dateC = new Date(data);
+		    var minutes = dateC.getMinutes();
+		    var hours = dateC.getHours();
+		    var ampm =  hours >= 12 ? 'pm' : 'am';
+		    hours = hours % 12;
+		    hours = hours ? hours : 12;
+		    minutes = minutes < 10 ? '0'+minutes : minutes;
+		    var myDateFormatted = ((dateC.getMonth()*1)+1)+'/'+dateC.getDate()+'/'+dateC.getFullYear() + ' ' + hours+':'+minutes+ ' ' + ampm;
+		    return myDateFormatted;
+		}
+	    },
+	    {
+		"mData": "transportMethodId", 
+		"defaultContent": "",
+		"bSortable":true,
+		"sWidth": "5%",
+		"className": "center-text actions-col",
+		"render": function ( data, type, row, meta ) {
+		   var returnData = '<div class="dropdown pull-left"><button class="btn btn-sm btn-default dropdown-toggle" type="button" data-toggle="dropdown"><i class="fa fa-cog"></i></button><ul class="dropdown-menu pull-right">';
+		   
+		   if(data != 2) {
+		       returnData += '<li><a href="/administrator/processing-activity/inbound/batchActivities/'+row.utBatchName+'" class="viewBatchActivities" title="View Batch Activities"><span class="glyphicon glyphicon-edit"></span>View Batch Activities</a></li>';
+		       returnData += '<li class="divider"></li>';
+		       returnData += '<li><a href="/administrator/processing-activity/inbound/auditReport/'+row.utBatchName+'" title="View Audit Report"><span class="glyphicon glyphicon-edit"></span>View Audit Report</a></li>';
+		   }
+		   
+		   if(userRole == 1) {
+		       returnData += '<li class="divider"></li>';
+		       returnData += '<li><a href="javascript:void(0);" rel="'+row.utBatchName+'" class="deleteTransactions" title="Delete Batch Transactions"><span class="glyphicon glyphicon-remove"></span>Delete Batch</a></li>';
+		   }
+		   
+		   return returnData;
+		}
+	    }
+	 ]
+    });   
+}
+
+function commaSeparateNumber(val){
+    while (/(\d+)(\d{3})/.test(val.toString())){
+      val = val.toString().replace(/(\d+)(\d{3})/, '$1'+','+'$2');
+    }
+    return val;
+  }
 
 
 function searchByDateRange() {
@@ -66,11 +246,6 @@ function searchByDateRange() {
     $('#fromDate').val(fromDate);
     $('#toDate').val(toDate);
 
-    $('body').overlay({
-        glyphicon: 'floppy-disk',
-        message: 'Processing...'
-    });
-
-    $('#searchForm').submit();
+    populateMessages(fromDate,toDate);
 
 }

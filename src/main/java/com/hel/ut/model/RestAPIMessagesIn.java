@@ -26,16 +26,11 @@ import org.springframework.format.annotation.DateTimeFormat;
 public class RestAPIMessagesIn {
     
     @Transient
-    private String orgName = null;
+    private Integer totalMessages = 0;
 
     @Transient
-    private String statusName = null;
+    private String errorDisplayText = null, batchName = null, statusName = null, orgName = null;
 
-    @Transient
-    private String errorDisplayText = null;
-
-    @Transient
-    private String batchName = null;
     
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -48,10 +43,6 @@ public class RestAPIMessagesIn {
     @Column(name = "payload", nullable = true)
     private String payload;
 
-    /**
-     * 1 - not processed 2 - processed 3 - rejected
-     *
-     */
     @Column(name = "statusId", nullable = false)
     private int statusId = 3; //set to reject
 
@@ -166,5 +157,12 @@ public class RestAPIMessagesIn {
 	this.batchName = batchName;
     }
 
-    
+    public Integer getTotalMessages() {
+	return totalMessages;
+    }
+
+    public void setTotalMessages(Integer totalMessages) {
+	this.totalMessages = totalMessages;
+    }
+
 }

@@ -20,14 +20,14 @@
 
 - Need to add "Direct Messaging" for a transport type
     - When "Direct Messaging" is selected show the following.
-	- Need to show a drop down of available hisps
-	- Need to ask for the direct message domain
-	- Need to ask for the expected attachment extension
+	** DONE ** - Need to show a drop down of available hisps
+	** DONE ** - Need to ask for the direct message domain
+	** DONE ** - Need to ask for the expected attachment extension
 
 	When SAVE
-	- Need to create a folder if doesn't exist alread in HELProductSuite/universalTranslator/directMessages/ORG NAME NO SPACES
-	- Store these values in a table so when the same org selects "Direct Messaging" for another configuration it pre-populates
-	- Single org will only have a single HISP when sending via direct so one or shouldn't have multiple settings
+	** DONE ** - Need to create a folder if doesn't exist alread in HELProductSuite/universalTranslator/directMessages/ORG NAME NO SPACES
+	** DONE ** - Store these values in a table so when the same org selects "Direct Messaging" for another configuration it pre-populates
+	** DONE ** - Single org will only have a single HISP when sending via direct so one or shouldn't have multiple settings
 
 - "Direct Messaging" API
     - Should look at the new DM table to match domain created above
@@ -40,4 +40,12 @@
 - Need to review/modify the REST API processing job in order to watch the directMessage folder for files and move them just like we do sFTP files.
 
 - Need to add a place in the system admin to add HISPS (Med Allies would be the first). Need ability to add API credentials to this section
+
+- Switch dataTables to be server side instead of clients side
+    - ** DONE CM 10/22/19 ** Organizations
+    - Configurations
+    - Processing Activity
+	- Inbound
+	- Outbound
+	- Rest API messages
 

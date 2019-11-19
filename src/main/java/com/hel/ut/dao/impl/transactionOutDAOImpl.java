@@ -16,6 +16,7 @@ import com.hel.ut.model.configurationFormFields;
 import com.hel.ut.model.configurationSchedules;
 import com.hel.ut.model.configurationTransport;
 import com.hel.ut.model.custom.ConfigOutboundForInsert;
+import com.hel.ut.model.directmessagesout;
 import com.hel.ut.model.targetOutputRunLogs;
 import com.hel.ut.model.transactionOutRecords;
 import com.hel.ut.service.sysAdminManager;
@@ -1270,4 +1271,105 @@ public class transactionOutDAOImpl implements transactionOutDAO {
 	
 	return tableFound;
     }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public List<batchDownloads> getAllSentBatchesPaged(Date fromDate, Date toDate, Integer displayStart, Integer displayRecords, String searchTerm, String sortColumnName, String sortDirection) throws Exception {
+	
+	String dateSQLString = "";
+	String dateSQLStringTotal = "";
+	
+	if(fromDate !=  null && toDate != null) {
+	    if(!"".equals(fromDate)) {
+		dateSQLString += "a.dateCreated between '"+mysqlDateFormat.format(fromDate)+"' ";
+		dateSQLStringTotal += "dateCreated between '"+mysqlDateFormat.format(fromDate)+"' ";
+
+		if(!"".equals(toDate)) {
+		    dateSQLString += "AND '"+mysqlDateFormat.format(toDate)+"'";
+		    dateSQLStringTotal += "AND '"+mysqlDateFormat.format(toDate)+"'";
+		}
+		else {
+		    dateSQLString += "AND '"+mysqlDateFormat.format(fromDate)+" 23:59:59'";
+		    dateSQLStringTotal += "AND '"+mysqlDateFormat.format(fromDate)+" 23:59:59'";
+		}
+	    }
+	    else {
+		if(!"".equals(toDate)) {
+		    dateSQLString += "a.dateCreated between '"+mysqlDateFormat.format(toDate)+"' ";
+		    dateSQLString += "AND '"+mysqlDateFormat.format(toDate)+" 23:59:59'";
+		}
+		else {
+		    dateSQLString += "a.id > 0";
+		}
+	    }
+	}
+	else {
+	    dateSQLString += "a.id > 0";
+	    dateSQLStringTotal = "utBatchName = '" + searchTerm + "'";
+	}
+	
+	
+	String sqlQuery = "select id, utBatchName, transportMethodId, outputFileName, totalRecordCount, totalErrorCount, configName, threshold, statusId, dateCreated,"
+		+ "statusValue, endUserDisplayText, orgName, transportMethod, fromBatchName, fromBatchFile, totalMessages "
+		+ "FROM ("
+		+ "select a.id, a.utBatchName, a.transportMethodId, a.outputFileName, a.totalRecordCount, a.totalErrorCount, b.configName, b.threshold,"
+		+ "a.statusId, a.dateCreated, c.endUserDisplayCode as statusValue, c.endUserDisplayText as endUserDisplayText, d.orgName, e.transportMethod, f.utBatchName as fromBatchName,"
+		+ "case when f.transportMethodId = 5 THEN CONCAT(f.utBatchName,'.',SUBSTRING_INDEX(f.originalFileName,'.',-1)) "
+		+ "when f.transportMethodId = 1 THEN CONCAT(f.utBatchName,'.',SUBSTRING_INDEX(f.originalFileName,'.',-1)) "
+		+ "else '' end as fromBatchFile,"
+		+ "(select count(id) as total from batchdownloads where "+dateSQLStringTotal+") as totalMessages "
+		+ "FROM batchdownloads a inner join "
+		+ "configurations b on b.id = a.configId inner join "
+		+ "lu_processstatus c on c.id = a.statusId inner join "
+		+ "organizations d on d.id = a.orgId inner join "
+		+ "ref_transportmethods e on e.id = a.transportMethodId inner join "
+		+ "batchuploads f on f.id = a.batchUploadId "
+		+ "where " + dateSQLString + ") as inboundBatches ";
+	
+	if(!"".equals(searchTerm)){
+	    sqlQuery += " where ("
+	    + "id like '%"+searchTerm+"%' "
+	    + "OR orgName like '%"+searchTerm+"%' "
+	    + "OR configName like '%"+searchTerm+"%' "
+	    + "OR utBatchName like '%"+searchTerm+"%' "
+	    + "OR fromBatchName like '%"+searchTerm+"%' "
+	    + "OR fromBatchFile like '%"+searchTerm+"%' "		    
+	    + "OR statusValue like '%"+searchTerm+"%' "
+	    + "OR transportMethod like '%"+searchTerm+"%'"
+	    + ") ";
+	}	
+	
+	sqlQuery += "order by "+sortColumnName+" "+sortDirection;
+        sqlQuery += " limit " + displayStart + ", " + displayRecords;
+	
+	Query query = sessionFactory.getCurrentSession().createSQLQuery(sqlQuery)
+	    .addScalar("id", StandardBasicTypes.INTEGER)
+	    .addScalar("utBatchName", StandardBasicTypes.STRING)
+	    .addScalar("transportMethodId", StandardBasicTypes.INTEGER)
+	    .addScalar("outputFileName", StandardBasicTypes.STRING)
+	    .addScalar("totalRecordCount", StandardBasicTypes.INTEGER)
+	    .addScalar("totalErrorCount", StandardBasicTypes.INTEGER)
+	    .addScalar("configName", StandardBasicTypes.STRING)
+	    .addScalar("statusId", StandardBasicTypes.INTEGER)
+	    .addScalar("dateCreated", StandardBasicTypes.TIMESTAMP)
+	    .addScalar("statusValue", StandardBasicTypes.STRING)
+	    .addScalar("orgName", StandardBasicTypes.STRING)
+	    .addScalar("transportMethod", StandardBasicTypes.STRING)
+	    .addScalar("fromBatchName", StandardBasicTypes.STRING)
+	    .addScalar("fromBatchFile", StandardBasicTypes.STRING)
+	    .addScalar("totalMessages", StandardBasicTypes.INTEGER)
+	    .setResultTransformer(Transformers.aliasToBean(batchDownloads.class));
+	
+	List<batchDownloads> batchSentMessages = query.list();
+	
+        return batchSentMessages;
+
+    }
+    
+    @Override
+    @Transactional(readOnly = false)
+    public void insertDMMessage(directmessagesout newDirectMessageOut) throws Exception {
+	sessionFactory.getCurrentSession().save(newDirectMessageOut);
+    }
+    
 }

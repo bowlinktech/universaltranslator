@@ -43,6 +43,9 @@ public class ExceptionControllerAdvice {
     @ExceptionHandler(Exception.class)
     public ModelAndView exception(HttpSession session, Exception e, HttpServletRequest request,
             Authentication authentication) throws Exception {
+	
+	
+	System.out.println(e.getMessage());
 
         ModelAndView mav = new ModelAndView();
         mav.setViewName("/exception");

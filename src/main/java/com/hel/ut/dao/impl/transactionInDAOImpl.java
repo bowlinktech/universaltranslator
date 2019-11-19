@@ -873,7 +873,7 @@ public class transactionInDAOImpl implements transactionInDAO {
 	
 	try {
 	    
-	    String sql = ("CALL universaltranslator." + macro.getFormula() + " (:configId, :batchId, :srcField, "
+	    String sql = ("CALL " + macro.getFormula() + " (:configId, :batchId, :srcField, "
 		    + ":fieldA, :fieldB, :con1, :con2, :macroId, :foroutboundProcessing, :passClear, 0);");
 	    
 	    Query query = sessionFactory.getCurrentSession().createSQLQuery(sql);
@@ -3009,6 +3009,27 @@ public class transactionInDAOImpl implements transactionInDAO {
 	}
 	return null;
     }
+    
+    @Override
+    @Transactional(readOnly = true)
+    @SuppressWarnings("unchecked")
+    public directmessagesin getDirectAPIMessagesByBatchUploadId(Integer BatchUploadId) {
+	//1 if list of statusId is null, we get all
+	try {
+	    Criteria findDirectAPIMessage = sessionFactory.getCurrentSession().createCriteria(directmessagesin.class);
+	    findDirectAPIMessage.add(Restrictions.eq("batchUploadId", BatchUploadId));
+
+	    List<directmessagesin> directAPIMessages = findDirectAPIMessage.list();
+	    if (!directAPIMessages.isEmpty()) {
+		return directAPIMessages.get(0);
+	    }
+	} catch (Exception ex) {
+	    System.err.println("getDirectAPIMessagesByBatchUploadId " + ex.getCause());
+	    ex.printStackTrace();
+	    return null;
+	}
+	return null;
+    }
 
     @Override
     @Transactional(readOnly = false)
@@ -3021,6 +3042,95 @@ public class transactionInDAOImpl implements transactionInDAO {
 	    System.err.println("updateDirectAPIMessage " + ex.getCause());
 	    return 1;
 	}
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public List<batchUploads> getAllUploadBatchesPaged(Date fromDate, Date toDate, Integer displayStart, Integer displayRecords, String searchTerm, String sortColumnName, String sortDirection) throws Exception {
+	
+	String dateSQLString = "";
+	String dateSQLStringTotal = "";
+	
+	if(fromDate !=  null && toDate != null) {
+	    if(!"".equals(fromDate)) {
+		dateSQLString += "a.dateSubmitted between '"+mysqlDateFormat.format(fromDate)+"' ";
+		dateSQLStringTotal += "dateSubmitted between '"+mysqlDateFormat.format(fromDate)+"' ";
+
+		if(!"".equals(toDate)) {
+		    dateSQLString += "AND '"+mysqlDateFormat.format(toDate)+"'";
+		    dateSQLStringTotal += "AND '"+mysqlDateFormat.format(toDate)+"'";
+		}
+		else {
+		    dateSQLString += "AND '"+mysqlDateFormat.format(fromDate)+" 23:59:59'";
+		    dateSQLStringTotal += "AND '"+mysqlDateFormat.format(fromDate)+" 23:59:59'";
+		}
+	    }
+	    else {
+		if(!"".equals(toDate)) {
+		    dateSQLString += "a.dateSubmitted between '"+mysqlDateFormat.format(toDate)+"' ";
+		    dateSQLString += "AND '"+mysqlDateFormat.format(toDate)+" 23:59:59'";
+		}
+		else {
+		    dateSQLString += "a.id > 0";
+		}
+	    }
+	}
+	else {
+	    dateSQLString += "a.id > 0";
+	    dateSQLStringTotal = "utBatchName = '" + searchTerm + "'";
+	}
+	
+	
+	String sqlQuery = "select id, utBatchName, transportMethodId, originalFileName, totalRecordCount, errorRecordCount, configName, threshold, inboundBatchConfigurationType, statusId, dateSubmitted,"
+		+ "statusValue, endUserDisplayText, orgName, transportMethod, totalMessages, 'On Demand' as uploadType "
+		+ "FROM ("
+		+ "select a.id , a.utBatchName, a.transportMethodId, a.originalFileName, a.totalRecordCount, a.errorRecordCount, b.configName, b.threshold, b.configurationType as inboundBatchConfigurationType,"
+		+ "a.statusId, a.dateSubmitted, c.endUserDisplayCode as statusValue, c.endUserDisplayText as endUserDisplayText,d.orgName, e.transportMethod,"
+		+ "(select count(id) as total from batchuploads where "+dateSQLStringTotal+") as totalMessages "
+		+ "FROM batchuploads a inner join "
+		+ "configurations b on b.id = a.configId inner join "
+		+ "lu_processstatus c on c.id = a.statusId inner join "
+		+ "organizations d on d.id = a.orgId inner join "
+		+ "ref_transportmethods e on e.id = a.transportMethodId "
+		+ "where " + dateSQLString + ") as inboundBatches ";
+	
+	if(!"".equals(searchTerm)){
+	    sqlQuery += " where ("
+	    + "id like '%"+searchTerm+"%' "
+	    + "OR orgName like '%"+searchTerm+"%' "
+	    + "OR configName like '%"+searchTerm+"%' "
+	    + "OR utBatchName like '%"+searchTerm+"%' "
+	    + "OR statusValue like '%"+searchTerm+"%' "
+	    + "OR transportMethod like '%"+searchTerm+"%'"
+	    + ") ";
+	}	
+	
+	sqlQuery += "order by "+sortColumnName+" "+sortDirection;
+        sqlQuery += " limit " + displayStart + ", " + displayRecords;
+	
+	Query query = sessionFactory.getCurrentSession().createSQLQuery(sqlQuery)
+	    .addScalar("id", StandardBasicTypes.INTEGER)
+	    .addScalar("utBatchName", StandardBasicTypes.STRING)
+	    .addScalar("transportMethodId", StandardBasicTypes.INTEGER)
+	    .addScalar("originalFileName", StandardBasicTypes.STRING)
+	    .addScalar("totalRecordCount", StandardBasicTypes.INTEGER)
+	    .addScalar("errorRecordCount", StandardBasicTypes.INTEGER)
+	    .addScalar("configName", StandardBasicTypes.STRING)
+	    .addScalar("threshold", StandardBasicTypes.INTEGER)
+	    .addScalar("inboundBatchConfigurationType", StandardBasicTypes.INTEGER)
+	    .addScalar("statusId", StandardBasicTypes.INTEGER)
+	    .addScalar("dateSubmitted", StandardBasicTypes.TIMESTAMP)
+	    .addScalar("statusValue", StandardBasicTypes.STRING)
+	    .addScalar("orgName", StandardBasicTypes.STRING)
+	    .addScalar("transportMethod", StandardBasicTypes.STRING)
+	    .addScalar("totalMessages", StandardBasicTypes.INTEGER)
+	    .addScalar("uploadType", StandardBasicTypes.STRING)
+	    .addScalar("endUserDisplayText", StandardBasicTypes.STRING)
+	    .setResultTransformer(Transformers.aliasToBean(batchUploads.class));
+	
+	List<batchUploads> batchUploadMessages = query.list();
+	
+        return batchUploadMessages;
 
     }
 }

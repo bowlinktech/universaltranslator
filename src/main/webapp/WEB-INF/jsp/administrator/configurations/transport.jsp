@@ -52,7 +52,7 @@
                         <div class="form-container">
 			    <spring:bind path="transportMethodId">
                                 <div id="transportMethodDiv" class="form-group ${status.error ? 'has-error' : '' }">
-                                    <form:select path="transportMethodId" id="transportMethod" class="form-control" disabled="${transportDetails.id > 0 && transportDetails.transportMethodId > 0 ? 'true' : 'false'}">
+                                    <form:select path="transportMethodId" id="transportMethod" class="form-control">
                                         <option value="">- Select -</option>
                                         <c:forEach items="${transportMethods}" var="transMethod" varStatus="tStatus">
 					    <c:choose>
@@ -63,6 +63,12 @@
 								<c:choose>
 								    <c:when test="${configurationDetails.type == 1}">File Upload</c:when>
 								    <c:otherwise>File Download</c:otherwise>
+								</c:choose>
+							    </c:when>
+							    <c:when test="${transportMethods[tStatus.index][0] == 12}">
+								<c:choose>
+								    <c:when test="${configurationDetails.type == 2}">Direct Message to HISP</c:when>
+								    <c:otherwise>${transportMethods[tStatus.index][1]}</c:otherwise>
 								</c:choose>
 							    </c:when>
 							    <c:otherwise>${transportMethods[tStatus.index][1]}</c:otherwise>
@@ -375,25 +381,32 @@
 			       </select>
 			       <span id="encodingMsg" class="control-label"></span>
 			   </div>
-			   <div class="form-group directDomainDiv">
-			       <label class="control-label" for="directDomain">Direct Address Domain *</label>
-			       <input name="directMessageFields[0].directDomain" id="directDomain" class="form-control" type="text" maxLength="75" value="${directMessageFields.directDomain}"  />
-                               <span id="directDomainMsg" class="control-label"></span>
-			   </div>  
-                           <div class="form-group dmFindConfigDiv">
-			       <label class="control-label" for="dmFindConfig">How will you determine the configuration? *</label>
-                               <select name="directMessageFields[0].dmFindConfig" id="dmFindConfig" class="form-control sm-input">
-                                   <option value="">- Select </option>
-                                   <option value="1" <c:if test="${directMessageFields.dmFindConfig == 1}">selected="selected"</c:if>>From the direct message to address</option>
-                                   <option value="2" <c:if test="${directMessageFields.dmFindConfig == 2}">selected="selected"</c:if>>From within the referral file</option>
-                               </select>
-                               <span id="dmFindConfigMsg" class="control-label"></span>
-			   </div> 
-                           <div class="form-group dmConfigKeywordDiv" style="display:${directMessageFields.dmFindConfig == 1 ? 'block' : 'none'}">
-			       <label class="control-label" for="dmConfigKeyword">Direct Address Configuration Keyword *</label>
-			       <input name="dmConfigKeyword" id="dmConfigKeyword" class="form-control" type="text" maxLength="45" value="${transportDetails.dmConfigKeyword}"  />
-                               <span id="dmConfigKeywordMsg" class="control-label"></span>
-                            </div>  
+			    <c:choose>
+				<c:when test="${configurationDetails.type == 1}">
+				     <div class="form-group directDomainDiv">
+					 <label class="control-label" for="directDomain">Direct Address Domain *</label>
+					 <input name="directMessageFields[0].directDomain" id="directDomain" class="form-control" type="text" maxLength="75" value="${directMessageFields.directDomain}"  />
+					 <span id="directDomainMsg" class="control-label"></span>
+				     </div>  
+				     <div class="form-group dmFindConfigDiv">
+					 <label class="control-label" for="dmFindConfig">How will you determine the configuration? *</label>
+					 <select name="directMessageFields[0].dmFindConfig" id="dmFindConfig" class="form-control sm-input">
+					     <option value="">- Select </option>
+					     <option value="1" <c:if test="${directMessageFields.dmFindConfig == 1}">selected="selected"</c:if>>From the direct message to address</option>
+					     <option value="2" <c:if test="${directMessageFields.dmFindConfig == 2}">selected="selected"</c:if>>From within the referral file</option>
+					 </select>
+					 <span id="dmFindConfigMsg" class="control-label"></span>
+				     </div> 
+				     <div class="form-group dmConfigKeywordDiv" style="display:${directMessageFields.dmFindConfig == 1 ? 'block' : 'none'}">
+					 <label class="control-label" for="dmConfigKeyword">Direct Address Configuration Keyword *</label>
+					 <input name="dmConfigKeyword" id="dmConfigKeyword" class="form-control" type="text" maxLength="45" value="${transportDetails.dmConfigKeyword}"  />
+					 <span id="dmConfigKeywordMsg" class="control-label"></span>
+				      </div>  
+				</c:when>
+				<c:otherwise>
+				    
+				</c:otherwise>
+			    </c:choose>
 			</div>
 		    </div>
 		</section>

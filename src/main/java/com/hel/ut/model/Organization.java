@@ -23,6 +23,9 @@ public class Organization {
 
     @Transient
     private CommonsMultipartFile file = null;
+    
+    @Transient
+    private String organizationType = "";
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -315,5 +318,12 @@ public class Organization {
 	this.helRegistrySchemaName = helRegistrySchemaName;
     }
 
-    
+    public String getOrganizationType() {
+	return organizationType;
+    }
+
+    public void setOrganizationType(String organizationType) {
+	this.organizationType = organizationType;
+    }
+
 }

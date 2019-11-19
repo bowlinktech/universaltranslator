@@ -1,5 +1,7 @@
 package com.hel.ut.controller;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.validation.Valid;
@@ -30,6 +32,10 @@ import com.registryKit.registry.tiers.tierOrganizationDetails;
 import com.registryKit.registry.tiers.tiers;
 import com.hel.ut.service.utConfigurationManager;
 import com.hel.ut.service.utConfigurationTransportManager;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
 
 
 /**
@@ -78,16 +84,45 @@ public class adminOrgContoller {
      */
     @RequestMapping(value = "/list", method = RequestMethod.GET)
     public ModelAndView listOrganizations() throws Exception {
-
+	
         ModelAndView mav = new ModelAndView();
         mav.setViewName("/administrator/organizations/listOrganizations");
 
-        List<Organization> organizations = organizationManager.getOrganizations();
-        mav.addObject("organizationList", organizations);
-
+	//List<Organization> organizations = organizationManager.getOrganizations();
+	//mav.addObject("organizationList",organizations);
+	
         return mav;
-
     }
+    
+    @RequestMapping(value = "/ajax/getOrganizations", method = RequestMethod.GET)
+    @ResponseBody
+    public String getOrganizations(HttpServletRequest request, HttpServletResponse response, HttpSession session) throws Exception {
+	
+	Gson gson = new Gson();
+        JsonObject jsonResponse = new JsonObject();
+	Integer iDisplayStart = Integer.parseInt(request.getParameter("iDisplayStart"));
+        Integer iDisplayLength = Integer.parseInt(request.getParameter("iDisplayLength"));
+        String sortColumn = request.getParameter("iSortCol_0");
+        String sortColumnName = request.getParameter("mDataProp_"+sortColumn);
+        String searchTerm = request.getParameter("sSearch").toLowerCase();
+        String sEcho = request.getParameter("sEcho");
+        String sortDirection = request.getParameter("sSortDir_0");
+        Integer totalRecords = 0;
+	
+	
+	List<Organization> organizations = organizationManager.getOrganizationsPaged(iDisplayStart, iDisplayLength, searchTerm, sortColumnName, sortDirection);
+	List<Organization> totalOrgs = organizationManager.getOrganizations();
+	
+	totalRecords = totalOrgs.size();
+	
+	jsonResponse.addProperty("sEcho", sEcho);
+        jsonResponse.addProperty("iTotalRecords", totalRecords);
+        jsonResponse.addProperty("iTotalDisplayRecords", totalRecords);
+        jsonResponse.add("aaData", gson.toJsonTree(organizations));
+        
+        return jsonResponse.toString();
+    }
+    
 
     /**
      * The '/create' GET request will serve up the create new organization page

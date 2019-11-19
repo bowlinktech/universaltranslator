@@ -146,6 +146,160 @@ public class RestAPIDAOImpl implements RestAPIDAO {
         return findRestOut.list();
 
     }
+    
+    @SuppressWarnings("unchecked")
+    @Override
+    @Transactional(readOnly = true)
+    public List<RestAPIMessagesIn> getRestAPIMessagesInListPaged(Date fromDate, Date toDate, Integer displayStart, Integer displayRecords, String searchTerm, String sortColumnName, String sortDirection) throws Exception {
+	
+	String dateSQLString = "";
+	String dateSQLStringTotal = "";
+	
+	if(!"".equals(fromDate)) {
+	    dateSQLString += "a.dateCreated between '"+mysqlDateFormat.format(fromDate)+" 00:00:00' ";
+	    dateSQLStringTotal += "dateCreated between '"+mysqlDateFormat.format(fromDate)+" 00:00:00' ";
+	    
+	    if(!"".equals(toDate)) {
+		dateSQLString += "AND '"+mysqlDateFormat.format(toDate)+" 00:00:00'";
+		dateSQLStringTotal += "AND '"+mysqlDateFormat.format(toDate)+" 00:00:00'";
+	    }
+	    else {
+		dateSQLString += "AND '"+mysqlDateFormat.format(fromDate)+" 23:59:59'";
+		dateSQLStringTotal += "AND '"+mysqlDateFormat.format(fromDate)+" 23:59:59'";
+	    }
+	}
+	else {
+	    if(!"".equals(toDate)) {
+		dateSQLString += "a.dateCreated between '"+mysqlDateFormat.format(toDate)+" 00:00:00' ";
+		dateSQLString += "AND '"+mysqlDateFormat.format(toDate)+" 23:59:59'";
+	    }
+	    else {
+		dateSQLString += "a.id > 0";
+	    }
+	}
+	
+	
+	String sqlQuery = "select id, statusName, errorDisplayText, orgName, dateCreated, configId, batchUploadId, batchName, totalMessages "
+		+ "from ("
+		+ "select a.id, a.batchUploadId, a.dateCreated, a.configId, c.orgName,"
+		+ "CASE WHEN a.statusId = 1 THEN 'To be processed' WHEN a.statusId = 2 THEN 'Processed' ELSE 'Rejected' END as statusName,"
+		+ "IFNULL(b.displayText, \"N/A\") as errorDisplayText, IFNULL(d.utBatchName,\"\") as batchName,"
+		+ "(select count(id) as total from restapimessagesin where "+dateSQLStringTotal+") as totalMessages "
+		+ "FROM restapimessagesin a left outer join "
+		+ "lu_errorCodes b on b.id = a.errorId inner join "
+		+ "organizations c on c.id = a.orgId left outer join  "
+		+ "batchuploads d on d.id = a.batchUploadId "
+		+ "where " + dateSQLString + ") as messagesIn ";
+	
+	if(!"".equals(searchTerm)){
+	    sqlQuery += " where ("
+	    + "id like '%"+searchTerm+"%' "
+	    + "OR configId like '%"+searchTerm+"%' "
+	    + "OR orgName like '%"+searchTerm+"%' "
+	    + "OR batchName like '%"+searchTerm+"%' "
+	    + "OR statusName like '%"+searchTerm+"%' "
+	    + "OR dateCreated like '%"+searchTerm+"%' "
+	    + "OR errorDisplayText like '%"+searchTerm+"%'"
+	    + ") ";
+	}	
+	
+	sqlQuery += "order by "+sortColumnName+" "+sortDirection;
+        sqlQuery += " limit " + displayStart + ", " + displayRecords;
+	
+	Query query = sessionFactory.getCurrentSession().createSQLQuery(sqlQuery)
+	    .addScalar("id", StandardBasicTypes.INTEGER)
+	    .addScalar("statusName", StandardBasicTypes.STRING)
+	    .addScalar("errorDisplayText", StandardBasicTypes.STRING)
+	    .addScalar("orgName", StandardBasicTypes.STRING)
+	    .addScalar("dateCreated", StandardBasicTypes.TIMESTAMP)
+	    .addScalar("batchUploadId", StandardBasicTypes.INTEGER)
+	    .addScalar("configId", StandardBasicTypes.INTEGER)
+	    .addScalar("batchName", StandardBasicTypes.STRING)
+	    .addScalar("totalMessages", StandardBasicTypes.INTEGER)
+	    .setResultTransformer(Transformers.aliasToBean(RestAPIMessagesIn.class));
+	
+	List<RestAPIMessagesIn> apimessagesin = query.list();
+	
+        return apimessagesin;
+
+    }
+    
+    @SuppressWarnings("unchecked")
+    @Override
+    @Transactional(readOnly = true)
+    public List<RestAPIMessagesOut> getRestAPIMessagesOutListPaged(Date fromDate, Date toDate, Integer displayStart, Integer displayRecords, String searchTerm, String sortColumnName, String sortDirection) throws Exception {
+	
+	String dateSQLString = "";
+	String dateSQLStringTotal = "";
+	
+	if(!"".equals(fromDate)) {
+	    dateSQLString += "a.dateCreated between '"+mysqlDateFormat.format(fromDate)+" 00:00:00' ";
+	    dateSQLStringTotal += "dateCreated between '"+mysqlDateFormat.format(fromDate)+" 00:00:00' ";
+	    
+	    if(!"".equals(toDate)) {
+		dateSQLString += "AND '"+mysqlDateFormat.format(toDate)+" 00:00:00'";
+		dateSQLStringTotal += "AND '"+mysqlDateFormat.format(toDate)+" 00:00:00'";
+	    }
+	    else {
+		dateSQLString += "AND '"+mysqlDateFormat.format(fromDate)+" 23:59:59'";
+		dateSQLStringTotal += "AND '"+mysqlDateFormat.format(fromDate)+" 23:59:59'";
+	    }
+	}
+	else {
+	    if(!"".equals(toDate)) {
+		dateSQLString += "a.dateCreated between '"+mysqlDateFormat.format(toDate)+" 00:00:00' ";
+		dateSQLString += "AND '"+mysqlDateFormat.format(toDate)+" 23:59:59'";
+	    }
+	    else {
+		dateSQLString += "a.id > 0";
+	    }
+	}
+	
+	
+	String sqlQuery = "select id, statusName, errorDisplayText, orgName, dateCreated, configId, batchDownloadId, batchName, totalMessages "
+		+ "from ("
+		+ "select a.id, a.batchDownloadId, a.dateCreated, a.configId, c.orgName,"
+		+ "CASE WHEN a.statusId = 1 THEN 'To be processed' WHEN a.statusId = 2 THEN 'Processed' ELSE 'Rejected' END as statusName,"
+		+ "IFNULL(b.displayText, \"N/A\") as errorDisplayText, IFNULL(d.utBatchName,\"\") as batchName,"
+		+ "(select count(id) as total from restapimessagesout where "+dateSQLStringTotal+") as totalMessages "
+		+ "FROM restapimessagesout a left outer join "
+		+ "lu_errorCodes b on b.id = a.errorId inner join "
+		+ "organizations c on c.id = a.orgId left outer join  "
+		+ "batchdownloads d on d.id = a.batchDownloadId "
+		+ "where " + dateSQLString + ") as messagesIn ";
+	
+	if(!"".equals(searchTerm)){
+	    sqlQuery += " where ("
+	    + "id like '%"+searchTerm+"%' "
+	    + "OR configId like '%"+searchTerm+"%' "
+	    + "OR orgName like '%"+searchTerm+"%' "
+	    + "OR batchName like '%"+searchTerm+"%' "
+	    + "OR statusName like '%"+searchTerm+"%' "
+	    + "OR dateCreated like '%"+searchTerm+"%' "
+	    + "OR errorDisplayText like '%"+searchTerm+"%'"
+	    + ") ";
+	}	
+	
+	sqlQuery += "order by "+sortColumnName+" "+sortDirection;
+        sqlQuery += " limit " + displayStart + ", " + displayRecords;
+	
+	Query query = sessionFactory.getCurrentSession().createSQLQuery(sqlQuery)
+	    .addScalar("id", StandardBasicTypes.INTEGER)
+	    .addScalar("statusName", StandardBasicTypes.STRING)
+	    .addScalar("errorDisplayText", StandardBasicTypes.STRING)
+	    .addScalar("orgName", StandardBasicTypes.STRING)
+	    .addScalar("dateCreated", StandardBasicTypes.TIMESTAMP)
+	    .addScalar("batchDownloadId", StandardBasicTypes.INTEGER)
+	    .addScalar("configId", StandardBasicTypes.INTEGER)
+	    .addScalar("batchName", StandardBasicTypes.STRING)
+	    .addScalar("totalMessages", StandardBasicTypes.INTEGER)
+	    .setResultTransformer(Transformers.aliasToBean(RestAPIMessagesOut.class));
+	
+	List<RestAPIMessagesOut> apimessagesout = query.list();
+	
+        return apimessagesout;
+
+    }
 
     @SuppressWarnings("unchecked")
     @Override

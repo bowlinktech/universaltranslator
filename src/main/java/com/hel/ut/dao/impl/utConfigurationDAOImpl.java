@@ -33,7 +33,6 @@ import com.hel.ut.model.configurationSchedules;
 import com.hel.ut.model.configurationTransport;
 import com.hel.ut.model.watchlist;
 import com.hel.ut.model.watchlistEntry;
-import com.hel.ut.reference.fileSystem;
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -1557,8 +1556,11 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
 	
 	SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 	
-	String sql = "select a.*, b.transportMethodId from dashboardwatchlistentries a "
+	String sql = "select a.*, b.transportMethodId, c.configName, o.orgName, e.transportMethod from dashboardwatchlistentries a "
 		+ "inner join configurationtransportdetails b on b.configId = a.configId "
+		+ "inner join configurations c on c.id = a.configId "
+		+ "inner join organizations o on o.id = c.orgId "
+		+ "inner join ref_transportmethods e on e.id = b.transportMethodId "
 		+ "where a.dateCreated >= '" + sdf.format(fromDate) + " 00:00:00' and a.dateCreated < '" + sdf.format(toDate) + " 23:59:59' order by dateCreated desc";
 	
 	Query query = sessionFactory.getCurrentSession().createSQLQuery(sql)

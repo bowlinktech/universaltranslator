@@ -16,6 +16,7 @@ import com.hel.ut.model.pendingDeliveryTargets;
 import com.hel.ut.model.systemSummary;
 import com.hel.ut.model.transactionOutRecords;
 import com.hel.ut.model.custom.ConfigOutboundForInsert;
+import com.hel.ut.model.directmessagesout;
 import java.io.File;
 
 import java.math.BigInteger;
@@ -105,5 +106,9 @@ public interface transactionOutManager {
     void checkOutboundScheduledBatches() throws Exception;
     
     boolean chechForTransactionInTable(Integer batchUploadId) throws Exception;
+    
+    List<batchDownloads> getAllSentBatchesPaged(Date fromDate, Date toDate, Integer displayStart, Integer displayRecords, String searchTerm, String sortColumnName, String sortDirection) throws Exception;
+    
+    void insertDMMessage(directmessagesout newDirectMessageOut) throws Exception;
     
 }

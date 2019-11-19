@@ -13,6 +13,7 @@ import com.hel.ut.model.configurationTransportMessageTypes;
 import com.hel.ut.model.configurationWebServiceFields;
 import com.hel.ut.model.configurationWebServiceSenders;
 import com.hel.ut.model.organizationDirectDetails;
+import com.hel.ut.model.utConfiguration;
 
 public interface utConfigurationTransportManager {
 
@@ -20,7 +21,7 @@ public interface utConfigurationTransportManager {
 
     configurationTransport getTransportDetailsByTransportMethod(int configId, int transportMethod);
 
-    Integer updateTransportDetails(configurationTransport transportDetails) throws Exception;
+    Integer updateTransportDetails(utConfiguration configurationDetails, configurationTransport transportDetails) throws Exception;
 
     List<configurationFormFields> getConfigurationFields(int configId, int transportDetailId);
 

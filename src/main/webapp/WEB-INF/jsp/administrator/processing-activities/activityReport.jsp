@@ -11,7 +11,7 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
 
 <div class="main clearfix" role="main">
-    <div class="col-md-9">
+    <div class="col-md-12">
 
         <div class="row-fluid contain basic-clearfix">
             <form:form class="form form-inline" id="searchForm" action="/administrator/processing-activity/activityReport" method="post">

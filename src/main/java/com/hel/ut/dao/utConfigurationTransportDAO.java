@@ -141,4 +141,6 @@ public interface utConfigurationTransportDAO {
     void saveTransportDirectMessageDetails(organizationDirectDetails directDetails) throws Exception;
     
     configurationTransport findConfigurationByDirectMessagKeyword(Integer orgId, String directMessageToAddress) throws Exception;
+    
+    void executeConfigTransportSQL(String sqlStatement) throws Exception;
 }
