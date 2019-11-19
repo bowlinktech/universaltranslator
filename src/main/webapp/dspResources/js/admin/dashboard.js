@@ -373,7 +373,7 @@ function getOutboundMessages() {
 		"defaultContent": "",
 		"bSortable":true,
 		"sWidth": "10%",
-		"className": "center-text table-success",
+		"className": "center-text",
 		"render": function ( data, type, row, meta ) {
 		    var dateC = new Date(data);
 		    var minutes = dateC.getMinutes();
