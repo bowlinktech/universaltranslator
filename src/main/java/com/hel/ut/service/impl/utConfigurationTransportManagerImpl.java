@@ -28,6 +28,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.hel.ut.service.utConfigurationManager;
 import com.hel.ut.service.utConfigurationTransportManager;
 import com.hel.ut.dao.utConfigurationTransportDAO;
+import com.hel.ut.model.configurationconnectionfieldmappings;
 import com.hel.ut.model.organizationDirectDetails;
 import com.hel.ut.model.utConfiguration;
 import java.io.BufferedReader;
@@ -657,5 +658,20 @@ public class utConfigurationTransportManagerImpl implements utConfigurationTrans
 	    configurationTransportDAO.executeConfigTransportSQL(sqlQuery);
 	}
 
+    }
+    
+    @Override
+    public List<configurationconnectionfieldmappings> getConnectionFieldMappings(Integer targetConfigId, Integer sourceConfigId) throws Exception {
+	return configurationTransportDAO.getConnectionFieldMappings(targetConfigId,sourceConfigId);
+    }
+    
+    @Override
+    public void deleteConnectionMappedFields(Integer connectionId) throws Exception {
+	configurationTransportDAO.deleteConnectionMappedFields(connectionId);
+    }
+    
+    @Override
+    public void saveConnectionFieldMapping(configurationconnectionfieldmappings fieldMapping) throws Exception {
+	configurationTransportDAO.saveConnectionFieldMapping(fieldMapping);
     }
 }

@@ -9,24 +9,14 @@ require(['./main'], function () {
             $('.alert').delay(2000).fadeOut(1000);
         }
 	
-	var currentType = $('.type:checked').val();
-	if(currentType == 2) {
-	    $('#associatedSourceConfigIdDiv').show();
-	} 
-	else {
-	    $('#associatedSourceConfigIdDiv').hide();
-	}
-	
 	//Hide the Configuration Type if a target configuration type
 	$('.type').change(function(event) {
 	   
 	   if($(this).val() == 2) {
-	       $('#associatedSourceConfigIdDiv').show();
 	       $('#configurationTypeDiv').hide();
 	       $('#sourceTypeDiv').hide();
 	   } 
 	   else {
-	        $('#associatedSourceConfigIdDiv').hide();
 	       $('#configurationTypeDiv').show();
 	       $('#sourceTypeDiv').show();
 	   }
@@ -96,14 +86,6 @@ function checkform() {
         $('#configOrgMsg').addClass("has-error");
         $('#configOrgMsg').html('The organization is a required field.');
         errorFound = 1;
-    }
-    
-    if(selectedType == 2) {
-	if($('#associatedSourceConfigId').val() === "") {
-	    $('#associatedSourceConfigIdDiv').addClass("has-error");
-	    $('#associatedSourceConfigMsg').addClass("has-error");
-	    $('#associatedSourceConfigMsg').html('A source configuration must be selected when creating a target configuration.'); 
-	}
     }
     
 

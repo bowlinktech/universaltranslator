@@ -15,6 +15,7 @@ import com.hel.ut.model.configurationConnectionReceivers;
 import com.hel.ut.model.configurationFormFields;
 import com.hel.ut.model.configurationSchedules;
 import com.hel.ut.model.configurationTransport;
+import com.hel.ut.model.configurationconnectionfieldmappings;
 import com.hel.ut.model.custom.ConfigOutboundForInsert;
 import com.hel.ut.model.directmessagesout;
 import com.hel.ut.model.targetOutputRunLogs;
@@ -992,16 +993,15 @@ public class transactionOutDAOImpl implements transactionOutDAO {
     @Transactional(readOnly = false)
     public void loadTargetBatchTables(Integer batchDownloadId, Integer batchUploadId, Integer configId, Integer uploadConfigId) throws Exception {
 	
-	List<configurationFormFields> configFormFields = configurationTransportManager.getConfigurationFieldsToCopy(configId);
-	
-	List<configurationFormFields> uploadconfigFormFields = configurationTransportManager.getConfigurationFieldsToCopy(uploadConfigId);
+	//List<configurationFormFields> configFormFields = configurationTransportManager.getConfigurationFieldsToCopy(configId);
+	List<configurationconnectionfieldmappings> connectionFieldMappings = configurationTransportManager.getConnectionFieldMappings(configId,uploadConfigId);
 	
 	List<configurationTransport> handlingDetails = transactionInManager.getHandlingDetailsByBatch(batchUploadId);
 
 	StringBuilder tableFields = new StringBuilder();
 	
-	configFormFields.forEach(field -> {
-	    if(field.getUseField()) {
+	connectionFieldMappings.forEach(field -> {
+	    if(field.isUseField()) {
 		tableFields.append("F").append(field.getFieldNo()).append(" text").append(",");
 	    }
 	});
@@ -1026,8 +1026,8 @@ public class transactionOutDAOImpl implements transactionOutDAO {
 	StringBuilder selectFields = new StringBuilder();
 	StringBuilder insertFields = new StringBuilder();
 	
-	configFormFields.forEach(configfield -> {
-		if(configfield.getUseField()) {
+	connectionFieldMappings.forEach(configfield -> {
+		if(configfield.isUseField()) {
 		    selectFields.append("F").append(configfield.getAssociatedFieldNo()).append(",");
 		    insertFields.append("F").append(configfield.getFieldNo()).append(",");
 		}

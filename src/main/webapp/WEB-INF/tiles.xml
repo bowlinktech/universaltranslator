@@ -95,7 +95,6 @@
         <put-attribute name="actions" value="/WEB-INF/jsp/administrator/configurations/actionBar.jsp?page=transport" />
         <put-attribute name="menu" value="/WEB-INF/jsp/administrator/configurations/menu.jsp?page=transport" />
         <put-attribute name="body" value="/WEB-INF/jsp/administrator/configurations/transport.jsp" />
-        <put-attribute name="jscript" value="/dspResources/js/admin/configuration/transport.js" />
     </definition>
     
     <definition name="/administrator/configurations/messagespecs" extends="base.definition.admin">
@@ -148,8 +147,18 @@
         <put-attribute name="title" value="Administrator - Manage Configuration Connections" />
         <put-attribute name="header" value="/WEB-INF/jsp/common/adminHeader.jsp?sect=connect" />
         <put-attribute name="actions" value="/WEB-INF/jsp/administrator/configurations/actionBar.jsp?page=connections" />
-        <put-attribute name="body" value="/WEB-INF/jsp/administrator/configurations/connections.jsp" />
-        <put-attribute name="jscript" value="/dspResources/js/admin/configuration/connections.js" />
+        <put-attribute name="body" value="/WEB-INF/jsp/administrator/configurations/connections/connections.jsp" />
+        <put-attribute name="jscript" value="/dspResources/js/admin/configuration/connections/list.js" />
+    </definition>
+    
+    <definition name="/administrator/configurations/connections/details" extends="base.definition.admin">
+        <put-attribute name="page-id" value="configuration-connections" />
+        <put-attribute name="page-section" value="section-configurations" />
+        <put-attribute name="title" value="Administrator - Manage Configuration Connections" />
+        <put-attribute name="header" value="/WEB-INF/jsp/common/adminHeader.jsp?sect=connect" />
+        <put-attribute name="actions" value="/WEB-INF/jsp/administrator/configurations/actionBar.jsp?page=connectiondetails" />
+        <put-attribute name="body" value="/WEB-INF/jsp/administrator/configurations/connections/details.jsp" />
+        <put-attribute name="jscript" value="/dspResources/js/admin/configuration/connections/details.js" />
     </definition>
     
     <definition name="/administrator/configurations/schedule" extends="base.definition.admin">

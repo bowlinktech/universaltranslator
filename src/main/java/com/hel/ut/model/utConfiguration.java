@@ -19,7 +19,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 public class utConfiguration {
 
     @Transient
-    private String orgName = null, messageTypeName = null, transportMethod = null, sourceConfigurationName = "";
+    private String orgName = null, messageTypeName = null, transportMethod = null;
 
     @Transient
     private Integer transportDetailId = 0, scheduleType = 5;
@@ -47,7 +47,7 @@ public class utConfiguration {
     private Integer type = 1;
 
     @Column(name = "MESSAGETYPEID", nullable = false)
-    private Integer messageTypeId = 0;
+    private Integer messageTypeId = 1;
 
     @Column(name = "STEPSCOMPLETED", nullable = false)
     private Integer stepsCompleted = 0;
@@ -59,9 +59,6 @@ public class utConfiguration {
     @Column(name = "SOURCETYPE", nullable = false)
     private Integer sourceType = 1;
 
-    @Column(name = "associatedSourceConfigId", nullable = false)
-    private Integer associatedSourceConfigId = 0;
-    
     @Column(name = "THRESHOLD", nullable = false)
     private Integer threshold = 100;
     
@@ -208,14 +205,6 @@ public class utConfiguration {
 	this.configurationType = configurationType;
     }
 
-    public Integer getAssociatedSourceConfigId() {
-	return associatedSourceConfigId;
-    }
-
-    public void setAssociatedSourceConfigId(Integer associatedSourceConfigId) {
-	this.associatedSourceConfigId = associatedSourceConfigId;
-    }
-
     public boolean isDeleted() {
 	return deleted;
     }
@@ -224,13 +213,4 @@ public class utConfiguration {
 	this.deleted = deleted;
     }
 
-    public String getSourceConfigurationName() {
-	return sourceConfigurationName;
-    }
-
-    public void setSourceConfigurationName(String sourceConfigurationName) {
-	this.sourceConfigurationName = sourceConfigurationName;
-    }
-
-    
 }

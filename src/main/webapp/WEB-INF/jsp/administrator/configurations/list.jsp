@@ -38,13 +38,13 @@
 				   <table class="table table-striped table-hover table-default" <c:if test="${not empty sourceconfigurations}">id="sourceconfigdatatable"</c:if>>
 					<thead>
 					    <tr>
-						<th scope="col" class="center-text">Id</th>
-						<th scope="col">Organization</th>
-						<th scope="col">Configuration Name</th>
-						<th scope="col" class="center-text">Transport Method</th>
-						<th scope="col" class="center-text">Date Created</th>
-						<th scope="col" style="display:none"></th>
-						<th scope="col"></th>
+						<th scope="col" class="center-text" style="width:5%">Id</th>
+						<th scope="col" style="width:20%">Organization</th>
+						<th scope="col" style="width:30%">Configuration Name</th>
+						<th scope="col" class="center-text"style="width:20%">Transport Method</th>
+						<th scope="col" class="center-text" style="width:20%">Date Created</th>
+						<th style="display:none"></th>
+						<th scope="col" style="width:5%"></th>
 					    </tr>
 					</thead>
 					<tbody>
@@ -127,14 +127,13 @@
 				    <table class="table table-striped table-hover table-default" <c:if test="${not empty targetconfigurations}">id="targetconfigdatatable"</c:if>>
 					<thead>
 					    <tr>
-						<th scope="col" class="center-text">Id</th>
-						<th scope="col">Organization</th>
-						<th scope="col">Configuration Name</th>
-						<th scope="col">Associated Source Configuration</th>
-						<th scope="col" class="center-text">Transport Method</th>
-						<th scope="col" class="center-text">Date Created</th>
+						<th scope="col" class="center-text" style="width:5%">Id</th>
+						<th scope="col" style="width:20%">Organization</th>
+						<th scope="col" style="width:30%">Configuration Name</th>
+						<th scope="col" class="center-text"style="width:20%">Transport Method</th>
+						<th scope="col" class="center-text" style="width:20%">Date Created</th>
 						<th style="display:none"></th>
-						<th scope="col"></th>
+						<th scope="col" style="width:5%"></th>
 					    </tr>
 					</thead>
 					<tbody>
@@ -148,9 +147,6 @@
 							    <a href="javascript:void(0);" class="editConfig" rel="${config.id}" title="Edit this configuration">${config.configName}</a>
 							    <br />
 							    (<c:choose><c:when test="${config.status == true}">active</c:when><c:otherwise>inactive</c:otherwise></c:choose>)
-							</td>
-							<td>
-							    ${config.sourceConfigurationName} (Id: ${config.associatedSourceConfigId})
 							</td>
 							<td class="center-text">
 							    <c:choose><c:when test="${config.transportMethod == 'File Upload'}"><c:choose><c:when test="${config.type == 1}">File Upload</c:when><c:otherwise>File Download</c:otherwise></c:choose></c:when><c:otherwise>${config.transportMethod}</c:otherwise></c:choose>
@@ -195,7 +191,7 @@
 						</c:forEach>
 					    </c:when>
 					    <c:otherwise>
-						<tr><td colspan="7" class="center-text">There are currently no target configurations set up.</td></tr>
+						<tr><td colspan="6" class="center-text">There are currently no target configurations set up.</td></tr>
 					    </c:otherwise>
 					</c:choose>
 				    </tbody>

@@ -16,14 +16,7 @@
                         <a href="javascript:void(0);" title="Configuration Transport Details" class="unstyled-link">Configuration - Transport Method</a>
                     </c:when>
                     <c:when test="${param['page'] == 'mappings'}">
-			<c:choose>
-			    <c:when test="${configurationDetails.type == 1}">
-				<a href="javascript:void(0);" title="Configuration Field Mappings" class="unstyled-link">Configuration - Field Settings</a>
-			    </c:when>
-			    <c:otherwise>
-				<a href="javascript:void(0);" title="Configuration Field Mappings" class="unstyled-link">Configuration - Field Mappings</a>
-			    </c:otherwise>
-			</c:choose>
+			<a href="javascript:void(0);" title="Configuration Field Mappings" class="unstyled-link">Configuration - Field Settings</a>
                     </c:when>
                     <c:when test="${param['page'] == 'ERGCustomize'}">
                         <a href="javascript:void(0);" title="Configuration ERG Customization" class="unstyled-link">Configuration - ERG Customization</a>
@@ -61,8 +54,12 @@
                     <li><a href="create" title="Create New Configuration" role="button"><span class="glyphicon icon-stacked glyphicon glyphicon-plus"></span>Create New</a></li>
                 </c:when>
                 <c:when test="${param['page'] == 'connections'}">
-                    <li><a href="#connectionsModal" id="createNewConnection" data-toggle="modal" role="button" title="Create Configuration Connection"><span class="glyphicon icon-stacked glyphicon glyphicon-plus"></span>Create New</a></li>
+                    <li><a href="/administrator/configurations/connections/details" data-toggle="modal" role="button" title="Create Configuration Connection"><span class="glyphicon icon-stacked glyphicon glyphicon-plus"></span>Create New</a></li>
                 </c:when>  
+		<c:when test="${param['page'] == 'connectiondetails'}">
+                    <li role="menuitem"><a href="javascript:void(0);" id="saveDetails" title="Save this Connection" role="button"><span class="glyphicon glyphicon-ok icon-stacked"></span> Save </a></li>
+                    <li role="menuitem"><a href="javascript:void(0);" id="saveCloseDetails" title="Save &amp; Close" role="button"><span class="glyphicon glyphicon-floppy-disk icon-stacked"></span> Save &amp; Close</a></li>
+                </c:when>     
                 <c:when test="${param['page'] == 'CCD'}">
                     <li><a href="#ccdElementModal" id="createNewCCDElement" data-toggle="modal" role="button" title="Create CCD Element"><span class="glyphicon icon-stacked glyphicon glyphicon-plus"></span>Create New</a></li>
                 </c:when>    

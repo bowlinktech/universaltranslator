@@ -15,6 +15,7 @@ import com.hel.ut.model.configurationWebServiceSenders;
 import org.springframework.stereotype.Repository;
 
 import com.hel.ut.model.configurationWebServiceFields;
+import com.hel.ut.model.configurationconnectionfieldmappings;
 import com.hel.ut.model.organizationDirectDetails;
 
 @Repository
@@ -143,4 +144,10 @@ public interface utConfigurationTransportDAO {
     configurationTransport findConfigurationByDirectMessagKeyword(Integer orgId, String directMessageToAddress) throws Exception;
     
     void executeConfigTransportSQL(String sqlStatement) throws Exception;
+    
+    List<configurationconnectionfieldmappings> getConnectionFieldMappings(Integer targetConfigId, Integer sourceConfigId) throws Exception;
+    
+    void deleteConnectionMappedFields(Integer connectionId) throws Exception;
+    
+    void saveConnectionFieldMapping(configurationconnectionfieldmappings fieldMapping) throws Exception;
 }
