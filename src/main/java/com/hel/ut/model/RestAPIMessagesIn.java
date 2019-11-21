@@ -40,8 +40,8 @@ public class RestAPIMessagesIn {
     @Column(name = "orgId", nullable = true)
     private int orgId = 0;
 
-    @Column(name = "payload", nullable = true)
-    private String payload;
+    @Column(name = "archiveFileName", nullable = true)
+    private String archiveFileName;
 
     @Column(name = "statusId", nullable = false)
     private int statusId = 3; //set to reject
@@ -58,6 +58,9 @@ public class RestAPIMessagesIn {
 
     @Column(name = "configId", nullable = true)
     private int configId = 0;
+    
+    @Column(name = "messageTitle", nullable = true)
+    private String messageTitle;
 
 
     public int getId() {
@@ -92,13 +95,14 @@ public class RestAPIMessagesIn {
         this.dateCreated = dateCreated;
     }
 
-    public String getPayload() {
-        return payload;
+    public String getArchiveFileName() {
+	return archiveFileName;
     }
 
-    public void setPayload(String payload) {
-        this.payload = payload;
+    public void setArchiveFileName(String archiveFileName) {
+	this.archiveFileName = archiveFileName;
     }
+
 
     public Integer getErrorId() {
         return errorId;
@@ -165,4 +169,13 @@ public class RestAPIMessagesIn {
 	this.totalMessages = totalMessages;
     }
 
+    public String getMessageTitle() {
+	return messageTitle;
+    }
+
+    public void setMessageTitle(String messageTitle) {
+	this.messageTitle = messageTitle;
+    }
+
+    
 }

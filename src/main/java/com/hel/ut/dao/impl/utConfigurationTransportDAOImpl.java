@@ -1098,7 +1098,7 @@ public class utConfigurationTransportDAOImpl implements utConfigurationTransport
     @Transactional(readOnly = true)
     public configurationTransport validateAPICall(String apiCustomCall) throws Exception {
 	
-	String sql = ("select id, configId "
+	String sql = ("select * "
 		+ "from configurationTransportDetails "
                 + "where restAPIURL = :restAPIURL "
 		+ "and configId in (select id from configurations where status = 1 and type = 1)");

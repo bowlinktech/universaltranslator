@@ -129,8 +129,6 @@ public interface transactionInManager {
 
     List<configurationConnection> getBatchTargets(Integer batchId, boolean active);
 
-    void loadBatches() throws Exception;
-
     void loadBatch(Integer batchId) throws Exception;
 
     List<batchUploads> getBatchesByStatusIds(List<Integer> statusIds);
@@ -197,10 +195,6 @@ public interface transactionInManager {
 
     String getTransactionInIdsFromBatch(Integer batchUploadId);
     
-    Integer processWebServiceMessages();
-
-    Integer processWebServiceMessage(WSMessagesIn wsMessage);
-
     List<WSMessagesIn> getWSMessagesByStatusId(List<Integer> statusIds);
 
     WSMessagesIn getWSMessagesById(Integer wsMessageId);
@@ -281,15 +275,13 @@ public interface transactionInManager {
     
     void clearBatchRetry (Integer batchUploadId) throws Exception;
     
-    Integer insertRestApiMessage(Integer configId, String payload) throws Exception;
+    Integer insertRestApiMessage(RestAPIMessagesIn newRestAPIMessage) throws Exception;
     
-    Integer processRestAPIMessages();
+    void processRestAPIMessages();
     
     List<RestAPIMessagesIn> getRestAPIMessagesByStatusId(List<Integer> statusIds);
 
     RestAPIMessagesIn getRestAPIMessagesById(Integer RestAPIMessageId);
-    
-    Integer processRestAPIMessage(RestAPIMessagesIn APIMessage);
     
     Integer updateRestAPIMessage(RestAPIMessagesIn APIMessage);
     
@@ -308,8 +300,6 @@ public interface transactionInManager {
     Integer getLoadTransactionCount(String loadTableName) throws Exception;
     
     void deleteBatch(Integer batchId) throws Exception;
-    
-    void insertRestApiMessage(RestAPIMessagesIn apiMessage) throws Exception;
     
     Integer getRecordCountForTable(String tableName, String colName, int matchId) throws Exception;   
 

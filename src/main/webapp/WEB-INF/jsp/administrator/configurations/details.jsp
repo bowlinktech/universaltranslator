@@ -59,19 +59,7 @@
                                 </label>
                                 <c:if test="${configurationDetails.id > 0}"><form:hidden id="messageTypeId" path="messageTypeId"/></c:if>  
                                 </div>
-			</div>   
-			<div id="sourceTypeDiv" class="form-group" style="display:${configurationDetails.type == 1 ? 'block' : 'none'}">
-                            <label for="type">Source Type * </label>
-                            <div>
-				<label class="radio-inline">
-				    <form:radiobutton id="sourceType" path="sourceType" class="sourceType" value="1" disabled="${configurationDetails.id == 0 ? 'false' : 'true' }"/> Originating Message 
-				</label>
-				<label class="radio-inline">
-				    <form:radiobutton id="sourceType" path="sourceType" class="sourceType" value="2" disabled="${configurationDetails.id == 0 ? 'false' : 'true' }"/> Feedback Report
-				</label>
-				<c:if test="${configurationDetails.id > 0}"><form:hidden id="sourceTypeVal" path="sourceType"/></c:if>  
-			    </div>
-			</div>       
+			</div>    
 			<div id="configurationTypeDiv" class="form-group" style="display:${configurationDetails.type == 1 ? 'block' : 'none'}">
 			   <label for="type">Processing Type * </label>
 			   <div>

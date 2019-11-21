@@ -1153,10 +1153,10 @@ public class transactionInDAOImpl implements transactionInDAO {
 		+ "where sourceconfigId in (select distinct(configId) from transactioninrecords_"+batchId+") ";
 	    
 	    if (active) {
-		sql +=  "and b.status = 1 and a.status = 1 and (b.messageTypeId = 0 or b.messageTypeId in (select id from messageTypes where status = 1)) ";
+		sql +=  "and b.status = 1 and a.status = 1 ";
 	    }
 	    sql += "order by a.sourceConfigId;";
-
+	    
 	    Query query = sessionFactory.getCurrentSession().createSQLQuery(sql).setResultTransformer(
 		    Transformers.aliasToBean(configurationConnection.class));
 
@@ -2886,7 +2886,7 @@ public class transactionInDAOImpl implements transactionInDAO {
 		+ "and targetConfigId = configurations.id");
 	    
 	    if (active) {
-		sql = sql + " and configurations.status = 1 and configurationconnections.status = 1 and messageTypeId = 0";
+		sql = sql + " and configurations.status = 1 and configurationconnections.status = 1";
 	    }
 	    sql = sql + " order by sourceConfigId;";
 	    

@@ -2315,7 +2315,6 @@ public class adminConfigController {
 	newConfig.setMessageTypeId(configDetails.getMessageTypeId());
 	newConfig.setstepsCompleted(6);
 	newConfig.setconfigName(configDetails.getconfigName() + " (COPY)");
-	newConfig.setsourceType(configDetails.getsourceType());
 	newConfig.setThreshold(configDetails.getThreshold());
 	
 	//Save new Configuration

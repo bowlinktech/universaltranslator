@@ -14,11 +14,9 @@ require(['./main'], function () {
 	   
 	   if($(this).val() == 2) {
 	       $('#configurationTypeDiv').hide();
-	       $('#sourceTypeDiv').hide();
 	   } 
 	   else {
 	       $('#configurationTypeDiv').show();
-	       $('#sourceTypeDiv').show();
 	   }
 	});
 	

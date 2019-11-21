@@ -1309,10 +1309,10 @@ public class transactionOutDAOImpl implements transactionOutDAO {
 	}
 	
 	
-	String sqlQuery = "select id, utBatchName, transportMethodId, outputFileName, totalRecordCount, totalErrorCount, configName, threshold, statusId, dateCreated,"
+	String sqlQuery = "select id, orgId, utBatchName, transportMethodId, outputFileName, totalRecordCount, totalErrorCount, configName, threshold, statusId, dateCreated,"
 		+ "statusValue, endUserDisplayText, orgName, transportMethod, fromBatchName, fromBatchFile, totalMessages "
 		+ "FROM ("
-		+ "select a.id, a.utBatchName, a.transportMethodId, a.outputFileName, a.totalRecordCount, a.totalErrorCount, b.configName, b.threshold,"
+		+ "select a.id, a.orgId, a.utBatchName, a.transportMethodId, a.outputFileName, a.totalRecordCount, a.totalErrorCount, b.configName, b.threshold,"
 		+ "a.statusId, a.dateCreated, c.endUserDisplayCode as statusValue, c.endUserDisplayText as endUserDisplayText, d.orgName, e.transportMethod, f.utBatchName as fromBatchName,"
 		+ "case when f.transportMethodId = 5 THEN CONCAT(f.utBatchName,'.',SUBSTRING_INDEX(f.originalFileName,'.',-1)) "
 		+ "when f.transportMethodId = 1 THEN CONCAT(f.utBatchName,'.',SUBSTRING_INDEX(f.originalFileName,'.',-1)) "
@@ -1344,6 +1344,7 @@ public class transactionOutDAOImpl implements transactionOutDAO {
 	
 	Query query = sessionFactory.getCurrentSession().createSQLQuery(sqlQuery)
 	    .addScalar("id", StandardBasicTypes.INTEGER)
+	    .addScalar("orgId", StandardBasicTypes.INTEGER)
 	    .addScalar("utBatchName", StandardBasicTypes.STRING)
 	    .addScalar("transportMethodId", StandardBasicTypes.INTEGER)
 	    .addScalar("outputFileName", StandardBasicTypes.STRING)

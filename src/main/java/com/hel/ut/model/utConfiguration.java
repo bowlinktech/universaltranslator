@@ -56,9 +56,6 @@ public class utConfiguration {
     @Column(name = "CONFIGNAME", nullable = false)
     private String configName;
 
-    @Column(name = "SOURCETYPE", nullable = false)
-    private Integer sourceType = 1;
-
     @Column(name = "THRESHOLD", nullable = false)
     private Integer threshold = 100;
     
@@ -171,14 +168,6 @@ public class utConfiguration {
 
     public String getconfigName() {
         return configName;
-    }
-
-    public void setsourceType(Integer sourceType) {
-        this.sourceType = sourceType;
-    }
-
-    public Integer getsourceType() {
-        return sourceType;
     }
 
     public Integer getScheduleType() {
