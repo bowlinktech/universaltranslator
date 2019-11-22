@@ -3451,7 +3451,7 @@ public class transactionInManagerImpl implements transactionInManager {
 		    }
 
 		    //we determine output file name
-		    batchDownload.setOutputFileName(transactionoutmanager.generateDLBatchName(transportDetails, configDetails, batchUploadDetails, date) + "." + transportDetails.getfileExt());
+		    batchDownload.setOutputFileName(transactionoutmanager.generateDLBatchName(utbatchName,transportDetails, configDetails, batchUploadDetails, date) + "." + transportDetails.getfileExt());
 		    batchDownload.setMergeable(false);
 		    batchDownload.setStartDateTime(new Date());
 		    batchDownload.setTransportMethodId(transportDetails.gettransportMethodId());
@@ -3597,7 +3597,7 @@ public class transactionInManagerImpl implements transactionInManager {
 		batchDownload.setStatusId(28);
 
 		//we determine output file name
-		batchDownload.setOutputFileName(transactionoutmanager.generateDLBatchName(transportDetails, tgtconfigDetails, batchDetails, date) + "." + transportDetails.getfileExt());
+		batchDownload.setOutputFileName(transactionoutmanager.generateDLBatchName(utbatchName,transportDetails, tgtconfigDetails, batchDetails, date) + "." + transportDetails.getfileExt());
 		batchDownload.setMergeable(false);
 		batchDownload.setStartDateTime(new Date());
 		batchDownload.setTransportMethodId(transportDetails.gettransportMethodId());

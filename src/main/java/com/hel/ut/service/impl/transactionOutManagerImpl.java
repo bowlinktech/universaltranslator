@@ -1503,7 +1503,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
     }
 
     @Override
-    public String generateDLBatchName(configurationTransport transportDetails, utConfiguration configDetails,
+    public String generateDLBatchName(String utbatchName, configurationTransport transportDetails, utConfiguration configDetails,
 	    batchUploads batchUploadDetails, Date date) throws Exception {
 
 	DateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmssS");
@@ -1513,10 +1513,20 @@ public class transactionOutManagerImpl implements transactionOutManager {
 	
 	if (transportDetails.gettargetFileName() == null) {
 	    // Create the batch name (OrgId+MessageTypeId)
-	    batchName = new StringBuilder().append(configDetails.getorgId()).append(configDetails.getMessageTypeId()).toString();
+	    if("".equals(utbatchName)) {
+		batchName = utbatchName;
+	    }
+	    else {
+		batchName = new StringBuilder().append(configDetails.getorgId()).append(configDetails.getMessageTypeId()).toString();
+	    }
 	} 
 	else if ("".equals(transportDetails.gettargetFileName())) {
-	    batchName = new StringBuilder().append(configDetails.getorgId()).append(configDetails.getMessageTypeId()).toString();
+	    if("".equals(utbatchName)) {
+		batchName = utbatchName;
+	    }
+	    else {
+		batchName = new StringBuilder().append(configDetails.getorgId()).append(configDetails.getMessageTypeId()).toString();
+	    }
 	}
 	else if ("USE SOURCE FILE".equals(transportDetails.gettargetFileName())) {
 	    int lastPeriodPos = sourceFileName.lastIndexOf(".");

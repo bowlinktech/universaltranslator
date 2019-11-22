@@ -20,14 +20,14 @@ require(['./main'], function () {
 	
 	//if the selected transport method is From a Health-e-Link Registry or going to a Health-e-Link registry
 	//show the conifguration box
-	if(messageTypeId == 1 &&transportMethod == 10 && helRegistryId > 0 && helSchemaName !== "") {
+	if(messageTypeId == 1 && helRegistryId > 0 && helSchemaName !== "") {
 	    populateHELRegistryConfigs(helRegistryId,helSchemaName);
 	}
 	
 	$('#transportMethod').change(function () {
             var methodId = $(this).val();
 	    
-	    if(methodId == 10 && helRegistryId > 0 && helSchemaName !== "") {
+	    if(helRegistryId > 0 && helSchemaName !== "") {
 		populateHELRegistryConfigs(helRegistryId,helSchemaName);
 		
 		//If method == 10 (Coming from a HEL Registry online form preset the values

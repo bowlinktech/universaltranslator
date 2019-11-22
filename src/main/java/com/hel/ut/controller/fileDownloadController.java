@@ -101,6 +101,9 @@ public class fileDownloadController {
 		if("archivesOut".equals(foldername)) {
 		    directory = myProps.getProperty("ut.directory.utRootDir") + cleanURL + "/output files/";
 		}
+		else if ("input files".equals(foldername)) {
+		     directory = myProps.getProperty("ut.directory.utRootDir") + cleanURL + "/input files/";
+		}
 		else {
 		    directory = myProps.getProperty("ut.directory.utRootDir") + foldername + "/";
 		}
