@@ -286,7 +286,7 @@
     </section>
 
     <%-- DIRECT MESSAGE Details --%>	
-    <section id="directMessageDetailsDiv" class="panel panel-default" style="display:block">
+    <section id="directMessageDetailsDiv" class="panel panel-default" style="display:none">
 	<div class="panel-heading">
 	    <h3 class="panel-title">Direct Message Details</h3>
 	</div>

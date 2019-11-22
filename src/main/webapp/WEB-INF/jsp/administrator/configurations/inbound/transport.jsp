@@ -235,7 +235,7 @@
     <%-- DIRECT MESSAGE Details --%>	
     <section id="directMessageDetailsDiv" class="panel panel-default" style="display:none">
 	<div class="panel-heading">
-	    <h3 class="panel-title"><input type="checkbox" id="enableDirect" value="1" <c:if test="${transportDetails.directMessageFields[0].id > 0}">checked</c:if>> Enable HISP</h3>
+	    <h3 class="panel-title"><input type="checkbox" id="enableDirect" value="1" <c:if test="${transportDetails.directMessageFields[0].id > 0 && transportDetails.transportMethodId == 13}">checked</c:if>> Enable HISP</h3>
 	</div>
 	<div class="panel-body ${transportDetails.directMessageFields[0].id > 0 ? '' : 'collapse'} directDetails">
 	    <div class="form-container">
