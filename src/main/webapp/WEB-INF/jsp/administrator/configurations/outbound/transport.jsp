@@ -11,6 +11,7 @@
 
     <input type="hidden" id="action" name="action" value="save" />
     <input type="hidden" id="messageTypeId" value="${messageTypeId}" />
+    <input type="hidden" id="helRegistryFolderName" value="${helRegistryFolderName}" />
     <form:hidden path="id" id="id" />
     <form:hidden path="configId" id="configId" />
     <form:hidden path="autoRelease" value="1" />
@@ -285,7 +286,7 @@
     </section>
 
     <%-- DIRECT MESSAGE Details --%>	
-    <section id="directMessageDetailsDiv" class="panel panel-default" style="display:none">
+    <section id="directMessageDetailsDiv" class="panel panel-default" style="display:block">
 	<div class="panel-heading">
 	    <h3 class="panel-title">Direct Message Details</h3>
 	</div>
@@ -296,6 +297,8 @@
 		   <input name="directMessageFields[0].id" type="hidden" value="${directMessageFields.id}"  />
 		   <input name="directMessageFields[0].orgId" type="hidden" value="${directMessageFields.orgId}"  />
 		   <input name="directMessageFields[0].dateCreated" type="hidden" value="${directMessageFields.dateCreated}"  />
+		   <input name="directMessageFields[0].directDomain" type="hidden" value="${directMessageFields.directDomain}"  />
+		   <input name="directMessageFields[0].dmFindConfig" type="hidden" value="${directMessageFields.dmFindConfig}"  />
 		   <label class="control-label" for="hispId">Select the HISP *</label>
 		   <select name="directMessageFields[0].hispId" id="hispId" class="form-control sm-input">
 		       <option value="">- Select -</option>

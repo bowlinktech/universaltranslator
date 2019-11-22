@@ -67,6 +67,8 @@ import com.hel.ut.service.utConfigurationManager;
 import com.hel.ut.service.utConfigurationTransportManager;
 import com.registryKit.registry.configurations.configuration;
 import com.registryKit.registry.configurations.configurationManager;
+import com.registryKit.registry.helRegistry;
+import com.registryKit.registry.helRegistryManager;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
@@ -109,6 +111,9 @@ public class adminConfigController {
     
     @Autowired
     private hispManager hispManager;
+    
+    @Autowired
+    private helRegistryManager helregistrymanager;
     
     @Resource(name = "myProps")
     private Properties myProps;
@@ -416,6 +421,22 @@ public class adminConfigController {
 	
 	configurationDetails.setOrgName(orgDetails.getOrgName());
 	
+	String helRegistryFolderName = "";
+	
+	if(orgDetails.getHelRegistryOrgId() > 0) {
+	    List<helRegistry> helRegistries = helregistrymanager.getAllActiveRegistries();
+	    
+	    if(!helRegistries.isEmpty()) {
+		for(helRegistry registry : helRegistries) {
+		    if(registry.getId() == orgDetails.getHelRegistryId()) {
+			helRegistryFolderName = registry.getRegistryName().replace(" ", "-").toLowerCase();
+			mav.addObject("helRegistryFolderName", helRegistryFolderName);
+		    }
+		}
+	    }
+	}
+	mav.addObject("helRegistryFolderName", helRegistryFolderName);
+	
         configurationTransport transportDetails = utconfigurationTransportManager.getTransportDetails(configId);
         if (transportDetails == null) {
             transportDetails = new configurationTransport();
@@ -636,6 +657,7 @@ public class adminConfigController {
             }
         }
 	
+	
         // need to get file drop info if any has been entered 
 	if (!transportDetails.getFileDropFields().isEmpty()) {
 	    fileSystem dir = new fileSystem();
@@ -651,27 +673,23 @@ public class adminConfigController {
             }
         }
 	
+	
 	//Direct Message Transport
-	if(!transportDetails.getDirectMessageFields().isEmpty()) {
-	    if(transportDetails.getDirectMessageFields().get(0).getHispId() > 0) {
-		transportDetails.getDirectMessageFields().get(0).setFileTypeId(transportDetails.getfileType());
-		transportDetails.getDirectMessageFields().get(0).setExpectedFileExt(transportDetails.getfileExt());
-		transportDetails.getDirectMessageFields().get(0).setStatus(true);
-		transportDetails.getDirectMessageFields().get(0).setDateModified(new Date());
-
-		utconfigurationTransportManager.saveTransportDirectMessageDetails(transportDetails.getDirectMessageFields().get(0));
-
-		//Need to check if the folders exist
-		Organization orgDetails = organizationmanager.getOrganizationById(configurationDetails.getorgId());
-		fileSystem dir = new fileSystem();
-
-		String directory = myProps.getProperty("ut.directory.utRootDir");
-
-		dir.createDirectMessageDirectory(directory+"directMessages");
-		dir.createDirectMessageDirectory(directory+"directMessages/"+orgDetails.getCleanURL());
+	if(transportDetails.getDirectMessageFields() != null) {
+	    if(!transportDetails.getDirectMessageFields().isEmpty()) {
+		if(transportDetails.getDirectMessageFields().get(0).getHispId() > 0) {
+		    transportDetails.getDirectMessageFields().get(0).setFileTypeId(transportDetails.getfileType());
+		    transportDetails.getDirectMessageFields().get(0).setExpectedFileExt(transportDetails.getfileExt());
+		    transportDetails.getDirectMessageFields().get(0).setStatus(true);
+		    transportDetails.getDirectMessageFields().get(0).setDateModified(new Date());
+		    
+		    utconfigurationTransportManager.saveTransportDirectMessageDetails(transportDetails.getDirectMessageFields().get(0));
+		    
+		}
 	    }
 	}
-
+	
+	
         /**
          * Need to set the associated messages types
          *

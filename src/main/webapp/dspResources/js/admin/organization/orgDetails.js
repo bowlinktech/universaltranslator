@@ -182,10 +182,10 @@ function populateHELRegistries(isHELRegistry) {
 
 		 $.each(data, function(index) {
 		    if(data[index][0] == selRegistryId) {
-			helRegistrySelect.append($('<option selected></option>').val(data[index][0]+'-'+data[index][2]).html(data[index][1]));
+			helRegistrySelect.append($('<option selected></option>').val(data[index].id+'-'+data[index].dbschemaname).html(data[index].registryName));
 		    }
 		    else {
-			helRegistrySelect.append($('<option></option>').val(data[index][0]+'-'+data[index][2]).html(data[index][1]));
+			helRegistrySelect.append($('<option></option>').val(data[index].id+'-'+data[index].dbschemaname).html(data[index].registryName));
 		    }
 		 });
 	     }
