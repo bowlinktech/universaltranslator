@@ -1513,7 +1513,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
 	
 	if (transportDetails.gettargetFileName() == null) {
 	    // Create the batch name (OrgId+MessageTypeId)
-	    if("".equals(utbatchName)) {
+	    if(!"".equals(utbatchName)) {
 		batchName = utbatchName;
 	    }
 	    else {
@@ -1521,7 +1521,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
 	    }
 	} 
 	else if ("".equals(transportDetails.gettargetFileName())) {
-	    if("".equals(utbatchName)) {
+	    if(!"".equals(utbatchName)) {
 		batchName = utbatchName;
 	    }
 	    else {
