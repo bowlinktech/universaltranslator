@@ -18,7 +18,6 @@
             <form:hidden path="id" id="id" />
             <form:hidden path="dateCreated" />
             <form:hidden path="stepsCompleted" />
-
             <section class="panel panel-default">
 
                 <div class="panel-heading">
@@ -47,20 +46,20 @@
                                     <form:radiobutton id="type" path="type" value="2" class="type" disabled="${configurationDetails.id == 0 ? 'false' : 'true' }"/> For Target Organization
                                 </label>
                                 <c:if test="${configurationDetails.id > 0}"><form:hidden id="typeVal" path="type"/></c:if>  
-                                </div>
-			</div>
-			<div id="sourceTypeDiv" class="form-group" style="display:${configurationDetails.type == 1 ? 'block' : 'none'}">
-                            <label for="type">Source Type * </label>
-                            <div>
-				<label class="radio-inline">
-				    <form:radiobutton id="sourceType" path="sourceType" class="sourceType" value="1" disabled="${configurationDetails.id == 0 ? 'false' : 'true' }"/> Originating Message 
-				</label>
-				<label class="radio-inline">
-				    <form:radiobutton id="sourceType" path="sourceType" class="sourceType" value="2" disabled="${configurationDetails.id == 0 ? 'false' : 'true' }"/> Feedback Report
-				</label>
-				<c:if test="${configurationDetails.id > 0}"><form:hidden id="sourceTypeVal" path="sourceType"/></c:if>  
 			    </div>
-			</div>       
+			</div>
+			 <div class="form-group">
+                            <label for="messageTypeId">Message Type *</label>
+                            <div>
+                                <label class="radio-inline">
+                                    <form:radiobutton id="messageTypeId" path="messageTypeId" value="1" class="type" disabled="${configurationDetails.id == 0 ? 'false' : 'true' }"/> eReferral Configuration
+                                </label>
+                                <label class="radio-inline">
+                                    <form:radiobutton id="messageTypeId" path="messageTypeId" value="2" class="type" disabled="${configurationDetails.id == 0 ? 'false' : 'true' }"/> Family Planning Configuration
+                                </label>
+                                <c:if test="${configurationDetails.id > 0}"><form:hidden id="messageTypeId" path="messageTypeId"/></c:if>  
+                                </div>
+			</div>    
 			<div id="configurationTypeDiv" class="form-group" style="display:${configurationDetails.type == 1 ? 'block' : 'none'}">
 			   <label for="type">Processing Type * </label>
 			   <div>
@@ -87,22 +86,6 @@
                                     <span id="configOrgMsg" class="control-label"></span>
                                 </div>
                         </spring:bind>
-			<spring:bind path="associatedSourceConfigId">
-                            <div id="associatedSourceConfigIdDiv" class="form-group ${status.error ? 'has-error' : '' }" style="display:none">
-                                <label class="control-label" for="associatedSourceConfigId">Associated Source Configuration *</label>
-                                <form:select path="associatedSourceConfigId" id="associatedSourceConfigId" class="form-control half">
-                                    <option value="">- Select -</option>
-                                    <c:forEach items="${sourceConfigurations}" var="sourceConfig">
-                                        <option value="${sourceConfig.id}" <c:if test="${configurationDetails.associatedSourceConfigId == sourceConfig.id}">selected</c:if>>${sourceConfig.orgName} - ${sourceConfig.configName} (ID:${sourceConfig.id})</option>
-                                    </c:forEach>
-                                </form:select>
-                                <c:if test="${configurationDetails.id > 0}">
-				    <form:hidden id="organization" class="savedOrgId" path="orgId"/>
-				    <form:hidden id="associatedSourceConfigId" path="associatedSourceConfigId"/>
-				</c:if>  
-				<span id="associatedSourceConfigMsg" class="control-label"></span>
-			    </div>
-                        </spring:bind>       
                         <spring:bind path="configName">
                             <div id="configNameDiv" class="form-group ${status.error ? 'has-error' : '' } ${not empty existingName ? 'has-error' : ''}">
                                 <label class="control-label" for="configName">Unique Configuration Name *</label>

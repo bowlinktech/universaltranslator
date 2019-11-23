@@ -153,7 +153,7 @@ function populateMessages(fromDate,toDate) {
 		    var myDateFormatted = ((dateC.getMonth()*1)+1)+'/'+dateC.getDate()+'/'+dateC.getFullYear();
 		    return myDateFormatted;
 		}
-	    },
+	    }/*,
 	    {
 		"mData": "orgName", 
 		"defaultContent": "",
@@ -163,7 +163,7 @@ function populateMessages(fromDate,toDate) {
 		"render": function ( data, type, row, meta ) {
 		   return '<a href="#!" class="viewPayload" rel="'+row.id+'" title="View Payload"><span class="glyphicon glyphicon-edit"></span> View Payload</a>';
 		}
-	    }
+	    }*/
 	 ]
     });   
 }

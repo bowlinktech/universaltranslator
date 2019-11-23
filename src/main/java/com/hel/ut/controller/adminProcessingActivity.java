@@ -2555,7 +2555,7 @@ public class adminProcessingActivity {
         RestAPIMessagesIn restAPIMessage = restfulmanager.getRestAPIMessagesIn(messageId);
         String payload = "";
         if (restAPIMessage != null) {
-            payload = restAPIMessage.getPayload();
+            //payload = restAPIMessage.getPayload();
         }
 
         return payload;

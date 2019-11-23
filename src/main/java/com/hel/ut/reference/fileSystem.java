@@ -202,6 +202,7 @@ public class fileSystem {
         int delimCount = 0;
         String errorMessage = "";
         FileInputStream fileInput = null;
+	
         try {
             fileInput = new FileInputStream(file);
 
@@ -211,7 +212,7 @@ public class fileSystem {
         }
 
         BufferedReader br = new BufferedReader(new InputStreamReader(fileInput));
-
+	
         try {
             String line;
             try {

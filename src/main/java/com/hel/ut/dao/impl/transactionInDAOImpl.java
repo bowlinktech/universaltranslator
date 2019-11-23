@@ -1153,10 +1153,10 @@ public class transactionInDAOImpl implements transactionInDAO {
 		+ "where sourceconfigId in (select distinct(configId) from transactioninrecords_"+batchId+") ";
 	    
 	    if (active) {
-		sql +=  "and b.status = 1 and a.status = 1 and (b.messageTypeId = 0 or b.messageTypeId in (select id from messageTypes where status = 1)) ";
+		sql +=  "and b.status = 1 and a.status = 1 ";
 	    }
 	    sql += "order by a.sourceConfigId;";
-
+	    
 	    Query query = sessionFactory.getCurrentSession().createSQLQuery(sql).setResultTransformer(
 		    Transformers.aliasToBean(configurationConnection.class));
 
@@ -2886,7 +2886,7 @@ public class transactionInDAOImpl implements transactionInDAO {
 		+ "and targetConfigId = configurations.id");
 	    
 	    if (active) {
-		sql = sql + " and configurations.status = 1 and configurationconnections.status = 1 and messageTypeId = 0";
+		sql = sql + " and configurations.status = 1 and configurationconnections.status = 1";
 	    }
 	    sql = sql + " order by sourceConfigId;";
 	    
@@ -3081,10 +3081,10 @@ public class transactionInDAOImpl implements transactionInDAO {
 	}
 	
 	
-	String sqlQuery = "select id, utBatchName, transportMethodId, originalFileName, totalRecordCount, errorRecordCount, configName, threshold, inboundBatchConfigurationType, statusId, dateSubmitted,"
+	String sqlQuery = "select id, orgId, utBatchName, transportMethodId, originalFileName, totalRecordCount, errorRecordCount, configName, threshold, inboundBatchConfigurationType, statusId, dateSubmitted,"
 		+ "statusValue, endUserDisplayText, orgName, transportMethod, totalMessages, 'On Demand' as uploadType "
 		+ "FROM ("
-		+ "select a.id , a.utBatchName, a.transportMethodId, a.originalFileName, a.totalRecordCount, a.errorRecordCount, b.configName, b.threshold, b.configurationType as inboundBatchConfigurationType,"
+		+ "select a.id, a.orgId, a.utBatchName, a.transportMethodId, a.originalFileName, a.totalRecordCount, a.errorRecordCount, b.configName, b.threshold, b.configurationType as inboundBatchConfigurationType,"
 		+ "a.statusId, a.dateSubmitted, c.endUserDisplayCode as statusValue, c.endUserDisplayText as endUserDisplayText,d.orgName, e.transportMethod,"
 		+ "(select count(id) as total from batchuploads where "+dateSQLStringTotal+") as totalMessages "
 		+ "FROM batchuploads a inner join "
@@ -3110,6 +3110,7 @@ public class transactionInDAOImpl implements transactionInDAO {
 	
 	Query query = sessionFactory.getCurrentSession().createSQLQuery(sqlQuery)
 	    .addScalar("id", StandardBasicTypes.INTEGER)
+	    .addScalar("orgId", StandardBasicTypes.INTEGER)
 	    .addScalar("utBatchName", StandardBasicTypes.STRING)
 	    .addScalar("transportMethodId", StandardBasicTypes.INTEGER)
 	    .addScalar("originalFileName", StandardBasicTypes.STRING)

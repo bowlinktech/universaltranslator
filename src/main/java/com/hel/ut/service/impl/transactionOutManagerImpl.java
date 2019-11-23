@@ -1503,7 +1503,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
     }
 
     @Override
-    public String generateDLBatchName(configurationTransport transportDetails, utConfiguration configDetails,
+    public String generateDLBatchName(String utbatchName, configurationTransport transportDetails, utConfiguration configDetails,
 	    batchUploads batchUploadDetails, Date date) throws Exception {
 
 	DateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmssS");
@@ -1513,10 +1513,20 @@ public class transactionOutManagerImpl implements transactionOutManager {
 	
 	if (transportDetails.gettargetFileName() == null) {
 	    // Create the batch name (OrgId+MessageTypeId)
-	    batchName = new StringBuilder().append(configDetails.getorgId()).append(configDetails.getMessageTypeId()).toString();
+	    if(!"".equals(utbatchName)) {
+		batchName = utbatchName;
+	    }
+	    else {
+		batchName = new StringBuilder().append(configDetails.getorgId()).append(configDetails.getMessageTypeId()).toString();
+	    }
 	} 
 	else if ("".equals(transportDetails.gettargetFileName())) {
-	    batchName = new StringBuilder().append(configDetails.getorgId()).append(configDetails.getMessageTypeId()).toString();
+	    if(!"".equals(utbatchName)) {
+		batchName = utbatchName;
+	    }
+	    else {
+		batchName = new StringBuilder().append(configDetails.getorgId()).append(configDetails.getMessageTypeId()).toString();
+	    }
 	}
 	else if ("USE SOURCE FILE".equals(transportDetails.gettargetFileName())) {
 	    int lastPeriodPos = sourceFileName.lastIndexOf(".");
@@ -1770,7 +1780,6 @@ public class transactionOutManagerImpl implements transactionOutManager {
 	//Delete all batch upload tables
 	transactionOutDAO.deleteBatchUploadTables(batchDownload.getBatchUploadId());
 
-	//we get the configs for the file
 	clearDownloadBatch(batchDownload.getId());
 
 	utConfiguration configDetails = configurationManager.getConfigurationById(batchDownload.getConfigId());
@@ -1989,8 +1998,8 @@ public class transactionOutManagerImpl implements transactionOutManager {
 	    }
 
 	    
-	    //If the transport method is Move to a health-e-link registry website (ID:8)
-	    if(transportDetails.gettransportMethodId() == 8) {
+	    //If the transport method File Drop (13) and associated to a eReferral Registry and Configuration
+	    if(transportDetails.gettransportMethodId() == 13 && transportDetails.getHelRegistryConfigId() > 0 && !"".equals(transportDetails.getHelSchemaName()) && transportDetails.getHelRegistryId() > 0) {
 		
 		//Need to get the health-e-link registry details
 		Organization utOrgDetails = organizationManager.getOrganizationById(batchDownload.getOrgId());
@@ -2001,8 +2010,19 @@ public class transactionOutManagerImpl implements transactionOutManager {
 		    if(!registryDetails.getRegistryName().equals("")) {
 			String registryFolderName = registryDetails.getRegistryName().toLowerCase().replaceAll(" ","-");
 			
+			//Check to see if there is file drop details
+			//File Drop directory
+			List<configurationFileDropFields> fileDropFields = configurationTransportManager.getTransFileDropDetails(transportDetails.getId());
+
+			String fileDropDir =  registryFolderName + "/loadFiles/";
+
+			for(configurationFileDropFields dropField : fileDropFields){
+			    if(dropField.getMethod() == 2) {
+				fileDropDir = dropField.getDirectory();
+			    }
+			}
 			
-			File targetFile = new File(myProps.getProperty("registry.directory.path") + registryFolderName + "/loadFiles/" + batchDownload.getUtBatchName() + "." + fileExt);
+			File targetFile = new File(myProps.getProperty("registry.directory.path") + fileDropDir.replace("/HELProductSuite/registries/", "") + batchDownload.getOutputFileName());
 			Files.copy(archiveFile.toPath(), targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
 			
 			//Check to see if a submitted message entry was made, if not we need to create one.
@@ -2013,7 +2033,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
 			if(existingRegistrySubmittedMessage != null){
 			    if(existingRegistrySubmittedMessage.getId() > 0) {
 				//Need to update the Registry submitted message entry to capture the created file name
-				submittedmessagemanager.updateSubmittedMessage(registryDetails.getDbschemaname(),batchDownload.getBatchUploadId(),batchDownload.getUtBatchName() + "." + fileExt,utOrgDetails.getHelRegistryOrgId());
+				submittedmessagemanager.updateSubmittedMessage(registryDetails.getDbschemaname(),batchDownload.getBatchUploadId(),batchDownload.getOutputFileName(),utOrgDetails.getHelRegistryOrgId());
 			    }
 			    else {
 				createSubmittedMessage = true;
@@ -2049,7 +2069,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
 			    newSubmittedMessage.setTotalRows(batchUploadDetails.getTotalRecordCount());
 			    newSubmittedMessage.setSourceOrganizationId(organizationDetails.getHelRegistryOrgId());
 			    newSubmittedMessage.setTargetOrganizationId(utOrgDetails.getHelRegistryOrgId());
-			    newSubmittedMessage.setReceivedFileName(batchDownload.getUtBatchName() + "." + fileExt);
+			    newSubmittedMessage.setReceivedFileName(batchDownload.getOutputFileName());
 			    newSubmittedMessage.setAssignedMessageNumber(messageName);
 
 			    submittedmessagemanager.submitSubmittedMessage(registryDetails.getDbschemaname(),newSubmittedMessage);
@@ -2061,9 +2081,34 @@ public class transactionOutManagerImpl implements transactionOutManager {
 		    //Insert a processing error
 		}
 	    }
+	    
+	    //File Drop (Not to a eReferral Registry)
+	    else if (transportDetails.gettransportMethodId() == 13) {
+		
+		//Check to see if there is file drop details
+		//File Drop directory
+		List<configurationFileDropFields> fileDropFields = configurationTransportManager.getTransFileDropDetails(transportDetails.getId());
+
+		String fileDropDir =  "";
+
+		for(configurationFileDropFields dropField : fileDropFields){
+		    if(dropField.getMethod() == 2) {
+			fileDropDir = dropField.getDirectory();
+		    }
+		}
+		
+		if(!"".equals(fileDropDir)) {
+		    File targetFile = new File(fileDropDir + batchDownload.getUtBatchName() + "." + fileExt);
+		    Files.copy(archiveFile.toPath(), targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+		}
+		else {
+		     updateTargetBatchStatus(batchDownload.getId(), 58, "endDateTime");
+		}
+	    }
 
 	    //Secure FTP Transport Method
 	    else if (transportDetails.gettransportMethodId() == 3) {
+		
 		/* Get the File Drop Details */
 		configurationFTPFields FTPPushDetails = configurationTransportManager.getTransportFTPDetailsPush(transportDetails.getId());
 
@@ -2131,18 +2176,15 @@ public class transactionOutManagerImpl implements transactionOutManager {
 	    
 	    //Need to check if the source message came from a HEL registry but the target is not sending back to the registry. In this case
 	    //We need to mark the message in the registry as complete and insert the target link.
-	    if(transportDetails.gettransportMethodId() != 8) {
-		
-		configurationTransport sourceTransportDetails = configurationTransportManager.getTransportDetails(batchUploadDetails.getConfigId());
-		
-		if(sourceTransportDetails.getHelSchemaName() != null) {
-		    if(!"".equals(sourceTransportDetails.getHelSchemaName())) {
-			submittedMessage existingRegistrySubmittedMessage = submittedmessagemanager.getSubmittedMessageBySQL(sourceTransportDetails.getHelSchemaName(),batchUploadDetails.getOriginalFileName());
+	    configurationTransport sourceTransportDetails = configurationTransportManager.getTransportDetails(batchUploadDetails.getConfigId());
 
-			if (existingRegistrySubmittedMessage != null) {
-			    submittedmessagemanager.updateSubmittedMessage(sourceTransportDetails.getHelSchemaName(),existingRegistrySubmittedMessage.getId(),28,batchUploadDetails.getId());
-			    submittedmessagemanager.enterSubmittedMessageTarget(existingRegistrySubmittedMessage.getId());
-			}
+	    if(sourceTransportDetails.getHelSchemaName() != null) {
+		if(!"".equals(sourceTransportDetails.getHelSchemaName())) {
+		    submittedMessage existingRegistrySubmittedMessage = submittedmessagemanager.getSubmittedMessageBySQL(sourceTransportDetails.getHelSchemaName(),batchUploadDetails.getOriginalFileName());
+
+		    if (existingRegistrySubmittedMessage != null) {
+			submittedmessagemanager.updateSubmittedMessage(sourceTransportDetails.getHelSchemaName(),existingRegistrySubmittedMessage.getId(),28,batchUploadDetails.getId());
+			submittedmessagemanager.enterSubmittedMessageTarget(sourceTransportDetails.getHelSchemaName(),existingRegistrySubmittedMessage.getId());
 		    }
 		}
 	    }

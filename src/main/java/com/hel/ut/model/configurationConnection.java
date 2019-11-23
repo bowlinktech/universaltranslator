@@ -31,10 +31,7 @@ public class configurationConnection {
     private String targetOrgName = null;
 
     @Transient
-    private int targetOrgId = 0;
-
-    @Transient
-    private int messageTypeId = 0;
+    private int targetOrgId = 0, messageTypeId = 0;
 
     @Transient
     private List<utUser> connectionSenders = null, connectionReceivers = null;

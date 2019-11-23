@@ -25,6 +25,7 @@ import java.util.Iterator;
 
 import org.springframework.stereotype.Repository;
 import com.hel.ut.dao.utConfigurationTransportDAO;
+import com.hel.ut.model.configurationconnectionfieldmappings;
 import com.hel.ut.model.organizationDirectDetails;
 
 @Repository
@@ -112,12 +113,12 @@ public class utConfigurationTransportDAOImpl implements utConfigurationTransport
 	 
 	//Source configuration
 	if(configurationType == 1) {
-	    query = sessionFactory.getCurrentSession().createSQLQuery("SELECT id, transportMethod FROM ref_transportMethods where active = 1 and id in (1,3,4,6,9,10,11,12) order by transportMethod asc");
+	    query = sessionFactory.getCurrentSession().createSQLQuery("SELECT id, transportMethod FROM ref_transportMethods where active = 1 and id in (10,13) order by transportMethod asc");
 	}
 	
 	//Target configuration
 	else {
-	    query = sessionFactory.getCurrentSession().createSQLQuery("SELECT id, transportMethod FROM ref_transportMethods where active = 1 and id in (3,6,8,9,12) order by transportMethod asc");
+	    query = sessionFactory.getCurrentSession().createSQLQuery("SELECT id, transportMethod FROM ref_transportMethods where active = 1 and id in (3,9,12,13) order by transportMethod asc");
 	}
 	
         return query.list();
@@ -1097,7 +1098,7 @@ public class utConfigurationTransportDAOImpl implements utConfigurationTransport
     @Transactional(readOnly = true)
     public configurationTransport validateAPICall(String apiCustomCall) throws Exception {
 	
-	String sql = ("select id, configId "
+	String sql = ("select * "
 		+ "from configurationTransportDetails "
                 + "where restAPIURL = :restAPIURL "
 		+ "and configId in (select id from configurations where status = 1 and type = 1)");
@@ -1345,5 +1346,45 @@ public class utConfigurationTransportDAOImpl implements utConfigurationTransport
 	Query query = sessionFactory.getCurrentSession().createSQLQuery(sqlStatement);
 	query.executeUpdate();
 	
+    }
+    
+     /**
+     * The 'getConfigurationFieldsToCopy' function will return a list of saved form fields for the selected configuration.
+     *
+     * @param targetConfigId
+     * @param sourceConfigId
+     *
+     * @return	This function will return a list of configuration form fields
+     */
+    @SuppressWarnings("unchecked")
+    @Override
+    @Transactional(readOnly = true)
+    public List<configurationconnectionfieldmappings> getConnectionFieldMappings(Integer targetConfigId, Integer sourceConfigId) {
+        
+	String sql = "select * "
+	    + "from configurationconnectionfieldmappings "
+	    + "where sourceConfigId = " + sourceConfigId + " AND "
+	    + "targetConfigId = " + targetConfigId + " "
+	    + "order by fieldNo asc";
+	
+	Query query = sessionFactory.getCurrentSession().createSQLQuery(sql).setResultTransformer(Transformers.aliasToBean(configurationconnectionfieldmappings.class));
+           
+        return query.list();
+    }
+    
+    
+    @Override
+    @Transactional(readOnly = false)
+    public void deleteConnectionMappedFields(Integer connectionId) throws Exception {
+	Query query = sessionFactory.getCurrentSession().createQuery("DELETE FROM configurationconnectionfieldmappings where connectionId = :connectionId");
+        query.setParameter("connectionId", connectionId);
+
+        query.executeUpdate();
+    }
+    
+    @Override
+    @Transactional(readOnly = false)
+    public void saveConnectionFieldMapping(configurationconnectionfieldmappings fieldMapping) throws Exception {
+	sessionFactory.getCurrentSession().save(fieldMapping);
     }
 }

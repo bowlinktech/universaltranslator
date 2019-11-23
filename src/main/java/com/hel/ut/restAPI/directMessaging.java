@@ -6,6 +6,7 @@
 package com.hel.ut.restAPI;
 
 import com.hel.ut.model.Organization;
+import com.hel.ut.model.configurationFileDropFields;
 import com.hel.ut.model.configurationTransport;
 import com.hel.ut.model.directmessagesin;
 import com.hel.ut.model.hisps;
@@ -150,7 +151,22 @@ public class directMessaging {
 
                                                 if(CCDAContent != null) {
                                                     if(FilenameUtils.getExtension(CCDATitle).toLowerCase().equals(directDetails.getExpectedFileExt().toLowerCase())) {
-                                                        FileOutputStream fos = new FileOutputStream(utRootDir + "directMessages/" + orgDetails.getcleanURL() + "/" + CCDATitle);
+							
+							//Find the configuration by dm keyword from target direct address
+							configurationTransport transportDetails = configurationtransportmanager.findConfigurationByDirectMessagKeyword(directDetails.getOrgId(), envelopeInfo.getToDirectAddress());
+							    
+							//File Drop directory
+							List<configurationFileDropFields> fileDropFields = configurationtransportmanager.getTransFileDropDetails(transportDetails.getId());
+
+							String fileDropDir = orgDetails.getcleanURL() + "/input files/";
+
+							for(configurationFileDropFields dropField : fileDropFields){
+							    if(dropField.getMethod() == 1) {
+								fileDropDir = dropField.getDirectory();
+							    }
+							}
+							
+							FileOutputStream fos = new FileOutputStream(utRootDir + fileDropDir.replace("/HELProductSuite/universalTranslator/", "") + CCDATitle);
 							
 							//Check if content is base64 encoded
 							if(Base64.isBase64(CCDAContent.replace("\n", ""))) {
@@ -167,9 +183,7 @@ public class directMessaging {
                                                         
                                                         //Check how we will find the configuration
                                                         if(directDetails.getDmFindConfig() == 1) {
-                                                            //Find the configuration by dm keyword from target direct address
-                                                            configurationTransport transportDetails = configurationtransportmanager.findConfigurationByDirectMessagKeyword(directDetails.getOrgId(), envelopeInfo.getToDirectAddress());
-							    
+                                                            
 							    if(transportDetails != null) {
 								configId = transportDetails.getconfigId();
 							    }

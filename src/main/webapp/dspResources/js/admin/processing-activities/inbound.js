@@ -135,11 +135,11 @@ function populateMessages(fromDate,toDate) {
 			    returnData += '<br /><a href="/FileDownload/downloadFile.do?filename='+row.utBatchName+'_dec.'+row.originalFileName.split('.')[1]+'&foldername=archivesIn" title="View Original File">'+row.originalFileName+'</a>';
 			}
 			else {
-			   returnData += '<br /><a href="/FileDownload/downloadFile.do?filename=archive_'+row.utBatchName+'.'+row.originalFileName.split('.')[1]+'&foldername=archivesIn" title="View Original File">'+row.originalFileName+'</a>'; 
+			   returnData += '<br /><a href="/FileDownload/downloadFile.do?filename=encoded_'+row.utBatchName+'.'+row.originalFileName.split('.')[1]+'&foldername=input files&orgId='+row.orgId+'" title="View Original File">'+row.originalFileName+'</a>'; 
 			}
 			
-			if(row.inboundBatchConfigurationType == 1 && (row.transportMethodId == 10 || row.transportMethodId == 3 || row.transportMethodId == 6 || row.transportMethodId == 9)) {
-			   returnData += '<br /><a href="/FileDownload/downloadFile.do?filename='+row.utBatchName+'_dec.txt&foldername=archivesIn" title="View Pipe File">Translated File - '+row.utBatchName+'</a>';
+			if(row.inboundBatchConfigurationType == 1 && (row.transportMethodId == 10 || row.transportMethodId == 9)) {
+			   returnData += '<br /><a href="/FileDownload/downloadFile.do?filename=archive_'+row.utBatchName+'.'+row.originalFileName.split('.')[1]+'&foldername=archivesIn" title="View Pipe File">Translated File - '+row.utBatchName+'</a>';
 			}
 		    }
 		    

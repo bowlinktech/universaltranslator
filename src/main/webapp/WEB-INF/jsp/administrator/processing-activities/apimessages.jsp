@@ -36,7 +36,7 @@
 				<th scope="col" class="center-text">Status</th>
 				<th scope="col" class="center-text">Error<br/>(if any)</th>
 				<th scope="col" class="center-text">Date Received</th>
-				<th scope="col"></th>
+				<%--<th scope="col"></th>--%>
 			    </tr>
 			</thead>
 		    </table>

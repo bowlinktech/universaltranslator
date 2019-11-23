@@ -101,60 +101,6 @@
     
     <schedule>
         <job>
-            <name>ProcessRestAPIMessages</name>
-            <group>processGroup</group>
-            <description>This process will run every 4 minutes starting at 8 mins of the hour to check if any RestAPIMessage need to be written to file</description>
-            <job-class>com.hel.ut.jobs.ProcessRestAPIMessages</job-class>
-        </job>
- 
-	<trigger>
-	    <cron>
-		<name>ProcessRestAPIMessagesTrigger</name>
-		<job-name>ProcessRestAPIMessages</job-name>
-		<job-group>processGroup</job-group>
-		<cron-expression>0 0/4 * 1/1 * ? *</cron-expression>
-	    </cron>
-	</trigger>
-    </schedule>
-    
-    <schedule>
-        <job>
-            <name>processWebServiceMessages</name>
-            <group>processGroup</group>
-            <description>This process will run every 3 minutes starting at 8 mins of the hour to check if any WSMessage need to be written to file</description>
-            <job-class>com.hel.ut.jobs.ProcessWebServiceMessages</job-class>
-        </job>
- 
-	<trigger>
-	    <cron>
-		<name>processWebServiceMessagesTrigger</name>
-		<job-name>processWebServiceMessages</job-name>
-		<job-group>processGroup</job-group>
-		<cron-expression>0 0/3 * 1/1 * ? *</cron-expression>
-	    </cron>
-	</trigger>
-    </schedule>
-    
-      <!--<schedule>
-        <job>
-            <name>ProcessDirectAPIMessages</name>
-            <group>processGroup</group>
-            <description>This process will run every 2 minutes starting at 8 mins of the hour to check if any DirectAPIMessage need to be written to file</description>
-            <job-class>com.hel.ut.jobs.ProcessDirectAPIMessages</job-class>
-        </job>
- 
-	<trigger>
-	    <cron>
-		<name>ProcessDirectAPIMessagesTrigger</name>
-		<job-name>ProcessDirectAPIMessages</job-name>
-		<job-group>processGroup</job-group>
-		<cron-expression>0 0/2 * 1/1 * ? *</cron-expression>
-	    </cron>
-	</trigger>
-    </schedule>-->
-    
-    <schedule>
-        <job>
             <name>BatchUploadTableCleanUp</name>
             <group>processGroup</group>
             <description>
@@ -212,7 +158,5 @@
             </cron>
         </trigger>
     </schedule>
-   
-    
     
 </job-scheduling-data>

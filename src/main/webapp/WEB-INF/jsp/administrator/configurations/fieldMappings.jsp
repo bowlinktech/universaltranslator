@@ -29,7 +29,7 @@
 	<div class="col-md-6">
 	    <section class="panel panel-default">
 		<div class="panel-heading">
-		    <c:if test="${transportDetails.transportMethodId == 10}">
+		    <c:if test="${transportDetails.transportMethodId == 10 || (transportDetails.transportMethodId == 13 && transportDetails.helRegistryConfigId > 0)}">
 			<div class="pull-right">
 			    <a class="btn btn-primary btn-xs  btn-action" rel2="${transportDetails.id}" rel="${configurationDetails.id}" id="reloadConfigurationFields" data-toggle="tooltip" data-original-title="Click here to reload Configuration Fields.">Reload Configuration Fields</a>
 			</div>
@@ -50,9 +50,6 @@
                                         <th scope="col" class="center-text">Use Field</th>
                                         <th scope="col" class="center-text">Required</th> 
                                         <th scope="col" class="center-text">Validation</th> 
-					<c:if test="${configurationDetails.type == 0}">
-					    <th scope="col" class="center-text">Matching Field</th>
-					</c:if>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -81,16 +78,6 @@
 						    </c:forEach>
 						</select>    
 					    </td>
-					    <c:if test="${configurationDetails.type == 2}">
-						<td class="center-text">
-						    <select name="fields[${field.index}].associatedFieldDetails" id="match_${mappings.fieldNo}" currval="${mappings.associatedFieldId}" fieldNo="${mappings.fieldNo}" rel="${field.index}" class="formField matchingField">
-							<option value="0">-</option>
-							<c:forEach var="tField" items="${templateFields}">
-							    <option value="${tField.id}" <c:if test="${mappings.associatedFieldId == tField.id}">selected</c:if>>${tField.fieldDesc} - ${tField.fieldNo}</option>
-							</c:forEach>
-						    </select>
-						</td>
-					    </c:if>
 					</tr>
 				    </c:forEach>
                                 </tbody>
@@ -100,48 +87,5 @@
                 </div>
             </section>
         </div>
-	<c:if test="${configurationDetails.type == 2}">
-	    <div class="col-md-6">
-		<section class="panel panel-default">
-		    <div class="panel-heading templateFields" rel="${configurationDetails.associatedSourceConfigId}">
-			<c:if test="${configurationDetails.associatedSourceConfigId > 0}">
-			    <div class="pull-right">
-				<a class="btn btn-primary btn-xs" sourceConfigId="${configurationDetails.associatedSourceConfigId}" id="loadConfigurationFields" data-toggle="tooltip" data-original-title="Click here to load the configuration fields.">Load Configuration Fields</a>
-			    </div>
-			</c:if>
-			<h3 class="panel-title">
-			    Source Configuration Fields
-			</h3>
-		    </div>
-		    <div class="panel-body">
-			<div class="form-container scrollable" id="availableFields">
-			    <table class="table table-striped table-hover table-default">
-				<thead>
-				    <tr>
-					<th scope="col" class="center-text">Field No</th>
-					<th scope="col">Field Name</th>
-					<th scope="col" class="center-text">Required</th>
-				    </tr>
-				</thead>
-				<tbody>
-				    <c:forEach var="tField" items="${templateFields}">
-					<tr>
-					    <td scope="row" class="center-text">${tField.fieldNo}</td>
-					    <td>
-						${tField.fieldDesc}
-						<input type="hidden" id="validationType_${tField.id}" value="${tField.validationType}" />
-					    </td>
-					    <td class="center-text">
-						<input type="checkbox" disabled="disabled" <c:if test="${tField.required == true}">checked</c:if>  />
-					    </td>
-					</tr>
-				    </c:forEach>
-				</tbody>
-			    </table>
-			</div>
-		    </div>
-		</section>
-	    </div>
-	</c:if>
     </div>
 </div>

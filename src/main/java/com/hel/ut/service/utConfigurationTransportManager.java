@@ -12,6 +12,7 @@ import com.hel.ut.model.configurationTransport;
 import com.hel.ut.model.configurationTransportMessageTypes;
 import com.hel.ut.model.configurationWebServiceFields;
 import com.hel.ut.model.configurationWebServiceSenders;
+import com.hel.ut.model.configurationconnectionfieldmappings;
 import com.hel.ut.model.organizationDirectDetails;
 import com.hel.ut.model.utConfiguration;
 
@@ -134,5 +135,11 @@ public interface utConfigurationTransportManager {
     void saveTransportDirectMessageDetails(organizationDirectDetails directDetails) throws Exception;
     
     configurationTransport findConfigurationByDirectMessagKeyword(Integer orgId, String directMessageToAddress) throws Exception;
+    
+    List<configurationconnectionfieldmappings> getConnectionFieldMappings(Integer targetConfigId, Integer sourceConfigId) throws Exception;
+    
+    void deleteConnectionMappedFields(Integer connectionId) throws Exception;
+    
+    void saveConnectionFieldMapping(configurationconnectionfieldmappings fieldMapping) throws Exception;
 
 }
