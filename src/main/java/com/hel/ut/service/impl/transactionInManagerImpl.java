@@ -2564,14 +2564,13 @@ public class transactionInManagerImpl implements transactionInManager {
     }
     
     /**
-     * We will take a batch and then from its status etc we will decide if we want to process transactions or not. This method allowa admin to run just one batch This assumes batches SR - 6, Trans status REL We still run through entire process but these records should pass... (check to make sure it aligns with file upload) just be applying Macros / CW and inserting into our message tables This method will only process a batch that is RP or SSL
-     *
-     * We added to this method as if a batch is being call from fixErrors (ERG Form), we do not clear errors in transactionInErrors table. We default the flag to false as when it is call from old methods, we
-     *
-     * *
+     * We will take a batch and then from its status etc we will decide if we want to process transactions or not.This method allowa admin to run just one batch This assumes batches SR - 6, Trans status REL We still run through entire process but these records should pass... (check to make sure it aligns with file upload) just be applying Macros / CW and inserting into our message tables This method will only process a batch that is RP or SSL
+
+ We added to this method as if a batch is being call from fixErrors (ERG Form), we do not clear errors in transactionInErrors table. We default the flag to false as when it is call from old methods, we
+
+ *
      * @param batchUploadId
      * @param doNotClearErrors
-     * @param transactionId
      * @return
      * @throws java.lang.Exception
      */

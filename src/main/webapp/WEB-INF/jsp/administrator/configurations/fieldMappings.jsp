@@ -29,7 +29,7 @@
 	<div class="col-md-6">
 	    <section class="panel panel-default">
 		<div class="panel-heading">
-		    <c:if test="${transportDetails.transportMethodId == 10 || (transportDetails.transportMethodId == 13 && transportDetails.helRegistryConfigId > 0)}">
+		    <c:if test="${transportDetails.transportMethodId == 10 || (transportDetails.transportMethodId == 13 && configurationDetails.type == 2 && transportDetails.helRegistryConfigId > 0)}">
 			<div class="pull-right">
 			    <a class="btn btn-primary btn-xs  btn-action" rel2="${transportDetails.id}" rel="${configurationDetails.id}" id="reloadConfigurationFields" data-toggle="tooltip" data-original-title="Click here to reload Configuration Fields.">Reload Configuration Fields</a>
 			</div>
