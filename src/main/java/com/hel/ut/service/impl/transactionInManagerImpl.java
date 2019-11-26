@@ -2944,6 +2944,7 @@ public class transactionInManagerImpl implements transactionInManager {
 	
 	//first we run store procedure
 	transactionInDAO.populateAuditReport(batchUploadId, cms.getconfigId());
+	
 	// get distinct fieldNo involved
 	List<Integer> fieldNoList = getErrorFieldNos(batchUploadId);
 	//update field data
