@@ -195,7 +195,7 @@ public class directMessaging {
                                                         
                                                         //Need to create an entry in the received Direct Messages table
                                                         directmessagesin newDirectMessageIn = new directmessagesin();
-                                                        newDirectMessageIn.setArchiveFileName("medAlliesArchives/"+dateFormat.format(date)+".json");
+                                                        newDirectMessageIn.setArchiveFileName("archivesIn/"+dateFormat.format(date)+".json");
                                                         newDirectMessageIn.setConfigId(configId);
                                                         newDirectMessageIn.setFromDirectAddress(envelopeInfo.getFromDirectAddress());
                                                         newDirectMessageIn.setToDirectAddress(envelopeInfo.getToDirectAddress());
