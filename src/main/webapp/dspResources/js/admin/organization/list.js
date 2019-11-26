@@ -51,6 +51,7 @@ require(['./main'], function () {
 			"defaultContent": "",
 			"bSortable":true,
 			"sWidth": "5%",
+			"className": "center-text",
 			"render": function ( data, type, row, meta ) {
 			    return data;
 			},
