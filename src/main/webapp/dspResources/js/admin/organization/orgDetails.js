@@ -181,7 +181,7 @@ function populateHELRegistries(isHELRegistry) {
 		 var helRegistrySelect = $('#helRegistry');
 
 		 $.each(data, function(index) {
-		    if(data[index][0] == selRegistryId) {
+		    if(data[index].id == selRegistryId) {
 			helRegistrySelect.append($('<option selected></option>').val(data[index].id+'-'+data[index].dbschemaname).html(data[index].registryName));
 		    }
 		    else {
