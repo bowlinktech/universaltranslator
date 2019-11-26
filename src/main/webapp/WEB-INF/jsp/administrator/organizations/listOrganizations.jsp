@@ -29,6 +29,7 @@
 				    <table class="table table-striped table-hover table-default" id="organization-table" style="cursor:pointer" >
 					<thead>
 					     <tr>
+						<th scope="col" class="center-text">Id</th>
 						<th scope="col">Organization Name ${result}</th>
 						<th scope="col">Organization Type</th>
 						<th scope="col">Contact Information</th>

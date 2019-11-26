@@ -30,7 +30,7 @@ require(['./main'], function () {
 		bServerSide: true,
 		bProcessing: false, 
 		deferRender: true,
-		aaSorting: [[4,'desc']],
+		aaSorting: [[5,'desc']],
 		sPaginationType: "bootstrap", 
 		oLanguage: {
 		   sSearch: "_INPUT_",
@@ -46,6 +46,19 @@ require(['./main'], function () {
 		},
 		sAjaxSource: "/administrator/organizations/ajax/getOrganizations",
 		aoColumns: [
+		    {
+			"mData": "id", 
+			"defaultContent": "",
+			"bSortable":true,
+			"sWidth": "5%",
+			"render": function ( data, type, row, meta ) {
+			    return data;
+			},
+			'createdCell':  function (td, cellData, rowData, row, col) {
+			    $(td).attr('rel', rowData.cleanURL); 
+			    $(td).addClass('orgRow');
+			 }
+		    },
 		    {
 			"mData": "orgName", 
 			"defaultContent": "",
@@ -110,7 +123,7 @@ require(['./main'], function () {
 			"mData": "helRegistryId", 
 			"defaultContent": "",
 			"bSortable":true,
-			"sWidth": "15%",
+			"sWidth": "10%",
 			"className": "center-text",
 			"render": function ( data, type, row, meta ) {
 			    if(data > 0) {
