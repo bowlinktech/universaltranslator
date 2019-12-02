@@ -2019,7 +2019,7 @@ public class adminProcessingActivity {
 		if("inbound".equals(type)) {
 		    customCols.add("Field Value");
 		
-		    sql = "select case when b.containsHeaderRow = 1 then a.rownumber+1 else a.rownumber end as rownumber, a.fieldNo as fieldNumber,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data,a.fieldName as column_name,a.errorData as field_value "
+		    sql = "select case when b.containsHeaderRow = 1 then a.rownumber+1 else a.rownumber end as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name,a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
 			+ "from batchuploadauditerrors a inner join "
 			+ "configurationmessagespecs b on a.configId = b.configId "
 			+ "where a.batchUploadId = " + batchId + " and a.errorId = " + errorId + " order by a.id asc limit 50 ";
@@ -2039,7 +2039,7 @@ public class adminProcessingActivity {
 		if("inbound".equals(type)) {
 		    customCols.add("Field Value");
 
-		    sql = "select case when b.containsHeaderRow = 1 then a.rownumber+1 else a.rownumber end as rownumber, a.fieldNo as fieldNumber,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data, a.fieldName as column_name, a.errorDetails as validation_type, a.errorData as field_value "
+		    sql = "select case when b.containsHeaderRow = 1 then a.rownumber+1 else a.rownumber end as rownumber, a.fieldNo as fieldNumber, a.fieldName as column_name, a.errorDetails as validation_type, a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
 			+ "from batchuploadauditerrors a inner join "
 			+ "configurationmessagespecs b on a.configId = b.configId "
 			+ "where a.batchUploadId = " + batchId + " and a.errorId = " + errorId + " order by a.id asc limit 50 ";
@@ -2060,7 +2060,7 @@ public class adminProcessingActivity {
 		if("inbound".equals(type)) {
 		    customCols.add("Field Value");	
 
-		    sql = "select case when b.containsHeaderRow = 1 then a.rownumber+1 else a.rownumber end as rownumber, a.fieldNo as fieldNumber,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data,a.fieldName as column_name, a.errorDetails as crosswalk, a.errorData as field_value "
+		    sql = "select case when b.containsHeaderRow = 1 then a.rownumber+1 else a.rownumber end as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name, a.errorDetails as crosswalk, a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
 			+ "from batchuploadauditerrors a inner join "
 			+ "configurationmessagespecs b on a.configId = b.configId "
 			+ "where a.batchUploadId = " + batchId + " and a.errorId = " + errorId + " order by a.id asc limit 50 ";
@@ -2080,7 +2080,7 @@ public class adminProcessingActivity {
 		if("inbound".equals(type)) {
 		    customCols.add("Field Value");
 
-		    sql = "select case when b.containsHeaderRow = 1 then a.rownumber+1 else a.rownumber end as rownumber, a.fieldNo as fieldNumber,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data,a.fieldName as column_name,a.errorDetails as macro, a.errorData as field_value "
+		    sql = "select case when b.containsHeaderRow = 1 then a.rownumber+1 else a.rownumber end as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name,a.errorDetails as macro, a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
 			+ "from batchuploadauditerrors a inner join "
 			+ "configurationmessagespecs b on a.configId = b.configId "
 			+ "where a.batchUploadId = " + batchId + " and a.errorId = " + errorId + " order by a.id asc limit 50 ";
@@ -2099,7 +2099,7 @@ public class adminProcessingActivity {
 		if("inbound".equals(type)) {
 		    customCols.add("Field Value");
 
-		    sql = "select case when b.containsHeaderRow = 1 then a.rownumber+1 else a.rownumber end as rownumber, a.fieldNo as fieldNumber,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data,a.fieldName as column_name,a.errorData as field_value "
+		    sql = "select case when b.containsHeaderRow = 1 then a.rownumber+1 else a.rownumber end as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name,a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
 			+ "from batchuploadauditerrors a inner join "
 			+ "configurationmessagespecs b on a.configId = b.configId "
 			+ "where a.batchUploadId = " + batchId + " and a.errorId = " + errorId + " order by a.id asc limit 50 ";
