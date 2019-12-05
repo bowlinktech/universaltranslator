@@ -56,7 +56,7 @@ public class directmessagesin {
     
     @Column(name = "referralFileName", nullable = false)
     private String referralFileName;
-
+    
     /**
      * 1 - not processed 2 - processed 3 - rejected
      *
@@ -77,8 +77,11 @@ public class directmessagesin {
     @Column(name = "orgId", nullable = true)
     private int orgId = 0;
     
-     @Column(name = "sendingResponse", nullable = true)
+    @Column(name = "sendingResponse", nullable = true)
     private String sendingResponse;
+     
+    @Column(name = "originalDirectMessage", nullable = false)
+    private String originalDirectMessage;
 
     public String getOrgName() {
         return orgName;
@@ -207,5 +210,13 @@ public class directmessagesin {
     public void setSendingResponse(String sendingResponse) {
 	this.sendingResponse = sendingResponse;
     }
-   
+
+    public String getOriginalDirectMessage() {
+	return originalDirectMessage;
+    }
+
+    public void setOriginalDirectMessage(String originalDirectMessage) {
+	this.originalDirectMessage = originalDirectMessage;
+    }
+    
 }

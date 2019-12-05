@@ -91,8 +91,10 @@ public class directMessaging {
                         //Save a copy of the sent JSON message
                         SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy HH-mm-ss");
                         Date date = new Date();
+			
+			String originalDirectMessageName = dateFormat.format(date)+".json";
                         String utRootDir = myProps.getProperty("ut.directory.utRootDir");
-                        Path path = Paths.get(utRootDir + "medAlliesArchives/"+dateFormat.format(date)+".json");
+                        Path path = Paths.get(utRootDir + "medAlliesArchives/"+originalDirectMessageName);
                         Files.write(path, jsonSent.getBytes());
                         
                         medAlliesReferralInfo envelopeInfo = null;
@@ -204,6 +206,7 @@ public class directMessaging {
                                                         newDirectMessageIn.setReferralFileName(CCDATitle);
                                                         newDirectMessageIn.setOrgId(directDetails.getOrgId());
 							newDirectMessageIn.setSendingResponse(sendingResponse);
+							newDirectMessageIn.setOriginalDirectMessage(originalDirectMessageName);
                                                         
                                                         Integer newDMMessageID = transactionInManager.insertDMMessage(newDirectMessageIn);
 				

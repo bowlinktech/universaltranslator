@@ -307,7 +307,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
 
 	File newFile = new File(directory + fileName);
 
-	/* Create the empty file in the correct location */
+	// Create the empty file in the correct location
 	if (createNewFile == true || !newFile.exists()) {
 	    try {
 
@@ -331,22 +331,22 @@ public class transactionOutManagerImpl implements transactionOutManager {
 
 	}
 
-	/* Read in the file */
+	// Read in the file
 	FileInputStream fileInput = null;
 	File file = new File(directory + fileName);
 	fileInput = new FileInputStream(file);
         
-	/* Need to get the records for the transaction */
+	// Need to get the records for the transaction
 	String recordRow = "";
 
 	List<configurationFormFields> formFields = configurationTransportManager.getConfigurationFields(transportDetails.getconfigId(), 0);
 
 	List<transactionOutRecords> records = transactionOutDAO.getTransactionRecords(batchId, transportDetails.getconfigId(), formFields.size());
         
-	/* Need to get the max field number */
+	// Need to get the max field number
 	int maxFieldNo = transactionOutDAO.getMaxFieldNo(transportDetails.getconfigId());
 
-	/* Need to get the correct delimiter for the output file */
+	// Need to get the correct delimiter for the output file
 	String delimChar = (String) messageTypeDAO.getDelimiterChar(transportDetails.getfileDelimiter());
 
 	if (records != null) {
@@ -374,7 +374,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
 
 		String contentToUpdate = new String(Files.readAllBytes(newFilePath));
 
-		/* Get the configurationCCDElements */
+		// Get the configurationCCDElements
 		List<configurationCCDElements> ccdElements = configurationManager.getCCDElements(transportDetails.getconfigId());
 
 		if (!ccdElements.isEmpty()) {
@@ -419,7 +419,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
 		    Files.write(newFilePath, strEncodedFile.getBytes());
 		}
 	    } 
-	    /* If an hl7 file is to be generated */ 
+	    // If an hl7 file is to be generated 
 	    else if (hl7 == true) {
 
 		/* Get the hl7 details */
@@ -436,7 +436,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
 
 			for (HL7Segments segment : hl7Segments) {
 
-			    /* Get the segment elements */
+			    // Get the segment elements
 			    List<HL7Elements> hl7Elements = configurationManager.getHL7Elements(hl7Details.getId(), segment.getId());
 
 			    if (!hl7Elements.isEmpty()) {
@@ -1644,9 +1644,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
 		}
 
 		if (retry) {
-		    /**
-		     * batch running for over 1 hour or at TPE, we need to see if it has been re-process *
-		     */
+		    // batch running for over 1 hour or at TPE, we need to see if it has been re-process *
 		    //see if this batch has been retried
 		    batchDLRetry br = getBatchDLRetryByDownloadId(stuckBatchDetails.getId(), 4);
 		    String subject = "Retrying DL Batch - processMassOutputBatches";
@@ -2019,8 +2017,14 @@ public class transactionOutManagerImpl implements transactionOutManager {
 			
 			if(existingRegistrySubmittedMessage != null){
 			    if(existingRegistrySubmittedMessage.getId() > 0) {
-				//Need to update the Registry submitted message entry to capture the created file name
-				submittedmessagemanager.updateSubmittedMessage(registryDetails.getDbschemaname(),batchDownload.getBatchUploadId(),batchDownload.getOutputFileName(),utOrgDetails.getHelRegistryOrgId());
+				//Check to see if the target configuraiton is just a downloadable file update
+				if(transportDetails.isErgFileDownload()) {
+				    submittedmessagemanager.updateSubmittedMessageDownloadableFileName(registryDetails.getDbschemaname(),batchDownload.getBatchUploadId(),batchDownload.getOutputFileName());
+				}
+				else {
+				    //Need to update the Registry submitted message entry to capture the created file name
+				    submittedmessagemanager.updateSubmittedMessage(registryDetails.getDbschemaname(),batchDownload.getBatchUploadId(),batchDownload.getOutputFileName(),utOrgDetails.getHelRegistryOrgId());
+				}
 			    }
 			    else {
 				createSubmittedMessage = true;
@@ -2075,10 +2079,13 @@ public class transactionOutManagerImpl implements transactionOutManager {
 			}
 			
 			File targetFile = new File(myProps.getProperty("registry.directory.path") + fileDropDir.replace("/HELProductSuite/registries/", "") + batchDownload.getOutputFileName());
-			Files.copy(archiveFile.toPath(), targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
 			
+			if(transportDetails.isErgFileDownload()) {
+			    Files.copy(massOutFile.toPath(), targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+			} else {
+			    Files.copy(archiveFile.toPath(), targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+			}
 		    }
-		    
 		}
 		else {
 		    //Insert a processing error

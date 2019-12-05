@@ -3037,8 +3037,11 @@ public class adminProcessingActivity {
     
     
     /**
-     * The '/viewDirectDetails{batchUploadId}' function will return the details of the selected batch uploaded message received from a HISP via DIRECT. The results will be displayed in the overlay.
+     * The '/viewDirectDetails{batchUploadId}' function will return the details of the selected batch uploaded message received from a HISP via DIRECT.The results will be displayed in the overlay.
      *
+     * @param batchUploadId
+     * @return 
+     * @throws java.lang.Exception
      * @Param	batchUploadId This will hold the id of the selected batch uploaded message
      *
      * @Return	This function will return the direct details view.
@@ -3050,7 +3053,7 @@ public class adminProcessingActivity {
         ModelAndView mav = new ModelAndView();
         mav.setViewName("/administrator/processing-activities/directHISPDetails");
 
-        directmessagesin directMessageDetails = transactionInManager.getDirectAPIMessagesById(batchUploadId);
+        directmessagesin directMessageDetails = transactionInManager.getDirectAPIMessagesByBatchUploadId(batchUploadId);
 	mav.addObject("directMessageDetails",directMessageDetails);
 
         return mav;

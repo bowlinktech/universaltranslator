@@ -22,6 +22,7 @@ require(['./main'], function () {
 	//show the conifguration box
 	if(transportMethod == 13 && messageTypeId == 1 && helRegistryId > 0 && helSchemaName !== "") {
 	    $('#helRegistryConfigDiv').show();
+	    $('#ergFileDownloadDiv').show();
 	    populateHELRegistryConfigs(helRegistryId,helSchemaName);
 	}
 	
@@ -29,6 +30,7 @@ require(['./main'], function () {
             var methodId = $(this).val();
 	    
 	    if(methodId == 13 && messageTypeId == 1 && helRegistryId > 0 && helSchemaName !== "") {
+		$('#ergFileDownloadDiv').show();
 		$('#helRegistryConfigDiv').show();
 		populateHELRegistryConfigs(helRegistryId,helSchemaName);
 		
@@ -46,6 +48,26 @@ require(['./main'], function () {
 	    
 	    showCorrectFieldsByTransportMethod(methodId);
         });
+	
+	$(document).on('change','.populateInboundAuditReport',function() {
+	    
+	    if($(this).val() == 1) {
+		$('.errorHandlingDiv').show();
+	    }
+	    else {
+		$('.errorHandlingDiv').hide();
+	    }
+	});
+	
+	$(document).on('change','#ergFileDownload',function() {
+	    var fileDropDir = $('#directory2').val();
+	    if($(this).val() == 1) {
+		$('#directory2').val(fileDropDir.replace('loadFiles','importFiles'));
+	    }
+	    else {
+		$('#directory2').val(fileDropDir.replace('importFiles','loadFiles'));
+	    }
+	});
 	
         $(document).on('change','#dmFindConfig',function() {
             if($(this).val() == 1) {
