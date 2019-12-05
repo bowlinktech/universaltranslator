@@ -24,7 +24,12 @@
                     <label class="control-label" >Received File Name from HISP (Archived)</label>
                     <br />
                     ${directMessageDetails.archiveFileName}
-                </div>               
+                </div> 
+		<div class="form-group">
+                    <label class="control-label" >Received Direct Message (JSON) File</label>
+                    <br />
+                    <a href="/FileDownload/downloadFile.do?filename=${directMessageDetails.originalDirectMessage}&foldername=medAlliesArchives" title="View File">${directMessageDetails.originalDirectMessage}</a>
+                </div> 
                 <c:if test="${not empty directMessageDetails.sendingResponse}">
                     <div class="form-group">
                         <label class="control-label" >UT Sent Response</label>

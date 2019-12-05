@@ -152,6 +152,13 @@ public class configurationTransport {
     @Column(name = "dmConfigKeyword", nullable = true)
     private String dmConfigKeyword = "";
     
+    @Column(name = "ergFileDownload", nullable = false)
+    private boolean ergFileDownload = false;
+    
+    @Column(name = "populateInboundAuditReport", nullable = false)
+    private boolean populateInboundAuditReport = false;
+    
+    
     public int getId() {
         return id;
     }
@@ -513,4 +520,20 @@ public class configurationTransport {
         this.dmConfigKeyword = dmConfigKeyword;
     }
 
+    public boolean isErgFileDownload() {
+	return ergFileDownload;
+    }
+
+    public void setErgFileDownload(boolean ergFileDownload) {
+	this.ergFileDownload = ergFileDownload;
+    }
+
+    public boolean isPopulateInboundAuditReport() {
+	return populateInboundAuditReport;
+    }
+
+    public void setPopulateInboundAuditReport(boolean populateInboundAuditReport) {
+	this.populateInboundAuditReport = populateInboundAuditReport;
+    }
+    
 }

@@ -5,7 +5,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.validation.Valid;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
@@ -80,6 +79,7 @@ import java.util.Date;
 import java.util.Properties;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
+import javax.validation.Valid;
 import org.springframework.util.FileCopyUtils;
 import org.springframework.web.bind.annotation.PathVariable;
 
@@ -479,24 +479,40 @@ public class adminConfigController {
 
         //get file drop fields
         List<configurationFileDropFields> fileDropFields = utconfigurationTransportManager.getTransFileDropDetails(transportDetails.getId());
-
+	
         if (fileDropFields.isEmpty()) {
-
-            List<configurationFileDropFields> emptyFileDropFields = new ArrayList<>();
+	    
+	    List<configurationFileDropFields> emptyFileDropFields = new ArrayList<>();
             configurationFileDropFields pushRFields = new configurationFileDropFields();
             pushRFields.setMethod(1);
-            pushRFields.setDirectory("/HELProductSuite/universalTranslator/" + orgDetails.getcleanURL() + "/input files/"+configurationDetails.getconfigName().toLowerCase().replace(" ", "")+"/");
+	    
+	    if(configurationDetails.getMessageTypeId() == 2) {
+		 pushRFields.setDirectory("/bowlink/");
+	    }
+	    else if(configurationDetails.getMessageTypeId() == 1) { 
+		 pushRFields.setDirectory("/HELProductSuite/universalTranslator/" + orgDetails.getcleanURL() + "/input files/"+configurationDetails.getconfigName().toLowerCase().replace(" ", "")+"/");
+	    }
+	    else {
+		pushRFields.setDirectory("/");
+	    }
 
-           configurationFileDropFields getRFields = new configurationFileDropFields();
+	    configurationFileDropFields getRFields = new configurationFileDropFields();
             getRFields.setMethod(2);
-            getRFields.setDirectory("/HELProductSuite/universalTranslator/" + orgDetails.getcleanURL() + "/output files/"+configurationDetails.getconfigName().toLowerCase().replace(" ", "")+"/");
+	    if(configurationDetails.getMessageTypeId() == 2) {
+		getRFields.setDirectory("/bowlink/");
+	    }
+	    else if(configurationDetails.getMessageTypeId() == 1) { 
+		getRFields.setDirectory("/HELProductSuite/universalTranslator/" + orgDetails.getcleanURL() + "/output files/"+configurationDetails.getconfigName().toLowerCase().replace(" ", "")+"/");
+	    }
+	    else {
+		getRFields.setDirectory("/");
+	    }
 
             emptyFileDropFields.add(pushRFields);
             emptyFileDropFields.add(getRFields);
 
             transportDetails.setFileDropFields(emptyFileDropFields);
         } else {
-	   
             transportDetails.setFileDropFields(fileDropFields);
         }
 

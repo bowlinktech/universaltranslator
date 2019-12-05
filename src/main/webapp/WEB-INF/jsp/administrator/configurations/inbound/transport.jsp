@@ -442,41 +442,39 @@
     </section>
 
     <%-- Error Handling for Incoming files only --%>
-    <c:if test="${configurationDetails.type == 1}">
-	<section class="panel panel-default">
-	    <div class="panel-heading">
-		<h3 class="panel-title">File Error Handling</h3>
-	    </div>
-	    <div class="panel-body">
-		<div class="form-container">
-		    <spring:bind path="errorHandling">
-			<div class="form-group">
-			    <label class="control-label" for="errorHandling">Error Handling *</label>
-			    <div>
-				<label class="radio-inline">
-				    <form:radiobutton id="errorHandling" path="errorHandling" value="2" disabled="${transportDetails.copiedTransportId > 0 ? 'true' : 'false'}" /> Reject individual transactions on error
-				</label>
-				<label class="radio-inline">
-				    <form:radiobutton id="errorHandling" path="errorHandling" value="3" disabled="${transportDetails.copiedTransportId > 0 ? 'true' : 'false'}" /> Reject entire file on a single transaction error
-				</label>
-				<label class="radio-inline">
-				    <form:radiobutton id="errorHandling" path="errorHandling" value="4" disabled="${transportDetails.copiedTransportId > 0 ? 'true' : 'false'}" /> Send errors through to the target file
-				</label>
-			    </div>
-			    <c:if test="${transportDetails.copiedTransportId > 0}">
-				<form:hidden path="errorHandling" />
-			    </c:if>      
+    <section class="panel panel-default">
+	<div class="panel-heading">
+	    <h3 class="panel-title">File Error Handling</h3>
+	</div>
+	<div class="panel-body">
+	    <div class="form-container">
+		<spring:bind path="errorHandling">
+		    <div class="form-group">
+			<label class="control-label" for="errorHandling">Error Handling *</label>
+			<div>
+			    <label class="radio-inline">
+				<form:radiobutton id="errorHandling" path="errorHandling" value="2" disabled="${transportDetails.copiedTransportId > 0 ? 'true' : 'false'}" /> Reject individual transactions on error
+			    </label>
+			    <label class="radio-inline">
+				<form:radiobutton id="errorHandling" path="errorHandling" value="3" disabled="${transportDetails.copiedTransportId > 0 ? 'true' : 'false'}" /> Reject entire file on a single transaction error
+			    </label>
+			    <label class="radio-inline">
+				<form:radiobutton id="errorHandling" path="errorHandling" value="4" disabled="${transportDetails.copiedTransportId > 0 ? 'true' : 'false'}" /> Send errors through to the target file
+			    </label>
 			</div>
-		    </spring:bind>
-		     <spring:bind path="threshold">
-			<div id="thresholdDiv" class="form-group">
-			    <label class="control-label" for="errorHandling">Error Threshold %*</label>
-			    <form:input path="threshold" id="threshold" class="form-control sm-input" type="text" maxLength="3" disabled="${transportDetails.copiedTransportId > 0 ? 'true' : 'false'}" />
-			    <span id="thresholdMsg" class="control-label"></span>
-			</div>
-		    </spring:bind>
-		</div>
+			<c:if test="${transportDetails.copiedTransportId > 0}">
+			    <form:hidden path="errorHandling" />
+			</c:if>      
+		    </div>
+		</spring:bind>
+		 <spring:bind path="threshold">
+		    <div id="thresholdDiv" class="form-group">
+			<label class="control-label" for="errorHandling">Error Threshold %*</label>
+			<form:input path="threshold" id="threshold" class="form-control sm-input" type="text" maxLength="3" disabled="${transportDetails.copiedTransportId > 0 ? 'true' : 'false'}" />
+			<span id="thresholdMsg" class="control-label"></span>
+		    </div>
+		</spring:bind>
 	    </div>
-	</section>
-    </c:if>		
+	</div>
+    </section>	
 </form:form>

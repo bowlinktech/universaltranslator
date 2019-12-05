@@ -36,10 +36,10 @@
                     <div class="panel-body">
                         <div class="form-container">
 			    <c:choose>
-				<c:when test="${transportType == 10 || (transportType == 13 && configurationDetails.type == 2 && transportDetails.helRegistryConfigId > 0)}">
+				<c:when test="${transportType == 10 || (transportType == 13 && configurationDetails.type == 2 && transportDetails.helRegistryConfigId > 0 && !transportDetails.ergFileDownload)}">
 				    <div class="form-group">
 					<label class="control-label" for="templateFile">Template File</label>
-					<p>No need for a template file when the transport method is (From a Health-e-Link Registry (Online Form)) or (To a Health-e-Link Registry)</p>
+					<p>No need for a template file when the configuration is a eReferral message type and the transport method is Online Form (eRG), File Upload or File Drop (Going back to the eRG).</p>
 					<form:hidden path="templateFile" />
 				    </div>
 				</c:when>

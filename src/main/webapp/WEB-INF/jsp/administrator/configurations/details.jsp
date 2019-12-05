@@ -57,6 +57,9 @@
                                 <label class="radio-inline">
                                     <form:radiobutton id="messageTypeId" path="messageTypeId" value="2" class="type" disabled="${configurationDetails.id == 0 ? 'false' : 'true' }"/> Family Planning Configuration
                                 </label>
+				<label class="radio-inline">
+                                    <form:radiobutton id="messageTypeId" path="messageTypeId" value="3" class="type" disabled="${configurationDetails.id == 0 ? 'false' : 'true' }"/> Other Configuration
+                                </label>
                                 <c:if test="${configurationDetails.id > 0}"><form:hidden id="messageTypeId" path="messageTypeId"/></c:if>  
                                 </div>
 			</div>    

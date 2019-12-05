@@ -6,3 +6,10 @@
 
 - Need to add a place in the system admin to add HISPS (Med Allies would be the first). Need ability to add API credentials to this section
 
+- Implement a file download configuration
+
+- Implement CSRF
+
+- Add CSP
+
+- Add option for target configuration to update inbound audit report.
