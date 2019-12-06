@@ -301,7 +301,11 @@ public class transactionOutDAOImpl implements transactionOutDAO {
     /**
      * The 'getTransactionRecords' function will return the transaction TARGET records for the passed in transactionId.
      *
-     * @param transactionTargetId The id of the transaction records to return
+     * @param batchId
+     * @param configId
+     * @param totalFields
+     * @return 
+     * @throws java.lang.Exception 
      *
      */
     @Override
@@ -313,7 +317,7 @@ public class transactionOutDAOImpl implements transactionOutDAO {
 	String sql = "select ";
 		
 	for (int i = 1; i <= totalFields; i++) {
-	    sql += "F" + i + ",";
+	    sql += "f" + i + ",";
 	}	
 	sql += "id FROM transactiontranslatedout_" + batchId + " order by id asc";
 	
@@ -711,7 +715,7 @@ public class transactionOutDAOImpl implements transactionOutDAO {
     @Transactional(readOnly = true)
     public String getCustomXMLFieldsForOutput(Integer configId) throws Exception {
 	String sql = "select group_concat('REPLACE(REPLACE(ifnull(F', fieldValue, ',\"\") , ''\\n'', ''''), ''\\r'', '''')') as fieldNos "
-		+ " from configurationccdelements where configId = :configId order by id asc";
+		+ " from configurationccdelements where configId = :configId  and fieldValue != '' order by id asc";
 	Query query = sessionFactory.getCurrentSession().createSQLQuery(sql);
 	query.setParameter("configId", configId);
 	List<String> fieldNos = query.list();

@@ -1039,6 +1039,17 @@ public class transactionInManagerImpl implements transactionInManager {
 				    batchInfo.setOriginalFileName(fileName);
 				    batchInfo.setFileLocation(rootPath + configDroppedPath);
 				    
+				    if(fileName.contains("|")) {
+					String[] fileNameArray = fileName.split("\\|");
+					if(fileNameArray.length == 3) {
+					    Integer assocatedBatchUploadId = Integer.parseInt(fileNameArray[1]);
+					    
+					    if(assocatedBatchUploadId > 0) {
+						batchInfo.setAssociatedBatchId(assocatedBatchUploadId);
+					    }
+					}
+				    }
+				    
 				    batchId = submitBatchUpload(batchInfo);
 				    
 				    batchDetails = transactionInDAO.getBatchDetails(batchId);
@@ -2165,7 +2176,7 @@ public class transactionInManagerImpl implements transactionInManager {
 			String targetOrgName = "";
 			
 			//Check if the source transport method is direct
-			if(batch.getTransportMethodId() == 12) {
+			if(batch.getTransportMethodId() == 13) {
 			    directmessagesin directDetails = transactionInDAO.getDirectAPIMessagesByBatchUploadId(batch.getId());
 			    
 			    if(directDetails != null) {
@@ -3846,6 +3857,7 @@ public class transactionInManagerImpl implements transactionInManager {
 		    else {
 			String encodeArchivePath = myProps.getProperty("ut.directory.utRootDir") + "archivesIn/archive_" + batchName + fileExt;
 			Files.copy(new File(writeToFile.replace("/HELProductSuite/universalTranslator/",myProps.getProperty("ut.directory.utRootDir"))).toPath(), new File(encodeArchivePath).toPath(), REPLACE_EXISTING);
+			Files.copy(encodedFile.toPath(), new File(myProps.getProperty("ut.directory.utRootDir") + "archivesIn/" + batchName + fileExt.replace("/HELProductSuite/universalTranslator/",myProps.getProperty("ut.directory.utRootDir"))).toPath(), REPLACE_EXISTING);
 		    }
 
 		    statusId = 2;

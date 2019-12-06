@@ -31,7 +31,7 @@ public class batchUploads {
     private String statusValue, usersName, endUserDisplayText = "",
 	    tgtorgName, orgName, transportMethod, configName, uploadType = "",
 	    referringBatch = "", dashboardRowColor = "table-secondary", 
-	    entryMessage = "", relatedBatchDownloadIds;
+	    entryMessage = "", relatedBatchDownloadIds, dmConfigKeyWord;
 
     @Transient
     private boolean watchListCompleted = false;
@@ -108,6 +108,9 @@ public class batchUploads {
     @NoHtml
     @Column(name = "recipientEmail", nullable = false)
     private String recipientEmail;
+    
+    @Column(name = "associatedBatchId", nullable = true)
+    private Integer associatedBatchId = 0;
 
     public Integer getTotalTransactions() {
 	return totalTransactions;
@@ -453,4 +456,21 @@ public class batchUploads {
 	this.recipientEmail = recipientEmail;
     }
 
+    public String getDmConfigKeyWord() {
+	return dmConfigKeyWord;
+    }
+
+    public void setDmConfigKeyWord(String dmConfigKeyWord) {
+	this.dmConfigKeyWord = dmConfigKeyWord;
+    }
+
+    public Integer getAssociatedBatchId() {
+	return associatedBatchId;
+    }
+
+    public void setAssociatedBatchId(Integer associatedBatchId) {
+	this.associatedBatchId = associatedBatchId;
+    }
+
+    
 }

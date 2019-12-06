@@ -104,6 +104,7 @@ import com.registryKit.registry.helRegistryManager;
 import com.registryKit.registry.submittedMessages.submittedMessage;
 import com.registryKit.registry.submittedMessages.submittedMessageManager;
 import java.security.SecureRandom;
+import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.io.FilenameUtils;
 
 /**
@@ -392,8 +393,8 @@ public class transactionOutManagerImpl implements transactionOutManager {
 
 			} else {
 			    String colName = new StringBuilder().append("f").append(element.getFieldValue()).toString();
-
-			    String fieldValue = BeanUtils.getProperty(records, colName);
+			    
+			    String fieldValue = (String) PropertyUtils.getProperty(records.get(0), colName);
 
 			    if (fieldValue == null) {
 				fieldValue = "";
@@ -488,7 +489,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
 						    } else {
 							String colName = new StringBuilder().append("f").append(CCDelement.getFieldValue()).toString();
 
-							String fieldValue = BeanUtils.getProperty(records, colName);
+							String fieldValue = BeanUtils.getProperty(records.get(0), colName);
 
 							if (fieldValue == null) {
 							    fieldValue = "";
@@ -574,7 +575,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
 						    } else {
 							String colName = new StringBuilder().append("f").append(CCDelement.getFieldValue()).toString();
 
-							String fieldValue = BeanUtils.getProperty(records, colName);
+							String fieldValue = BeanUtils.getProperty(records.get(0), colName);
 
 							if (fieldValue == null) {
 							    fieldValue = "";
@@ -694,7 +695,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
 						    } else {
 							String colName = new StringBuilder().append("f").append(component.getfieldValue()).toString();
 
-							fieldValue = BeanUtils.getProperty(records, colName);
+							fieldValue = BeanUtils.getProperty(records.get(0), colName);
 
 							if (fieldValue == null) {
 							    fieldValue = "";
@@ -1833,24 +1834,6 @@ public class transactionOutManagerImpl implements transactionOutManager {
 		encryptMessage = true;
 	    }
 	    
-	    String generatedFilePath = generateTargetFile(true, batchDownload.getId(), transportDetails, encryptMessage);
-	    transportDetails.setDelimChar(messageTypeDAO.getDelimiterChar(transportDetails.getfileDelimiter()));
-	    //make sure we remove old file
-	    File generatedFile = new File(generatedFilePath);
-	    if (generatedFile.exists()) {
-		generatedFile.delete();
-	    }
-
-	     //mysql is the fastest way to output a file, but the permissions are tricky we write 
-	     //to massoutfiles where both tomcat and mysql has permission. 
-	     //Then we can create, copy and delete
-	    File massOutFile = new File(myProps.getProperty("ut.directory.massOutputPath") + batchDownload.getUtBatchName() + "." + fileExt);
-
-	    //check to see if file is there, if so remove old file
-	    if (massOutFile.exists()) {
-		massOutFile.delete();
-	    }
-
 	    //Check to see if the transport type has an uploaded custom XML template to follow
 	    boolean processCustomXMLTemplate = false;
 
@@ -1859,13 +1842,33 @@ public class transactionOutManagerImpl implements transactionOutManager {
 		    processCustomXMLTemplate = true;
 		}
 	    }
+	    
+	    
+	    String generatedFilePath = generateTargetFile(true, batchDownload.getId(), transportDetails, encryptMessage);
+	    transportDetails.setDelimChar(messageTypeDAO.getDelimiterChar(transportDetails.getfileDelimiter()));
+	    //make sure we remove old file
+	    File generatedFile = new File(generatedFilePath);
+	    
+	    if (generatedFile.exists()) {
+		generatedFile.delete();
+	    }
+	    
+	    //mysql is the fastest way to output a file, but the permissions are tricky we write 
+	    //to massoutfiles where both tomcat and mysql has permission. 
+	    //Then we can create, copy and delete
+	    File massOutFile = new File(myProps.getProperty("ut.directory.massOutputPath") + batchDownload.getUtBatchName() + "." + fileExt);
 
+	    //check to see if file is there, if so remove old file
+	    if (massOutFile.exists()) {
+		massOutFile.delete();
+	    }
+	    
 	    if (processCustomXMLTemplate) {
 
 		configFields = transactionOutDAO.getCustomXMLFieldsForOutput(batchDownload.getConfigId());
 
 		List recordsToWrite = transactionOutDAO.getOutputForCustomTargetFile(transportDetails, batchDownload.getId(), configFields);
-
+		
 		if (recordsToWrite != null) {
 		    Organization orgDetails = organizationManager.getOrganizationById(configurationManager.getConfigurationById(transportDetails.getconfigId()).getorgId());
 		    
@@ -1875,12 +1878,12 @@ public class transactionOutManagerImpl implements transactionOutManager {
 		    String ccdSampleContent = new String(Files.readAllBytes(path));
 
 		    Path newFilePath = Paths.get(myProps.getProperty("ut.directory.massOutputPath") + batchDownload.getUtBatchName() + "." + fileExt);
-
+		    
 		    Files.write(newFilePath, ccdSampleContent.getBytes());
 
 		    String contentToUpdate = new String(Files.readAllBytes(newFilePath));
 
-		    /* Get the configurationCCDElements */
+		    // Get the configurationCCDElements
 		    List<configurationCCDElements> ccdElements = configurationManager.getCCDElements(batchDownload.getConfigId());
 
 		    if (!ccdElements.isEmpty()) {
@@ -1888,8 +1891,15 @@ public class transactionOutManagerImpl implements transactionOutManager {
 			//Get repeating section
 			StringBuilder sb = new StringBuilder();
 			String repeatingSectionCopy = "";
-			String repeatingSection = contentToUpdate.substring(contentToUpdate.indexOf("[CDATA]") + 7, contentToUpdate.indexOf("[/CDATA]"));
-
+			String repeatingSection = "";
+			
+			if(contentToUpdate.contains("[CDATA]")) {
+			    repeatingSection = contentToUpdate.substring(contentToUpdate.indexOf("[CDATA]") + 7, contentToUpdate.indexOf("[/CDATA]"));
+			}
+			else {
+			    repeatingSection = contentToUpdate;
+			}
+			
 			Iterator recordIterator = recordsToWrite.iterator();
 			Integer elementCounter = 0;
 			Integer recordCounter = 0;
@@ -1897,10 +1907,29 @@ public class transactionOutManagerImpl implements transactionOutManager {
 			    recordCounter++;
 			    Object recordrow[] = (Object[]) recordIterator.next();
 			    repeatingSectionCopy = repeatingSection;
+			    
 			    elementCounter = 0;
 			    for (configurationCCDElements element : ccdElements) {
-				String fieldValue = (String) recordrow[elementCounter];
+				
+				String fieldValue = "";
+				
+				if(!element.getDefaultValue().equals("")) {
+				    if ("~currDate~".equals(element.getDefaultValue())) {
+					SimpleDateFormat date_format = new SimpleDateFormat("yyyyMMdd");
+					String date = date_format.format(new Date());
 
+					fieldValue = date;
+
+				    } 
+				    else {
+					fieldValue = element.getDefaultValue();
+				    }
+				} 
+				else {
+				    fieldValue = (String) recordrow[elementCounter];
+				    elementCounter += 1;
+				}
+				
 				if (fieldValue == null) {
 				    fieldValue = "";
 				} else if ("null".equals(fieldValue)) {
@@ -1913,7 +1942,6 @@ public class transactionOutManagerImpl implements transactionOutManager {
 
 				repeatingSectionCopy = repeatingSectionCopy.replace(element.getElement(), fieldValue);
 
-				elementCounter += 1;
 			    }
 			    if (transportDetails.getfileType() == 12) {
 				sb.append(repeatingSectionCopy);
@@ -1927,36 +1955,6 @@ public class transactionOutManagerImpl implements transactionOutManager {
 
 			contentToUpdate = contentToUpdate.replace(repeatingSection, sb.toString()).replace("[CDATA]", "").replace("[/CDATA]", "");
 
-			//Check to see if any other ~Element~ needs to be replaced
-			if (contentToUpdate.contains("~")) {
-			    elementCounter = 0;
-			    recordCounter = 0;
-			    String updatedCopy = "";
-			    recordIterator = recordsToWrite.iterator();
-			    while (recordIterator.hasNext()) {
-				Object recordrow[] = (Object[]) recordIterator.next();
-				updatedCopy = contentToUpdate;
-				elementCounter = 0;
-				for (configurationCCDElements element : ccdElements) {
-				    String fieldValue = (String) recordrow[elementCounter];
-
-				    if (fieldValue == null) {
-					fieldValue = "";
-				    } else if ("null".equals(fieldValue)) {
-					fieldValue = "";
-				    } else if (fieldValue.isEmpty()) {
-					fieldValue = "";
-				    } else if (fieldValue.length() == 0) {
-					fieldValue = "";
-				    }
-
-				    updatedCopy = updatedCopy.replace(element.getElement(), fieldValue);
-
-				    elementCounter += 1;
-				}
-			    }
-			    contentToUpdate = updatedCopy;
-			}
 		    }
 
 		    Files.write(newFilePath, contentToUpdate.getBytes());
@@ -2155,7 +2153,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
 		    hisps hispDetails = hispManager.getHispById(directDetails.getHispId());
 		    
 		    methodName = "senddirectOut"+hispDetails.getHispName().toLowerCase().replaceAll(" ","");
-		    Class<?>[] paramTypes = {int.class, configurationTransport.class};
+		    Class<?>[] paramTypes = {Integer.class, configurationTransport.class, hisps.class};
 		    Method method = directManager.getClass().getMethod(methodName, paramTypes);
 		    method.invoke(directManager, batchDownload.getId(), transportDetails, hispDetails);
 		}

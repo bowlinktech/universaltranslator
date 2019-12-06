@@ -57,7 +57,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
@@ -83,6 +82,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.servlet.view.RedirectView;
 import com.hel.ut.service.utConfigurationManager;
 import com.hel.ut.service.utConfigurationTransportManager;
+import java.util.Iterator;
 import java.util.Properties;
 import javax.annotation.Resource;
 
@@ -1997,17 +1997,6 @@ public class adminProcessingActivity {
 	    reportableFields = transactionInManager.getErrorReportField(batchId);
 	}
 	
-	if(reportableFields != null) {
-	    Iterator reportableFieldsIt = reportableFields.iterator();
-	
-	    while (reportableFieldsIt.hasNext()) {
-		Object rptFieldrow[] = (Object[]) reportableFieldsIt.next();
-		customCols.add(rptFieldrow[0].toString());
-		customCols.add(rptFieldrow[1].toString());
-		customCols.add(rptFieldrow[2].toString());
-		customCols.add(rptFieldrow[3].toString());
-	    }
-	}
 	
 	
 	customCols.add("Column Name");
@@ -2112,6 +2101,18 @@ public class adminProcessingActivity {
 		}
 		
 		break;
+	}
+	
+	if(reportableFields != null) {
+	    Iterator reportableFieldsIt = reportableFields.iterator();
+	
+	    while (reportableFieldsIt.hasNext()) {
+		Object rptFieldrow[] = (Object[]) reportableFieldsIt.next();
+		customCols.add(rptFieldrow[0].toString());
+		customCols.add(rptFieldrow[1].toString());
+		customCols.add(rptFieldrow[2].toString());
+		customCols.add(rptFieldrow[3].toString());
+	    }
 	}
 		
 	mav.addObject("customCols", customCols);
