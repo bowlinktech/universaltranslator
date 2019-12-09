@@ -3082,16 +3082,17 @@ public class transactionInDAOImpl implements transactionInDAO {
 	
 	
 	String sqlQuery = "select id, orgId, utBatchName, transportMethodId, originalFileName, totalRecordCount, errorRecordCount, configName, threshold, inboundBatchConfigurationType, statusId, dateSubmitted,"
-		+ "statusValue, endUserDisplayText, orgName, transportMethod, totalMessages, 'On Demand' as uploadType "
+		+ "statusValue, endUserDisplayText, orgName, case when dmConfigKeyWord != '' then 'File Drop (Direct)' when transportMethod != 'Online Form' && restAPIType > 0 then 'File Drop (Rest)' else transportMethod end as transportMethod, totalMessages, 'On Demand' as uploadType, dmConfigKeyWord "
 		+ "FROM ("
 		+ "select a.id, a.orgId, a.utBatchName, a.transportMethodId, a.originalFileName, a.totalRecordCount, a.errorRecordCount, b.configName, b.threshold, b.configurationType as inboundBatchConfigurationType,"
 		+ "a.statusId, a.dateSubmitted, c.endUserDisplayCode as statusValue, c.endUserDisplayText as endUserDisplayText,d.orgName, e.transportMethod,"
-		+ "(select count(id) as total from batchuploads where "+dateSQLStringTotal+") as totalMessages "
+		+ "(select count(id) as total from batchuploads where "+dateSQLStringTotal+") as totalMessages, f.dmConfigKeyWord, f.restAPIType "
 		+ "FROM batchuploads a inner join "
 		+ "configurations b on b.id = a.configId inner join "
 		+ "lu_processstatus c on c.id = a.statusId inner join "
 		+ "organizations d on d.id = a.orgId inner join "
-		+ "ref_transportmethods e on e.id = a.transportMethodId "
+		+ "ref_transportmethods e on e.id = a.transportMethodId inner join "
+		+ "configurationtransportdetails f on f.configId = b.id "
 		+ "where " + dateSQLString + ") as inboundBatches ";
 	
 	if(!"".equals(searchTerm)){
@@ -3127,6 +3128,7 @@ public class transactionInDAOImpl implements transactionInDAO {
 	    .addScalar("totalMessages", StandardBasicTypes.INTEGER)
 	    .addScalar("uploadType", StandardBasicTypes.STRING)
 	    .addScalar("endUserDisplayText", StandardBasicTypes.STRING)
+	    .addScalar("dmConfigKeyWord", StandardBasicTypes.STRING)
 	    .setResultTransformer(Transformers.aliasToBean(batchUploads.class));
 	
 	List<batchUploads> batchUploadMessages = query.list();

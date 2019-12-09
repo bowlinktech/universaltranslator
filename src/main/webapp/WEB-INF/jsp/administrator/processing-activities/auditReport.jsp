@@ -238,14 +238,20 @@
 					    <c:set var="ext" value="${text[fn:length(text)-1]}" />
 					    
 					    <c:choose>
-						<c:when test="${batchDetails.transportMethodId == 9 || batchDetails.transportMethodId == 12}">
+						<c:when test="${batchDetails.transportMethodId == 9 || batchDetails.transportMethodId == 13}">
 						    <c:set var="hrefLink" value="/FileDownload/downloadFile.do?filename=${batchDetails.utBatchName}.${fn:toLowerCase(ext)}&foldername=archivesIn"/>
+						    <c:set var="hreftranslateLink" value="/FileDownload/downloadFile.do?filename=archive_${batchDetails.utBatchName}.${fn:toLowerCase(ext)}&foldername=archivesIn"/>
 						</c:when>
 						<c:otherwise>
 						    <c:set var="hrefLink" value="/FileDownload/downloadFile.do?filename=archive_${batchDetails.utBatchName}.${fn:toLowerCase(ext)}&foldername=archivesIn"/>
 						</c:otherwise>
 					    </c:choose>
-					    <p><strong>Uploaded File:</strong><br /><a href="${hrefLink}" title="View Original File">${batchDetails.originalFileName}</a></p>
+					    <p>
+						<strong>Uploaded File:</strong><br /><a href="${hrefLink}" title="View Original File">${batchDetails.originalFileName}</a>
+						<c:if test="${batchDetails.transportMethodId == 9 || batchDetails.transportMethodId == 13}">
+						    <br /><a href="${hreftranslateLink}" title="View Translated File">Download Translated File</a></p>
+						</c:if>
+					    </p>
 					</c:if>
 				    </c:otherwise>
 				</c:choose>
