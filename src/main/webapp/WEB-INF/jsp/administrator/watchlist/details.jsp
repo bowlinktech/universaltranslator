@@ -171,7 +171,7 @@
     </div>
 </div>         
 
-<script>
+ <script type="text/javascript" nonce="9483TZ393HIE383">
     $(function () {
         var selOrg = $('.selOrganization').val();
 	

@@ -2,14 +2,8 @@
 
 - Implement the auto log out feature
 
-- Test reseting a received REST API file
-
-- Need to add a place in the system admin to add HISPS (Med Allies would be the first). Need ability to add API credentials to this section
-
-- Implement a file download configuration
+- Test resetting a received REST API file
 
 - Implement CSRF
-
-- Add CSP
 
 - Add option for target configuration to update inbound audit report.

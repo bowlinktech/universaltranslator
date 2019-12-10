@@ -11,4 +11,6 @@ public interface hispDAO {
     List<hisps> getAllActiveHisps() throws Exception;
 
     hisps getHispById(Integer hispId) throws Exception;
+    
+    void saveHisp(hisps hispDetails) throws Exception;
 }

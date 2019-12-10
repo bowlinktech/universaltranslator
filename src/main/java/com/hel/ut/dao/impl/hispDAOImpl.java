@@ -54,6 +54,9 @@ public class hispDAOImpl implements hispDAO {
         return (hisps) sessionFactory.getCurrentSession().get(hisps.class, hispId);
     }
 
-    
-    
+    @Override
+    @Transactional(readOnly = false)
+    public void saveHisp(hisps hispDetails) throws Exception {
+	sessionFactory.getCurrentSession().saveOrUpdate(hispDetails);
+    }
 }
