@@ -2,6 +2,7 @@ package com.hel.ut.controller;
 
 import com.hel.ut.model.utUser;
 import com.hel.ut.model.mailMessage;
+import com.hel.ut.restAPI.directManager;
 import com.hel.ut.service.emailMessageManager;
 import com.hel.ut.service.userManager;
 import java.math.BigInteger;
@@ -41,6 +42,15 @@ public class mainController {
     @Autowired
     private emailMessageManager emailMessageManager;
     
+     @Autowired
+    private directManager directManager;
+    
+    @RequestMapping(value = "administrator/medAlliestest", method = RequestMethod.GET)
+    public void medAlliestest() throws Exception {
+	
+	directManager.sendmedAlliesTestMessage();
+
+    }
     
     /**
      * The '/', '/login' request will serve up the login page.
