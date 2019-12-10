@@ -2992,4 +2992,38 @@ public class adminConfigController {
 	 // close stream and return to view
 	response.flushBuffer();
     } 
+    
+    /**
+     * The '/getAvailableConfigurations.do' function will return a list of configuration that have been set up for the passed in organization.
+     *
+     * @param orgId The organization selected in the drop down
+     *
+     * @return configurations The available configurations
+     */
+    @SuppressWarnings("rawtypes")
+    @RequestMapping(value = "/getAvailableConfigurations.do", method = RequestMethod.GET)
+    public @ResponseBody
+    List<utConfiguration> getAvailableConfigurations(@RequestParam(value = "orgId", required = true) int orgId) throws Exception {
+
+        List<utConfiguration> configurations = utconfigurationmanager.getActiveConfigurationsByOrgId(orgId);
+
+        if (configurations != null) {
+            for (utConfiguration configuration : configurations) {
+                configurationTransport transportDetails = utconfigurationTransportManager.getTransportDetails(configuration.getId());
+
+                configuration.setOrgName(organizationmanager.getOrganizationById(configuration.getorgId()).getOrgName());
+		configuration.setMessageTypeName("N/A");
+		
+		if(transportDetails != null) {
+		    configuration.settransportMethod(utconfigurationTransportManager.getTransportMethodById(transportDetails.gettransportMethodId()));
+		}
+		else {
+		    configuration.settransportMethod("N/A");
+		}
+                
+            }
+        }
+
+        return configurations;
+    }
 }

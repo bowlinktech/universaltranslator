@@ -23,4 +23,9 @@ public class hispManagerImpl implements hispManager {
     public hisps getHispById(Integer hispId) throws Exception {
         return hispDAO.getHispById(hispId);
     }
+    
+    @Override
+    public void saveHisp(hisps hispDetails) throws Exception {
+	hispDAO.saveHisp(hispDetails);
+    }
 }

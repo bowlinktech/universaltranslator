@@ -81,13 +81,22 @@
             <section class="panel panel-default panel-stats">
                 <div class="panel-body">
                     <span class="stat-number"><a href="moveFilePaths" class="moveFilePaths" title="View File Paths">${filePaths}&nbsp;</a></span>
-
                     <h3>Bad File Paths</h3>
-                         <a href="moveFilePaths" id="moveFilePaths" class="btn btn-primary btn-small" class="moveFilePaths" title="View File Paths">Bad File Paths</a>               
-
+		    <a href="moveFilePaths" id="moveFilePaths" class="btn btn-primary btn-small" class="moveFilePaths" title="View File Paths">Bad File Paths</a>    
                 </div>
             </section>
         </div>
+		    
+	<div class="col-md-3 col-sm-3 col-xs-3">
+            <section class="panel panel-default panel-stats">
+                <div class="panel-body">
+                    <span class="stat-number"><a href="hisps" class="hisps" title="View HISPS">${totalHisps}&nbsp;</a></span>
+                    <h3>HISPS</h3>
+		    <a href="hisps" class="btn btn-primary btn-small" class="hisps" title="View HISPS">View HISPS</a>    
+                </div>
+            </section>
+        </div>
+
 
     </div>
 </div>

@@ -24,13 +24,10 @@
                     </c:when>  
                     <c:when test="${param['page'] == 'loginAs'}">
                         <a href="javascript:void(0);" title="Login As" class="unstyled-link">Login As</a>
-                    </c:when>   
-                    <c:when test="${param['page'] == 'news'}">
-                        <a href="javascript:void(0);" title="Create new Article" class="unstyled-link">News Articles</a>
                     </c:when>  
-                    <c:when test="${param['page'] == 'articleDetails'}">
-                        <a href="javascript:void(0);" title="Create new Article" class="unstyled-link">Article Details</a>
-                    </c:when> 
+		    <c:when test="${param['page'] == 'hisps'}">
+                        <a href="javascript:void(0);" title="Manage HISPS" class="unstyled-link">Manage HISPS</a>
+                    </c:when>  
 		    <c:when test="${param['page'] == 'systemadmins'}">
                         <a href="javascript:void(0);" title="Manage System Admins" class="unstyled-link">Manage System Administrators</a>
                     </c:when>
@@ -48,12 +45,6 @@
                     </c:when>
                     <c:when test="${param['page'] == 'hl7Details'}">
                     <li><a href="javascript:void(0);" id="saveDetails" title="Save this Configuration initial setup" role="button"><span class="glyphicon glyphicon-ok icon-stacked"></span> Save </a></li>
-                    </c:when>
-                    <c:when test="${param['page'] == 'news'}">
-                    <li><a href="<c:url value='/administrator/sysadmin/news/create' />" title="Create New Article" role="button"><span class="glyphicon icon-stacked glyphicon glyphicon-plus"></span>Create New</a></li>
-                    </c:when>
-                    <c:when test="${param['page'] == 'articleDetails'}">
-                    <li><a href="javascript:void(0);" id="saveDetails" title="Save this news article" role="button"><span class="glyphicon glyphicon-ok icon-stacked"></span> Save </a></li>
                     </c:when>
                 </c:choose>
 

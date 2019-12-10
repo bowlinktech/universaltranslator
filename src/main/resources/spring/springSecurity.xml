@@ -29,10 +29,12 @@
             <concurrency-control session-registry-alias="sessionRegistry" max-sessions="1" expired-url="/login?expired" />
         </session-management>
         <headers>
-            <cache-control />
+	    <header name="Content-Security-Policy" value="style-src 'self' http://fonts.googleapis.com 'unsafe-inline'; media-src 'none'; block-all-mixed-content; frame-ancestors 'self'; img-src 'self' data:; script-src 'self' 'nonce-9483TZ393HIE383'" />
+	    <cache-control />
             <content-type-options />
             <hsts />
             <frame-options policy="SAMEORIGIN" />
+	    <referrer-policy policy="same-origin" />
             <xss-protection />
         </headers>
         <csrf disabled="true"></csrf>

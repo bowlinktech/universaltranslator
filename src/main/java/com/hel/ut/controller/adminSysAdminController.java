@@ -23,8 +23,10 @@ import com.hel.ut.model.utUser;
 import com.hel.ut.model.utUserActivity;
 import com.hel.ut.model.custom.LookUpTable;
 import com.hel.ut.model.custom.TableData;
+import com.hel.ut.model.hisps;
 import com.hel.ut.model.lutables.lu_ProcessStatus;
 import com.hel.ut.model.utUserLogin;
+import com.hel.ut.service.hispManager;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -55,6 +57,9 @@ public class adminSysAdminController {
 
     @Autowired
     private utConfigurationManager configurationmanager;
+    
+    @Autowired
+    private hispManager hispsmanager;
 
     @Autowired
     private ServletContext servletContext;
@@ -79,6 +84,7 @@ public class adminSysAdminController {
         Long totalHL7Entries = sysAdminManager.findtotalHL7Entries();
         Long totalUsers = sysAdminManager.findTotalUsers();
         Integer filePaths = sysAdminManager.getMoveFilesLog(1).size();
+	Integer totalHisps = hispsmanager.getAllActiveHisps().size();
 	
 	//Get a list of system admin users
 	List<utUser> systemAdmins = usermanager.getAllUsersByOrganization(1);
@@ -88,6 +94,7 @@ public class adminSysAdminController {
         mav.addObject("totalHL7Entries", totalHL7Entries);
         mav.addObject("totalUsers", totalUsers);
         mav.addObject("filePaths", filePaths);
+	mav.addObject("totalHisps", totalHisps);
         
         return mav;
     }
@@ -242,9 +249,9 @@ public class adminSysAdminController {
     /**
      * The '/{urlId}/create' POST request will handle submitting the new provider.
      *
-     * @param tableDataForm	The object containing the tableData form fields
+     * @param tableData
      * @param result	The validation result
-     * @param redirectAttr	The variable that will hold values that can be read after the redirect
+     * @return 
      * @Objects	(1) The object containing all the information for the new data item (2) We will extract table from web address
      * @throws Exception
      */
@@ -281,6 +288,10 @@ public class adminSysAdminController {
     /**
      * The '/data/std/{urlId}/tableData?i=' GET request will be used to create a new data for selected table
      *
+     * @param urlId
+     * @param i
+     * @return 
+     * @throws java.lang.Exception
      */
     @RequestMapping(value = "/data/std/{urlId}/tableData", method = RequestMethod.GET)
     public ModelAndView viewTableData(@PathVariable String urlId,
@@ -710,6 +721,88 @@ public class adminSysAdminController {
 	List<utUserLogin> systemAdminLogins = usermanager.getUserLogins(adminId);
 	
         mav.addObject("systemAdminLogins", systemAdminLogins);
+        return mav;
+    }
+    
+    @RequestMapping(value = "/hisps", method = RequestMethod.GET)
+    public ModelAndView hisps(HttpServletRequest request, HttpServletResponse response, HttpSession session, RedirectAttributes redirectAttr) throws Exception {
+
+    	ModelAndView mav = new ModelAndView();
+        mav.setViewName("/administrator/sysadmin/hisps");
+	
+        //we get list of hisps
+        List<hisps> hisps = hispsmanager.getAllActiveHisps();
+        mav.addObject("hisps", hisps);
+        
+        return mav;
+    }
+    
+     /**
+     * The '/hisps/create' GET request will be used to create a new data for selected table
+     *
+     */
+    @RequestMapping(value = "/hisps/create", method = RequestMethod.GET)
+    public ModelAndView newHispForm() throws Exception {
+        ModelAndView mav = new ModelAndView();
+        mav.setViewName("/administrator/sysadmin/hisps/details");
+
+        //create a macro
+        hisps newHisp = new hisps();
+        newHisp.setStatus(true);
+        mav.addObject("hispDetails", newHisp);
+        mav.addObject("btnValue", "Create");
+        return mav;
+    }
+
+    @RequestMapping(value = "/hisps/create", method = RequestMethod.POST)
+    public ModelAndView creatHisp(@ModelAttribute(value = "hispDetails") hisps hispDetails,BindingResult result) throws Exception {
+
+        ModelAndView mav = new ModelAndView();
+        mav.setViewName("/administrator/sysadmin/hisps/details");
+        
+        //now we save
+	hispsmanager.saveHisp(hispDetails);
+        mav.addObject("success", "hispCreated");
+        mav.addObject("btnValue", "Update");
+        return mav;
+    }
+
+    /**
+     * The '/hisps/view' GET request will be used to display the details of the selected hisp
+     *
+     * @param i
+     * @return 
+     * @throws java.lang.Exception
+     */
+    @RequestMapping(value = "/hisps/view", method = RequestMethod.GET)
+    public ModelAndView viewHispDetails(@RequestParam(value = "i", required = false) Integer i) throws Exception {
+
+        ModelAndView mav = new ModelAndView();
+        mav.setViewName("/administrator/sysadmin/hisps/details");
+	
+       
+        hisps hispDetails = hispsmanager.getHispById(i);
+        mav.addObject("hispDetails", hispDetails);
+        mav.addObject("btnValue", "Update");
+        return mav;
+    }
+
+    /**
+     * UPDATE macros *
+     * @param hispDetails
+     * @param result
+     * @throws java.lang.Exception
+     */
+    @RequestMapping(value = "/hisps/update", method = RequestMethod.POST)
+    public ModelAndView updateHisp(@ModelAttribute(value = "hispDetails") hisps hispDetails,BindingResult result) throws Exception {
+
+        ModelAndView mav = new ModelAndView();
+        mav.setViewName("/administrator/sysadmin/hisps/details");
+
+        hispsmanager.saveHisp(hispDetails);
+	mav.addObject("success", "hispUpdated");
+        mav.addObject("hispDetails", hispDetails);
+        mav.addObject("btnValue", "Update");
         return mav;
     }
 }
