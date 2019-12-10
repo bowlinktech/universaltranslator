@@ -136,7 +136,7 @@ public class directManager {
 		
 	JSONObject emailAttachmentListObject = new JSONObject();
 	emailAttachmentListObject.put("attachmentClass","text/xml");
-	emailAttachmentListObject.put("attachmentContent", CONSTANT);
+	emailAttachmentListObject.put("attachmentContent", CONSTANT.toString());
 	emailAttachmentListObject.put("attachmentTitle",fileTitle);
 
 	emailAttachmentListArray.add(emailAttachmentListObject);
@@ -158,9 +158,9 @@ public class directManager {
 	client.setConnectTimeout(120000);
 	client.setReadTimeout(120000);
 	client.addFilter(new HTTPBasicAuthFilter("BowlinkTestUser", "d578f6c6-b7ec-87ue-a9c1-def057c4534a"));
-
+	
 	WebResource webResource = client.resource("http://api.medallies.org:8091/MessagingApi/dirmsg/send_ccda");
-
+	
 	try {
 	    ClientResponse response = webResource.type(MediaType.APPLICATION_JSON_TYPE).post(ClientResponse.class, jsonObjectToSend.toString());
 	    
