@@ -9,14 +9,13 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.ArrayList;
 import java.util.Map;
-import org.json.JSONArray;
 
 /**
  *
  * @author chadmccue
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class medAlliesReferralInfo {
+public class eReferralAPIInfo {
     
     private String fromDirectAddress;
     private String toDirectAddress;
@@ -24,12 +23,18 @@ public class medAlliesReferralInfo {
     private String transitTime;
     private ArrayList toDirectAddressArray;
     
-    @JsonProperty("envelopeInfo")
-    private void setEnvelopeInfo(Map<String, Object> envelopeInfo) {
-        this.fromDirectAddress = envelopeInfo.get("fromDirectAddress").toString();
-        this.messageId = envelopeInfo.get("messageId").toString();
-        this.transitTime = envelopeInfo.get("transitTime").toString();
-        this.toDirectAddressArray = (ArrayList) envelopeInfo.get("toDirectAddress");
+    @JsonProperty("messageInfo")
+    private void setMessageInfo(Map<String, Object> messageInfo) {
+        this.fromDirectAddress = messageInfo.get("fromDirectAddress").toString();
+       
+	if(messageInfo.containsKey("messageId")) {
+	    this.messageId = messageInfo.get("messageId").toString();
+	}
+	if(messageInfo.containsKey("transitTime")) {
+	    this.transitTime = messageInfo.get("transitTime").toString();
+	}
+        
+        this.toDirectAddressArray = (ArrayList) messageInfo.get("toDirectAddress");
         if(!this.toDirectAddressArray.isEmpty()) {
             this.toDirectAddress = this.toDirectAddressArray.get(0).toString();
         }
