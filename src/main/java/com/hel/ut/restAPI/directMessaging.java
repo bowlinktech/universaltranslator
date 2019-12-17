@@ -10,8 +10,8 @@ import com.hel.ut.model.configurationFileDropFields;
 import com.hel.ut.model.configurationTransport;
 import com.hel.ut.model.directmessagesin;
 import com.hel.ut.model.hisps;
-import com.hel.ut.model.medAlliesReferralAttachmentList;
-import com.hel.ut.model.medAlliesReferralInfo;
+import com.hel.ut.model.eReferralAPIAttachmentList;
+import com.hel.ut.model.eReferralAPIInfo;
 import com.hel.ut.model.organizationDirectDetails;
 import com.hel.ut.service.hispManager;
 import com.hel.ut.service.organizationManager;
@@ -40,6 +40,7 @@ import java.util.Properties;
 import javax.annotation.Resource;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FilenameUtils;
+import org.json.simple.JSONObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -65,8 +66,8 @@ public class directMessaging {
     @Resource(name = "myProps")
     private Properties myProps;
     
-    @PostMapping("/medallies/post/ereferral")
-    public ResponseEntity<?> consumeMedAllieseReferral(@RequestBody(required = false) String jsonSent,HttpServletResponse response,HttpServletRequest request) throws Exception {
+    @PostMapping("/post/ereferral")
+    public ResponseEntity<?> consumeDirectMessageReferral(@RequestBody(required = false) String jsonSent,HttpServletResponse response,HttpServletRequest request) throws Exception {
         
         String authorization = request.getHeader("Authorization");
         
@@ -97,26 +98,27 @@ public class directMessaging {
                         Path path = Paths.get(utRootDir + "medAlliesArchives/"+originalDirectMessageName);
                         Files.write(path, jsonSent.getBytes());
                         
-                        medAlliesReferralInfo envelopeInfo = null;
-                        List<medAlliesReferralAttachmentList> attachmentList = null;
+                        eReferralAPIInfo messageInfo = null;
+                        List<eReferralAPIAttachmentList> attachmentList = null;
                         
                         //Need to try and put JSON into medallies object
                         try {
                             Configuration conf = Configuration.builder().mappingProvider(new JacksonMappingProvider()).jsonProvider(new JacksonJsonProvider()).build();
-                            TypeRef<medAlliesReferralInfo> type = new TypeRef<medAlliesReferralInfo>() {};
-                            envelopeInfo = JsonPath.using(conf).parse(jsonSent).read("$", type);
+                            TypeRef<eReferralAPIInfo> type = new TypeRef<eReferralAPIInfo>() {};
+                            messageInfo = JsonPath.using(conf).parse(jsonSent).read("$", type);
                         }
                         catch (Exception ex) {
+			    System.out.println(ex.getMessage());
                             //Need to send email of error
                             return new ResponseEntity("Invalid JSON Payload!", HttpStatus.BAD_REQUEST);
                         }
                         
-                        if(envelopeInfo != null) {
+                        if(messageInfo != null) {
                             //Need to make sure there is an attachment array
                             try {
                                 Configuration conf = Configuration.builder().mappingProvider(new JacksonMappingProvider()).jsonProvider(new JacksonJsonProvider()).build();
-                                TypeRef<List<medAlliesReferralAttachmentList>> type = new TypeRef<List<medAlliesReferralAttachmentList>>() {};
-                                attachmentList = JsonPath.using(conf).parse(jsonSent).read("$.emailAttachmentList.*", type);    
+                                TypeRef<List<eReferralAPIAttachmentList>> type = new TypeRef<List<eReferralAPIAttachmentList>>() {};
+                                attachmentList = JsonPath.using(conf).parse(jsonSent).read("$.messageAttachmentList.*", type);    
                             }
                             catch (Exception ex) {
                                 //Need to send email of error
@@ -125,10 +127,10 @@ public class directMessaging {
                             
                             if(!attachmentList.isEmpty()) {
                                 
-                                if(envelopeInfo.getToDirectAddress().contains("@")) {
+                                if(messageInfo.getToDirectAddress().contains("@")) {
                                 
-                                    if(envelopeInfo.getFromDirectAddress().contains("@")) {
-                                        String DMDomain = envelopeInfo.getFromDirectAddress().substring(envelopeInfo.getFromDirectAddress().indexOf("@")+1,envelopeInfo.getFromDirectAddress().length());
+                                    if(messageInfo.getFromDirectAddress().contains("@")) {
+                                        String DMDomain = messageInfo.getFromDirectAddress().substring(messageInfo.getFromDirectAddress().indexOf("@")+1,messageInfo.getFromDirectAddress().length());
 
                                         organizationDirectDetails directDetails = configurationtransportmanager.getDirectMessagingDetails(DMDomain);
 
@@ -143,7 +145,7 @@ public class directMessaging {
                                                 String CCDAContent = null;
                                                 String CCDATitle = "";
                                                 Integer attachmentSize = 0;
-                                                for(medAlliesReferralAttachmentList attachment : attachmentList) {
+                                                for(eReferralAPIAttachmentList attachment : attachmentList) {
                                                     if(Integer.parseInt(attachment.getAttachmentSize()) > attachmentSize) {
                                                         CCDAContent = attachment.getAttachmentContent();
                                                         attachmentSize = Integer.parseInt(attachment.getAttachmentSize());
@@ -155,7 +157,7 @@ public class directMessaging {
                                                     if(FilenameUtils.getExtension(CCDATitle).toLowerCase().equals(directDetails.getExpectedFileExt().toLowerCase())) {
 							
 							//Find the configuration by dm keyword from target direct address
-							configurationTransport transportDetails = configurationtransportmanager.findConfigurationByDirectMessagKeyword(directDetails.getOrgId(), envelopeInfo.getToDirectAddress());
+							configurationTransport transportDetails = configurationtransportmanager.findConfigurationByDirectMessagKeyword(directDetails.getOrgId(), messageInfo.getToDirectAddress());
 							    
 							//File Drop directory
 							List<configurationFileDropFields> fileDropFields = configurationtransportmanager.getTransFileDropDetails(transportDetails.getId());
@@ -191,7 +193,7 @@ public class directMessaging {
 							    }
 							    else {
 								statusId = 3;
-								sendingResponse = "Failed to find configuration. OrgId: " + directDetails.getOrgId() + "; To Direct Address: " + envelopeInfo.getToDirectAddress();
+								sendingResponse = "Failed to find configuration. OrgId: " + directDetails.getOrgId() + "; To Direct Address: " + messageInfo.getToDirectAddress();
 							    }
                                                         }
                                                         
@@ -199,8 +201,8 @@ public class directMessaging {
                                                         directmessagesin newDirectMessageIn = new directmessagesin();
                                                         newDirectMessageIn.setArchiveFileName("archivesIn/"+dateFormat.format(date)+".json");
                                                         newDirectMessageIn.setConfigId(configId);
-                                                        newDirectMessageIn.setFromDirectAddress(envelopeInfo.getFromDirectAddress());
-                                                        newDirectMessageIn.setToDirectAddress(envelopeInfo.getToDirectAddress());
+                                                        newDirectMessageIn.setFromDirectAddress(messageInfo.getFromDirectAddress());
+                                                        newDirectMessageIn.setToDirectAddress(messageInfo.getToDirectAddress());
                                                         newDirectMessageIn.setHispId(directDetails.getHispId());
                                                         newDirectMessageIn.setStatusId(statusId);
                                                         newDirectMessageIn.setReferralFileName(CCDATitle);
@@ -214,55 +216,146 @@ public class directMessaging {
 							    //Call the method to start processing this message immediately
 							    transactionInManager.processDirectAPIMessages();
 							    
-                                                            return new ResponseEntity("Successfully received and processed your message.", HttpStatus.OK);
+							    JSONObject responseObject = new JSONObject();
+							    if(!"".equals(messageInfo.getMessageId())) {
+								responseObject.put("messageId",messageInfo.getMessageId());
+							    }
+							    else {
+								responseObject.put("messageId","N/A");
+							    }
+							    responseObject.put("status","SUCCESS");
+							    responseObject.put("result","Successfully received and processed your message.");
+							    
+                                                            return new ResponseEntity(responseObject, HttpStatus.OK);
 							    
                                                         }
                                                         else {
-                                                            return new ResponseEntity("Failed to process your message.", HttpStatus.EXPECTATION_FAILED);
+							    JSONObject responseObject = new JSONObject();
+							    if(!"".equals(messageInfo.getMessageId())) {
+								responseObject.put("messageId",messageInfo.getMessageId());
+							    }
+							    else {
+								responseObject.put("messageId","N/A");
+							    }
+							    responseObject.put("status","FAILED");
+							    responseObject.put("result","Failed to process your message.");
+                                                            return new ResponseEntity(responseObject, HttpStatus.EXPECTATION_FAILED);
                                                         }
 
                                                     }
                                                     else {
-                                                        return new ResponseEntity("Received attachment extension (" + FilenameUtils.getExtension(CCDATitle).toLowerCase()+ ") does not match the expected file extension - ." + directDetails.getExpectedFileExt(), HttpStatus.BAD_REQUEST);
+							JSONObject responseObject = new JSONObject();
+							if(!"".equals(messageInfo.getMessageId())) {
+							    responseObject.put("messageId",messageInfo.getMessageId());
+							}
+							else {
+							    responseObject.put("messageId","N/A");
+							}
+							responseObject.put("status","FAILED");
+							responseObject.put("result","Received attachment extension (" + FilenameUtils.getExtension(CCDATitle).toLowerCase()+ ") does not match the expected file extension - ." + directDetails.getExpectedFileExt());
+                                                        return new ResponseEntity(responseObject, HttpStatus.BAD_REQUEST);
                                                     }
                                                 }
                                                 else {
-                                                    return new ResponseEntity("missing message attachments", HttpStatus.BAD_REQUEST);
+						    JSONObject responseObject = new JSONObject();
+						    if(!"".equals(messageInfo.getMessageId())) {
+							responseObject.put("messageId",messageInfo.getMessageId());
+						    }
+						    else {
+							responseObject.put("messageId","N/A");
+						    }
+						    responseObject.put("status","FAILED");
+						    responseObject.put("result","missing message attachments");
+                                                    return new ResponseEntity(responseObject, HttpStatus.BAD_REQUEST);
                                                 }
                                             }
                                         }
                                         else {
-                                            return new ResponseEntity("sending direct message is invalid - " + envelopeInfo.getFromDirectAddress(), HttpStatus.BAD_REQUEST);
+					    JSONObject responseObject = new JSONObject();
+					    if(!"".equals(messageInfo.getMessageId())) {
+						responseObject.put("messageId",messageInfo.getMessageId());
+					    }
+					    else {
+						responseObject.put("messageId","N/A");
+					    }
+					    responseObject.put("status","FAILED");
+					    responseObject.put("result","sending direct message is invalid - " + messageInfo.getFromDirectAddress());
+                                            return new ResponseEntity(responseObject, HttpStatus.BAD_REQUEST);
                                         }
                                     }
                                     else {
-                                        return new ResponseEntity("sending direct message is invalid - " + envelopeInfo.getFromDirectAddress(), HttpStatus.BAD_REQUEST);
+					JSONObject responseObject = new JSONObject();
+					if(!"".equals(messageInfo.getMessageId())) {
+					    responseObject.put("messageId",messageInfo.getMessageId());
+					}
+					else {
+					    responseObject.put("messageId","N/A");
+					}
+					responseObject.put("status","FAILED");
+					responseObject.put("result","sending direct message is invalid - " + messageInfo.getFromDirectAddress());
+                                        return new ResponseEntity(responseObject, HttpStatus.BAD_REQUEST);
                                     }
                                 }
                                 else {
-                                    return new ResponseEntity("recipient direct message is invalid - " + envelopeInfo.getToDirectAddress(), HttpStatus.BAD_REQUEST);
+				    JSONObject responseObject = new JSONObject();
+				    if(!"".equals(messageInfo.getMessageId())) {
+					responseObject.put("messageId",messageInfo.getMessageId());
+				    }
+				    else {
+					responseObject.put("messageId","N/A");
+				    }
+				    responseObject.put("status","FAILED");
+				    responseObject.put("result","recipient direct message is invalid - " + messageInfo.getToDirectAddress());
+                                    return new ResponseEntity("recipient direct message is invalid - " + messageInfo.getToDirectAddress(), HttpStatus.BAD_REQUEST);
                                 }
                             }
                             else {
-                                return new ResponseEntity("missing message attachments", HttpStatus.BAD_REQUEST);
+				JSONObject responseObject = new JSONObject();
+				if(!"".equals(messageInfo.getMessageId())) {
+				    responseObject.put("messageId",messageInfo.getMessageId());
+				}
+				else {
+				    responseObject.put("messageId","N/A");
+				}
+				responseObject.put("status","FAILED");
+				responseObject.put("result","missing message attachments");
+                                return new ResponseEntity(responseObject, HttpStatus.BAD_REQUEST);
                             }
                         }
                         else {
-                            return new ResponseEntity("Invalid JSON Payload!", HttpStatus.BAD_REQUEST);
+			    JSONObject responseObject = new JSONObject();
+			    if(!"".equals(messageInfo.getMessageId())) {
+				responseObject.put("messageId",messageInfo.getMessageId());
+			    }
+			    else {
+				responseObject.put("messageId","N/A");
+			    }
+			    responseObject.put("status","FAILED");
+			    responseObject.put("result","Invalid JSON Payload!");
+                            return new ResponseEntity(responseObject, HttpStatus.BAD_REQUEST);
                         }
 
                     }
                 }
                 else {
-                    return new ResponseEntity("Invalid Credentials!", HttpStatus.UNAUTHORIZED);
+		    JSONObject responseObject = new JSONObject();
+		    responseObject.put("status","UNAUTHORIZED");
+		    responseObject.put("result","Invalid Credentials!");
+                    return new ResponseEntity(responseObject, HttpStatus.UNAUTHORIZED);
                 }
             }
             else {
-                return new ResponseEntity("Invalid Credentials!", HttpStatus.UNAUTHORIZED);
+		JSONObject responseObject = new JSONObject();
+		responseObject.put("status","UNAUTHORIZED");
+		responseObject.put("result","Invalid Credentials!");
+                return new ResponseEntity(responseObject, HttpStatus.UNAUTHORIZED);
             }
         }
         else {
-            return new ResponseEntity("Invalid Credentials!", HttpStatus.UNAUTHORIZED);
+	    JSONObject responseObject = new JSONObject();
+	    responseObject.put("status","UNAUTHORIZED");
+	    responseObject.put("result","Invalid Credentials!");
+            return new ResponseEntity(responseObject, HttpStatus.UNAUTHORIZED);
         }
     }
 	   

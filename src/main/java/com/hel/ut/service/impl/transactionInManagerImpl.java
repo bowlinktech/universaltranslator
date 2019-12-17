@@ -2060,6 +2060,7 @@ public class transactionInManagerImpl implements transactionInManager {
 		String decodedFileExt = batch.getOriginalFileName().substring(batch.getOriginalFileName().lastIndexOf(".")).toLowerCase();
 		
 		boolean fileFound = false;
+		
 		if(encodedFile.exists()) {
 		    String decodedFile = decodedFilePath + decodedFileName + decodedFileExt;
 

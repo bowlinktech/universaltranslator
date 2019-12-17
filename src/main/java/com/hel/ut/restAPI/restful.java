@@ -9,7 +9,7 @@ import com.hel.ut.model.Organization;
 import com.hel.ut.model.RestAPIMessagesIn;
 import com.hel.ut.model.configurationFileDropFields;
 import com.hel.ut.model.configurationTransport;
-import com.hel.ut.model.medAlliesReferralAttachmentList;
+import com.hel.ut.model.eReferralAPIAttachmentList;
 import com.hel.ut.model.restMessageInfo;
 import com.hel.ut.model.utConfiguration;
 import com.hel.ut.service.organizationManager;
@@ -150,7 +150,7 @@ public class restful {
 				    Files.write(path, jsonSent.getBytes());
 
 				    restMessageInfo envelopeInfo = null;
-				    List<medAlliesReferralAttachmentList> attachmentList = null;
+				    List<eReferralAPIAttachmentList> attachmentList = null;
 				    
 				    //Need to try and put JSON into restMessageInfo object
 				    try {
@@ -167,7 +167,7 @@ public class restful {
 					//Need to make sure there is an attachment array
 					try {
 					    Configuration conf = Configuration.builder().mappingProvider(new JacksonMappingProvider()).jsonProvider(new JacksonJsonProvider()).build();
-					    TypeRef<List<medAlliesReferralAttachmentList>> type = new TypeRef<List<medAlliesReferralAttachmentList>>() {};
+					    TypeRef<List<eReferralAPIAttachmentList>> type = new TypeRef<List<eReferralAPIAttachmentList>>() {};
 					    attachmentList = JsonPath.using(conf).parse(jsonSent).read("$.messageAttachmentList.*", type);    
 					}
 					catch (Exception ex) {
@@ -181,7 +181,7 @@ public class restful {
 					String attachmentContent = null;
 					String attachmentTitle = "";
 					Integer attachmentSize = 0;
-					for(medAlliesReferralAttachmentList attachment : attachmentList) {
+					for(eReferralAPIAttachmentList attachment : attachmentList) {
 					    if(Integer.parseInt(attachment.getAttachmentSize()) > attachmentSize) {
 						attachmentContent = attachment.getAttachmentContent();
 						attachmentSize = Integer.parseInt(attachment.getAttachmentSize());

@@ -7,16 +7,13 @@ package com.hel.ut.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.util.ArrayList;
-import java.util.Map;
-import org.json.JSONArray;
 
 /**
  *
  * @author chadmccue
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class medAlliesReferralAttachmentList {
+public class eReferralAPIAttachmentList {
     
     private String attachmentClass;
     private String attachmentContent;
