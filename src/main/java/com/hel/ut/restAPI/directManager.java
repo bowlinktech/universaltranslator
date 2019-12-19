@@ -35,12 +35,19 @@ import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.api.client.config.ClientConfig;
 import com.sun.jersey.api.client.config.DefaultClientConfig;
 import com.sun.jersey.api.client.filter.HTTPBasicAuthFilter;
+import com.sun.jersey.client.urlconnection.HTTPSProperties;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.security.cert.X509Certificate;
 import java.util.UUID;
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 import javax.ws.rs.core.MediaType;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -135,7 +142,7 @@ public class directManager {
 	JSONObject emailAttachmentListObject = new JSONObject();
 	emailAttachmentListObject.put("attachmentClass","text/xml");
 	emailAttachmentListObject.put("attachmentContent", CONSTANT.toString());
-	emailAttachmentListObject.put("attachmentTitle",fileTitle);
+	emailAttachmentListObject.put("attachmentTitle",fileTitle.toString());
 	
 	emailAttachmentListArray.add(emailAttachmentListObject);
 	
@@ -151,6 +158,30 @@ public class directManager {
 	jsonObjectToSend.put("envelopeInfo", envelopeInfoObject);
 	
 	final ClientConfig config = new DefaultClientConfig();
+	
+	TrustManager[] trustManager = new X509TrustManager[] { new X509TrustManager() {
+
+	    @Override
+	    public X509Certificate[] getAcceptedIssuers() {
+		return null;
+	    }
+
+	    @Override
+	    public void checkClientTrusted(X509Certificate[] certs, String authType) {
+
+	    }
+
+	    @Override
+	    public void checkServerTrusted(X509Certificate[] certs, String authType) {
+
+	    }
+	}};
+	
+	HostnameVerifier hostnameVerifier = HttpsURLConnection.getDefaultHostnameVerifier();
+	SSLContext ctx = SSLContext.getInstance("SSL");
+	ctx.init(null, trustManager, null);
+	config.getProperties().put(HTTPSProperties.PROPERTY_HTTPS_PROPERTIES, new HTTPSProperties(hostnameVerifier, ctx));
+
 	final Client client = Client.create(config);
 
 	client.setConnectTimeout(120000);
@@ -161,8 +192,6 @@ public class directManager {
 	
 	try {
 	    ClientResponse response = webResource.type(MediaType.APPLICATION_JSON_TYPE).post(ClientResponse.class, jsonObjectToSend.toString().replace("\\/", "/"));
-	    
-	    System.out.println(response.getStatus());
 	    
 	    StringBuilder apiResponse = new StringBuilder();
 	    apiResponse.append("Status: ").append(response.getStatus()).append(System.getProperty("line.separator"));
@@ -181,6 +210,7 @@ public class directManager {
 	}
 
     }
+    
 
     /**
      * 
@@ -284,6 +314,30 @@ public class directManager {
 		jsonObjectToSend.put("envelopeInfo", envelopeInfoObject);
 		
 		final ClientConfig config = new DefaultClientConfig();
+	
+		TrustManager[] trustManager = new X509TrustManager[] { new X509TrustManager() {
+
+		    @Override
+		    public X509Certificate[] getAcceptedIssuers() {
+			return null;
+		    }
+
+		    @Override
+		    public void checkClientTrusted(X509Certificate[] certs, String authType) {
+
+		    }
+
+		    @Override
+		    public void checkServerTrusted(X509Certificate[] certs, String authType) {
+
+		    }
+		}};
+
+		HostnameVerifier hostnameVerifier = HttpsURLConnection.getDefaultHostnameVerifier();
+		SSLContext ctx = SSLContext.getInstance("SSL");
+		ctx.init(null, trustManager, null);
+		config.getProperties().put(HTTPSProperties.PROPERTY_HTTPS_PROPERTIES, new HTTPSProperties(hostnameVerifier, ctx));
+		
 		final Client client = Client.create(config);
 		
 		client.setConnectTimeout(120000);
@@ -293,7 +347,7 @@ public class directManager {
 		WebResource webResource = client.resource(hispDetails.getHispAPIURL());
 		
 		try {
-		    ClientResponse response = webResource.type("application/json").post(ClientResponse.class, jsonObjectToSend);
+		    ClientResponse response = webResource.type("application/json").post(ClientResponse.class, jsonObjectToSend.toString().replace("\\/", "/"));
 		    directMessageOut.setResponseStatus(response.getStatus());
 		    
 		    StringBuilder apiResponse = new StringBuilder();
