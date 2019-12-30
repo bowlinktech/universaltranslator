@@ -36,6 +36,7 @@ import com.hel.ut.model.pendingDeliveryTargets;
 import com.hel.ut.model.systemSummary;
 import com.hel.ut.model.transactionOutRecords;
 import com.hel.ut.model.custom.ConfigOutboundForInsert;
+import com.hel.ut.model.custom.batchErrorSummary;
 import com.hel.ut.model.directmessagesout;
 import com.hel.ut.model.hisps;
 import com.hel.ut.model.organizationDirectDetails;
@@ -1814,10 +1815,38 @@ public class transactionOutManagerImpl implements transactionOutManager {
 	
 	 boolean inserteReferralMessage = true;
 	
-	if (totalErrorCount > 0) {
+	if (totalErrorCount > 0 && transportDetails.geterrorHandling() == 3) {
 	    updateTargetBatchStatus(batchDownload.getId(), 41, "endDateTime");
+	    
+	    populateOutboundAuditReport(batchDownload.getConfigId(),batchDownload.getId(), batchDownload.getBatchUploadId());
+	    
+	    //we need to update our totals
+	    transactionInManager.updateRecordCounts(batchDownload.getId(), rejectIds, true, "totalErrorCount");
+	    transactionInManager.updateRecordCounts(batchDownload.getId(), new ArrayList<Integer>(), true, "totalRecordCount");
+	    
+	    if(transportDetails.isPopulateInboundAuditReport()) {
+		//Update inbound file for total errors
+		transactionInManager.updateRecordCounts(batchDownload.getBatchUploadId(), rejectIds, false, "totalErrorCount");
+		
+		//Update inbound status
+		transactionInManager.updateBatchStatus(batchDownload.getBatchUploadId(), 41, "endDateTime");
+	    }
+	    
 	    return 1;
 	} else {
+	    
+	    if(totalErrorCount > 0) {
+		populateOutboundAuditReport(batchDownload.getConfigId(),batchDownload.getId(), batchDownload.getBatchUploadId());
+		
+		//we need to update our totals
+		transactionInManager.updateRecordCounts(batchDownload.getId(), rejectIds, true, "totalErrorCount");
+		transactionInManager.updateRecordCounts(batchDownload.getId(), new ArrayList<Integer>(), true, "totalRecordCount");
+		
+		if(transportDetails.isPopulateInboundAuditReport()) {
+		    //Update inbound file for total errors
+		    transactionInManager.updateRecordCounts(batchDownload.getBatchUploadId(), rejectIds, false, "totalErrorCount");
+		}
+	    }
 	    
 	    // Generate the file according to transportDetails 
 	    // we generate output file according to encoding in transportDetails
@@ -2583,5 +2612,17 @@ public class transactionOutManagerImpl implements transactionOutManager {
     @Override
     public void insertDMMessage(directmessagesout newDirectMessageOut) throws Exception {
         transactionOutDAO.insertDMMessage(newDirectMessageOut);
+    }
+    
+    public void populateOutboundAuditReport(Integer configId, Integer batchDownloadId, Integer batchUploadId) throws Exception {
+	
+	//first we run store procedure
+	transactionOutDAO.populateOutboundAuditReport(configId, batchDownloadId, batchUploadId);
+	
+    }
+    
+    @Override
+    public List<batchErrorSummary> getBatchErrorSummary(int batchId) throws Exception {
+	return transactionInDAO.getBatchErrorSummary(batchId);
     }
 }

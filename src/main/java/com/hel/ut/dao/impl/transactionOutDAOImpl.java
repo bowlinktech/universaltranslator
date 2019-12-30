@@ -17,6 +17,7 @@ import com.hel.ut.model.configurationSchedules;
 import com.hel.ut.model.configurationTransport;
 import com.hel.ut.model.configurationconnectionfieldmappings;
 import com.hel.ut.model.custom.ConfigOutboundForInsert;
+import com.hel.ut.model.custom.batchErrorSummary;
 import com.hel.ut.model.directmessagesout;
 import com.hel.ut.model.targetOutputRunLogs;
 import com.hel.ut.model.transactionOutRecords;
@@ -1377,4 +1378,42 @@ public class transactionOutDAOImpl implements transactionOutDAO {
 	sessionFactory.getCurrentSession().save(newDirectMessageOut);
     }
     
+    @Override
+    @Transactional(readOnly = false)
+    public void populateOutboundAuditReport(Integer configId, Integer batchDownloadId, Integer batchUploadId) throws Exception {
+	
+	String sql = "call populateOutboundAuditReport(:configId, :batchDownloadId, :batchUploadId);";
+	Query query = sessionFactory.getCurrentSession().createSQLQuery(sql);
+	query.setParameter("configId", configId);
+	query.setParameter("batchDownloadId", batchDownloadId);
+	query.setParameter("batchUploadId", batchUploadId);
+	query.executeUpdate();
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public List<batchErrorSummary> getBatchErrorSummary(int batchId) throws Exception {
+	try {
+	    String sql = ("select count(e.id) as totalErrors, e.errorId, c.displayText as errorDisplayText "
+		    + "from batchdownloadauditerrors e "
+		    + "inner join lu_errorcodes c on c.id = e.errorId "
+		    + "where e.batchDownloadId = :batchId group by e.errorId");
+
+	    Query query = sessionFactory.getCurrentSession().createSQLQuery(sql)
+		    .addScalar("errorDisplayText", StandardBasicTypes.STRING)
+		    .addScalar("errorId", StandardBasicTypes.INTEGER)
+		    .addScalar("totalErrors", StandardBasicTypes.INTEGER)
+		    .setResultTransformer(Transformers.aliasToBean(batchErrorSummary.class));
+	    query.setParameter("batchId", batchId);
+
+	    List<batchErrorSummary> batchErrorSummaries = query.list();
+
+	    return batchErrorSummaries;
+
+	} catch (Exception ex) {
+	    System.err.println("getBatchErrorSummary " + ex.getCause());
+	    ex.printStackTrace();
+	    return null;
+	}
+    }
 }
