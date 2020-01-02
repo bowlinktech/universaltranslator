@@ -10,6 +10,34 @@ require(['./main'], function () {
     require(['jquery'], function ($) {
 
         $("input:text,form").attr("autocomplete", "off");
+	
+	$('#batchActivitiesDataTable').DataTable().destroy();
+     
+	$('#batchActivitiesDataTable').DataTable({
+	   bServerSide: false,
+	   bProcessing: false, 
+	   deferRender: true,
+	   iDisplayLength: -1,
+	   aaSorting: [[0,'asc']],
+	   sPaginationType: "bootstrap", 
+	   oLanguage: {
+	      sEmptyTable: "There were no files submitted for the selected date range.", 
+	      sSearch: "Filter Results: ",
+	      sLengthMenu: '<select class="form-control" style="width:150px">' +
+		   '<option value="10">10 Records</option>' +
+		   '<option value="20">20 Records</option>' +
+		   '<option value="30">30 Records</option>' +
+		   '<option value="40">40 Records</option>' +
+		   '<option value="50">50 Records</option>' +
+		   '<option value="-1">All</option>' +
+		   '</select>'
+	   },
+	   aoColumns: [
+	       {"width": "5%"},
+	       {"width": "80%",  "bSortable": false},
+	       {"width": "15%",  "bSortable": false}
+	   ]
+       });
 
         //This function will launch the status detail overlay with the selected
         //status

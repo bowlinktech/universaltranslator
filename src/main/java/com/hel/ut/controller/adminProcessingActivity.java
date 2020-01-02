@@ -625,8 +625,9 @@ public class adminProcessingActivity {
 
 
     /**
-     * The '/inbound/batchActivities/{batchName}' GET request will retrieve a list of user activities that are associated to the clicked batch
+     * The '/{path}/batchActivities/{batchName}' GET request will retrieve a list of user activities that are associated to the clicked batch
      *
+     * @param path
      * @param batchName	The name of the batch to retrieve transactions for
      * @return The list of inbound batch user activities
      *
@@ -640,26 +641,48 @@ public class adminProcessingActivity {
         ModelAndView mav = new ModelAndView();
         mav.setViewName("/administrator/processing-activity/batchActivities");
         mav.addObject("page", path);
+	
+	if("inbound".equals(path)) {
+	    // Get the details of the batch
+	    batchUploads batchDetails = transactionInManager.getBatchDetailsByBatchName(batchName);
 
-        /* Get the details of the batch */
-        batchUploads batchDetails = transactionInManager.getBatchDetailsByBatchName(batchName);
+	    if (batchDetails != null) {
 
-        if (batchDetails != null) {
+		Organization orgDetails = organizationmanager.getOrganizationById(batchDetails.getOrgId());
+		batchDetails.setOrgName(orgDetails.getOrgName());
 
-            Organization orgDetails = organizationmanager.getOrganizationById(batchDetails.getOrgId());
-            batchDetails.setOrgName(orgDetails.getOrgName());
+		mav.addObject("batchDetails", batchDetails);
 
-            mav.addObject("batchDetails", batchDetails);
+		try {
+		    /* Get all the user activities for the batch */
+		    List<utUserActivity> uas = transactionInManager.getBatchActivities(batchDetails, true, false);
+		    mav.addObject("userActivities", uas);
 
-            try {
-                /* Get all the user activities for the batch */
-                List<utUserActivity> uas = transactionInManager.getBatchActivities(batchDetails, true, false);
-                mav.addObject("userActivities", uas);
+		} catch (Exception e) {
+		    throw new Exception("(Admin) Error occurred in getting batch activities for an inbound batch. batchId: " + batchDetails.getId() + " ERROR: " + e.getMessage(), e);
+		}
+	    }
+	}
+	else {
+	    batchDownloads batchDetails = transactionOutManager.getBatchDetailsByBatchName(batchName);
+	    
+	    if (batchDetails != null) {
 
-            } catch (Exception e) {
-                throw new Exception("(Admin) Error occurred in getting batch activities for an inbound batch. batchId: " + batchDetails.getId() + " ERROR: " + e.getMessage(), e);
-            }
-        }
+		Organization orgDetails = organizationmanager.getOrganizationById(batchDetails.getOrgId());
+		batchDetails.setOrgName(orgDetails.getOrgName());
+
+		mav.addObject("batchDetails", batchDetails);
+
+		try {
+		    /* Get all the user activities for the batch */
+		    List<utUserActivity> uas = transactionOutManager.getBatchActivities(batchDetails);
+		    mav.addObject("userActivities", uas);
+
+		} catch (Exception e) {
+		    throw new Exception("(Admin) Error occurred in getting batch activities for an outbound batch. batchId: " + batchDetails.getId() + " ERROR: " + e.getMessage(), e);
+		}
+	    }
+	}
 
         return mav;
     }
@@ -667,6 +690,10 @@ public class adminProcessingActivity {
     /**
      * The '/ViewUATransactionList' function will return the list of transaction ids for a batch activity that was too long to display The results will be displayed in the overlay.
      *
+     * @param uaId
+     * @param type
+     * @return 
+     * @throws java.lang.Exception 
      * @Param	uaId This will hold the id of the user activity
      * @Param	type 1 = inbound 2 = outbound
      *
@@ -2980,6 +3007,11 @@ public class adminProcessingActivity {
 		//Delete all target tables
 		transactionOutManager.deleteBatchDownloadTables(batchId);
 		
+		//Rest total record and error counts
+		batchDetails.setTotalRecordCount(0);
+		batchDetails.setTotalErrorCount(0);
+		transactionOutManager.submitBatchDownloadChanges(batchDetails);
+		
 		//Need to check to see if the transactiontranslatedin_BatchUploadId table exists
 		boolean transactionInTableForBatchExists = transactionOutManager.chechForTransactionInTable(batchDetails.getBatchUploadId());
 		
@@ -2988,7 +3020,6 @@ public class adminProcessingActivity {
 		    transactionOutManager.updateTargetBatchStatus(batchId, 61, "startDateTime");
 		}
 		else {
-		    //Reset status to 61 to start the outbound process over
 		    transactionOutManager.updateTargetBatchStatus(batchId, 66, "startDateTime");
 		    
 		    //Clear transaction counts
@@ -3006,7 +3037,7 @@ public class adminProcessingActivity {
 		    File encodedUploadedFile = new File(myProps.getProperty("ut.directory.utRootDir") + transportDetails.getfileLocation().replace("/HELProductSuite/universalTranslator/","") + "encoded_" + batchUploadDetails.getUtBatchName());
 		    
 		    //File Dropped
-		    if(transportDetails.gettransportMethodId() == 10) {
+		    if(transportDetails.gettransportMethodId() == 10 || transportDetails.gettransportMethodId() == 13) {
 			List<configurationFileDropFields> fileDropDetails = configurationTransportManager.getTransFileDropDetails(transportDetails.getId());
 			
 			if(fileDropDetails != null) {
@@ -3061,6 +3092,16 @@ public class adminProcessingActivity {
 			    }
 			}
 		    }
+		    
+		    //log user activity
+		    utUserActivity ua = new utUserActivity();
+		    ua.setUserId(0);
+		    ua.setFeatureId(0);
+		    ua.setAccessMethod("System");
+		    ua.setPageAccess("/outnboundBatchOptions");
+		    ua.setActivity("Inbound batchId:"+batchDetails.getId() + " will be reprocessed due to outbound batch being reset and inbound batch tables have been removed.");
+		    ua.setBatchUploadId(batchDetails.getBatchUploadId());
+		    usermanager.insertUserLog(ua);
 		    
 		    transactionInManager.updateBatchStatus(batchDetails.getBatchUploadId(), 35, "startDateTime");
 		}

@@ -19,19 +19,11 @@
 				<ul class="dropdown-menu pull-right">
 				    <c:if test="${canSend == true}">
 					<c:choose>
-					    <c:when test="${batchDownload && batchDetails.statusId == 64}">
+					    <c:when test="${batchDownload && (batchDetails.statusId == 64 || batchDetails.statusId == 59)}">
 						<li>
 						    <a href="#!" id="release" class="releaseOutboundBatch" rel="releaseBatch" rel2="${batchDetails.id}">
 							<span class="glyphicon glyphicon-ok-sign"></span>
 							<strong>Process Outbound Batch</strong>
-						    </a>
-						</li>
-					    </c:when>
-					    <c:when test="${batchDownload && batchDetails.statusId == 59}">
-						<li>
-						    <a href="#!" id="release" class="releaseOutboundBatch" rel="releaseBatch" rel2="${batchDetails.id}">
-							<span class="glyphicon glyphicon-ok-sign"></span>
-							<strong>Process Outbound Batch Now</strong>
 						    </a>
 						</li>
 					    </c:when>

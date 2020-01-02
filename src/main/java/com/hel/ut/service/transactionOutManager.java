@@ -18,6 +18,7 @@ import com.hel.ut.model.transactionOutRecords;
 import com.hel.ut.model.custom.ConfigOutboundForInsert;
 import com.hel.ut.model.custom.batchErrorSummary;
 import com.hel.ut.model.directmessagesout;
+import com.hel.ut.model.utUserActivity;
 import java.io.File;
 
 import java.math.BigInteger;
@@ -62,7 +63,7 @@ public interface transactionOutManager {
 
     Integer processMassOutputBatch(batchDownloads batchDownload) throws Exception;
 
-    Integer writeOutputToTextFile(configurationTransport transportDetails, Integer batchUploadId, String filePathAndName, String fieldNos) throws Exception;
+    Integer writeOutputToTextFile(configurationTransport transportDetails, Integer batchDownloadId, String filePathAndName, String fieldNos, Integer batchUploadId) throws Exception;
 
     String generateDLBatchName(String utBatchName, configurationTransport transportDetails, utConfiguration configDetails, batchUploads batchUploadDetails, Date date) throws Exception;
 
@@ -113,5 +114,7 @@ public interface transactionOutManager {
     void insertDMMessage(directmessagesout newDirectMessageOut) throws Exception;
     
     List<batchErrorSummary> getBatchErrorSummary(int batchId) throws Exception;
+    
+    List<utUserActivity> getBatchActivities(batchDownloads batchInfo);
     
 }

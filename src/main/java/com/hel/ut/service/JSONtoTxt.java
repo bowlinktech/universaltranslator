@@ -7,6 +7,7 @@ package com.hel.ut.service;
 
 import com.hel.ut.model.Organization;
 import com.hel.ut.model.configurationMessageSpecs;
+import com.hel.ut.model.utUserActivity;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -33,6 +34,9 @@ public class JSONtoTxt {
     private organizationManager organizationmanager;
     
     @Autowired
+    private userManager usermanager;
+    
+    @Autowired
     private utConfigurationManager configurationManager;
     
     @Resource(name = "myProps")
@@ -41,7 +45,7 @@ public class JSONtoTxt {
     @Autowired
     private utConfigurationTransportManager configurationTransportManager;
 
-    public String TranslateJSONtoTxt(String fileLocation, String fileName, int orgId, int configId) throws Exception {
+    public String TranslateJSONtoTxt(String fileLocation, String fileName, int orgId, int configId, Integer batchId) throws Exception {
 
         Organization orgDetails = organizationmanager.getOrganizationById(orgId);
         
@@ -72,6 +76,15 @@ public class JSONtoTxt {
 	
 	if(!"".equals(templatefileName)) {
 	    
+	    //log batch activity
+	    utUserActivity ua = new utUserActivity();
+	    ua.setUserId(0);
+	    ua.setFeatureId(0);
+	    ua.setAccessMethod("System");
+	    ua.setActivity("JSON Parsing Template found: " + directory + templatefileName);
+	    ua.setBatchUploadId(batchId);
+	    usermanager.insertUserLog(ua);
+	    
 	    URLClassLoader loader = new URLClassLoader(new URL[]{new URL("file://" + directory + templatefileName)});
 	    
 	    // Remove the .class extension
@@ -95,7 +108,6 @@ public class JSONtoTxt {
 
 	    if (newFile.exists()) {
 		try {
-
 		    if (newFile.exists()) {
 			int i = 1;
 			while (newFile.exists()) {
@@ -126,6 +138,15 @@ public class JSONtoTxt {
 		String fileRecords = (String) myMethod.invoke(JSONObj, obj.toString());
 		if (fileRecords.equalsIgnoreCase("")) {
 		    newfileName = "FILE IS NOT JSON ERROR";
+		    
+		    //log batch activity
+		    ua = new utUserActivity();
+		    ua.setUserId(0);
+		    ua.setFeatureId(0);
+		    ua.setAccessMethod("System");
+		    ua.setActivity("Error loading the JSON Parsing Template: " + directory + templatefileName + " Error: fileRecords was empty.");
+		    ua.setBatchUploadId(batchId);
+		    usermanager.insertUserLog(ua);
 		}
 		fw.write(fileRecords);
 
@@ -136,10 +157,28 @@ public class JSONtoTxt {
 		PrintStream ps = new PrintStream(newFile);
 		ex.printStackTrace(ps);
 		ps.close();
+		
+		//log batch activity
+		ua = new utUserActivity();
+		ua.setUserId(0);
+		ua.setFeatureId(0);
+		ua.setAccessMethod("System");
+		ua.setActivity("Error loading the JSON Parsing Template: " + directory + templatefileName + " Error: " + ex.getMessage());
+		ua.setBatchUploadId(batchId);
+		usermanager.insertUserLog(ua);
 	    }
 	}
 	else {
 	    newfileName = "ERRORERRORERROR";
+	    
+	    //log batch activity
+	    utUserActivity ua = new utUserActivity();
+	    ua.setUserId(0);
+	    ua.setFeatureId(0);
+	    ua.setAccessMethod("System");
+	    ua.setActivity("No JSON parsing template was set up for configId:"+configId);
+	    ua.setBatchUploadId(batchId);
+	    usermanager.insertUserLog(ua);
 	}
         
         return newfileName;

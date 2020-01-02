@@ -21,6 +21,7 @@ import com.hel.ut.model.custom.batchErrorSummary;
 import com.hel.ut.model.directmessagesout;
 import com.hel.ut.model.targetOutputRunLogs;
 import com.hel.ut.model.transactionOutRecords;
+import com.hel.ut.model.utUserActivity;
 import com.hel.ut.service.sysAdminManager;
 import com.hel.ut.service.transactionInManager;
 import com.hel.ut.service.userManager;
@@ -610,7 +611,7 @@ public class transactionOutDAOImpl implements transactionOutDAO {
 
     @Override
     @Transactional(readOnly = false)
-    public Integer writeOutputToTextFile(configurationTransport transportDetails, Integer batchDownloadId, String filePathAndName, String fieldNos) {
+    public Integer writeOutputToTextFile(configurationTransport transportDetails, Integer batchDownloadId, String filePathAndName, String fieldNos, Integer batchUploadId) {
 
 	String sql = "";
 
@@ -619,14 +620,23 @@ public class transactionOutDAOImpl implements transactionOutDAO {
 	    sql = ("call getJSONForConfig(:configId, :batchDownloadId, :filePathAndName, :jsonWrapperElement);");
 	} 
 	else {
+	    
+	    List<configurationTransport> handlingDetails = transactionInManager.getHandlingDetailsByBatch(batchUploadId);
            
 	    //we use utConfiguration info 
 	    //build this sql
 	    sql = "SELECT " + fieldNos + " "
 		+ "FROM transactionTranslatedOut_" + batchDownloadId + " "
-		+ "where statusId = 9 and configId = :configId "
-		+ "INTO OUTFILE  '" + filePathAndName + "' "
-		+ "FIELDS TERMINATED BY '" + transportDetails.getDelimChar()+"' LINES TERMINATED BY '\\n';";
+		+ "where configId = :configId and ";
+	    
+	    if(handlingDetails.get(0).geterrorHandling() == 4) {
+		sql += "statusId in (9,14) ";
+	    }
+	    else {
+		sql += "statusId = 9 ";
+	    }
+	    sql += "INTO OUTFILE  '" + filePathAndName + "' "
+	    + "FIELDS TERMINATED BY '" + transportDetails.getDelimChar()+"' LINES TERMINATED BY '\\n';";
 	}
 
 	if (!"".equals(sql)) {
@@ -641,7 +651,6 @@ public class transactionOutDAOImpl implements transactionOutDAO {
             try {
 		query.list();
 	    } catch (Exception ex) {
-		System.out.println(ex.getMessage());
 	    }
 	}
 
@@ -729,18 +738,26 @@ public class transactionOutDAOImpl implements transactionOutDAO {
 
     @Override
     @Transactional(readOnly = true)
-    public List getOutputForCustomTargetFile(configurationTransport transportDetails, Integer batchDownloadId, String fieldNos) {
+    public List getOutputForCustomTargetFile(configurationTransport transportDetails, Integer batchDownloadId, String fieldNos, Integer batchUploadId) {
+	
+	List<configurationTransport> handlingDetails = transactionInManager.getHandlingDetailsByBatch(batchUploadId);
 	
 	String sql = "SELECT " + fieldNos
-		+ " FROM transactiontranslatedout_"+batchDownloadId + " "
-		+ "where statusId = 9 and configId = :configId";
+	    + " FROM transactiontranslatedout_"+batchDownloadId + " "
+	    + "where configId = :configId and ";
+	
+	if(handlingDetails.get(0).geterrorHandling() == 4) {
+	    sql += "statusId in (9,14)";
+	}
+	else {
+	    sql += "statusId = 9";
+	}
 	
 	Query query = sessionFactory.getCurrentSession().createSQLQuery(sql);
 	query.setParameter("configId", transportDetails.getconfigId());
 	try {
 	    return query.list();
 	} catch (Exception ex) {
-	    System.out.println(ex.getMessage());
 	    return null;
 	}
     }
@@ -1048,7 +1065,6 @@ public class transactionOutDAOImpl implements transactionOutDAO {
 	query = sessionFactory.getCurrentSession().createSQLQuery(sqlinsert);
 	query.executeUpdate();
 	
-	
 	try {
 	    
 	    String sql = "insert into transactionoutrecords_"+batchDownloadId+" "
@@ -1290,8 +1306,8 @@ public class transactionOutDAOImpl implements transactionOutDAO {
 		dateSQLStringTotal += "dateCreated between '"+mysqlDateFormat.format(fromDate)+"' ";
 
 		if(!"".equals(toDate)) {
-		    dateSQLString += "AND '"+mysqlDateFormat.format(toDate)+"'";
-		    dateSQLStringTotal += "AND '"+mysqlDateFormat.format(toDate)+"'";
+		    dateSQLString += "AND '"+mysqlDateFormat.format(toDate).replace("00:00:00", "23:59:59")+"'";
+		    dateSQLStringTotal += "AND '"+mysqlDateFormat.format(toDate).replace("00:00:00", "23:59:59")+"'";
 		}
 		else {
 		    dateSQLString += "AND '"+mysqlDateFormat.format(fromDate)+" 23:59:59'";
@@ -1300,7 +1316,7 @@ public class transactionOutDAOImpl implements transactionOutDAO {
 	    }
 	    else {
 		if(!"".equals(toDate)) {
-		    dateSQLString += "a.dateCreated between '"+mysqlDateFormat.format(toDate)+"' ";
+		    dateSQLString += "a.dateCreated between '"+mysqlDateFormat.format(toDate).replace("00:00:00", "23:59:59")+"' ";
 		    dateSQLString += "AND '"+mysqlDateFormat.format(toDate)+" 23:59:59'";
 		}
 		else {
@@ -1318,7 +1334,7 @@ public class transactionOutDAOImpl implements transactionOutDAO {
 		+ "statusValue, endUserDisplayText, orgName, transportMethod, fromBatchName, fromBatchFile, totalMessages "
 		+ "FROM ("
 		+ "select a.id, a.orgId, a.utBatchName, a.transportMethodId, a.outputFileName, a.totalRecordCount, a.totalErrorCount, b.configName, b.threshold,"
-		+ "a.statusId, a.dateCreated, c.endUserDisplayCode as statusValue, c.endUserDisplayText as endUserDisplayText, d.orgName, e.transportMethod, f.utBatchName as fromBatchName,"
+		+ "a.statusId, a.dateCreated, c.displayCode as statusValue, c.endUserDisplayText as endUserDisplayText, d.orgName, e.transportMethod, f.utBatchName as fromBatchName,"
 		+ "case when f.transportMethodId = 5 THEN CONCAT(f.utBatchName,'.',SUBSTRING_INDEX(f.originalFileName,'.',-1)) "
 		+ "when f.transportMethodId = 1 THEN CONCAT(f.utBatchName,'.',SUBSTRING_INDEX(f.originalFileName,'.',-1)) "
 		+ "else '' end as fromBatchFile,"
@@ -1380,13 +1396,14 @@ public class transactionOutDAOImpl implements transactionOutDAO {
     
     @Override
     @Transactional(readOnly = false)
-    public void populateOutboundAuditReport(Integer configId, Integer batchDownloadId, Integer batchUploadId) throws Exception {
+    public void populateOutboundAuditReport(Integer configId, Integer batchDownloadId, Integer batchUploadId, Integer batchUploadConfigId) throws Exception {
 	
-	String sql = "call populateOutboundAuditReport(:configId, :batchDownloadId, :batchUploadId);";
+	String sql = "call populateOutboundAuditReport(:configId, :batchDownloadId, :batchUploadId, :batchUploadConfigId);";
 	Query query = sessionFactory.getCurrentSession().createSQLQuery(sql);
 	query.setParameter("configId", configId);
 	query.setParameter("batchDownloadId", batchDownloadId);
 	query.setParameter("batchUploadId", batchUploadId);
+	query.setParameter("batchUploadConfigId", batchUploadConfigId);
 	query.executeUpdate();
     }
     
@@ -1412,6 +1429,35 @@ public class transactionOutDAOImpl implements transactionOutDAO {
 
 	} catch (Exception ex) {
 	    System.err.println("getBatchErrorSummary " + ex.getCause());
+	    ex.printStackTrace();
+	    return null;
+	}
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    @SuppressWarnings("unchecked")
+    public List<utUserActivity> getBatchActivities(batchDownloads batchInfo) {
+	
+
+	String sql = " select  users.firstName as userFirstName, organizations.orgname as orgName, "
+		+ " organizations.id as orgId, users.lastName as userLastName, userActivity.* "
+		+ " from useractivity left join users on users.id = userActivity.userId left join organizations on"
+		+ " users.orgId = organizations.id where batchDownloadId = :batchId order by useractivity.id asc, userId";
+
+	try {
+	    Query query = sessionFactory
+		    .getCurrentSession()
+		    .createSQLQuery(sql).setResultTransformer(Transformers.aliasToBean(utUserActivity.class));
+
+	    query.setParameter("batchId", batchInfo.getId());
+
+	    List<utUserActivity> uas = query.list();
+
+	    return uas;
+
+	} catch (Exception ex) {
+	    System.err.println("getBatchUserActivities " + ex.getCause());
 	    ex.printStackTrace();
 	    return null;
 	}

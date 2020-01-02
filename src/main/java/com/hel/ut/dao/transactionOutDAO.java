@@ -16,6 +16,7 @@ import com.hel.ut.model.transactionOutRecords;
 import com.hel.ut.model.custom.ConfigOutboundForInsert;
 import com.hel.ut.model.custom.batchErrorSummary;
 import com.hel.ut.model.directmessagesout;
+import com.hel.ut.model.utUserActivity;
 
 import java.math.BigInteger;
 import java.util.Date;
@@ -65,7 +66,7 @@ public interface transactionOutDAO {
 
     List<batchDownloads> getAllBatches(Date fromDate, Date toDate, String batchName) throws Exception;
 
-    Integer writeOutputToTextFile(configurationTransport transportDetails, Integer batchDLId, String filePathAndName, String configFields);
+    Integer writeOutputToTextFile(configurationTransport transportDetails, Integer batchDLId, String filePathAndName, String configFields, Integer batchUploadId);
 
     List<ConfigOutboundForInsert> setConfigOutboundForInsert(int configId, int batchDownloadId) throws Exception;
 
@@ -77,7 +78,7 @@ public interface transactionOutDAO {
 
     String getCustomXMLFieldsForOutput(Integer configId) throws Exception;
 
-    List getOutputForCustomTargetFile(configurationTransport transportDetails, Integer batchDownloadId, String fieldNos) throws Exception;
+    List getOutputForCustomTargetFile(configurationTransport transportDetails, Integer batchDownloadId, String fieldNos, Integer batchUploadId) throws Exception;
 
     List<batchDownloads> getBatchesByStatusIdsAndDate(Date fromDate, Date toDate, Integer fetchSize, List<Integer> statusIds) throws Exception;
 
@@ -119,7 +120,9 @@ public interface transactionOutDAO {
     
     void insertDMMessage(directmessagesout newDirectMessageOut) throws Exception;
     
-    void populateOutboundAuditReport(Integer configId, Integer batchDownloadId, Integer batchUploadId) throws Exception;
+    void populateOutboundAuditReport(Integer configId, Integer batchDownloadId, Integer batchUploadId, Integer batchUploadConfigId) throws Exception;
     
     List<batchErrorSummary> getBatchErrorSummary(int batchId) throws Exception;
+    
+    List<utUserActivity> getBatchActivities(batchDownloads batchInfo);
 }

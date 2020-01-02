@@ -29,9 +29,10 @@
                             There were a total of ${fn:length(userActivities)} user activities found.  The last 100 activities are displayed.
                         </div>
                     </c:if>
-                    <table class="table table-striped table-hover table-default" <c:if test="${not empty userActivities}">id="dataTable"</c:if>>
+                    <table class="table table-striped table-hover table-default" id="batchActivitiesDataTable">
                             <thead>
                                 <tr>
+				    <th scope="col">Id</th>
                                     <th scope="col">Activity</th>
                                     <th scope="col">Date / Time</th>                            	
                                 </tr>
@@ -41,6 +42,7 @@
                                 <c:when test="${not empty userActivities}">     
                                     <c:forEach var="ua" items="${userActivities}" end="99">
                                         <tr>
+					    <td>${ua.id}</td>
                                             <td>
                                                 ${ua.activity}<c:if test="${fn:length(ua.activityDesc) > 0}">- ${ua.activityDesc}</c:if>
 					    </td>

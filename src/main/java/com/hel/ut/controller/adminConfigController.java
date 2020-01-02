@@ -454,7 +454,11 @@ public class adminConfigController {
 	
 	transportDetails.setHelRegistryId(orgDetails.getHelRegistryId());
 	transportDetails.setHelSchemaName(orgDetails.getHelRegistrySchemaName());
-
+	
+	if(transportDetails.getHelRegistryConfigId() == null) {
+	    transportDetails.setHelRegistryConfigId(0);
+	}
+ 
         // Need to get any FTP fields
         List<configurationFTPFields> ftpFields = utconfigurationTransportManager.getTransportFTPDetails(transportDetails.getId());
 

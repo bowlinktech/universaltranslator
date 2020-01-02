@@ -50,15 +50,6 @@ require(['./main'], function () {
 	    showCorrectFieldsByTransportMethod(methodId);
         });
 	
-	$(document).on('change','.populateInboundAuditReport',function() {
-	    
-	    if($(this).val() == 1) {
-		$('.errorHandlingDiv').show();
-	    }
-	    else {
-		$('.errorHandlingDiv').hide();
-	    }
-	});
 	
 	$(document).on('change','#ergFileDownload',function() {
 	    var fileDropDir = $('#directory2').val();

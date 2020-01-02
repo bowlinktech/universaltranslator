@@ -107,6 +107,7 @@ import com.registryKit.registry.submittedMessages.submittedMessageManager;
 import java.security.SecureRandom;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.net.ftp.FTPClient;
 
 /**
  *
@@ -344,7 +345,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
 	List<configurationFormFields> formFields = configurationTransportManager.getConfigurationFields(transportDetails.getconfigId(), 0);
 
 	List<transactionOutRecords> records = transactionOutDAO.getTransactionRecords(batchId, transportDetails.getconfigId(), formFields.size());
-        
+	
 	// Need to get the max field number
 	int maxFieldNo = transactionOutDAO.getMaxFieldNo(transportDetails.getconfigId());
 
@@ -832,7 +833,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
 	    else {
                 
 		StringBuilder sb = new StringBuilder("");
-
+		
 		for(transactionOutRecords record : records) {
                     
                     for (configurationFormFields field : formFields) {
@@ -881,7 +882,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
                 } else {
                     recordRow = sb.toString();
                 }
-
+		
                 if (!"".equals(recordRow)) {
                     try {
                         if (encrypt == true) {
@@ -909,222 +910,6 @@ public class transactionOutManagerImpl implements transactionOutManager {
     @Override
     public void updateLastDownloaded(int batchId) throws Exception {
 	transactionOutDAO.updateLastDownloaded(batchId);
-    }
-
-
-    /**
-     * The 'FTPTargetFile' function will get the FTP details and send off the generated file
-     *
-     * @param batchId The id of the batch to FTP the file for
-     */
-    private void FTPTargetFile(int batchId, configurationTransport transportDetails) throws Exception {
-	/*
-	try {
-
-	    // Update the status of the batch to locked 
-	    transactionOutDAO.updateBatchStatus(batchId, 22);
-
-	    List<transactionTarget> targets = transactionOutDAO.getTransactionsByBatchDLId(batchId);
-
-	    if (!targets.isEmpty()) {
-
-		for (transactionTarget target : targets) {
-
-		    // Need to update the uploaded batch status
-		    transactionInManager.updateBatchStatus(target.getbatchUploadId(), 22, "");
-
-		    // Update the downloaded batch transaction status
-		    updateTargetTransasctionStatus(target.getbatchDLId(), 37);
-
-		    //check inbound for clearing options
-		    if (utConfigurationTransportManager.getTransportDetails(transactionInManager.getTransactionDetails(target.gettransactionInId()).getconfigId()).getclearRecords()) {
-			//we insert into clearAfterDelivery
-			batchClearAfterDelivery cad = new batchClearAfterDelivery();
-			cad.setBatchDLId(batchId);
-			cad.setStatusId(3);
-			cad.setBatchUploadId(target.getbatchUploadId());
-			cad.setTransactionInId(target.gettransactionInId());
-			cad.setTransactionTargetId(target.getId());
-			transactionInManager.saveBatchClearAfterDelivery(cad);
-			
-			// we check to see if all target batches for inbound batch are generated, if so, we update bmt to 0
-			if (transactionInManager.checkClearAfterDeliveryBatch(target.getbatchUploadId()) == 1) {
-			    transactionInManager.updateBatchClearAfterDeliveryByBatchUploadId(target.getbatchUploadId(), 0);
-			}
-		    }
-
-		}
-
-	    }
-
-	    // get the batch details
-	    batchDownloads batchFTPFileInfo = transactionOutDAO.getBatchDetails(batchId);
-
-	    // Get the FTP Details
-	    configurationFTPFields ftpDetails = utConfigurationTransportManager.getTransportFTPDetailsPush(transportDetails.getId());
-
-	    if ("SFTP".equals(ftpDetails.getprotocol())) {
-
-		JSch jsch = new JSch();
-		Session session = null;
-		ChannelSftp channel = null;
-		FileInputStream localFileStream = null;
-
-		String user = ftpDetails.getusername();
-		int port = ftpDetails.getport();
-		String host = ftpDetails.getip();
-
-		Organization orgDetails = organizationManager.getOrganizationById(utConfigurationManager.getConfigurationById(transportDetails.getconfigId()).getorgId());
-
-		if (ftpDetails.getcertification() != null && !"".equals(ftpDetails.getcertification())) {
-
-		    File newFile = null;
-
-		    fileSystem dir = new fileSystem();
-		    dir.setDir(orgDetails.getcleanURL(), "certificates");
-
-		    jsch.addIdentity(new File(dir.getDir() + ftpDetails.getcertification()).getAbsolutePath());
-		    session = jsch.getSession(user, host, port);
-		} else if (ftpDetails.getpassword() != null && !"".equals(ftpDetails.getpassword())) {
-		    session = jsch.getSession(user, host, port);
-		    session.setPassword(ftpDetails.getpassword());
-		}
-
-		session.setConfig("StrictHostKeyChecking", "no");
-		session.setTimeout(2000);
-
-		session.connect();
-
-		channel = (ChannelSftp) session.openChannel("sftp");
-
-		channel.connect();
-
-		if (ftpDetails.getdirectory() != null && !"".equals(ftpDetails.getdirectory())) {
-		    channel.cd(ftpDetails.getdirectory());
-
-		    String fileName = null;
-
-		    int findExt = batchFTPFileInfo.getoutputFIleName().lastIndexOf(".");
-
-		    if (findExt >= 0) {
-			fileName = batchFTPFileInfo.getoutputFIleName();
-		    } else {
-			fileName = new StringBuilder().append(batchFTPFileInfo.getoutputFIleName()).append(".").append(transportDetails.getfileExt()).toString();
-		    }
-
-		    //Set the directory to save the brochures to
-		    fileSystem dir = new fileSystem();
-
-		    String filelocation = transportDetails.getfileLocation();
-		    filelocation = filelocation.replace("/HELProductSuite/universalTranslator/", "");
-		    dir.setDirByName(filelocation);
-
-		    File file = new File(dir.getDir() + fileName);
-
-		    if (file.exists()) {
-			FileInputStream fileInput = new FileInputStream(file);
-
-			channel.put(fileInput, fileName);
-		    }
-
-		}
-
-		channel.disconnect();
-		session.disconnect();
-
-	    } else {
-		FTPClient ftp;
-
-		if ("FTP".equals(ftpDetails.getprotocol())) {
-		    ftp = new FTPClient();
-		} else {
-		    FTPSClient ftps;
-		    ftps = new FTPSClient(true);
-
-		    ftp = ftps;
-		    ftps.setTrustManager(null);
-		}
-
-		ftp.addProtocolCommandListener(new PrintCommandListener(new PrintWriter(System.out)));
-		ftp.setDefaultTimeout(3000);
-		ftp.setConnectTimeout(3000);
-
-		if (ftpDetails.getport() > 0) {
-		    ftp.connect(ftpDetails.getip(), ftpDetails.getport());
-		} else {
-		    ftp.connect(ftpDetails.getip());
-		}
-
-		int reply = ftp.getReplyCode();
-
-		if (!FTPReply.isPositiveCompletion(reply)) {
-		    ftp.disconnect();
-		} else {
-		    ftp.login(ftpDetails.getusername(), ftpDetails.getpassword());
-
-		    ftp.enterLocalPassiveMode();
-
-		    String fileName = null;
-
-		    int findExt = batchFTPFileInfo.getoutputFIleName().lastIndexOf(".");
-
-		    if (findExt >= 0) {
-			fileName = batchFTPFileInfo.getoutputFIleName();
-		    } else {
-			fileName = new StringBuilder().append(batchFTPFileInfo.getoutputFIleName()).append(".").append(transportDetails.getfileExt()).toString();
-		    }
-
-		    //Set the directory to save the brochures to
-		    fileSystem dir = new fileSystem();
-
-		    String filelocation = transportDetails.getfileLocation();
-		    filelocation = filelocation.replace("/HELProductSuite/universalTranslator/", "");
-		    dir.setDirByName(filelocation);
-
-		    File file = new File(dir.getDir() + fileName);
-
-		    FileInputStream fileInput = new FileInputStream(file);
-
-		    ftp.changeWorkingDirectory(ftpDetails.getdirectory());
-		    ftp.storeFile(fileName, fileInput);
-		    ftp.logout();
-		    ftp.disconnect();
-
-		}
-	    }
-
-	    // we should delete file now that we ftp'ed the file
-	    try {
-		fileSystem dir = new fileSystem();
-		String filelocation = transportDetails.getfileLocation();
-		filelocation = filelocation.replace("/HELProductSuite/universalTranslator/", "");
-		dir.setDirByName(filelocation);
-
-		File sourceFile = new File(dir.getDir() + batchFTPFileInfo.getoutputFIleName());
-		if (sourceFile.exists()) {
-		    sourceFile.delete();
-		}
-
-		transactionOutDAO.updateBatchStatus(batchId, 23);
-
-		for (transactionTarget target : targets) {
-
-		    // Need to update the uploaded batch status 
-		    transactionInManager.updateBatchStatus(target.getbatchUploadId(), 23, "");
-
-		    // Update the downloaded batch transaction status 
-		    updateTargetTransasctionStatus(target.getbatchDLId(), 20);
-
-		}
-
-	    } catch (Exception e) {
-		throw new Exception("Error occurred during FTP - delete file and update statuses. batchId: " + batchId, e);
-
-	    }
-	} catch (Exception e) {
-	    throw new Exception("Error occurred trying to FTP a batch target. batchId: " + batchId, e);
-	}
-	*/
     }
 
     /**
@@ -1292,216 +1077,9 @@ public class transactionOutManagerImpl implements transactionOutManager {
 
     }
 
-
-    /**
-     * The 'FileDropTargetFile' function will get the file drop details and move the file to the output folder defined in
-     *
-     * @param batchId The id of the batch to move to file drop folder
-     */
-    private void FileDropTargetFile(int batchId, configurationTransport transportDetails) {
-	/*
-	try {
-
-	    //Update the status of the batch to locked 
-	    transactionOutDAO.updateBatchStatus(batchId, 22);
-
-	    List<transactionTarget> targets = transactionOutDAO.getTransactionsByBatchDLId(batchId);
-
-	    if (!targets.isEmpty()) {
-
-		for (transactionTarget target : targets) {
-
-		    // Need to update the uploaded batch status 
-		    transactionInManager.updateBatchStatus(target.getbatchUploadId(), 22, "");
-
-		    // Update the downloaded batch transaction status 
-		    updateTargetTransasctionStatus(target.getbatchDLId(), 37);
-
-		    //check inbound for clearing options
-		    if (utConfigurationTransportManager.getTransportDetails(transactionInManager.getTransactionDetails(target.gettransactionInId()).getconfigId()).getclearRecords()) {
-			//we insert into clearAfterDelivery
-			batchClearAfterDelivery cad = new batchClearAfterDelivery();
-			cad.setBatchDLId(batchId);
-			cad.setStatusId(3);
-			cad.setBatchUploadId(target.getbatchUploadId());
-			cad.setTransactionInId(target.gettransactionInId());
-			cad.setTransactionTargetId(target.getId());
-			transactionInManager.saveBatchClearAfterDelivery(cad);
-			
-			//we check to see if all target batches for inbound batch are generated, if so, we update bmt to 0
-			if (transactionInManager.checkClearAfterDeliveryBatch(target.getbatchUploadId()) == 1) {
-			    transactionInManager.updateBatchClearAfterDeliveryByBatchUploadId(target.getbatchUploadId(), 0);
-			}
-		    }
-		}
-
-	    }
-
-	    // get the batch details 
-	    batchDownloads batchDetails = transactionOutDAO.getBatchDetails(batchId);
-
-	    // Get the File Drop Details 
-	   configurationFileDropFields fileDropDetails = utConfigurationTransportManager.getTransFileDropDetailsPush(transportDetails.getId());
-
-	    // the file is in output folder already, we need to rebuild path and move it
-	    fileSystem dir = new fileSystem();
-	    String filelocation = transportDetails.getfileLocation();
-	    filelocation = filelocation.replace("/HELProductSuite/universalTranslator/", "");
-	    dir.setDirByName(filelocation);
-
-	    File sourceFile = new File(dir.getDir() + batchDetails.getoutputFIleName());
-	    File targetFile = new File(directoryPath + fileDropDetails.getDirectory() + batchDetails.getoutputFIleName());
-	    //move the file over and update the status to complete
-	    Files.move(sourceFile.toPath(), targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-
-	    transactionOutDAO.updateBatchStatus(batchId, 23);
-
-	    for (transactionTarget target : targets) {
-
-		// Need to update the uploaded batch status 
-		transactionInManager.updateBatchStatus(target.getbatchUploadId(), 23, "");
-
-		// Update the downloaded batch transaction status 
-		updateTargetTransasctionStatus(target.getbatchDLId(), 20);
-
-	    }
-
-	} catch (Exception ex) {
-	    try {
-		transactionInManager.sendEmailToAdmin(("FileDropTargetFile - Error occurred trying to move a batch target. batchId: " + batchId + "<br/>" + ex.toString() + "<br/>" + Arrays.toString(ex.getStackTrace())), " FileDropTargetFile Error ");
-	    } catch (Exception e) {
-		ex.printStackTrace();
-		System.err.println("FileDropTargetFile - Error occurred trying to move a batch target. batchId: " + batchId);
-	    }
-	    ex.printStackTrace();
-	    System.err.println("FileDropTargetFile - Error occurred trying to move a batch target. batchId: " + batchId);
-	}
-	*/
-    }
-
-    /**
-     * The 'SendSoapMessage' function will get the WS details and move the file to the output folder defined in
-     *
-     * @param batchId The id of the batch to move to archivesOut folder
-     */
-    private Integer SendWSMessage(int batchId, configurationTransport transportDetails) {
-	/*
-	try {
-
-	    // Update the status of the batch to locked 
-	    transactionOutDAO.updateBatchStatus(batchId, 22);
-
-	    List<transactionTarget> targets = transactionOutDAO.getTransactionsByBatchDLId(batchId);
-
-	    
-	    // we reject is targets are more than one, web service should only be sending one message at a time 
-	    if (targets.size() > 1) {
-		transactionOutDAO.updateBatchStatus(batchId, 30);
-		//insert error
-		transactionInManager.insertProcessingError(20, null, batchId, null, null, null, null, false, true, "There should only be one message per web service batch.");
-		updateTargetTransasctionStatus(batchId, 33);
-		return null;
-	    }
-
-	    // we lock targets 
-	    if (!targets.isEmpty()) {
-
-		for (transactionTarget target : targets) {
-
-		    /* Need to update the uploaded batch status 
-		    transactionInManager.updateBatchStatus(target.getbatchUploadId(), 22, "");
-
-		    /* Update the downloaded batch transaction status 
-		    updateTargetTransasctionStatus(target.getbatchDLId(), 37);
-
-		    //check inbound for clearing options
-		    if (utConfigurationTransportManager.getTransportDetails(transactionInManager.getTransactionDetails(target.gettransactionInId()).getconfigId()).getclearRecords()) {
-			//we insert into clearAfterDelivery
-			batchClearAfterDelivery cad = new batchClearAfterDelivery();
-			cad.setBatchDLId(batchId);
-			cad.setStatusId(3);
-			cad.setBatchUploadId(target.getbatchUploadId());
-			cad.setTransactionInId(target.gettransactionInId());
-			cad.setTransactionTargetId(target.getId());
-			transactionInManager.saveBatchClearAfterDelivery(cad);
-			
-			// we check to see if all target batches for inbound batch are generated, if so, we update bmt to 0
-			if (transactionInManager.checkClearAfterDeliveryBatch(target.getbatchUploadId()) == 1) {
-			    transactionInManager.updateBatchClearAfterDeliveryByBatchUploadId(target.getbatchUploadId(), 0);
-			}
-		    }
-		}
-
-	    }
-
-	    // get the batch details 
-	    batchDownloads batchDetails = transactionOutDAO.getBatchDetails(batchId);
-
-	    // Get the WS Details  - do we need this? 
-	    configurationWebServiceFields wsDetails = utConfigurationTransportManager.getTransWSDetailsPush(transportDetails.getId());
-
-	    // the file is in output folder already, we need to encrypt it and populate soap message
-	    //1. we read file
-	    fileSystem dir = new fileSystem();
-	    String filelocation = transportDetails.getfileLocation();
-	    filelocation = filelocation.replace("/HELProductSuite/universalTranslator/", "");
-	    dir.setDirByName(filelocation);
-
-	    File sourceFile = new File(dir.getDir() + batchDetails.getoutputFIleName());
-	    //get content
-	    String fileContent = filemanager.readTextFile(sourceFile.getAbsolutePath());
-
-	    //to get the original sender's email, we need to get the originalTargetId from TransactionIn and then look up the batchId
-	    List<String> emails = getWSSenderFromBatchDLId((Arrays.asList(batchId)));
-
-	    wsMessagesOut wsMessagesOut = new wsMessagesOut();
-	    wsMessagesOut.setOrgId(batchDetails.getOrgId());
-	    //String fileContent, String toEmail, String fromEmail, Integer batchId
-	    wsMessagesOut.setFromEmail(wsDetails.getEmail());
-	    wsMessagesOut.setToEmail(emails.get(0));
-	    wsMessagesOut.setBatchDownloadId(batchId);
-	    wsMessagesOut.setMimeType(wsDetails.getMimeType());
-	    wsMessagesOut = wsManager.sendHIESoapMessage(wsMessagesOut, fileContent);
-
-	    String result = wsMessagesOut.getMessageResult();
-
-	    if (result.equalsIgnoreCase("success")) {
-		transactionOutDAO.updateBatchStatus(batchId, 23);
-	    } else {
-		transactionOutDAO.updateBatchStatus(batchId, 30);
-		transactionInManager.insertProcessingError(21, null, batchId, null, null, null, null, false, true, "Web Service Message Failed to send.");
-		updateTargetTransasctionStatus(batchId, 33);
-		return null;
-
-	    }
-	    for (transactionTarget target : targets) {
-
-		// Need to update the uploaded batch status 
-		transactionInManager.updateBatchStatus(target.getbatchUploadId(), 23, "");
-
-		// Update the downloaded batch transaction status 
-		updateTargetTransasctionStatus(target.getbatchDLId(), 20);
-
-	    }
-
-	} catch (Exception ex) {
-	    try {
-		transactionInManager.sendEmailToAdmin(("SendWSMessage - Error occurred trying to move a batch target. batchId: " + batchId + "<br/>" + ex.toString() + "<br/>" + Arrays.toString(ex.getStackTrace())), " SendWSMessage Error ");
-	    } catch (Exception e) {
-		e.printStackTrace();
-		System.err.println("SendWSMessage - Error occurred trying to move a batch target. batchId: " + batchId);
-	    }
-	    ex.printStackTrace();
-	    System.err.println("SendWSMessage - Error occurred trying to move a batch target. batchId: " + batchId);
-	    return null;
-	}
-	*/
-	return 1;
-    }
-
     @Override
-    public Integer writeOutputToTextFile(configurationTransport transportDetails, Integer batchDownLoadId, String filePathAndName, String fieldNos) throws Exception {
-	return transactionOutDAO.writeOutputToTextFile(transportDetails, batchDownLoadId, filePathAndName, fieldNos);
+    public Integer writeOutputToTextFile(configurationTransport transportDetails, Integer batchDownLoadId, String filePathAndName, String fieldNos, Integer batchUploadId) throws Exception {
+	return transactionOutDAO.writeOutputToTextFile(transportDetails, batchDownLoadId, filePathAndName, fieldNos, batchUploadId);
     }
 
     @Override
@@ -1726,7 +1304,6 @@ public class transactionOutManagerImpl implements transactionOutManager {
 				    updateTargetBatchStatus(batch.getId(), 25, "startDateTime");
 				    processMassOutputBatch(batch);
 				} catch (Exception ex) {
-				    System.out.println(ex.getMessage());
 				    Logger.getLogger(transactionOutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
 				}
 			    }
@@ -1734,7 +1311,6 @@ public class transactionOutManagerImpl implements transactionOutManager {
 		    }
 		}
 	    } catch (Exception ex1) {
-		System.out.println(new Date() + " processMassOutputBatches error");
 		ex1.printStackTrace();
 		//send email to admin
 		throw new Exception("Error occurred for processMassOutputBatches - ", ex1);
@@ -1770,6 +1346,9 @@ public class transactionOutManagerImpl implements transactionOutManager {
 	//get upload details    
 	batchUploads batchUploadDetails = transactionInManager.getBatchDetails(batchDownload.getBatchUploadId());
 	utConfiguration uploadConfigDetails = configurationManager.getConfigurationById(batchUploadDetails.getConfigId());
+	
+	//Get the error handling for the source config.
+	configurationTransport sourceConfigTransportDetails = configurationTransportManager.getTransportDetails(batchUploadDetails.getConfigId());
 
 	//Create target tables
 	transactionOutDAO.createTargetBatchTables(batchDownload.getId(), batchDownload.getConfigId());
@@ -1815,36 +1394,37 @@ public class transactionOutManagerImpl implements transactionOutManager {
 	
 	 boolean inserteReferralMessage = true;
 	
-	if (totalErrorCount > 0 && transportDetails.geterrorHandling() == 3) {
+	if (totalErrorCount > 0 && sourceConfigTransportDetails.geterrorHandling() == 3) {
 	    updateTargetBatchStatus(batchDownload.getId(), 41, "endDateTime");
 	    
-	    populateOutboundAuditReport(batchDownload.getConfigId(),batchDownload.getId(), batchDownload.getBatchUploadId());
+	    populateOutboundAuditReport(batchDownload.getConfigId(),batchDownload.getId(), batchDownload.getBatchUploadId(),batchUploadDetails.getConfigId());
 	    
 	    //we need to update our totals
 	    transactionInManager.updateRecordCounts(batchDownload.getId(), rejectIds, true, "totalErrorCount");
-	    transactionInManager.updateRecordCounts(batchDownload.getId(), new ArrayList<Integer>(), true, "totalRecordCount");
+	    transactionInManager.updateRecordCounts(batchDownload.getId(), new ArrayList<>(), true, "totalRecordCount");
 	    
 	    if(transportDetails.isPopulateInboundAuditReport()) {
 		//Update inbound file for total errors
-		transactionInManager.updateRecordCounts(batchDownload.getBatchUploadId(), rejectIds, false, "totalErrorCount");
+		transactionInManager.updateRecordCounts(batchDownload.getBatchUploadId(), rejectIds, true, "errorRecordCount");
 		
 		//Update inbound status
 		transactionInManager.updateBatchStatus(batchDownload.getBatchUploadId(), 41, "endDateTime");
 	    }
 	    
 	    return 1;
+	    
 	} else {
 	    
 	    if(totalErrorCount > 0) {
-		populateOutboundAuditReport(batchDownload.getConfigId(),batchDownload.getId(), batchDownload.getBatchUploadId());
+		populateOutboundAuditReport(batchDownload.getConfigId(),batchDownload.getId(), batchDownload.getBatchUploadId(),batchUploadDetails.getConfigId());
 		
 		//we need to update our totals
 		transactionInManager.updateRecordCounts(batchDownload.getId(), rejectIds, true, "totalErrorCount");
-		transactionInManager.updateRecordCounts(batchDownload.getId(), new ArrayList<Integer>(), true, "totalRecordCount");
+		transactionInManager.updateRecordCounts(batchDownload.getId(), new ArrayList<>(), true, "totalRecordCount");
 		
 		if(transportDetails.isPopulateInboundAuditReport()) {
 		    //Update inbound file for total errors
-		    transactionInManager.updateRecordCounts(batchDownload.getBatchUploadId(), rejectIds, false, "totalErrorCount");
+		    transactionInManager.updateRecordCounts(batchDownload.getBatchUploadId(), rejectIds, true, "errorRecordCount");
 		}
 	    }
 	    
@@ -1872,9 +1452,9 @@ public class transactionOutManagerImpl implements transactionOutManager {
 		}
 	    }
 	    
-	    
 	    String generatedFilePath = generateTargetFile(true, batchDownload.getId(), transportDetails, encryptMessage);
 	    transportDetails.setDelimChar(messageTypeDAO.getDelimiterChar(transportDetails.getfileDelimiter()));
+	    
 	    //make sure we remove old file
 	    File generatedFile = new File(generatedFilePath);
 	    
@@ -1896,7 +1476,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
 
 		configFields = transactionOutDAO.getCustomXMLFieldsForOutput(batchDownload.getConfigId());
 
-		List recordsToWrite = transactionOutDAO.getOutputForCustomTargetFile(transportDetails, batchDownload.getId(), configFields);
+		List recordsToWrite = transactionOutDAO.getOutputForCustomTargetFile(transportDetails, batchDownload.getId(), configFields,batchDownload.getBatchUploadId());
 		
 		if (recordsToWrite != null) {
 		    Organization orgDetails = organizationManager.getOrganizationById(configurationManager.getConfigurationById(transportDetails.getconfigId()).getorgId());
@@ -1990,7 +1570,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
 		}
 
 	    } else {
-		Integer writeOutCome = writeOutputToTextFile(transportDetails, batchDownload.getId(), myProps.getProperty("ut.directory.massOutputPath") + batchDownload.getUtBatchName() + "." + fileExt, configFields);
+		Integer writeOutCome = writeOutputToTextFile(transportDetails, batchDownload.getId(), myProps.getProperty("ut.directory.massOutputPath") + batchDownload.getUtBatchName() + "." + fileExt, configFields,batchDownload.getBatchUploadId());
 	    }
 
 	    if (!massOutFile.exists()) {
@@ -2135,7 +1715,17 @@ public class transactionOutManagerImpl implements transactionOutManager {
 		}
 		
 		if(!"".equals(fileDropDir)) {
-		    File targetFile = new File(fileDropDir + batchDownload.getUtBatchName() + "." + fileExt);
+		    
+		    String targetDirectory = fileDropDir;
+		    
+		    File directory = new File(targetDirectory);
+		    
+		    if(!directory.exists()) {
+			directory.mkdirs();
+		    }
+		    
+		    File targetFile = new File(targetDirectory + batchDownload.getUtBatchName() + "." + fileExt);
+		    
 		    Files.copy(archiveFile.toPath(), targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
 		}
 		else {
@@ -2146,12 +1736,39 @@ public class transactionOutManagerImpl implements transactionOutManager {
 	    //Secure FTP Transport Method
 	    else if (transportDetails.gettransportMethodId() == 3) {
 		
-		/* Get the File Drop Details */
 		configurationFTPFields FTPPushDetails = configurationTransportManager.getTransportFTPDetailsPush(transportDetails.getId());
-
-		File targetFile = new File(myProps.getProperty("ut.directory.utRootDir") + FTPPushDetails.getdirectory()+ batchDownload.getOutputFileName());
 		
-		Files.copy(archiveFile.toPath(), targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+		FTPClient client = new FTPClient();
+		FileInputStream fis = null;
+		
+		try {
+		    client.connect(FTPPushDetails.getip());
+		    client.login(FTPPushDetails.getusername(), FTPPushDetails.getpassword());
+		    client.setDefaultPort(FTPPushDetails.getport());
+		    client.changeWorkingDirectory(FTPPushDetails.getdirectory());
+		    
+		    String filename = batchDownload.getOutputFileName();
+		    
+		    fis = new FileInputStream(archiveFile);
+		    
+		    client.storeFile(filename, fis);
+		    client.logout();
+		    
+		}
+		catch (IOException e) {
+		    updateTargetBatchStatus(batchDownload.getId(), 58, "endDateTime");
+		}
+		finally {
+		    try {
+			if (fis != null) {
+			    fis.close();
+			}
+			client.disconnect();
+		    } catch (IOException e) {
+			updateTargetBatchStatus(batchDownload.getId(), 58, "endDateTime");
+			e.printStackTrace();
+		    }
+		}
 		
 	    } 
 	    // REST API 
@@ -2159,7 +1776,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
 
 		//we need to update our totals
 		transactionInManager.updateRecordCounts(batchDownload.getId(), rejectIds, true, "totalErrorCount");
-		transactionInManager.updateRecordCounts(batchDownload.getId(), new ArrayList<Integer>(), true, "totalRecordCount");
+		transactionInManager.updateRecordCounts(batchDownload.getId(), new ArrayList<>(), true, "totalRecordCount");
 
 		String methodName = configurationTransportManager.getRestAPIMethodName(transportDetails.getRestAPIFunctionId());
 		Class<?>[] paramTypes = {int.class, configurationTransport.class};
@@ -2172,7 +1789,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
 
 		//we need to update our totals
 		transactionInManager.updateRecordCounts(batchDownload.getId(), rejectIds, true, "totalErrorCount");
-		transactionInManager.updateRecordCounts(batchDownload.getId(), new ArrayList<Integer>(), true, "totalRecordCount");
+		transactionInManager.updateRecordCounts(batchDownload.getId(), new ArrayList<>(), true, "totalRecordCount");
 		
 		organizationDirectDetails directDetails = configurationTransportManager.getDirectMessagingDetailsById(configDetails.getorgId());
 		
@@ -2614,15 +2231,20 @@ public class transactionOutManagerImpl implements transactionOutManager {
         transactionOutDAO.insertDMMessage(newDirectMessageOut);
     }
     
-    public void populateOutboundAuditReport(Integer configId, Integer batchDownloadId, Integer batchUploadId) throws Exception {
+    public void populateOutboundAuditReport(Integer configId, Integer batchDownloadId, Integer batchUploadId, Integer batchUploadConfigId) throws Exception {
 	
 	//first we run store procedure
-	transactionOutDAO.populateOutboundAuditReport(configId, batchDownloadId, batchUploadId);
+	transactionOutDAO.populateOutboundAuditReport(configId, batchDownloadId, batchUploadId,batchUploadConfigId);
 	
     }
     
     @Override
     public List<batchErrorSummary> getBatchErrorSummary(int batchId) throws Exception {
 	return transactionInDAO.getBatchErrorSummary(batchId);
+    }
+    
+    @Override
+    public List<utUserActivity> getBatchActivities(batchDownloads batchInfo) {
+	return transactionOutDAO.getBatchActivities(batchInfo);
     }
 }
