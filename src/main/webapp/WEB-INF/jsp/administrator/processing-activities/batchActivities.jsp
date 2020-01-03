@@ -24,11 +24,6 @@
             <div class="panel-body">
 
                 <div class="form-container scrollable">
-                    <c:if test="${fn:length(userActivities) > 100}">
-                        <div class="form-group">
-                            There were a total of ${fn:length(userActivities)} user activities found.  The last 100 activities are displayed.
-                        </div>
-                    </c:if>
                     <table class="table table-striped table-hover table-default" id="batchActivitiesDataTable">
                             <thead>
                                 <tr>
@@ -39,21 +34,21 @@
                             </thead>
                             <tbody>
                             <c:choose>
-                                <c:when test="${not empty userActivities}">     
-                                    <c:forEach var="ua" items="${userActivities}" end="99">
+                                <c:when test="${not empty batchActivities}">     
+                                    <c:forEach var="ba" items="${batchActivities}">
                                         <tr>
-					    <td>${ua.id}</td>
+					    <td>${ba.id}</td>
                                             <td>
-                                                ${ua.activity}<c:if test="${fn:length(ua.activityDesc) > 0}">- ${ua.activityDesc}</c:if>
+                                                ${ba.activity}
 					    </td>
                                             <td>
-                                                <fmt:formatDate value="${ua.dateCreated}" type="date" pattern="M/dd/yyyy" />&nbsp;&nbsp;<fmt:formatDate value="${ua.dateCreated}" type="time" pattern="h:mm:ss a" />
+                                                <fmt:formatDate value="${ba.dateCreated}" type="date" pattern="M/dd/yyyy" />&nbsp;&nbsp;<fmt:formatDate value="${ba.dateCreated}" type="time" pattern="h:mm:ss a" />
                                             </td>                                         
                                         </tr>
                                     </c:forEach>
                                 </c:when>
                                 <c:otherwise>
-                                    <tr><td colspan="7" class="center-text">There are currently no user activities for this batch.</td></tr>
+                                    <tr><td colspan="3" class="center-text">There are currently no batch activities for this batch.</td></tr>
                                 </c:otherwise>
                             </c:choose>           
                         </tbody>
@@ -63,5 +58,3 @@
         </section>
     </div>
 </div>
-<div class="modal fade" id="statusModal" role="dialog" tabindex="-1" aria-labeledby="Status Details" aria-hidden="true" aria-describedby="Status Details"></div>
-<div class="modal fade" id="messageDetailsModal" role="dialog" tabindex="-1" aria-labeledby="Message Details" aria-hidden="true" aria-describedby="Message Details"></div>

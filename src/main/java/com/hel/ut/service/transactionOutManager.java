@@ -9,6 +9,7 @@ import com.hel.ut.model.Transaction;
 import com.hel.ut.model.batchDLRetry;
 import com.hel.ut.model.batchDownloads;
 import com.hel.ut.model.batchUploads;
+import com.hel.ut.model.batchdownloadactivity;
 import com.hel.ut.model.utConfiguration;
 import com.hel.ut.model.configurationFormFields;
 import com.hel.ut.model.configurationTransport;
@@ -18,7 +19,6 @@ import com.hel.ut.model.transactionOutRecords;
 import com.hel.ut.model.custom.ConfigOutboundForInsert;
 import com.hel.ut.model.custom.batchErrorSummary;
 import com.hel.ut.model.directmessagesout;
-import com.hel.ut.model.utUserActivity;
 import java.io.File;
 
 import java.math.BigInteger;
@@ -115,6 +115,6 @@ public interface transactionOutManager {
     
     List<batchErrorSummary> getBatchErrorSummary(int batchId) throws Exception;
     
-    List<utUserActivity> getBatchActivities(batchDownloads batchInfo);
+    List<batchdownloadactivity> getBatchActivities(batchDownloads batchInfo);
     
 }

@@ -18,7 +18,24 @@ CREATE TABLE `batchdownloadauditerrors` (
   CONSTRAINT `downloadauditErrorKey_FK` FOREIGN KEY (`batchDownloadId`) REFERENCES `batchdownloads` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
+CREATE TABLE `batchuploadactivity` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `activity` varchar(255) DEFAULT NULL,
+  `batchUploadId` int(11) DEFAULT NULL,
+  `dateCreated` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `batchId` (`batchUploadId`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
+
+CREATE TABLE `batchdownloadactivity` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `activity` varchar(255) DEFAULT NULL,
+  `batchDownloadId` int(11) DEFAULT NULL,
+  `dateCreated` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `batchId` (`batchDownloadId`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 USE `universaltranslator`;
 DROP procedure IF EXISTS `populateOutboundAuditReport`;

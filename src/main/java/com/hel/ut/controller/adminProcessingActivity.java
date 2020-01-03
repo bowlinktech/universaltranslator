@@ -17,6 +17,8 @@ import com.hel.ut.model.utUser;
 import com.hel.ut.model.utUserActivity;
 import com.hel.ut.model.batchDownloads;
 import com.hel.ut.model.batchUploads;
+import com.hel.ut.model.batchdownloadactivity;
+import com.hel.ut.model.batchuploadactivity;
 import com.hel.ut.model.configurationFTPFields;
 import com.hel.ut.model.configurationFileDropFields;
 import com.hel.ut.model.utConfiguration;
@@ -654,9 +656,8 @@ public class adminProcessingActivity {
 		mav.addObject("batchDetails", batchDetails);
 
 		try {
-		    /* Get all the user activities for the batch */
-		    List<utUserActivity> uas = transactionInManager.getBatchActivities(batchDetails, true, false);
-		    mav.addObject("userActivities", uas);
+		    List<batchuploadactivity> batchActivities = transactionInManager.getBatchActivities(batchDetails);
+		    mav.addObject("batchActivities", batchActivities);
 
 		} catch (Exception e) {
 		    throw new Exception("(Admin) Error occurred in getting batch activities for an inbound batch. batchId: " + batchDetails.getId() + " ERROR: " + e.getMessage(), e);
@@ -674,9 +675,8 @@ public class adminProcessingActivity {
 		mav.addObject("batchDetails", batchDetails);
 
 		try {
-		    /* Get all the user activities for the batch */
-		    List<utUserActivity> uas = transactionOutManager.getBatchActivities(batchDetails);
-		    mav.addObject("userActivities", uas);
+		    List<batchdownloadactivity> batchActivities = transactionOutManager.getBatchActivities(batchDetails);
+		    mav.addObject("batchActivities", batchActivities);
 
 		} catch (Exception e) {
 		    throw new Exception("(Admin) Error occurred in getting batch activities for an outbound batch. batchId: " + batchDetails.getId() + " ERROR: " + e.getMessage(), e);

@@ -8,6 +8,7 @@ package com.hel.ut.dao;
 import com.hel.ut.model.RestAPIMessagesOut;
 import com.hel.ut.model.batchDLRetry;
 import com.hel.ut.model.batchDownloads;
+import com.hel.ut.model.batchdownloadactivity;
 import com.hel.ut.model.configurationFormFields;
 import com.hel.ut.model.configurationSchedules;
 import com.hel.ut.model.configurationTransport;
@@ -16,7 +17,6 @@ import com.hel.ut.model.transactionOutRecords;
 import com.hel.ut.model.custom.ConfigOutboundForInsert;
 import com.hel.ut.model.custom.batchErrorSummary;
 import com.hel.ut.model.directmessagesout;
-import com.hel.ut.model.utUserActivity;
 
 import java.math.BigInteger;
 import java.util.Date;
@@ -124,5 +124,7 @@ public interface transactionOutDAO {
     
     List<batchErrorSummary> getBatchErrorSummary(int batchId) throws Exception;
     
-    List<utUserActivity> getBatchActivities(batchDownloads batchInfo);
+    List<batchdownloadactivity> getBatchActivities(batchDownloads batchInfo);
+    
+    void submitBatchActivityLog(batchdownloadactivity ba);
 }

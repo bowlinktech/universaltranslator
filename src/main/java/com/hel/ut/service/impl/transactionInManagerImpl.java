@@ -16,11 +16,11 @@ import com.hel.ut.model.MoveFilesLog;
 import com.hel.ut.model.RestAPIMessagesIn;
 import com.hel.ut.model.Transaction;
 import com.hel.ut.model.utUser;
-import com.hel.ut.model.utUserActivity;
 import com.hel.ut.model.WSMessagesIn;
 import com.hel.ut.model.batchDownloads;
 import com.hel.ut.model.batchRetry;
 import com.hel.ut.model.batchUploads;
+import com.hel.ut.model.batchuploadactivity;
 import com.hel.ut.model.utConfiguration;
 import com.hel.ut.model.configurationConnection;
 import com.hel.ut.model.configurationConnectionSenders;
@@ -834,13 +834,8 @@ public class transactionInManagerImpl implements transactionInManager {
     }
 
     @Override
-    public List<utUserActivity> getBatchActivities(batchUploads batchInfo, boolean forUsers, boolean foroutboundProcessing) {
-	if (!forUsers) {
-	    //we have autolog that tracks the date/time each time the status change on a batch, not in use right now
-	    return null;
-	} else {
-	    return transactionInDAO.getBatchUserActivities(batchInfo, foroutboundProcessing);
-	}
+    public List<batchuploadactivity> getBatchActivities(batchUploads batchInfo) {
+	return transactionInDAO.getBatchActivities(batchInfo);
     }
 
     @Override
@@ -1031,24 +1026,18 @@ public class transactionInManagerImpl implements transactionInManager {
 						oldArchiveFile.delete();
 						
 						//log user activity
-						utUserActivity ua = new utUserActivity();
-						ua.setUserId(0);
-						ua.setFeatureId(0);
-						ua.setAccessMethod("System");
-						ua.setActivity("Old archive file (encoded_" +batchDetails.getUtBatchName() + fileName.substring(fileName.lastIndexOf(".")) + ") was removed.");
-						ua.setBatchUploadId(batchId);
-						usermanager.insertUserLog(ua);
+						batchuploadactivity ba = new batchuploadactivity();
+						ba.setActivity("Old archive file (encoded_" +batchDetails.getUtBatchName() + fileName.substring(fileName.lastIndexOf(".")) + ") was removed.");
+						ba.setBatchUploadId(batchId);
+						transactionInDAO.submitBatchActivityLog(ba);
 					    }
 					}
 					
 					//log user activity
-					utUserActivity ua = new utUserActivity();
-					ua.setUserId(0);
-					ua.setFeatureId(0);
-					ua.setAccessMethod("System");
-					ua.setActivity("New utBatchName: " + batchName + " was set for reset batchId: "+batchDetails.getId());
-					ua.setBatchUploadId(batchId);
-					usermanager.insertUserLog(ua);
+					batchuploadactivity ba = new batchuploadactivity();
+					ba.setActivity("New utBatchName: " + batchName + " was set for reset batchId: "+batchDetails.getId());
+					ba.setBatchUploadId(batchId);
+					transactionInDAO.submitBatchActivityLog(ba);
 					
 					batchDetails.setUtBatchName(batchName);
 					transactionInDAO.submitBatchUploadChanges(batchDetails);
@@ -1088,22 +1077,16 @@ public class transactionInManagerImpl implements transactionInManager {
 				    batchId = submitBatchUpload(batchInfo);
 				    
 				    //log batch activity
-				    utUserActivity ua = new utUserActivity();
-				    ua.setUserId(0);
-				    ua.setFeatureId(0);
-				    ua.setAccessMethod("System");
-				    ua.setActivity("New Dropped File: "+fileName+" was found in "+ rootPath + configDroppedPath);
-				    ua.setBatchUploadId(batchId);
-				    usermanager.insertUserLog(ua);
+				    batchuploadactivity ba = new batchuploadactivity();
+				    ba.setActivity("New Dropped File: "+fileName+" was found in "+ rootPath + configDroppedPath);
+				    ba.setBatchUploadId(batchId);
+				    transactionInDAO.submitBatchActivityLog(ba);
 				    
 				    //log batch activity
-				    ua = new utUserActivity();
-				    ua.setUserId(0);
-				    ua.setFeatureId(0);
-				    ua.setAccessMethod("System");
-				    ua.setActivity("New inbound batch was created batchId:" + batchId + " utBatchName:" + batchName);
-				    ua.setBatchUploadId(batchId);
-				    usermanager.insertUserLog(ua);
+				    ba = new batchuploadactivity();
+				    ba.setActivity("New inbound batch was created batchId:" + batchId + " utBatchName:" + batchName);
+				    ba.setBatchUploadId(batchId);
+				   transactionInDAO.submitBatchActivityLog(ba);
 				}
 				
 				
@@ -1132,13 +1115,10 @@ public class transactionInManagerImpl implements transactionInManager {
 				    statusId = 7;
 				    
 				    //log batch activity
-				    utUserActivity ua = new utUserActivity();
-				    ua.setUserId(0);
-				    ua.setFeatureId(0);
-				    ua.setAccessMethod("System");
-				    ua.setActivity("No valid configuration transports were found.");
-				    ua.setBatchUploadId(batchId);
-				    usermanager.insertUserLog(ua);
+				    batchuploadactivity ba = new batchuploadactivity();
+				    ba.setActivity("No valid configuration transports were found.");
+				    ba.setBatchUploadId(batchId);
+				    transactionInDAO.submitBatchActivityLog(ba);
 				    
 				} 
 				else if (transports.size() == 1) {
@@ -1204,13 +1184,10 @@ public class transactionInManagerImpl implements transactionInManager {
 					errorId = 16;
 					
 					//log batch activity
-					utUserActivity ua = new utUserActivity();
-					ua.setUserId(0);
-					ua.setFeatureId(0);
-					ua.setAccessMethod("System");
-					ua.setActivity("Can't determine the encoding type for the found file.");
-					ua.setBatchUploadId(batchId);
-					usermanager.insertUserLog(ua);
+					batchuploadactivity ba = new batchuploadactivity();
+					ba.setActivity("Can't determine the encoding type for the found file.");
+					ba.setBatchUploadId(batchId);
+					transactionInDAO.submitBatchActivityLog(ba);
 					
 				    } else {
 
@@ -1264,13 +1241,10 @@ public class transactionInManagerImpl implements transactionInManager {
 					errorId = 15;
 					
 					//log user activity
-					utUserActivity ua = new utUserActivity();
-					ua.setUserId(0);
-					ua.setFeatureId(0);
-					ua.setAccessMethod("System");
-					ua.setActivity("File: "+fileName+" did not have the correct delimiter that was selected for configuration id:" + configId);
-					ua.setBatchUploadId(batchId);
-					usermanager.insertUserLog(ua);
+					batchuploadactivity ba = new batchuploadactivity();
+					ba.setActivity("File: "+fileName+" did not have the correct delimiter that was selected for configuration id:" + configId);
+					ba.setBatchUploadId(batchId);
+					transactionInDAO.submitBatchActivityLog(ba);
 
 				    } 
 				    else if (statusId == 2) {
@@ -1288,13 +1262,10 @@ public class transactionInManagerImpl implements transactionInManager {
 					    errorId = 14;
 					    
 					    //log batch activity
-					    utUserActivity ua = new utUserActivity();
-					    ua.setUserId(0);
-					    ua.setFeatureId(0);
-					    ua.setAccessMethod("System");
-					    ua.setActivity("File with same extension, delimiter should be set up either contain headers or do not contain headers.");
-					    ua.setBatchUploadId(batchId);
-					    usermanager.insertUserLog(ua);
+					    batchuploadactivity ba = new batchuploadactivity();
+					    ba.setActivity("File with same extension, delimiter should be set up either contain headers or do not contain headers.");
+					    ba.setBatchUploadId(batchId);
+					    transactionInDAO.submitBatchActivityLog(ba);
 					} 
 					else {
 					    List<Integer> totalConfigs = configurationtransportmanager.getConfigCount(fileExt, transportMethodId, fileDelimiter);
@@ -1338,25 +1309,19 @@ public class transactionInManagerImpl implements transactionInManager {
 				createBatchTables(batchId, batchDetails.getConfigId());
 				
 				//log batch activity
-				utUserActivity ua = new utUserActivity();
-				ua.setUserId(0);
-				ua.setFeatureId(0);
-				ua.setAccessMethod("System");
-				ua.setActivity("Created all inbound batch tables for batchId:" + batchId);
-				ua.setBatchUploadId(batchId);
-				usermanager.insertUserLog(ua);
+				batchuploadactivity ba = new batchuploadactivity();
+				ba.setActivity("Created all inbound batch tables for batchId:" + batchId);
+				ba.setBatchUploadId(batchId);
+				transactionInDAO.submitBatchActivityLog(ba);
 
 				//we encoded the file if it is not
 				File newFile = new File(rootPath + orgDetails.getcleanURL() + "/input files/encoded_"+batchName + fileName.substring(fileName.lastIndexOf(".")));
 				
 				//log batch activity
-				ua = new utUserActivity();
-				ua.setUserId(0);
-				ua.setFeatureId(0);
-				ua.setAccessMethod("System");
-				ua.setActivity("Created the encoded file. File Location/Name:" + rootPath + orgDetails.getcleanURL() + "/input files/encoded_"+batchName + fileName.substring(fileName.lastIndexOf(".")));
-				ua.setBatchUploadId(batchId);
-				usermanager.insertUserLog(ua);
+				ba = new batchuploadactivity();
+				ba.setActivity("Created the encoded file. File Location/Name:" + rootPath + orgDetails.getcleanURL() + "/input files/encoded_"+batchName + fileName.substring(fileName.lastIndexOf(".")));
+				ba.setBatchUploadId(batchId);
+				transactionInDAO.submitBatchActivityLog(ba);
 
 				// now we move file
 				Path source = file.toPath();
@@ -1371,13 +1336,10 @@ public class transactionInManagerImpl implements transactionInManager {
 				    Files.copy(source, archive);
 				    
 				    //log batch activity
-				    ua = new utUserActivity();
-				    ua.setUserId(0);
-				    ua.setFeatureId(0);
-				    ua.setAccessMethod("System");
-				    ua.setActivity("Moved archive file. File Location/Name:" + myProps.getProperty("ut.directory.utRootDir") + "archivesIn/" + "archive_"+batchName + fileName.substring(fileName.lastIndexOf(".")));
-				    ua.setBatchUploadId(batchId);
-				    usermanager.insertUserLog(ua);
+				    ba = new batchuploadactivity();
+				    ba.setActivity("Moved archive file. File Location/Name:" + myProps.getProperty("ut.directory.utRootDir") + "archivesIn/" + "archive_"+batchName + fileName.substring(fileName.lastIndexOf(".")));
+				    ba.setBatchUploadId(batchId);
+				    transactionInDAO.submitBatchActivityLog(ba);
 				    
 				} catch (Exception exError) {
 				    sendEmailToAdmin((source.toAbsolutePath() + " file could not be copied to " + archive.toAbsolutePath() + " moveFilesByPath - error message from tomcat - " + Arrays.toString(exError.getStackTrace())), "SFTP Job Error");
@@ -1388,13 +1350,10 @@ public class transactionInManagerImpl implements transactionInManager {
 				    sysErrors = 1;
 				    
 				    //log batch activity
-				    ua = new utUserActivity();
-				    ua.setUserId(0);
-				    ua.setFeatureId(0);
-				    ua.setAccessMethod("System");
-				    ua.setActivity("Error moving file to archives directory. Error: " + exError.getMessage());
-				    ua.setBatchUploadId(batchId);
-				    usermanager.insertUserLog(ua);
+				    ba = new batchuploadactivity();
+				    ba.setActivity("Error moving file to archives directory. Error: " + exError.getMessage());
+				    ba.setBatchUploadId(batchId);
+				    transactionInDAO.submitBatchActivityLog(ba);
 				    
 				    break;
 				}
@@ -1442,13 +1401,10 @@ public class transactionInManagerImpl implements transactionInManager {
 					errorId = 12;
 					
 					//log batch activity
-					ua = new utUserActivity();
-					ua.setUserId(0);
-					ua.setFeatureId(0);
-					ua.setAccessMethod("System");
-					ua.setActivity("Invlaid file size. Uploaded file was "+ Files.size(target) + ". The configuration max file size was set to " + maxFileSize);
-					ua.setBatchUploadId(batchId);
-					usermanager.insertUserLog(ua);
+					ba = new batchuploadactivity();
+					ba.setActivity("Invlaid file size. Uploaded file was "+ Files.size(target) + ". The configuration max file size was set to " + maxFileSize);
+					ba.setBatchUploadId(batchId);
+					transactionInDAO.submitBatchActivityLog(ba);
 				    }
 				}
 
@@ -1459,13 +1415,10 @@ public class transactionInManagerImpl implements transactionInManager {
 				updateBatchStatus(batchId, statusId, "endDateTime");
 				
 				//log batch activity
-				ua = new utUserActivity();
-				ua.setUserId(0);
-				ua.setFeatureId(0);
-				ua.setAccessMethod("System");
-				ua.setActivity("Uploaded batchId:"+batchId+" status was set to " + statusId);
-				ua.setBatchUploadId(batchId);
-				usermanager.insertUserLog(ua);
+				ba = new batchuploadactivity();
+				ba.setActivity("Uploaded batchId:"+batchId+" status was set to " + statusId);
+				ba.setBatchUploadId(batchId);
+				transactionInDAO.submitBatchActivityLog(ba);
 
 				// Check to see if the batch needs to be submitted to a Healt-e-link Registry
 				if (batchDetails.getConfigId() != null) {
@@ -1479,13 +1432,10 @@ public class transactionInManagerImpl implements transactionInManager {
 					    updateBatchStatus(batchId, 64, "endDateTime");
 					    
 					    //log batch activity
-					    ua = new utUserActivity();
-					    ua.setUserId(0);
-					    ua.setFeatureId(0);
-					    ua.setAccessMethod("System");
-					    ua.setActivity("Uploaded batchId:"+batchId+" configuration (configId:"+batchDetails.getConfigId()+") is set to manual process and is ready to be processed.");
-					    ua.setBatchUploadId(batchId);
-					    usermanager.insertUserLog(ua);
+					    ba = new batchuploadactivity();
+					    ba.setActivity("Uploaded batchId:"+batchId+" configuration (configId:"+batchDetails.getConfigId()+") is set to manual process and is ready to be processed.");
+					    ba.setBatchUploadId(batchId);
+					    transactionInDAO.submitBatchActivityLog(ba);
 					}
 				    }
 				}
@@ -2026,14 +1976,11 @@ public class transactionInManagerImpl implements transactionInManager {
 		    updateBatchStatus(stuckBatchDetails.getId(), 42, "endDateTime");
 		    //having log in new table and checking userActivity as if it is reset manually by user and gets stuck again it wont' retry and we want it to retry at least once each time it is reset
 		    try {
-			//log user activity
-			utUserActivity ua = new utUserActivity();
-			ua.setUserId(0);
-			ua.setFeatureId(0);
-			ua.setAccessMethod("System");
-			ua.setActivity("System Set Batch To Retry During Loading");
-			ua.setBatchUploadId(stuckBatchDetails.getId());
-			usermanager.insertUserLog(ua);
+			//log batch activity
+			batchuploadactivity ba = new batchuploadactivity();
+			ba.setActivity("System Set Batch To Retry During Loading");
+			ba.setBatchUploadId(stuckBatchDetails.getId());
+			transactionInDAO.submitBatchActivityLog(ba);
 		    } catch (Exception ex) {
 			ex.printStackTrace();
 			System.err.println("transactionId - insert user log" + ex.toString());
@@ -2041,13 +1988,10 @@ public class transactionInManagerImpl implements transactionInManager {
 		} else {
 		    try {
 			//log user activity
-			utUserActivity ua = new utUserActivity();
-			ua.setUserId(0);
-			ua.setFeatureId(0);
-			ua.setAccessMethod("System");
-			ua.setActivity("System Set to Status 58 - Loading");
-			ua.setBatchUploadId(stuckBatchDetails.getId());
-			usermanager.insertUserLog(ua);
+			batchuploadactivity ba = new batchuploadactivity();
+			ba.setActivity("System Set to Status 58 - Loading");
+			ba.setBatchUploadId(stuckBatchDetails.getId());
+			transactionInDAO.submitBatchActivityLog(ba);
 		    } catch (Exception ex) {
 			ex.printStackTrace();
 			System.err.println("transactionId - insert user log" + ex.toString());
@@ -2111,24 +2055,18 @@ public class transactionInManagerImpl implements transactionInManager {
 	    try {
 		try {
 		    //log batch activity
-		    utUserActivity ua = new utUserActivity();
-		    ua.setUserId(0);
-		    ua.setFeatureId(0);
-		    ua.setAccessMethod("System");
-		    ua.setActivity("Scheduled job loadBatch was called to load the contents for this batch.");
-		    ua.setBatchUploadId(batchId);
-		    usermanager.insertUserLog(ua);
+		    batchuploadactivity ba = new batchuploadactivity();
+		    ba.setActivity("Scheduled job loadBatch was called to load the contents for this batch.");
+		    ba.setBatchUploadId(batchId);
+		    transactionInDAO.submitBatchActivityLog(ba);
 
 		} catch (Exception ex) {
 		    
 		    //log batch activity
-		    utUserActivity ua = new utUserActivity();
-		    ua.setUserId(0);
-		    ua.setFeatureId(0);
-		    ua.setAccessMethod("System");
-		    ua.setActivity("Scheduled job loadBatch was called to load the contents for this batch. But an error occured, error: " + ex.getMessage());
-		    ua.setBatchUploadId(batchId);
-		    usermanager.insertUserLog(ua);
+		    batchuploadactivity ba = new batchuploadactivity();
+		    ba.setActivity("Scheduled job loadBatch was called to load the contents for this batch. But an error occured, error: " + ex.getMessage());
+		    ba.setBatchUploadId(batchId);
+		    transactionInDAO.submitBatchActivityLog(ba);
 		    
 		    ex.printStackTrace();
 		    System.err.println("loadBatch - insert user log" + ex.toString());
@@ -2138,13 +2076,10 @@ public class transactionInManagerImpl implements transactionInManager {
 		createBatchTables(batchId,batch.getConfigId());
 		
 		//log batch activity
-		utUserActivity ua = new utUserActivity();
-		ua.setUserId(0);
-		ua.setFeatureId(0);
-		ua.setAccessMethod("System");
-		ua.setActivity("If not already done, all inbound batch tables were created for batchId:"+batchId);
-		ua.setBatchUploadId(batchId);
-		usermanager.insertUserLog(ua);
+		batchuploadactivity ba = new batchuploadactivity();
+		ba.setActivity("If not already done, all inbound batch tables were created for batchId:"+batchId);
+		ba.setBatchUploadId(batchId);
+		transactionInDAO.submitBatchActivityLog(ba);
 		
 		//Find all targets set up for this configuration
 		List<configurationConnection> configurationConnections = configurationManager.getConnectionsBySourceConfiguration(batch.getConfigId());
@@ -2154,25 +2089,19 @@ public class transactionInManagerImpl implements transactionInManager {
 		updateBatchStatus(batchId, batchStatusId, "startDateTime");
 		
 		//log batch activity
-		ua = new utUserActivity();
-		ua.setUserId(0);
-		ua.setFeatureId(0);
-		ua.setAccessMethod("System");
-		ua.setActivity("inbound batchId:"+batchId+" status was set to " + batchStatusId);
-		ua.setBatchUploadId(batchId);
-		usermanager.insertUserLog(ua);
+		ba = new batchuploadactivity();
+		ba.setActivity("inbound batchId:"+batchId+" status was set to " + batchStatusId);
+		ba.setBatchUploadId(batchId);
+		transactionInDAO.submitBatchActivityLog(ba);
 
 		Integer sysErrors = 0;
 		sysErrors = sysErrors + clearTransactionTables(batchId, batch.getConfigId());
 		
 		//log batch activity
-		ua = new utUserActivity();
-		ua.setUserId(0);
-		ua.setFeatureId(0);
-		ua.setAccessMethod("System");
-		ua.setActivity("Cleared all tables for inbound batchId:"+batchId);
-		ua.setBatchUploadId(batchId);
-		usermanager.insertUserLog(ua);
+		ba = new batchuploadactivity();
+		ba.setActivity("Cleared all tables for inbound batchId:"+batchId);
+		ba.setBatchUploadId(batchId);
+		transactionInDAO.submitBatchActivityLog(ba);
 		
 		Integer HELRegistryConfigId = 0;
 		Integer HELRegistryId = 0;
@@ -2208,13 +2137,10 @@ public class transactionInManagerImpl implements transactionInManager {
 			    fileuploadmanager.updateUploadedFile(HELSchemaName,existingRegistryUploadedFile.getId(),23,batchId);
 			    
 			    //log batch activity
-			    ua = new utUserActivity();
-			    ua.setUserId(0);
-			    ua.setFeatureId(0);
-			    ua.setAccessMethod("System");
-			    ua.setActivity("Updated eReferral uploaded file entryId:"+existingRegistryUploadedFile.getId()+" to status:23 and batchId:"+batchId);
-			    ua.setBatchUploadId(batchId);
-			    usermanager.insertUserLog(ua);
+			    ba = new batchuploadactivity();
+			    ba.setActivity("Updated eReferral uploaded file entryId:"+existingRegistryUploadedFile.getId()+" to status:23 and batchId:"+batchId);
+			    ba.setBatchUploadId(batchId);
+			    transactionInDAO.submitBatchActivityLog(ba);
 			}
 			
 			if(!fromRegistryFileUpload) {
@@ -2224,13 +2150,10 @@ public class transactionInManagerImpl implements transactionInManager {
 				submittedmessagemanager.updateSubmittedMessage(HELSchemaName,existingRegistrySubmittedMessage.getId(),23,batchId);
 				
 				//log batch activity
-				ua = new utUserActivity();
-				ua.setUserId(0);
-				ua.setFeatureId(0);
-				ua.setAccessMethod("System");
-				ua.setActivity("Updated eReferral online form entryId:"+existingRegistrySubmittedMessage.getId()+" to status:23 and batchId:"+batchId);
-				ua.setBatchUploadId(batchId);
-				usermanager.insertUserLog(ua);
+				ba = new batchuploadactivity();
+				ba.setActivity("Updated eReferral online form entryId:"+existingRegistrySubmittedMessage.getId()+" to status:23 and batchId:"+batchId);
+				ba.setBatchUploadId(batchId);
+				transactionInDAO.submitBatchActivityLog(ba);
 			    }
 			}
 
@@ -2245,13 +2168,10 @@ public class transactionInManagerImpl implements transactionInManager {
 		    updateBatchStatus(batchId, 39, "endDateTime");
 		    
 		    //log batch activity
-		    ua = new utUserActivity();
-		    ua.setUserId(0);
-		    ua.setFeatureId(0);
-		    ua.setAccessMethod("System");
-		    ua.setActivity("Error cleaning out transaction tables.  Batch cannot be loaded.");
-		    ua.setBatchUploadId(batchId);
-		    usermanager.insertUserLog(ua);
+		    ba = new batchuploadactivity();
+		    ba.setActivity("Error cleaning out transaction tables.  Batch cannot be loaded.");
+		    ba.setBatchUploadId(batchId);
+		    transactionInDAO.submitBatchActivityLog(ba);
 		}
 
 		//2. we load data with my sql
@@ -2287,13 +2207,10 @@ public class transactionInManagerImpl implements transactionInManager {
 			processingSysErrorId = 17;
 			
 			//log batch activity
-			ua = new utUserActivity();
-			ua.setUserId(0);
-			ua.setFeatureId(0);
-			ua.setAccessMethod("System");
-			ua.setActivity("System was not able to decode the file: " + filePath + encodedFileName);
-			ua.setBatchUploadId(batchId);
-			usermanager.insertUserLog(ua);
+			ba = new batchuploadactivity();
+			ba.setActivity("System was not able to decode the file: " + filePath + encodedFileName);
+			ba.setBatchUploadId(batchId);
+			transactionInDAO.submitBatchActivityLog(ba);
 		    }
 		}
 		else {
@@ -2317,13 +2234,10 @@ public class transactionInManagerImpl implements transactionInManager {
 			    processingSysErrorId = 17;
 			    
 			    //log batch activity
-			    ua = new utUserActivity();
-			    ua.setUserId(0);
-			    ua.setFeatureId(0);
-			    ua.setAccessMethod("System");
-			    ua.setActivity("System was not able to decode the file: " + filePath + nonencodedFileName);
-			    ua.setBatchUploadId(batchId);
-			    usermanager.insertUserLog(ua);
+			    ba = new batchuploadactivity();
+			    ba.setActivity("System was not able to decode the file: " + filePath + nonencodedFileName);
+			    ba.setBatchUploadId(batchId);
+			    transactionInDAO.submitBatchActivityLog(ba);
 			}
 		    }
 		}
@@ -2380,13 +2294,10 @@ public class transactionInManagerImpl implements transactionInManager {
 				insertProcessingError(18, null, batchId, null, null, null, null, false, false, "Multiple file types were found for transport method.");
 				
 				//log batch activity
-				ua = new utUserActivity();
-				ua.setUserId(0);
-				ua.setFeatureId(0);
-				ua.setAccessMethod("System");
-				ua.setActivity("Transport method contains both hr/ccd and another file type");
-				ua.setBatchUploadId(batchId);
-				usermanager.insertUserLog(ua);
+				ba = new batchuploadactivity();
+				ba.setActivity("Transport method contains both hr/ccd and another file type");
+				ba.setBatchUploadId(batchId);
+				transactionInDAO.submitBatchActivityLog(ba);
 			    }
 			} else if (ctList.size() == 1) {
 			    if (ctList.get(0).getfileType() == 9) {
@@ -2433,24 +2344,18 @@ public class transactionInManagerImpl implements transactionInManager {
 			    insertProcessingError(5, null, batchId, null, null, null, null, false, false, "Error at applying the parsing template");
 			    
 			    //log batch activity
-			    ua = new utUserActivity();
-			    ua.setUserId(0);
-			    ua.setFeatureId(0);
-			    ua.setAccessMethod("System");
-			    ua.setActivity("Error at applying parsing template. Could not translate CCD to TXT.");
-			    ua.setBatchUploadId(batchId);
-			    usermanager.insertUserLog(ua);
+			    ba = new batchuploadactivity();
+			    ba.setActivity("Error at applying parsing template. Could not translate CCD to TXT.");
+			    ba.setBatchUploadId(batchId);
+			    transactionInDAO.submitBatchActivityLog(ba);
 			    
 			} else if (newfilename.equals("FILE IS NOT XML ERROR")) {
 			    
 			    //log batch activity
-			    ua = new utUserActivity();
-			    ua.setUserId(0);
-			    ua.setFeatureId(0);
-			    ua.setAccessMethod("System");
-			    ua.setActivity("XML format is invalid.");
-			    ua.setBatchUploadId(batchId);
-			    usermanager.insertUserLog(ua);
+			    ba = new batchuploadactivity();
+			    ba.setActivity("XML format is invalid.");
+			    ba.setBatchUploadId(batchId);
+			    transactionInDAO.submitBatchActivityLog(ba);
 			    
 			    updateBatchStatus(batchId, 7, "endDateTime");
 			    insertProcessingError(22, null, batchId, null, null, null, null, false, false, "XML format is invalid.");
@@ -2458,13 +2363,10 @@ public class transactionInManagerImpl implements transactionInManager {
 			}
 			else {
 			    //log batch activity
-			    ua = new utUserActivity();
-			    ua.setUserId(0);
-			    ua.setFeatureId(0);
-			    ua.setAccessMethod("System");
-			    ua.setActivity("Parsing successfully parsed the inbound file and generated file location/name: " + decodedFilePath + newfilename);
-			    ua.setBatchUploadId(batchId);
-			    usermanager.insertUserLog(ua);
+			    ba = new batchuploadactivity();
+			    ba.setActivity("Parsing successfully parsed the inbound file and generated file location/name: " + decodedFilePath + newfilename);
+			    ba.setBatchUploadId(batchId);
+			    transactionInDAO.submitBatchActivityLog(ba);
 			}
 
 			actualFileName = (decodedFilePath + newfilename);
@@ -2483,13 +2385,10 @@ public class transactionInManagerImpl implements transactionInManager {
 			if (newfilename.equals("ERRORERRORERROR")) {
 			    
 			    //log batch activity
-			    ua = new utUserActivity();
-			    ua.setUserId(0);
-			    ua.setFeatureId(0);
-			    ua.setAccessMethod("System");
-			    ua.setActivity("HL7toTxt ran into a problem parsing the inbound file.");
-			    ua.setBatchUploadId(batchId);
-			    usermanager.insertUserLog(ua);
+			    ba = new batchuploadactivity();
+			    ba.setActivity("HL7toTxt ran into a problem parsing the inbound file.");
+			    ba.setBatchUploadId(batchId);
+			    transactionInDAO.submitBatchActivityLog(ba);
 			    
 			    updateBatchStatus(batchId, 39, "endDateTime");
 			    insertProcessingError(5, null, batchId, null, null, null, null, false, false, "Error at applying jar template");
@@ -2497,13 +2396,10 @@ public class transactionInManagerImpl implements transactionInManager {
 			}
 			else {
 			    //log batch activity
-			    ua = new utUserActivity();
-			    ua.setUserId(0);
-			    ua.setFeatureId(0);
-			    ua.setAccessMethod("System");
-			    ua.setActivity("HL7toTxt successfully parsed the inbound file and generated file location/name: " + decodedFilePath + newfilename);
-			    ua.setBatchUploadId(batchId);
-			    usermanager.insertUserLog(ua);
+			    ba = new batchuploadactivity();
+			    ba.setActivity("HL7toTxt successfully parsed the inbound file and generated file location/name: " + decodedFilePath + newfilename);
+			    ba.setBatchUploadId(batchId);
+			    transactionInDAO.submitBatchActivityLog(ba);
 			}
 			
 			actualFileName = (decodedFilePath + newfilename);
@@ -2528,13 +2424,10 @@ public class transactionInManagerImpl implements transactionInManager {
 			if (newfilename.equals("ERRORERRORERROR")) {
 			    
 			    //log batch activity
-			    ua = new utUserActivity();
-			    ua.setUserId(0);
-			    ua.setFeatureId(0);
-			    ua.setAccessMethod("System");
-			    ua.setActivity("Error translating xlsx / xls file");
-			    ua.setBatchUploadId(batchId);
-			    usermanager.insertUserLog(ua);
+			    ba = new batchuploadactivity();
+			    ba.setActivity("Error translating xlsx / xls file");
+			    ba.setBatchUploadId(batchId);
+			    transactionInDAO.submitBatchActivityLog(ba);
 			    
 			    updateBatchStatus(batchId, 39, "endDateTime");
 			    insertProcessingError(5, null, batchId, null, null, null, null, false, false, "Error translating xlsx / xls file");
@@ -2543,13 +2436,10 @@ public class transactionInManagerImpl implements transactionInManager {
 			else if (newfilename.equals("FILE IS NOT excel ERROR")) {
 			    
 			    //log batch activity
-			    ua = new utUserActivity();
-			    ua.setUserId(0);
-			    ua.setFeatureId(0);
-			    ua.setAccessMethod("System");
-			    ua.setActivity("File content is not valid for expected file type.. Excel format is invalid.");
-			    ua.setBatchUploadId(batchId);
-			    usermanager.insertUserLog(ua);
+			    ba = new batchuploadactivity();
+			    ba.setActivity("File content is not valid for expected file type.. Excel format is invalid.");
+			    ba.setBatchUploadId(batchId);
+			    transactionInDAO.submitBatchActivityLog(ba);
 			    
 			    updateBatchStatus(batchId, 7, "endDateTime");
 			    insertProcessingError(22, null, batchId, null, null, null, null, false, false, "Excel format is invalid.");
@@ -2557,13 +2447,10 @@ public class transactionInManagerImpl implements transactionInManager {
 			}
 			else {
 			    //log batch activity
-			    ua = new utUserActivity();
-			    ua.setUserId(0);
-			    ua.setFeatureId(0);
-			    ua.setAccessMethod("System");
-			    ua.setActivity("Successfully parsed the inbound Excel file and generated file location/name: " + decodedFilePath + newfilename);
-			    ua.setBatchUploadId(batchId);
-			    usermanager.insertUserLog(ua);
+			    ba = new batchuploadactivity();
+			    ba.setActivity("Successfully parsed the inbound Excel file and generated file location/name: " + decodedFilePath + newfilename);
+			    ba.setBatchUploadId(batchId);
+			    transactionInDAO.submitBatchActivityLog(ba);
 			}
 			
 			actualFileName = (decodedFilePath + newfilename);
@@ -2585,13 +2472,10 @@ public class transactionInManagerImpl implements transactionInManager {
 			if (newfilename.equals("ERRORERRORERROR")) {
 			    
 			    //log batch activity
-			    ua = new utUserActivity();
-			    ua.setUserId(0);
-			    ua.setFeatureId(0);
-			    ua.setAccessMethod("System");
-			    ua.setActivity("Error at applying jar JSON parsing template");
-			    ua.setBatchUploadId(batchId);
-			    usermanager.insertUserLog(ua);
+			    ba = new batchuploadactivity();
+			    ba.setActivity("Error at applying jar JSON parsing template");
+			    ba.setBatchUploadId(batchId);
+			    transactionInDAO.submitBatchActivityLog(ba);
 			    
 			    updateBatchStatus(batchId, 39, "endDateTime");
 			    insertProcessingError(5, null, batchId, null, null, null, null, false, false, "Error at applying jar template");
@@ -2599,13 +2483,10 @@ public class transactionInManagerImpl implements transactionInManager {
 			else if (newfilename.equals("FILE IS NOT JSON ERROR")) {
 			    
 			    //log batch activity
-			    ua = new utUserActivity();
-			    ua.setUserId(0);
-			    ua.setFeatureId(0);
-			    ua.setAccessMethod("System");
-			    ua.setActivity("JSON format is invalid.");
-			    ua.setBatchUploadId(batchId);
-			    usermanager.insertUserLog(ua);
+			    ba = new batchuploadactivity();
+			    ba.setActivity("JSON format is invalid.");
+			    ba.setBatchUploadId(batchId);
+			    transactionInDAO.submitBatchActivityLog(ba);
 			    
 			    updateBatchStatus(batchId, 7, "endDateTime");
 			    insertProcessingError(22, null, batchId, null, null, null, null, false, false, "JSON format is invalid.");
@@ -2613,13 +2494,10 @@ public class transactionInManagerImpl implements transactionInManager {
 			}
 			else {
 			    //log batch activity
-			    ua = new utUserActivity();
-			    ua.setUserId(0);
-			    ua.setFeatureId(0);
-			    ua.setAccessMethod("System");
-			    ua.setActivity("Successfully parsed the inbound JSON file and generated file location/name: " + decodedFilePath + newfilename);
-			    ua.setBatchUploadId(batchId);
-			    usermanager.insertUserLog(ua);
+			    ba = new batchuploadactivity();
+			    ba.setActivity("Successfully parsed the inbound JSON file and generated file location/name: " + decodedFilePath + newfilename);
+			    ba.setBatchUploadId(batchId);
+			    transactionInDAO.submitBatchActivityLog(ba);
 			}
 
 			actualFileName = (decodedFilePath + newfilename);
@@ -2629,7 +2507,6 @@ public class transactionInManagerImpl implements transactionInManager {
 			if (tempLoadFile.exists()) {
 			    tempLoadFile.delete();
 			}
-			
 		    }
 
 		    //at this point, hl7 and hr are in unencoded plain text
@@ -2665,13 +2542,10 @@ public class transactionInManagerImpl implements transactionInManager {
 			if (numLoadTransactions < 1) {
 			   
 			    //log batch activity
-			    ua = new utUserActivity();
-			    ua.setUserId(0);
-			    ua.setFeatureId(0);
-			    ua.setAccessMethod("System");
-			    ua.setActivity("No records were found in table transactionInRecords_" + batchId);
-			    ua.setBatchUploadId(batchId);
-			    usermanager.insertUserLog(ua);
+			    ba = new batchuploadactivity();
+			    ba.setActivity("No records were found in table transactionInRecords_" + batchId);
+			    ba.setBatchUploadId(batchId);
+			    transactionInDAO.submitBatchActivityLog(ba);
 			    
 			    //entire batch failed, we reject entire batch
 			    updateBatchStatus(batchId, 39, "endDateTime");
@@ -2680,13 +2554,10 @@ public class transactionInManagerImpl implements transactionInManager {
 			}
 			else {
 			    //log batch activity
-			    ua = new utUserActivity();
-			    ua.setUserId(0);
-			    ua.setFeatureId(0);
-			    ua.setAccessMethod("System");
-			    ua.setActivity("Loaded " + numLoadTransactions + " records from file: " + batch.getOriginalFileName());
-			    ua.setBatchUploadId(batchId);
-			    usermanager.insertUserLog(ua);
+			    ba = new batchuploadactivity();
+			    ba.setActivity("Loaded " + numLoadTransactions + " records from file: " + batch.getOriginalFileName());
+			    ba.setBatchUploadId(batchId);
+			    transactionInDAO.submitBatchActivityLog(ba);
 			}
 
 			File actualFile = new File(actualFileName);
@@ -2734,13 +2605,10 @@ public class transactionInManagerImpl implements transactionInManager {
 			    }
 			    else {
 				//log batch activity
-				ua = new utUserActivity();
-				ua.setUserId(0);
-				ua.setFeatureId(0);
-				ua.setAccessMethod("System");
-				ua.setActivity("No valid configurations were found for loading batch.");
-				ua.setBatchUploadId(batchId);
-				usermanager.insertUserLog(ua);
+				ba = new batchuploadactivity();
+				ba.setActivity("No valid configurations were found for loading batch.");
+				ba.setBatchUploadId(batchId);
+				transactionInDAO.submitBatchActivityLog(ba);
 				
 				insertProcessingError(6, null, batchId, null, null, null, null, false, false, "No valid configurations were found for loading batch.");
 				updateBatchStatus(batchId, 7, "endDateTime");
@@ -2748,13 +2616,10 @@ public class transactionInManagerImpl implements transactionInManager {
 			}
 			else {
 			   //log batch activity
-			   ua = new utUserActivity();
-			   ua.setUserId(0);
-			   ua.setFeatureId(0);
-			   ua.setAccessMethod("System");
-			   ua.setActivity("No valid configurations were found for loading batch.");
-			   ua.setBatchUploadId(batchId);
-			   usermanager.insertUserLog(ua);
+			   ba = new batchuploadactivity();
+			   ba.setActivity("No valid configurations were found for loading batch.");
+			   ba.setBatchUploadId(batchId);
+			   transactionInDAO.submitBatchActivityLog(ba);
 
 			   insertProcessingError(6, null, batchId, null, null, null, null, false, false, "No valid configurations were found for loading batch."); 
 			   updateBatchStatus(batchId, 7, "endDateTime");
@@ -2762,13 +2627,10 @@ public class transactionInManagerImpl implements transactionInManager {
 			
 			if(foundConfigId == 0) {
 			   //log batch activity
-			   ua = new utUserActivity();
-			   ua.setUserId(0);
-			   ua.setFeatureId(0);
-			   ua.setAccessMethod("System");
-			   ua.setActivity("No valid configurations were found for loading batch.");
-			   ua.setBatchUploadId(batchId);
-			   usermanager.insertUserLog(ua);
+			   ba = new batchuploadactivity();
+			   ba.setActivity("No valid configurations were found for loading batch.");
+			   ba.setBatchUploadId(batchId);
+			   transactionInDAO.submitBatchActivityLog(ba);
 			   
 			   insertProcessingError(6, null, batchId, null, null, null, null, false, false, "No valid configurations were found for loading batch."); 
 			   updateBatchStatus(batchId, 7, "endDateTime");
@@ -2810,13 +2672,10 @@ public class transactionInManagerImpl implements transactionInManager {
 					sysErrors = sysErrors + crosswalkError;
 					
 					//log batch activity
-					ua = new utUserActivity();
-					ua.setUserId(0);
-					ua.setFeatureId(0);
-					ua.setAccessMethod("System");
-					ua.setActivity("Crosswalk Error. CWId:" + cdt.getCrosswalkId() + " for configId:" + configId);
-					ua.setBatchUploadId(batchId);
-					usermanager.insertUserLog(ua);
+					ba = new batchuploadactivity();
+					ba.setActivity("Crosswalk Error. CWId:" + cdt.getCrosswalkId() + " for configId:" + configId);
+					ba.setBatchUploadId(batchId);
+					transactionInDAO.submitBatchActivityLog(ba);
 				    }
 				} else if (cdt.getMacroId() != 0) {
 				    macroError = processMacro(configId, batchId, cdt, false);
@@ -2825,13 +2684,10 @@ public class transactionInManagerImpl implements transactionInManager {
 					sysErrors = sysErrors + macroError;
 					
 					//log batch activity
-					ua = new utUserActivity();
-					ua.setUserId(0);
-					ua.setFeatureId(0);
-					ua.setAccessMethod("System");
-					ua.setActivity("Macro Error. macroId:" + cdt.getMacroId() + " for configId:" + configId);
-					ua.setBatchUploadId(batchId);
-					usermanager.insertUserLog(ua);
+					ba = new batchuploadactivity();
+					ba.setActivity("Macro Error. macroId:" + cdt.getMacroId() + " for configId:" + configId);
+					ba.setBatchUploadId(batchId);
+					transactionInDAO.submitBatchActivityLog(ba);
 				    }
 				}
 			    }
@@ -2857,13 +2713,10 @@ public class transactionInManagerImpl implements transactionInManager {
 		    insertProcessingError(7, null, batchId, null, null, null, null, false, false, "No valid transactions were found for batch.");
 		    
 		    //log batch activity
-		    ua = new utUserActivity();
-		    ua.setUserId(0);
-		    ua.setFeatureId(0);
-		    ua.setAccessMethod("System");
-		    ua.setActivity("No valid configurations were found for batch.");
-		    ua.setBatchUploadId(batchId);
-		    usermanager.insertUserLog(ua);
+		    ba = new batchuploadactivity();
+		    ba.setActivity("No valid configurations were found for batch.");
+		    ba.setBatchUploadId(batchId);
+		    transactionInDAO.submitBatchActivityLog(ba);
 		} 
 		else if (batchHandling.size() != 1) {
 		    //TODO email admin to fix problem
@@ -2874,13 +2727,10 @@ public class transactionInManagerImpl implements transactionInManager {
 		    updateBatchStatus(batchId, 39, "endDateTime");
 		    
 		    //log batch activity
-		    ua = new utUserActivity();
-		    ua.setUserId(0);
-		    ua.setFeatureId(0);
-		    ua.setAccessMethod("System");
-		    ua.setActivity("Multiple or no file handling found, please check auto-release and error handling configurations");
-		    ua.setBatchUploadId(batchId);
-		    usermanager.insertUserLog(ua);
+		    ba = new batchuploadactivity();
+		    ba.setActivity("Multiple or no file handling found, please check auto-release and error handling configurations");
+		    ba.setBatchUploadId(batchId);
+		    transactionInDAO.submitBatchActivityLog(ba);
 		}
 		
 		if (batchHandling.size() == 1) {
@@ -2903,13 +2753,10 @@ public class transactionInManagerImpl implements transactionInManager {
 		batchStatusId = 39;
 		
 		//log batch activity
-		utUserActivity ua = new utUserActivity();
-		ua.setUserId(0);
-		ua.setFeatureId(0);
-		ua.setAccessMethod("System");
-		ua.setActivity("loadBatch method error " + ex.getMessage());
-		ua.setBatchUploadId(batchId);
-		usermanager.insertUserLog(ua);
+		batchuploadactivity ba = new batchuploadactivity();
+		ba.setActivity("loadBatch method error " + ex.getMessage());
+		ba.setBatchUploadId(batchId);
+		transactionInDAO.submitBatchActivityLog(ba);
 	   }
 
 	    try {
@@ -2919,13 +2766,10 @@ public class transactionInManagerImpl implements transactionInManager {
 		updateRecordCounts(batchId, errorStatusIds, false, "errorRecordCount");
 		
 		//log batch activity
-		utUserActivity ua = new utUserActivity();
-		ua.setUserId(0);
-		ua.setFeatureId(0);
-		ua.setAccessMethod("System");
-		ua.setActivity("Uploaded batchId:"+batchId+" status was set to " + batchStatusId);
-		ua.setBatchUploadId(batchId);
-		usermanager.insertUserLog(ua);
+		batchuploadactivity ba = new batchuploadactivity();
+		ba.setActivity("Uploaded batchId:"+batchId+" status was set to " + batchStatusId);
+		ba.setBatchUploadId(batchId);
+		transactionInDAO.submitBatchActivityLog(ba);
 		
 	    } catch (Exception ex1) {
 		Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, null, ("loadBatch error at updating batch status - " + ex1));
@@ -2980,13 +2824,10 @@ public class transactionInManagerImpl implements transactionInManager {
 			    //having log in new table and checking userActivity as if it is reset manually by user and gets stuck again it wont' retry and we want it to retry at least once each time it is reset
 			    try {
 				//log user activity
-				utUserActivity ua = new utUserActivity();
-				ua.setUserId(0);
-				ua.setFeatureId(0);
-				ua.setAccessMethod("System");
-				ua.setActivity("System Set Batch (id: " + stuckBatchDetails.getId() + ") To Retry - Processing");
-				ua.setBatchUploadId(stuckBatchDetails.getId());
-				usermanager.insertUserLog(ua);
+				batchuploadactivity ba = new batchuploadactivity();
+				ba.setActivity("System Set Batch (id: " + stuckBatchDetails.getId() + ") To Retry - Processing");
+				ba.setBatchUploadId(stuckBatchDetails.getId());
+				transactionInDAO.submitBatchActivityLog(ba);
 			    } catch (Exception ex) {
 				ex.printStackTrace();
 				System.err.println("System Set Batch (id: " + stuckBatchDetails.getId() + ") To Retry insert user log error " + ex.toString());
@@ -2994,13 +2835,10 @@ public class transactionInManagerImpl implements transactionInManager {
 			} else {
 			    try {
 				//log user activity
-				utUserActivity ua = new utUserActivity();
-				ua.setUserId(0);
-				ua.setFeatureId(0);
-				ua.setAccessMethod("System");
-				ua.setActivity("System Set Batch (id: " + stuckBatchDetails.getId() + ") to Status 58 - Processing");
-				ua.setBatchUploadId(stuckBatchDetails.getId());
-				usermanager.insertUserLog(ua);
+				batchuploadactivity ba = new batchuploadactivity();
+				ba.setActivity("System Set Batch (id: " + stuckBatchDetails.getId() + ") to Status 58 - Processing");
+				ba.setBatchUploadId(stuckBatchDetails.getId());
+				transactionInDAO.submitBatchActivityLog(ba);
 			    } catch (Exception ex) {
 				ex.printStackTrace();
 				System.err.println("System Set Batch (id: " + stuckBatchDetails.getId() + ") To Retry insert user log error " + ex.toString());
@@ -3109,14 +2947,12 @@ public class transactionInManagerImpl implements transactionInManager {
 
 	    //insert log
 	    try {
-		//log user activity
-		utUserActivity ua = new utUserActivity();
-		ua.setUserId(0);
-		ua.setFeatureId(0);
-		ua.setAccessMethod("System");
-		ua.setActivity("Scheduled job processBatch was called to load the contents for this batch.");
-		ua.setBatchUploadId(batchUploadId);
-		usermanager.insertUserLog(ua);
+		
+		//log batch activity
+		batchuploadactivity ba = new batchuploadactivity();
+		ba.setActivity("Scheduled job processBatch was called to load the contents for this batch.");
+		ba.setBatchUploadId(batchUploadId);
+		transactionInDAO.submitBatchActivityLog(ba);
 	    } catch (Exception ex) {
 		ex.printStackTrace();
 		System.err.println("transactionId - insert user log error for batch " + batchUploadId + " " + ex.toString());
@@ -3125,26 +2961,21 @@ public class transactionInManagerImpl implements transactionInManager {
 	    // set batch to SBP - 4*
 	    updateBatchStatus(batchUploadId, 4, "startDateTime");
 	    
-	    //log user activity
-	    utUserActivity ua = new utUserActivity();
-	    ua.setUserId(0);
-	    ua.setFeatureId(0);
-	    ua.setAccessMethod("System");
-	    ua.setActivity("Uploaded batchId:" + batchUploadId + " status was set to 4");
-	    ua.setBatchUploadId(batchUploadId);
-	    usermanager.insertUserLog(ua);
+	    //log batch activity
+	    batchuploadactivity ba = new batchuploadactivity();
+	    ba.setActivity("Uploaded batchId:" + batchUploadId + " status was set to 4");
+	    ba.setBatchUploadId(batchUploadId);
+	    transactionInDAO.submitBatchActivityLog(ba);
 
 	    //clear transactionInError table for batch, if do not clear errors is true, we skip this.
 	    if (!doNotClearErrors) {
 		cleanAuditErrorTable(batchUploadId);
 		
-		//log user activity
-		ua.setUserId(0);
-		ua.setFeatureId(0);
-		ua.setAccessMethod("System");
-		ua.setActivity("Cleared the audit tables for batchId:" + batchUploadId);
-		ua.setBatchUploadId(batchUploadId);
-		usermanager.insertUserLog(ua);
+		//log batch activity
+		ba = new batchuploadactivity();
+		ba.setActivity("Cleared the audit tables for batchId:" + batchUploadId);
+		ba.setBatchUploadId(batchUploadId);
+		transactionInDAO.submitBatchActivityLog(ba);
 	    }
 
 	    //we need to run all checks before insert regardless 
@@ -3170,13 +3001,10 @@ public class transactionInManagerImpl implements transactionInManager {
 				systemErrorCount++;
 
 				//log batch activity
-				ua = new utUserActivity();
-				ua.setUserId(0);
-				ua.setFeatureId(0);
-				ua.setAccessMethod("System");
-				ua.setActivity("Crosswalk Error. CWId:" + cdt.getCrosswalkId() + " for configId:" + batch.getConfigId());
-				ua.setBatchUploadId(batchUploadId);
-				usermanager.insertUserLog(ua);
+				ba = new batchuploadactivity();
+				ba.setActivity("Crosswalk Error. CWId:" + cdt.getCrosswalkId() + " for configId:" + batch.getConfigId());
+				ba.setBatchUploadId(batchUploadId);
+				transactionInDAO.submitBatchActivityLog(ba);
 			    }
 			} 
 			else if (cdt.getMacroId() != 0) {
@@ -3186,13 +3014,10 @@ public class transactionInManagerImpl implements transactionInManager {
 				systemErrorCount++;
 
 				//log batch activity
-				ua = new utUserActivity();
-				ua.setUserId(0);
-				ua.setFeatureId(0);
-				ua.setAccessMethod("System");
-				ua.setActivity("Macro Error. macroId:" + cdt.getMacroId() + " for configId:" + batch.getConfigId());
-				ua.setBatchUploadId(batchUploadId);
-				usermanager.insertUserLog(ua);
+				ba = new batchuploadactivity();
+				ba.setActivity("Macro Error. macroId:" + cdt.getMacroId() + " for configId:" + batch.getConfigId());
+				ba.setBatchUploadId(batchUploadId);
+				transactionInDAO.submitBatchActivityLog(ba);
 			    }
 			}
 		    }
@@ -3213,13 +3038,10 @@ public class transactionInManagerImpl implements transactionInManager {
 			    systemErrorCount++;
 
 			    //log batch activity
-			    ua = new utUserActivity();
-			    ua.setUserId(0);
-			    ua.setFeatureId(0);
-			    ua.setAccessMethod("System");
-			    ua.setActivity("Required Field Error. Field No:" + cff.getFieldNo() + " Field Desc:" + cff.getFieldDesc() + " for configId:" + batch.getConfigId());
-			    ua.setBatchUploadId(batchUploadId);
-			    usermanager.insertUserLog(ua);
+			    ba = new batchuploadactivity();
+			    ba.setActivity("Required Field Error. Field No:" + cff.getFieldNo() + " Field Desc:" + cff.getFieldDesc() + " for configId:" + batch.getConfigId());
+			    ba.setBatchUploadId(batchUploadId);
+			    transactionInDAO.submitBatchActivityLog(ba);
 			}
 		    }
 		}
@@ -3234,13 +3056,10 @@ public class transactionInManagerImpl implements transactionInManager {
 		systemErrorCount = systemErrorCount + validationErrors;
 		
 		//log batch activity
-		ua = new utUserActivity();
-		ua.setUserId(0);
-		ua.setFeatureId(0);
-		ua.setAccessMethod("System");
-		ua.setActivity("One or more validation errors occurred.");
-		ua.setBatchUploadId(batchUploadId);
-		usermanager.insertUserLog(ua);
+		ba = new batchuploadactivity();
+		ba.setActivity("One or more validation errors occurred.");
+		ba.setBatchUploadId(batchUploadId);
+		transactionInDAO.submitBatchActivityLog(ba);
 	    }
 
 	    // update status of the failed records to ERR - 14
@@ -3257,13 +3076,10 @@ public class transactionInManagerImpl implements transactionInManager {
 		
 		if (batchTargetList.isEmpty()) {
 		    //log batch activity
-		    ua = new utUserActivity();
-		    ua.setUserId(0);
-		    ua.setFeatureId(0);
-		    ua.setAccessMethod("System");
-		    ua.setActivity("No valid connections were found for loading batch.");
-		    ua.setBatchUploadId(batchUploadId);
-		    usermanager.insertUserLog(ua);
+		    ba = new batchuploadactivity();
+		    ba.setActivity("No valid connections were found for loading batch.");
+		    ba.setBatchUploadId(batchUploadId);
+		    transactionInDAO.submitBatchActivityLog(ba);
 
 		    insertProcessingError(10, null, batchUploadId, null, null, null, null, false, false, "No valid connections were found for loading batch.");
 		    updateRecordCounts(batchUploadId, new ArrayList<>(), false, "errorRecordCount");
@@ -3301,13 +3117,10 @@ public class transactionInManagerImpl implements transactionInManager {
 			
 			if(postMacroError > 0) {
 			    //log batch activity
-			    ua = new utUserActivity();
-			    ua.setUserId(0);
-			    ua.setFeatureId(0);
-			    ua.setAccessMethod("System");
-			    ua.setActivity("Post macro processing error. macroId:" + cdt.getMacroId()+ " for configId:"+batch.getConfigId());
-			    ua.setBatchUploadId(batchUploadId);
-			    usermanager.insertUserLog(ua);
+			    ba = new batchuploadactivity();
+			    ba.setActivity("Post macro processing error. macroId:" + cdt.getMacroId()+ " for configId:"+batch.getConfigId());
+			    ba.setBatchUploadId(batchUploadId);
+			    transactionInDAO.submitBatchActivityLog(ba);
 			    
 			    systemErrorCount = systemErrorCount + postMacroError;
 			}
@@ -3327,13 +3140,10 @@ public class transactionInManagerImpl implements transactionInManager {
 		populateAuditReport(batch.getId(), configurationManager.getMessageSpecs(batch.getConfigId()));
 		
 		//log batch activity
-		ua = new utUserActivity();
-		ua.setUserId(0);
-		ua.setFeatureId(0);
-		ua.setAccessMethod("System");
-		ua.setActivity("Populated the batch audit report table of any errors found for batchId:" + batchUploadId);
-		ua.setBatchUploadId(batchUploadId);
-		usermanager.insertUserLog(ua);
+		ba = new batchuploadactivity();
+		ba.setActivity("Populated the batch audit report table of any errors found for batchId:" + batchUploadId);
+		ba.setBatchUploadId(batchUploadId);
+		transactionInDAO.submitBatchActivityLog(ba);
 		
 		return false;
 	    }
@@ -3377,13 +3187,10 @@ public class transactionInManagerImpl implements transactionInManager {
 	    updateBatchStatus(batchUploadId, batchStatusId, "endDateTime");
 	    
 	    //log batch activity
-	    ua = new utUserActivity();
-	    ua.setUserId(0);
-	    ua.setFeatureId(0);
-	    ua.setAccessMethod("System");
-	    ua.setActivity("Uploaded batchId:" + batchUploadId + " status was set to " + batchStatusId);
-	    ua.setBatchUploadId(batchUploadId);
-	    usermanager.insertUserLog(ua);
+	    ba = new batchuploadactivity();
+	    ba.setActivity("Uploaded batchId:" + batchUploadId + " status was set to " + batchStatusId);
+	    ba.setBatchUploadId(batchUploadId);
+	    transactionInDAO.submitBatchActivityLog(ba);
 
 	    //we finish processing, we need to alert admin if there are any records there are rejected
 	    //we check batch to see if the batch has any rejected records. if it does, we send an email to notify reject.email in properties file
@@ -3425,36 +3232,27 @@ public class transactionInManagerImpl implements transactionInManager {
 	cleanAuditErrorTable(batch.getId());
 	
 	//log batch activity
-	utUserActivity ua = new utUserActivity();
-	ua.setUserId(0);
-	ua.setFeatureId(0);
-	ua.setAccessMethod("System");
-	ua.setActivity("Clean Audit Error table for batchId:" + batchUploadId);
-	ua.setBatchUploadId(batchUploadId);
-	usermanager.insertUserLog(ua);
+	batchuploadactivity ba = new batchuploadactivity();
+	ba.setActivity("Clean Audit Error table for batchId:" + batchUploadId);
+	ba.setBatchUploadId(batchUploadId);
+	transactionInDAO.submitBatchActivityLog(ba);
 
 	//populate
 	populateAuditReport(batch.getId(), configurationManager.getMessageSpecs(batch.getConfigId()));
 	
 	//log batch activity
-	ua = new utUserActivity();
-	ua.setUserId(0);
-	ua.setFeatureId(0);
-	ua.setAccessMethod("System");
-	ua.setActivity("Populate Audit Error table for batchId:" + batchUploadId);
-	ua.setBatchUploadId(batchUploadId);
-	usermanager.insertUserLog(ua);
+	ba = new batchuploadactivity();
+	ba.setActivity("Populate Audit Error table for batchId:" + batchUploadId);
+	ba.setBatchUploadId(batchUploadId);
+	transactionInDAO.submitBatchActivityLog(ba);
 	
 	//If not targets were found
 	if(targetsInserted && !noTargetsFound) {
 	    //log batch activity
-	    ua = new utUserActivity();
-	    ua.setUserId(0);
-	    ua.setFeatureId(0);
-	    ua.setAccessMethod("System");
-	    ua.setActivity("No valid connections were found for loading batch.");
-	    ua.setBatchUploadId(batchUploadId);
-	    usermanager.insertUserLog(ua);
+	    ba = new batchuploadactivity();
+	    ba.setActivity("No valid connections were found for loading batch.");
+	    ba.setBatchUploadId(batchUploadId);
+	    transactionInDAO.submitBatchActivityLog(ba);
 	    
 	    insertProcessingError(10, null, batchUploadId, null, null, null, null, false, false, "No valid connections were found for loading batch.");
 	    updateRecordCounts(batchUploadId, new ArrayList<Integer>(), false, "errorRecordCount");
@@ -3476,13 +3274,10 @@ public class transactionInManagerImpl implements transactionInManager {
 
 	    if (fileToDelete.exists()) {
 		//log batch activity
-		ua = new utUserActivity();
-		ua.setUserId(0);
-		ua.setFeatureId(0);
-		ua.setAccessMethod("System");
-		ua.setActivity("Deleted file: " + fileToDelete.getAbsolutePath());
-		ua.setBatchUploadId(batchUploadId);
-		usermanager.insertUserLog(ua);
+		ba = new batchuploadactivity();
+		ba.setActivity("Deleted file: " + fileToDelete.getAbsolutePath());
+		ba.setBatchUploadId(batchUploadId);
+		transactionInDAO.submitBatchActivityLog(ba);
 		
 		fileToDelete.delete();
 	    }
@@ -3492,13 +3287,10 @@ public class transactionInManagerImpl implements transactionInManager {
 
 	    if (fileToDelete.exists()) {
 		//log batch activity
-		ua = new utUserActivity();
-		ua.setUserId(0);
-		ua.setFeatureId(0);
-		ua.setAccessMethod("System");
-		ua.setActivity("Deleted file: " + fileToDelete.getAbsolutePath());
-		ua.setBatchUploadId(batchUploadId);
-		usermanager.insertUserLog(ua);
+		ba = new batchuploadactivity();
+		ba.setActivity("Deleted file: " + fileToDelete.getAbsolutePath());
+		ba.setBatchUploadId(batchUploadId);
+		transactionInDAO.submitBatchActivityLog(ba);
 		
 		fileToDelete.delete();
 	    }
@@ -3899,14 +3691,11 @@ public class transactionInManagerImpl implements transactionInManager {
 
 	    //insert log
 	    try {
-		//log user activity
-		utUserActivity ua = new utUserActivity();
-		ua.setUserId(0);
-		ua.setFeatureId(0);
-		ua.setAccessMethod("System");
-		ua.setActivity("System Processed Rest API Message " + APIMessage.getId());
-		ua.setBatchUploadId(batchInfo.getId());
-		usermanager.insertUserLog(ua);
+		//log batch activity
+		batchuploadactivity ba = new batchuploadactivity();
+		ba.setActivity("System Processed Rest API Message " + APIMessage.getId());
+		ba.setBatchUploadId(batchInfo.getId());
+		transactionInDAO.submitBatchActivityLog(ba);
 
 	    } catch (Exception ex) {
 		ex.printStackTrace();
@@ -4529,14 +4318,11 @@ public class transactionInManagerImpl implements transactionInManager {
 
 	    //insert log
 	    try {
-		//log user activity
-		utUserActivity ua = new utUserActivity();
-		ua.setUserId(0);
-		ua.setFeatureId(0);
-		ua.setAccessMethod("System");
-		ua.setActivity("System Processed Direct API Message " + directMessage.getId());
-		ua.setBatchUploadId(batchInfo.getId());
-		usermanager.insertUserLog(ua);
+		batchuploadactivity ba = new batchuploadactivity();
+		ba.setActivity("System Processed Direct API Message " + directMessage.getId());
+		ba.setBatchUploadId(batchInfo.getId());
+		transactionInDAO.submitBatchActivityLog(ba);
+		
 
 	    } catch (Exception ex) {
 		ex.printStackTrace();

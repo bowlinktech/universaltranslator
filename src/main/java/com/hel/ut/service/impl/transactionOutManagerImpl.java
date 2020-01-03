@@ -15,10 +15,10 @@ import com.hel.ut.model.HL7Elements;
 import com.hel.ut.model.HL7Segments;
 import com.hel.ut.model.Organization;
 import com.hel.ut.model.Transaction;
-import com.hel.ut.model.utUserActivity;
 import com.hel.ut.model.batchDLRetry;
 import com.hel.ut.model.batchDownloads;
 import com.hel.ut.model.batchUploads;
+import com.hel.ut.model.batchdownloadactivity;
 import com.hel.ut.model.utConfiguration;
 import com.hel.ut.model.configurationCCDElements;
 import com.hel.ut.model.configurationConnection;
@@ -221,6 +221,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
      * @param transactionTargetId The id of the target transaction to be translated
      * @param batchId The id of the batch the target transaction belongs to
      * @param configId The id of the target utConfiguration.
+     * @param categoryId
      *
      * @return This function will return either TRUE (If translation completed with no errors) OR FALSE (If translation failed for any reason)
      */
@@ -229,12 +230,12 @@ public class transactionOutManagerImpl implements transactionOutManager {
 
 	Integer errorCount = 0;
 
-	/* Need to get the configured data translations */
+	// Need to get the configured data translations
 	List<configurationDataTranslations> dataTranslations = configurationManager.getDataTranslationsWithFieldNo(configId, categoryId);
 
 	for (configurationDataTranslations cdt : dataTranslations) {
             
-	    if (cdt.getCrosswalkId() != 0) {
+	    if (cdt.getCrosswalkId() > 0) {
 		try {
 		    errorCount = errorCount + transactionInManager.processCrosswalk(configId, batchId, cdt, true);
 		    if (errorCount > 0) { //we break as we shouldn't waste time running all for outbound. Should not have any errors.
@@ -1241,28 +1242,23 @@ public class transactionOutManagerImpl implements transactionOutManager {
 			
 			//having log in new table and checking userActivity as if it is reset manually by user and gets stuck again it wont' retry and we want it to retry at least once each time it is reset
 			try {
-			    //log user activity
-			    utUserActivity ua = new utUserActivity();
-			    ua.setUserId(0);
-			    ua.setFeatureId(0);
-			    ua.setAccessMethod("System");
-			    ua.setActivity("System Set DL Batch (Id: " + stuckBatchDetails.getId() + ") To Retry - Processing");
-			    ua.setBatchDownloadId(stuckBatchDetails.getId());
-			    usermanager.insertUserLog(ua);
+			    //log batch activity
+			    batchdownloadactivity ba = new batchdownloadactivity();
+			    ba.setActivity("System Set DL Batch (Id: " + stuckBatchDetails.getId() + ") To Retry - Processing");
+			    ba.setBatchDownloadId(stuckBatchDetails.getId());
+			    transactionOutDAO.submitBatchActivityLog(ba);
+			    
 			} catch (Exception ex) {
 			    ex.printStackTrace();
 			    System.err.println("Set DL Batch (Id: " + stuckBatchDetails.getId() + ") - insert user log " + ex.toString());
 			}
 		    } else {
 			try {
-			    //log user activity
-			    utUserActivity ua = new utUserActivity();
-			    ua.setUserId(0);
-			    ua.setFeatureId(0);
-			    ua.setAccessMethod("System");
-			    ua.setActivity("System Set Batch (Id: " + stuckBatchDetails.getId() + ") to Status 58 - Processing");
-			    ua.setBatchDownloadId(stuckBatchDetails.getId());
-			    usermanager.insertUserLog(ua);
+			    //log batch activity
+			    batchdownloadactivity ba = new batchdownloadactivity();
+			    ba.setActivity("System Set Batch (Id: " + stuckBatchDetails.getId() + ") to Status 58 - Processing");
+			    ba.setBatchDownloadId(stuckBatchDetails.getId());
+			    transactionOutDAO.submitBatchActivityLog(ba);
 			} catch (Exception ex) {
 			    ex.printStackTrace();
 			    System.err.println("Set DL Batch (Id: " + stuckBatchDetails.getId() + ") - insert user log " + ex.toString());
@@ -1321,15 +1317,14 @@ public class transactionOutManagerImpl implements transactionOutManager {
     @Override
     public Integer processMassOutputBatch(batchDownloads batchDownload) throws Exception {
 	
+	batchdownloadactivity ba = new batchdownloadactivity();
+	
 	try {
-	    //log user activity
-	    utUserActivity ua = new utUserActivity();
-	    ua.setUserId(0);
-	    ua.setFeatureId(0);
-	    ua.setAccessMethod("System");
-	    ua.setActivity("processMassOutputBatch for batch (Id: " + batchDownload.getId() + ")");
-	    ua.setBatchDownloadId(batchDownload.getId());
-	    usermanager.insertUserLog(ua);
+	    ba = new batchdownloadactivity();
+	    ba.setActivity("processMassOutputBatch for batch (Id: " + batchDownload.getId() + ")");
+	    ba.setBatchDownloadId(batchDownload.getId());
+	    transactionOutDAO.submitBatchActivityLog(ba);
+	    
 	} catch (Exception ex) {
 	    ex.printStackTrace();
 	    System.err.println("batchDownload - insert user log for batch (Id: " + batchDownload.getId() + ") " + ex.toString());
@@ -1352,12 +1347,27 @@ public class transactionOutManagerImpl implements transactionOutManager {
 
 	//Create target tables
 	transactionOutDAO.createTargetBatchTables(batchDownload.getId(), batchDownload.getConfigId());
+	
+	ba = new batchdownloadactivity();
+	ba.setActivity("All target tables were created for batchId: " + batchDownload.getId());
+	ba.setBatchDownloadId(batchDownload.getId());
+	transactionOutDAO.submitBatchActivityLog(ba);
 
 	//Load target tables
 	transactionOutDAO.loadTargetBatchTables(batchDownload.getId(), batchDownload.getBatchUploadId(), batchDownload.getConfigId(), batchUploadDetails.getConfigId());
+	
+	ba = new batchdownloadactivity();
+	ba.setActivity("All target tables were loaded for batchId: " + batchDownload.getId());
+	ba.setBatchDownloadId(batchDownload.getId());
+	transactionOutDAO.submitBatchActivityLog(ba);
 
 	//Delete all batch upload tables
 	transactionOutDAO.deleteBatchUploadTables(batchDownload.getBatchUploadId());
+	
+	ba = new batchdownloadactivity();
+	ba.setActivity("All batch upload tables  were deleted for upload batchId: " + batchDownload.getBatchUploadId());
+	ba.setBatchDownloadId(batchDownload.getId());
+	transactionOutDAO.submitBatchActivityLog(ba);
 
 	clearDownloadBatch(batchDownload.getId());
 
@@ -1372,6 +1382,12 @@ public class transactionOutManagerImpl implements transactionOutManager {
 	Integer processingError = translateTargetRecords(0, batchDownload.getConfigId(), batchDownload.getId(), 1);
         
 	if (processingError > 0) {
+	    
+	    ba = new batchdownloadactivity();
+	    ba.setActivity("Error(s) occurred while translating target records");
+	    ba.setBatchDownloadId(batchDownload.getId());
+	    transactionOutDAO.submitBatchActivityLog(ba);
+	    
 	    //we stop processing and retry the file as output shouldn't have errors
 	    updateTargetBatchStatus(batchDownload.getId(), 30, "endDateTime");
 	    return 1;
@@ -1382,22 +1398,42 @@ public class transactionOutManagerImpl implements transactionOutManager {
 	//check R/O
 	List<configurationFormFields> reqFields = transactionInManager.getRequiredFieldsForConfig(batchDownload.getConfigId());
 
+	Integer missingReqFields = 0;
 	for (configurationFormFields cff : reqFields) {
-	    totalErrorCount += 1;
-	    insertFailedRequiredFields(cff, batchDownload.getId());
+	    missingReqFields = insertFailedRequiredFields(cff, batchDownload.getId());
+	    
+	    if(missingReqFields > 0) {
+		ba = new batchdownloadactivity();
+		ba.setActivity("The required field " + cff.getFieldDesc() + " for configId:"+cff.getconfigId() + " is required but did not have a value.");
+		ba.setBatchDownloadId(batchDownload.getId());
+		transactionOutDAO.submitBatchActivityLog(ba);
+		
+		totalErrorCount++;
+	    }
 	}
 	
 	//run validation
 	runValidations(batchDownload.getId(), batchDownload.getConfigId());
 	
-	totalErrorCount = transactionInManager.getRecordCounts(batchDownload.getId(), transRELId, true, false);
+	totalErrorCount = totalErrorCount + transactionInManager.getRecordCounts(batchDownload.getId(), transRELId, true, false);
 	
-	 boolean inserteReferralMessage = true;
+	boolean inserteReferralMessage = true;
 	
 	if (totalErrorCount > 0 && sourceConfigTransportDetails.geterrorHandling() == 3) {
+	    
+	    ba = new batchdownloadactivity();
+	    ba.setActivity("Target batch batchId:"+batchDownload.getId()+" was rejected due to finding an error and the source config error handling set to reject entire file on single error.");
+	    ba.setBatchDownloadId(batchDownload.getId());
+	    transactionOutDAO.submitBatchActivityLog(ba);
+	    
 	    updateTargetBatchStatus(batchDownload.getId(), 41, "endDateTime");
 	    
 	    populateOutboundAuditReport(batchDownload.getConfigId(),batchDownload.getId(), batchDownload.getBatchUploadId(),batchUploadDetails.getConfigId());
+	    
+	    ba = new batchdownloadactivity();
+	    ba.setActivity("Populate outbound Audit Report for batchId:"+batchDownload.getId());
+	    ba.setBatchDownloadId(batchDownload.getId());
+	    transactionOutDAO.submitBatchActivityLog(ba);
 	    
 	    //we need to update our totals
 	    transactionInManager.updateRecordCounts(batchDownload.getId(), rejectIds, true, "totalErrorCount");
@@ -1409,6 +1445,11 @@ public class transactionOutManagerImpl implements transactionOutManager {
 		
 		//Update inbound status
 		transactionInManager.updateBatchStatus(batchDownload.getBatchUploadId(), 41, "endDateTime");
+		
+		ba = new batchdownloadactivity();
+		ba.setActivity("Populate inbound batch Audit Report and error count for batchId:"+batchDownload.getBatchUploadId()+" and reject inbound batch.");
+		ba.setBatchDownloadId(batchDownload.getId());
+		transactionOutDAO.submitBatchActivityLog(ba);
 	    }
 	    
 	    return 1;
@@ -1418,6 +1459,11 @@ public class transactionOutManagerImpl implements transactionOutManager {
 	    if(totalErrorCount > 0) {
 		populateOutboundAuditReport(batchDownload.getConfigId(),batchDownload.getId(), batchDownload.getBatchUploadId(),batchUploadDetails.getConfigId());
 		
+		ba = new batchdownloadactivity();
+		ba.setActivity("Populate outbound Audit Report for batchId:"+batchDownload.getId());
+		ba.setBatchDownloadId(batchDownload.getId());
+		transactionOutDAO.submitBatchActivityLog(ba);
+		
 		//we need to update our totals
 		transactionInManager.updateRecordCounts(batchDownload.getId(), rejectIds, true, "totalErrorCount");
 		transactionInManager.updateRecordCounts(batchDownload.getId(), new ArrayList<>(), true, "totalRecordCount");
@@ -1425,6 +1471,11 @@ public class transactionOutManagerImpl implements transactionOutManager {
 		if(transportDetails.isPopulateInboundAuditReport()) {
 		    //Update inbound file for total errors
 		    transactionInManager.updateRecordCounts(batchDownload.getBatchUploadId(), rejectIds, true, "errorRecordCount");
+		    
+		    ba = new batchdownloadactivity();
+		    ba.setActivity("Populate inbound batch Audit Report and error count for batchId:"+batchDownload.getBatchUploadId());
+		    ba.setBatchDownloadId(batchDownload.getId());
+		    transactionOutDAO.submitBatchActivityLog(ba);
 		}
 	    }
 	    
@@ -1567,9 +1618,19 @@ public class transactionOutManagerImpl implements transactionOutManager {
 		    }
 
 		    Files.write(newFilePath, contentToUpdate.getBytes());
+		    
+		    ba = new batchdownloadactivity();
+		    ba.setActivity("Target XML file was written file:" + newFilePath);
+		    ba.setBatchDownloadId(batchDownload.getId());
+		    transactionOutDAO.submitBatchActivityLog(ba);
 		}
 
 	    } else {
+		ba = new batchdownloadactivity();
+		ba.setActivity("Writing records to output file:" + myProps.getProperty("ut.directory.massOutputPath") + batchDownload.getUtBatchName() + "." + fileExt);
+		ba.setBatchDownloadId(batchDownload.getId());
+		transactionOutDAO.submitBatchActivityLog(ba);
+		
 		Integer writeOutCome = writeOutputToTextFile(transportDetails, batchDownload.getId(), myProps.getProperty("ut.directory.massOutputPath") + batchDownload.getUtBatchName() + "." + fileExt, configFields,batchDownload.getBatchUploadId());
 	    }
 
@@ -1581,6 +1642,13 @@ public class transactionOutManagerImpl implements transactionOutManager {
 	    if (!massOutFile.exists()) {
 		//we induce time because file is not done writing
 		TimeUnit.SECONDS.sleep(30);
+	    }
+	    
+	    if(massOutFile.exists()) {
+		ba = new batchdownloadactivity();
+		ba.setActivity("MassOutFile was created:" + massOutFile.getAbsolutePath());
+		ba.setBatchDownloadId(batchDownload.getId());
+		transactionOutDAO.submitBatchActivityLog(ba);
 	    }
 
 	    //cp file to archiveOut and correct putput folder
@@ -1594,6 +1662,12 @@ public class transactionOutManagerImpl implements transactionOutManager {
 	    }
 	    //write to archive folder
 	    filemanager.writeFile(archiveFile.getAbsolutePath(), strEncodedFile);
+	    
+	    ba = new batchdownloadactivity();
+	    ba.setActivity("Archive file was created:" + archiveFile.getAbsolutePath());
+	    ba.setBatchDownloadId(batchDownload.getId());
+	    transactionOutDAO.submitBatchActivityLog(ba);
+	    
 	    //clear out string so a gigantic string is not in memory
 	    strEncodedFile = "";
 
@@ -1627,10 +1701,20 @@ public class transactionOutManagerImpl implements transactionOutManager {
 				//Check to see if the target configuraiton is just a downloadable file update
 				if(transportDetails.isErgFileDownload()) {
 				    submittedmessagemanager.updateSubmittedMessageDownloadableFileName(registryDetails.getDbschemaname(),batchDownload.getBatchUploadId(),batchDownload.getOutputFileName());
+				    
+				    ba = new batchdownloadactivity();
+				    ba.setActivity("Updated eReferral uploaded file entry for messageId:" + existingRegistrySubmittedMessage.getId());
+				    ba.setBatchDownloadId(batchDownload.getId());
+				    transactionOutDAO.submitBatchActivityLog(ba);
 				}
 				else {
 				    //Need to update the Registry submitted message entry to capture the created file name
 				    submittedmessagemanager.updateSubmittedMessage(registryDetails.getDbschemaname(),batchDownload.getBatchUploadId(),batchDownload.getOutputFileName(),utOrgDetails.getHelRegistryOrgId());
+				    
+				    ba = new batchdownloadactivity();
+				    ba.setActivity("Updated eReferral online form entry for messageId:" + existingRegistrySubmittedMessage.getId());
+				    ba.setBatchDownloadId(batchDownload.getId());
+				    transactionOutDAO.submitBatchActivityLog(ba);
 				}
 			    }
 			    else {
@@ -1671,6 +1755,11 @@ public class transactionOutManagerImpl implements transactionOutManager {
 			    newSubmittedMessage.setAssignedMessageNumber(messageName);
 
 			    submittedmessagemanager.submitSubmittedMessage(registryDetails.getDbschemaname(),newSubmittedMessage);
+			    
+			    ba = new batchdownloadactivity();
+			    ba.setActivity("Created new eReferral message for batch upload batchId:"+batchUploadDetails.getId());
+			    ba.setBatchDownloadId(batchDownload.getId());
+			    transactionOutDAO.submitBatchActivityLog(ba);
 			}
 			
 			//Check to see if there is file drop details
@@ -1689,13 +1778,21 @@ public class transactionOutManagerImpl implements transactionOutManager {
 			
 			if(transportDetails.isErgFileDownload()) {
 			    Files.copy(massOutFile.toPath(), targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-			} else {
+			    
+			    ba = new batchdownloadactivity();
+			    ba.setActivity("Moved the massOutFile file: " + massOutFile.getAbsolutePath() + " to the eReferral directory: "+ targetFile.getAbsolutePath());
+			    ba.setBatchDownloadId(batchDownload.getId());
+			    transactionOutDAO.submitBatchActivityLog(ba);
+			} 
+			else {
 			    Files.copy(archiveFile.toPath(), targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+			    
+			    ba = new batchdownloadactivity();
+			    ba.setActivity("Moved the archive file: " + archiveFile.getAbsolutePath() + " to the eReferral directory: "+ targetFile.getAbsolutePath());
+			    ba.setBatchDownloadId(batchDownload.getId());
+			    transactionOutDAO.submitBatchActivityLog(ba);
 			}
 		    }
-		}
-		else {
-		    //Insert a processing error
 		}
 	    }
 	    
@@ -1727,9 +1824,19 @@ public class transactionOutManagerImpl implements transactionOutManager {
 		    File targetFile = new File(targetDirectory + batchDownload.getUtBatchName() + "." + fileExt);
 		    
 		    Files.copy(archiveFile.toPath(), targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+		    
+		    ba = new batchdownloadactivity();
+		    ba.setActivity("Moved the archive file: " + archiveFile.getAbsolutePath() + " to the config drop directory: "+ targetFile.getAbsolutePath());
+		    ba.setBatchDownloadId(batchDownload.getId());
+		    transactionOutDAO.submitBatchActivityLog(ba);
 		}
 		else {
-		     updateTargetBatchStatus(batchDownload.getId(), 58, "endDateTime");
+		    updateTargetBatchStatus(batchDownload.getId(), 58, "endDateTime");
+		     
+		    ba = new batchdownloadactivity();
+		    ba.setActivity("Failed to move the target file because the target file drop directory for configId:"+transportDetails.getconfigId()+" was empty.");
+		    ba.setBatchDownloadId(batchDownload.getId());
+		    transactionOutDAO.submitBatchActivityLog(ba);
 		}
 	    }
 
@@ -1754,9 +1861,24 @@ public class transactionOutManagerImpl implements transactionOutManager {
 		    client.storeFile(filename, fis);
 		    client.logout();
 		    
+		    ba = new batchdownloadactivity();
+		    ba.setActivity("Successfully FTPd the target file: " +archiveFile.getAbsolutePath()+ " to the following directory: "+FTPPushDetails.getdirectory() + " for IP: " + FTPPushDetails.getip() + " Port:" + FTPPushDetails.getport());
+		    ba.setBatchDownloadId(batchDownload.getId());
+		    transactionOutDAO.submitBatchActivityLog(ba);
+		    
 		}
 		catch (IOException e) {
 		    updateTargetBatchStatus(batchDownload.getId(), 58, "endDateTime");
+		    
+		    ba = new batchdownloadactivity();
+		    ba.setActivity("Failed to FTP the target file: " +archiveFile.getAbsolutePath()+ " to the following directory: "+FTPPushDetails.getdirectory() + " for IP: " + FTPPushDetails.getip() + " Port:" + FTPPushDetails.getport());
+		    ba.setBatchDownloadId(batchDownload.getId());
+		    transactionOutDAO.submitBatchActivityLog(ba);
+		    
+		    ba = new batchdownloadactivity();
+		    ba.setActivity("FTP Error: " + e.getMessage());
+		    ba.setBatchDownloadId(batchDownload.getId());
+		    transactionOutDAO.submitBatchActivityLog(ba);
 		}
 		finally {
 		    try {
@@ -1782,6 +1904,11 @@ public class transactionOutManagerImpl implements transactionOutManager {
 		Class<?>[] paramTypes = {int.class, configurationTransport.class};
 		Method method = restfulManager.getClass().getMethod(methodName, paramTypes);
 		method.invoke(restfulManager, batchDownload.getId(), transportDetails);
+		
+		ba = new batchdownloadactivity();
+		ba.setActivity("Called the REST API Method: " + methodName);
+		ba.setBatchDownloadId(batchDownload.getId());
+		transactionOutDAO.submitBatchActivityLog(ba);
 
 	    }
 	    // REST API VIA DIRECT
@@ -1802,14 +1929,29 @@ public class transactionOutManagerImpl implements transactionOutManager {
 		    Class<?>[] paramTypes = {Integer.class, configurationTransport.class, hisps.class};
 		    Method method = directManager.getClass().getMethod(methodName, paramTypes);
 		    method.invoke(directManager, batchDownload.getId(), transportDetails, hispDetails);
+		    
+		    ba = new batchdownloadactivity();
+		    ba.setActivity("Called the DIRECT Method: " + methodName + " for Hisp ("+hispDetails.getHispName()+") id:"+hispDetails.getId());
+		    ba.setBatchDownloadId(batchDownload.getId());
+		    transactionOutDAO.submitBatchActivityLog(ba);
 		}
 		else {
-		     updateTargetBatchStatus(batchDownload.getId(), 58, "endDateTime");
+		    updateTargetBatchStatus(batchDownload.getId(), 58, "endDateTime");
+		     
+		    ba = new batchdownloadactivity();
+		    ba.setActivity("The directDetails were not found for orgId: " + configDetails.getorgId());
+		    ba.setBatchDownloadId(batchDownload.getId());
+		    transactionOutDAO.submitBatchActivityLog(ba);
 		}
 	    }
 
 	    //now we delete massoutput file
 	    massOutFile.delete();
+	    
+	    ba = new batchdownloadactivity();
+	    ba.setActivity("Deleted the massOutFile:"+ massOutFile.getAbsolutePath());
+	    ba.setBatchDownloadId(batchDownload.getId());
+	    transactionOutDAO.submitBatchActivityLog(ba);
 	}
 
 	if (transportDetails.gettransportMethodId() != 9 && transportDetails.gettransportMethodId() != 12) {
@@ -1820,6 +1962,11 @@ public class transactionOutManagerImpl implements transactionOutManager {
 	    transactionInManager.updateRecordCounts(batchDownload.getId(), new ArrayList<Integer>(), true, "totalRecordCount");
 
 	    updateTargetBatchStatus(batchDownload.getId(), 28, "endDateTime");
+	    
+	    ba = new batchdownloadactivity();
+	    ba.setActivity("Updated batch download batchId:" + batchDownload.getId() + " to statusId:28");
+	    ba.setBatchDownloadId(batchDownload.getId());
+	    transactionOutDAO.submitBatchActivityLog(ba);
 
 	}
 	
@@ -1840,6 +1987,11 @@ public class transactionOutManagerImpl implements transactionOutManager {
 			if (existingRegistrySubmittedMessage != null) {
 			    submittedmessagemanager.updateSubmittedMessage(sourceTransportDetails.getHelSchemaName(),existingRegistrySubmittedMessage.getId(),28,batchUploadDetails.getId());
 			    submittedmessagemanager.enterSubmittedMessageTarget(sourceTransportDetails.getHelSchemaName(),existingRegistrySubmittedMessage.getId());
+			    
+			    ba = new batchdownloadactivity();
+			    ba.setActivity("Updated eReferral submitted message to status 28 for messageId:" + existingRegistrySubmittedMessage.getId() + " message #:" + existingRegistrySubmittedMessage.getAssignedMessageNumber());
+			    ba.setBatchDownloadId(batchDownload.getId());
+			    transactionOutDAO.submitBatchActivityLog(ba);
 			}
 		    }
 		}
@@ -1848,6 +2000,11 @@ public class transactionOutManagerImpl implements transactionOutManager {
 	    
 	    //Delete all transaction target tables
 	    transactionOutDAO.deleteBatchDownloadTables(batchDownload.getId());
+	    
+	    ba = new batchdownloadactivity();
+	    ba.setActivity("Deleted all batch download tables for batchId:" + batchDownload.getId());
+	    ba.setBatchDownloadId(batchDownload.getId());
+	    transactionOutDAO.submitBatchActivityLog(ba);
 	    
 	    //Need to see if any emails need to be sent
 	    List<configurationConnection> connectionDetails = configurationManager.getConnectionsBySrcAndTargetConfigurations(uploadConfigDetails.getId(), configDetails.getId());
@@ -2244,7 +2401,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
     }
     
     @Override
-    public List<utUserActivity> getBatchActivities(batchDownloads batchInfo) {
+    public List<batchdownloadactivity> getBatchActivities(batchDownloads batchInfo) {
 	return transactionOutDAO.getBatchActivities(batchInfo);
     }
 }

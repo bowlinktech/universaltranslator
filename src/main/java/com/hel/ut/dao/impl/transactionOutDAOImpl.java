@@ -9,6 +9,7 @@ import com.hel.ut.dao.transactionOutDAO;
 import com.hel.ut.model.RestAPIMessagesOut;
 import com.hel.ut.model.batchDLRetry;
 import com.hel.ut.model.batchDownloads;
+import com.hel.ut.model.batchdownloadactivity;
 import com.hel.ut.model.utConfiguration;
 import com.hel.ut.model.configurationConnection;
 import com.hel.ut.model.configurationConnectionReceivers;
@@ -21,7 +22,6 @@ import com.hel.ut.model.custom.batchErrorSummary;
 import com.hel.ut.model.directmessagesout;
 import com.hel.ut.model.targetOutputRunLogs;
 import com.hel.ut.model.transactionOutRecords;
-import com.hel.ut.model.utUserActivity;
 import com.hel.ut.service.sysAdminManager;
 import com.hel.ut.service.transactionInManager;
 import com.hel.ut.service.userManager;
@@ -1147,39 +1147,6 @@ public class transactionOutDAOImpl implements transactionOutDAO {
 	}
     }
 
-     /**
-     * errorId = 1 is required field missing* we do not re-check REL records
-     */
-    @Override
-    @Transactional(readOnly = false)
-    public Integer insertFailedRequiredFields(configurationFormFields cff, Integer batchDownloadId) {
-	
-	try {
-	    
-	    String sql = "insert into transactionouterrors_"+batchDownloadId
-		+ " (batchDownloadId, configId, transactionOutRecordsId, fieldNo, errorid) "
-		+ "select " + batchDownloadId + ", " + cff.getconfigId() + ", transactionOutRecordsId, " + cff.getFieldNo()
-		+ ",1 from transactiontranslatedout_"+batchDownloadId + " where configId = :configId "
-		+ "and (F" + cff.getFieldNo()+" is null "
-		+ "or length(trim(F" + cff.getFieldNo() + ")) = 0 "
-		+ "or length(REPLACE(REPLACE(F" + cff.getFieldNo() + ", '\n', ''), '\r', '')) = 0) "
-		+ "and configId = :configId and (statusId is null or statusId not in (:transRELId));";
-	    
-	    Query insertData = sessionFactory.getCurrentSession().createSQLQuery(sql)
-		.setParameter("configId", cff.getconfigId())
-		.setParameterList("transRELId", transRELId);
-	    
-	    insertData.executeUpdate();
-	    return 0;
-	    
-	} catch (Exception ex) {
-	    System.err.println("insertFailedRequiredFields  failed for outbound batch - " + batchDownloadId + " " + ex.getCause());
-	    ex.printStackTrace();
-	    
-	    return 1;
-	}
-    }
-
     @Override
     @Transactional(readOnly = false)
     public void deleteBatchDownloadTables(Integer batchId) throws Exception {
@@ -1437,29 +1404,98 @@ public class transactionOutDAOImpl implements transactionOutDAO {
     @Override
     @Transactional(readOnly = true)
     @SuppressWarnings("unchecked")
-    public List<utUserActivity> getBatchActivities(batchDownloads batchInfo) {
+    public List<batchdownloadactivity> getBatchActivities(batchDownloads batchInfo) {
 	
-
-	String sql = " select  users.firstName as userFirstName, organizations.orgname as orgName, "
-		+ " organizations.id as orgId, users.lastName as userLastName, userActivity.* "
-		+ " from useractivity left join users on users.id = userActivity.userId left join organizations on"
-		+ " users.orgId = organizations.id where batchDownloadId = :batchId order by useractivity.id asc, userId";
+	String sql = " select * from batchdownloadactivity where batchDownloadId = :batchId order by id asc";
 
 	try {
-	    Query query = sessionFactory
-		    .getCurrentSession()
-		    .createSQLQuery(sql).setResultTransformer(Transformers.aliasToBean(utUserActivity.class));
-
+	    Query query = sessionFactory.getCurrentSession().createSQLQuery(sql).setResultTransformer(Transformers.aliasToBean(batchdownloadactivity.class));
 	    query.setParameter("batchId", batchInfo.getId());
+	    List<batchdownloadactivity> batchActivities = query.list();
 
-	    List<utUserActivity> uas = query.list();
-
-	    return uas;
+	    return batchActivities;
 
 	} catch (Exception ex) {
-	    System.err.println("getBatchUserActivities " + ex.getCause());
+	    System.err.println("getBatchActivities " + ex.getCause());
 	    ex.printStackTrace();
 	    return null;
 	}
+    }
+    
+    
+    /**
+     * 
+     * @param ba 
+     */
+    @Override
+    @Transactional(readOnly = false)
+    public void submitBatchActivityLog(batchdownloadactivity ba) {
+	sessionFactory.getCurrentSession().save(ba);
+    }
+    
+    /**
+     * errorId = 1 is required field missing* we do not re-check REL records
+     * @param cff
+     * @param batchDownloadId
+     * @return 
+     */
+    @Override
+    @Transactional(readOnly = false)
+    public Integer insertFailedRequiredFields(configurationFormFields cff, Integer batchDownloadId) {
+	
+	try {
+	    
+	    String sql = "insert into transactionouterrors_"+batchDownloadId
+		+ " (batchDownloadId, configId, transactionOutRecordsId, fieldNo, errorid) "
+		+ "select " + batchDownloadId + ", " + cff.getconfigId() + ", transactionOutRecordsId, " + cff.getFieldNo()
+		+ ",1 from transactiontranslatedout_"+batchDownloadId + " where configId = :configId "
+		+ "and (F" + cff.getFieldNo()+" is null "
+		+ "or length(trim(F" + cff.getFieldNo() + ")) = 0 "
+		+ "or length(REPLACE(REPLACE(F" + cff.getFieldNo() + ", '\n', ''), '\r', '')) = 0) "
+		+ "and configId = :configId and (statusId is null or statusId not in (:transRELId));";
+	    
+	    Query insertData = sessionFactory.getCurrentSession().createSQLQuery(sql)
+		.setParameter("configId", cff.getconfigId())
+		.setParameterList("transRELId", transRELId);
+	    
+	    insertData.executeUpdate();
+	    
+	    List missingField = getMissingRequiredField(batchDownloadId,cff.getconfigId(),cff.getFieldNo());
+	    
+	    if(missingField == null) {
+		return 0;
+	    }
+	    else if(!missingField.isEmpty()) {
+		return 1;
+	    }
+	    else {
+		return 0;
+	    }
+	    
+	} catch (Exception ex) {
+	    System.err.println("insertFailedRequiredFields  failed for outbound batch - " + batchDownloadId + " " + ex.getCause());
+	    ex.printStackTrace();
+	    
+	    return 1;
+	}
+    }
+    
+    /**
+     * The 'getMissingRequiredField' function will query to see if the required field is missing
+     *
+     * @param batchDownloadId
+     * @param configId
+     * @param fieldNo
+     * @return This function will return a list of internal status codes
+     */
+    @Transactional(readOnly = true)
+    public List getMissingRequiredField(Integer batchDownloadId,Integer configId,Integer fieldNo) {
+	
+	Query query = sessionFactory.getCurrentSession().createSQLQuery("SELECT id FROM transactionouterrors_"+batchDownloadId+" where errorId = 1 and batchDownloadId = :batchDownloadId and configId = :configId and fieldNo = :fieldNo");
+	query.setParameter("configId", configId);
+	query.setParameter("batchDownloadId", batchDownloadId);
+	query.setParameter("fieldNo", fieldNo);
+	
+	return query.list();
     }
 }

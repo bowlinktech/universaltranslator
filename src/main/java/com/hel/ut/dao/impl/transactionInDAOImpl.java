@@ -18,6 +18,7 @@ import com.hel.ut.model.WSMessagesIn;
 import com.hel.ut.model.batchDownloads;
 import com.hel.ut.model.batchRetry;
 import com.hel.ut.model.batchUploads;
+import com.hel.ut.model.batchuploadactivity;
 import com.hel.ut.model.utConfiguration;
 import com.hel.ut.model.configurationConnection;
 import com.hel.ut.model.configurationConnectionSenders;
@@ -1327,32 +1328,18 @@ public class transactionInDAOImpl implements transactionInDAO {
     @Override
     @Transactional(readOnly = true)
     @SuppressWarnings("unchecked")
-    public List<utUserActivity> getBatchUserActivities(batchUploads batchInfo, boolean foroutboundProcessing) {
-	
-	String batchColName = "batchUploadId";
-	
-	if (foroutboundProcessing) {
-	    batchColName = "batchDownloadId";
-	}
-
-	String sql = " select  users.firstName as userFirstName, organizations.orgname as orgName, "
-		+ " organizations.id as orgId, users.lastName as userLastName, userActivity.* "
-		+ " from useractivity left join users on users.id = userActivity.userId left join organizations on"
-		+ " users.orgId = organizations.id where " + batchColName + "= :batchId order by useractivity.id asc, userId";
+    public List<batchuploadactivity> getBatchActivities(batchUploads batchInfo) {
+	String sql = " select * from batchuploadactivity where batchUploadId = :batchId order by id asc";
 
 	try {
-	    Query query = sessionFactory
-		    .getCurrentSession()
-		    .createSQLQuery(sql).setResultTransformer(Transformers.aliasToBean(utUserActivity.class));
-
+	    Query query = sessionFactory.getCurrentSession().createSQLQuery(sql).setResultTransformer(Transformers.aliasToBean(batchuploadactivity.class));
 	    query.setParameter("batchId", batchInfo.getId());
+	    List<batchuploadactivity> batchActivities = query.list();
 
-	    List<utUserActivity> uas = query.list();
-
-	    return uas;
+	    return batchActivities;
 
 	} catch (Exception ex) {
-	    System.err.println("getBatchUserActivities " + ex.getCause());
+	    System.err.println("getBatchActivities " + ex.getCause());
 	    ex.printStackTrace();
 	    return null;
 	}
@@ -2972,7 +2959,7 @@ public class transactionInDAOImpl implements transactionInDAO {
 
     }
     
-     @Override
+    @Override
     @Transactional(readOnly = false)
     public Integer insertDMMessage(directmessagesin newDirectMessageIn) throws Exception {
 	Integer newRMessageId = null;
@@ -3150,5 +3137,15 @@ public class transactionInDAOImpl implements transactionInDAO {
 	
         return batchUploadMessages;
 
+    }
+    
+    /**
+     * 
+     * @param ba 
+     */
+    @Override
+    @Transactional(readOnly = false)
+    public void submitBatchActivityLog(batchuploadactivity ba) {
+	sessionFactory.getCurrentSession().save(ba);
     }
 }
