@@ -454,7 +454,11 @@ public class adminConfigController {
 	
 	transportDetails.setHelRegistryId(orgDetails.getHelRegistryId());
 	transportDetails.setHelSchemaName(orgDetails.getHelRegistrySchemaName());
-
+	
+	if(transportDetails.getHelRegistryConfigId() == null) {
+	    transportDetails.setHelRegistryConfigId(0);
+	}
+ 
         // Need to get any FTP fields
         List<configurationFTPFields> ftpFields = utconfigurationTransportManager.getTransportFTPDetails(transportDetails.getId());
 
@@ -486,7 +490,7 @@ public class adminConfigController {
             configurationFileDropFields pushRFields = new configurationFileDropFields();
             pushRFields.setMethod(1);
 	    
-	    if(configurationDetails.getMessageTypeId() == 2) {
+	    if(configurationDetails.getMessageTypeId() == 2 && configurationDetails.getType() == 2) {
 		 pushRFields.setDirectory("/bowlink/");
 	    }
 	    else if(configurationDetails.getMessageTypeId() == 1) { 
@@ -498,7 +502,7 @@ public class adminConfigController {
 
 	    configurationFileDropFields getRFields = new configurationFileDropFields();
             getRFields.setMethod(2);
-	    if(configurationDetails.getMessageTypeId() == 2) {
+	    if(configurationDetails.getMessageTypeId() == 2 && configurationDetails.getType() == 2) {
 		getRFields.setDirectory("/bowlink/");
 	    }
 	    else if(configurationDetails.getMessageTypeId() == 1) { 

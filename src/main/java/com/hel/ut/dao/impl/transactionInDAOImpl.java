@@ -18,6 +18,7 @@ import com.hel.ut.model.WSMessagesIn;
 import com.hel.ut.model.batchDownloads;
 import com.hel.ut.model.batchRetry;
 import com.hel.ut.model.batchUploads;
+import com.hel.ut.model.batchuploadactivity;
 import com.hel.ut.model.utConfiguration;
 import com.hel.ut.model.configurationConnection;
 import com.hel.ut.model.configurationConnectionSenders;
@@ -1004,6 +1005,11 @@ public class transactionInDAOImpl implements transactionInDAO {
 		    + "(select count(id) as total from transactionouterrors_"+batchId+") "
 		    + "where id = " + batchId;
 	    }
+	    else if("errorRecordCount".equals(colNameToUpdate)) {
+		 sql = "update batchUploads set " + colNameToUpdate + " = "
+		    + "(select count(id) as total from transactionouterrors_"+batchId+") "
+		    + "where id = " + batchId;
+	    }
 	    else {
 		 sql = "update batchDownloads set " + colNameToUpdate + " = "
 		    + "(select count(id) as total from transactiontranslatedout_"+batchId+") "
@@ -1082,10 +1088,18 @@ public class transactionInDAOImpl implements transactionInDAO {
 	    Query query = sessionFactory.getCurrentSession().createSQLQuery(sql);
 	    query.executeUpdate();
 	     
-	    
 	    return 0;
 	    
 	} catch (Exception ex) {
+	    //log batch activity
+	    utUserActivity ua = new utUserActivity();
+	    ua.setUserId(0);
+	    ua.setFeatureId(0);
+	    ua.setAccessMethod("System");
+	    ua.setActivity("Error inserting data from inbound batch file. Error: " + ex.getMessage());
+	    ua.setBatchUploadId(batchId);
+	    usermanager.insertUserLog(ua);
+	    
 	    System.err.println("insertLoadData " + ex.getCause());
 	    ex.printStackTrace();
 	    return 1;
@@ -1314,30 +1328,18 @@ public class transactionInDAOImpl implements transactionInDAO {
     @Override
     @Transactional(readOnly = true)
     @SuppressWarnings("unchecked")
-    public List<utUserActivity> getBatchUserActivities(batchUploads batchInfo, boolean foroutboundProcessing) {
-	String batchColName = "batchUploadId";
-	if (foroutboundProcessing) {
-	    batchColName = "batchDownloadId";
-	}
-
-	String sql = " select  users.firstName as userFirstName, organizations.orgname as orgName, "
-		+ " organizations.id as orgId, users.lastName as userLastName, userActivity.* "
-		+ " from useractivity left join users on users.id = userActivity.userId left join organizations on"
-		+ " users.orgId = organizations.id where " + batchColName + "= :batchId order by dateCreated desc, userId";
+    public List<batchuploadactivity> getBatchActivities(batchUploads batchInfo) {
+	String sql = " select * from batchuploadactivity where batchUploadId = :batchId order by id asc";
 
 	try {
-	    Query query = sessionFactory
-		    .getCurrentSession()
-		    .createSQLQuery(sql).setResultTransformer(Transformers.aliasToBean(utUserActivity.class));
-
+	    Query query = sessionFactory.getCurrentSession().createSQLQuery(sql).setResultTransformer(Transformers.aliasToBean(batchuploadactivity.class));
 	    query.setParameter("batchId", batchInfo.getId());
+	    List<batchuploadactivity> batchActivities = query.list();
 
-	    List<utUserActivity> uas = query.list();
-
-	    return uas;
+	    return batchActivities;
 
 	} catch (Exception ex) {
-	    System.err.println("getBatchUserActivities " + ex.getCause());
+	    System.err.println("getBatchActivities " + ex.getCause());
 	    ex.printStackTrace();
 	    return null;
 	}
@@ -2957,7 +2959,7 @@ public class transactionInDAOImpl implements transactionInDAO {
 
     }
     
-     @Override
+    @Override
     @Transactional(readOnly = false)
     public Integer insertDMMessage(directmessagesin newDirectMessageIn) throws Exception {
 	Integer newRMessageId = null;
@@ -3052,13 +3054,14 @@ public class transactionInDAOImpl implements transactionInDAO {
 	String dateSQLStringTotal = "";
 	
 	if(fromDate !=  null && toDate != null) {
+	    
 	    if(!"".equals(fromDate)) {
 		dateSQLString += "a.dateSubmitted between '"+mysqlDateFormat.format(fromDate)+"' ";
 		dateSQLStringTotal += "dateSubmitted between '"+mysqlDateFormat.format(fromDate)+"' ";
 
 		if(!"".equals(toDate)) {
-		    dateSQLString += "AND '"+mysqlDateFormat.format(toDate)+"'";
-		    dateSQLStringTotal += "AND '"+mysqlDateFormat.format(toDate)+"'";
+		    dateSQLString += "AND '"+mysqlDateFormat.format(toDate).replace("00:00:00", "23:59:59")+"'";
+		    dateSQLStringTotal += "AND '"+mysqlDateFormat.format(toDate).replace("00:00:00", "23:59:59")+"'";
 		}
 		else {
 		    dateSQLString += "AND '"+mysqlDateFormat.format(fromDate)+" 23:59:59'";
@@ -3067,7 +3070,7 @@ public class transactionInDAOImpl implements transactionInDAO {
 	    }
 	    else {
 		if(!"".equals(toDate)) {
-		    dateSQLString += "a.dateSubmitted between '"+mysqlDateFormat.format(toDate)+"' ";
+		    dateSQLString += "a.dateSubmitted between '"+mysqlDateFormat.format(toDate).replace("00:00:00", "23:59:59")+"' ";
 		    dateSQLString += "AND '"+mysqlDateFormat.format(toDate)+" 23:59:59'";
 		}
 		else {
@@ -3080,13 +3083,12 @@ public class transactionInDAOImpl implements transactionInDAO {
 	    dateSQLStringTotal = "utBatchName = '" + searchTerm + "'";
 	}
 	
-	
 	String sqlQuery = "select id, orgId, utBatchName, transportMethodId, originalFileName, totalRecordCount, errorRecordCount, configName, threshold, inboundBatchConfigurationType, statusId, dateSubmitted,"
-		+ "statusValue, endUserDisplayText, orgName, case when dmConfigKeyWord != '' then 'File Drop (Direct)' when transportMethod != 'Online Form' && restAPIType > 0 then 'File Drop (Rest)' else transportMethod end as transportMethod, totalMessages, 'On Demand' as uploadType, dmConfigKeyWord "
+		+ "statusValue, endUserDisplayText, orgName, case when dmConfigKeyWord != '' then 'File Drop (Direct)' when transportMethod != 'Online Form' && restAPIUsername != '' then 'File Drop (Rest)' else transportMethod end as transportMethod, totalMessages, 'On Demand' as uploadType, dmConfigKeyWord "
 		+ "FROM ("
 		+ "select a.id, a.orgId, a.utBatchName, a.transportMethodId, a.originalFileName, a.totalRecordCount, a.errorRecordCount, b.configName, b.threshold, b.configurationType as inboundBatchConfigurationType,"
-		+ "a.statusId, a.dateSubmitted, c.endUserDisplayCode as statusValue, c.endUserDisplayText as endUserDisplayText,d.orgName, e.transportMethod,"
-		+ "(select count(id) as total from batchuploads where "+dateSQLStringTotal+") as totalMessages, f.dmConfigKeyWord, f.restAPIType "
+		+ "a.statusId, a.dateSubmitted, c.displayCode as statusValue, c.endUserDisplayText as endUserDisplayText,d.orgName, e.transportMethod,"
+		+ "(select count(id) as total from batchuploads where "+dateSQLStringTotal+") as totalMessages, f.dmConfigKeyWord, f.restAPIUsername "
 		+ "FROM batchuploads a inner join "
 		+ "configurations b on b.id = a.configId inner join "
 		+ "lu_processstatus c on c.id = a.statusId inner join "
@@ -3135,5 +3137,15 @@ public class transactionInDAOImpl implements transactionInDAO {
 	
         return batchUploadMessages;
 
+    }
+    
+    /**
+     * 
+     * @param ba 
+     */
+    @Override
+    @Transactional(readOnly = false)
+    public void submitBatchActivityLog(batchuploadactivity ba) {
+	sessionFactory.getCurrentSession().save(ba);
     }
 }

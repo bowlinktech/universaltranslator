@@ -17,6 +17,8 @@ import com.hel.ut.model.utUser;
 import com.hel.ut.model.utUserActivity;
 import com.hel.ut.model.batchDownloads;
 import com.hel.ut.model.batchUploads;
+import com.hel.ut.model.batchdownloadactivity;
+import com.hel.ut.model.batchuploadactivity;
 import com.hel.ut.model.configurationFTPFields;
 import com.hel.ut.model.configurationFileDropFields;
 import com.hel.ut.model.utConfiguration;
@@ -625,8 +627,9 @@ public class adminProcessingActivity {
 
 
     /**
-     * The '/inbound/batchActivities/{batchName}' GET request will retrieve a list of user activities that are associated to the clicked batch
+     * The '/{path}/batchActivities/{batchName}' GET request will retrieve a list of user activities that are associated to the clicked batch
      *
+     * @param path
      * @param batchName	The name of the batch to retrieve transactions for
      * @return The list of inbound batch user activities
      *
@@ -640,26 +643,46 @@ public class adminProcessingActivity {
         ModelAndView mav = new ModelAndView();
         mav.setViewName("/administrator/processing-activity/batchActivities");
         mav.addObject("page", path);
+	
+	if("inbound".equals(path)) {
+	    // Get the details of the batch
+	    batchUploads batchDetails = transactionInManager.getBatchDetailsByBatchName(batchName);
 
-        /* Get the details of the batch */
-        batchUploads batchDetails = transactionInManager.getBatchDetailsByBatchName(batchName);
+	    if (batchDetails != null) {
 
-        if (batchDetails != null) {
+		Organization orgDetails = organizationmanager.getOrganizationById(batchDetails.getOrgId());
+		batchDetails.setOrgName(orgDetails.getOrgName());
 
-            Organization orgDetails = organizationmanager.getOrganizationById(batchDetails.getOrgId());
-            batchDetails.setOrgName(orgDetails.getOrgName());
+		mav.addObject("batchDetails", batchDetails);
 
-            mav.addObject("batchDetails", batchDetails);
+		try {
+		    List<batchuploadactivity> batchActivities = transactionInManager.getBatchActivities(batchDetails);
+		    mav.addObject("batchActivities", batchActivities);
 
-            try {
-                /* Get all the user activities for the batch */
-                List<utUserActivity> uas = transactionInManager.getBatchActivities(batchDetails, true, false);
-                mav.addObject("userActivities", uas);
+		} catch (Exception e) {
+		    throw new Exception("(Admin) Error occurred in getting batch activities for an inbound batch. batchId: " + batchDetails.getId() + " ERROR: " + e.getMessage(), e);
+		}
+	    }
+	}
+	else {
+	    batchDownloads batchDetails = transactionOutManager.getBatchDetailsByBatchName(batchName);
+	    
+	    if (batchDetails != null) {
 
-            } catch (Exception e) {
-                throw new Exception("(Admin) Error occurred in getting batch activities for an inbound batch. batchId: " + batchDetails.getId() + " ERROR: " + e.getMessage(), e);
-            }
-        }
+		Organization orgDetails = organizationmanager.getOrganizationById(batchDetails.getOrgId());
+		batchDetails.setOrgName(orgDetails.getOrgName());
+
+		mav.addObject("batchDetails", batchDetails);
+
+		try {
+		    List<batchdownloadactivity> batchActivities = transactionOutManager.getBatchActivities(batchDetails);
+		    mav.addObject("batchActivities", batchActivities);
+
+		} catch (Exception e) {
+		    throw new Exception("(Admin) Error occurred in getting batch activities for an outbound batch. batchId: " + batchDetails.getId() + " ERROR: " + e.getMessage(), e);
+		}
+	    }
+	}
 
         return mav;
     }
@@ -667,6 +690,10 @@ public class adminProcessingActivity {
     /**
      * The '/ViewUATransactionList' function will return the list of transaction ids for a batch activity that was too long to display The results will be displayed in the overlay.
      *
+     * @param uaId
+     * @param type
+     * @return 
+     * @throws java.lang.Exception 
      * @Param	uaId This will hold the id of the user activity
      * @Param	type 1 = inbound 2 = outbound
      *
@@ -1187,12 +1214,13 @@ public class adminProcessingActivity {
 
     /**
      * this displays the payload*
+     * @param wsId
+     * @return 
+     * @throws java.lang.Exception 
      */
     @RequestMapping(value = "/wsmessage/viewPayload.do", method = RequestMethod.POST)
     public @ResponseBody
-    ModelAndView viewPayload(
-            @RequestParam Integer wsId)
-            throws Exception {
+    ModelAndView viewPayload(@RequestParam Integer wsId) throws Exception {
 
         ModelAndView mav = new ModelAndView();
         mav.setViewName("/administrator/processing-activities/viewPayload");
@@ -1211,7 +1239,7 @@ public class adminProcessingActivity {
     /**
      * The '/rejected' GET request will serve up the existing list of referrals with at least one rejected transaction.
      *
-     * @param page	The page parameter will hold the page to view when pagination is built.
+     * @param session
      * @return The list of batches with rejected transactions
      *
      * @Objects	(1) An object containing all the found batches
@@ -1262,54 +1290,56 @@ public class adminProcessingActivity {
 		
 		//we can map the process status so we only have to query once
                 List<utConfiguration> configurationList = configurationManager.getConfigurations();
-                Map<Integer, String> cMap = new HashMap<Integer, String>();
-                for (utConfiguration c : configurationList) {
-                    cMap.put(c.getId(), c.getconfigName());
-                }
+                Map<Integer, String> cMap = new HashMap<>();
+		configurationList.forEach((c) -> {
+		    cMap.put(c.getId(), c.getconfigName());
+		});
 		
                 //we can map the process status so we only have to query once
                 List<lu_ProcessStatus> processStatusList = sysAdminManager.getAllProcessStatus();
-                Map<Integer, String> psMap = new HashMap<Integer, String>();
-                for (lu_ProcessStatus ps : processStatusList) {
-                    psMap.put(ps.getId(), ps.getDisplayCode());
-                }
+                Map<Integer, String> psMap = new HashMap<>();
+		processStatusList.forEach((ps) -> {
+		    psMap.put(ps.getId(), ps.getDisplayCode());
+		});
 
                 //same with transport method names
                 List<TransportMethod> transporthMethods = configurationTransportManager.getTransportMethods(Arrays.asList(0, 1));
-                Map<Integer, String> tmMap = new HashMap<Integer, String>();
-                for (TransportMethod tms : transporthMethods) {
-                    tmMap.put(tms.getId(), tms.getTransportMethod());
-                }
+                Map<Integer, String> tmMap = new HashMap<>();
+		transporthMethods.forEach((tms) -> {
+		    tmMap.put(tms.getId(), tms.getTransportMethod());
+		});
 
                 //if we have lots of organization in the future we can tweak this to narrow down to orgs with batches
                 List<Organization> organizations = organizationmanager.getOrganizations();
-                Map<Integer, String> orgMap = new HashMap<Integer, String>();
-                for (Organization org : organizations) {
-                    orgMap.put(org.getId(), org.getOrgName());
-                }
+                Map<Integer, String> orgMap = new HashMap<>();
+		organizations.forEach((org) -> {
+		    orgMap.put(org.getId(), org.getOrgName());
+		});
 
                 //same goes for users
                 List<utUser> users = usermanager.getAllUsers();
-                Map<Integer, String> userMap = new HashMap<Integer, String>();
-                for (utUser user : users) {
-                    userMap.put(user.getId(), (user.getFirstName() + " " + user.getLastName()));
-                }
+                Map<Integer, String> userMap = new HashMap<>();
+		users.forEach((user) -> {
+		    userMap.put(user.getId(), (user.getFirstName() + " " + user.getLastName()));
+		});
 
-                for (batchUploads batch : rejectedBatches) {
-
-                    //the count is in totalRecordCount already, can skip re-count
-                    // batch.settotalTransactions(transactionInManager.getRecordCounts(batch.getId(), statusIds, false, false));
-                    batch.setStatusValue(psMap.get(batch.getStatusId()));
-
-                    batch.setOrgName(orgMap.get(batch.getOrgId()));
-
-                    batch.setTransportMethod(tmMap.get(batch.getTransportMethodId()));
-
-                    batch.setUsersName(userMap.get(batch.getUserId()));
-		    
+		rejectedBatches.stream().map((batch) -> {
+		    //the count is in totalRecordCount already, can skip re-count
+		    // batch.settotalTransactions(transactionInManager.getRecordCounts(batch.getId(), statusIds, false, false));
+		    batch.setStatusValue(psMap.get(batch.getStatusId()));
+		    return batch;
+		}).map((batch) -> {
+		    batch.setOrgName(orgMap.get(batch.getOrgId()));
+		    return batch;
+		}).map((batch) -> {
+		    batch.setTransportMethod(tmMap.get(batch.getTransportMethodId()));
+		    return batch;
+		}).map((batch) -> {
+		    batch.setUsersName(userMap.get(batch.getUserId()));
+		    return batch;
+		}).forEachOrdered((batch) -> {
 		    batch.setConfigName(cMap.get(batch.getConfigId()));
-
-                }
+		});
             }
 
             mav.addObject("batches", rejectedBatches);
@@ -1325,7 +1355,11 @@ public class adminProcessingActivity {
     /**
      * The '/rejected' POST request will serve up the existing list of referrals with at least one rejected transaction.
      *
-     * @param page	The page parameter will hold the page to view when pagination is built.
+     * @param fromDate
+     * @param toDate
+     * @param request
+     * @param response
+     * @param session
      * @return The list of batches with rejected transactions
      *
      * @Objects	(1) An object containing all the found batches
@@ -1363,54 +1397,56 @@ public class adminProcessingActivity {
 		
 		//we can map the process status so we only have to query once
                 List<utConfiguration> configurationList = configurationManager.getConfigurations();
-                Map<Integer, String> cMap = new HashMap<Integer, String>();
-                for (utConfiguration c : configurationList) {
-                    cMap.put(c.getId(), c.getconfigName());
-                }
+                Map<Integer, String> cMap = new HashMap<>();
+		configurationList.forEach((c) -> {
+		    cMap.put(c.getId(), c.getconfigName());
+		});
 		
                 //we can map the process status so we only have to query once
                 List<lu_ProcessStatus> processStatusList = sysAdminManager.getAllProcessStatus();
-                Map<Integer, String> psMap = new HashMap<Integer, String>();
-                for (lu_ProcessStatus ps : processStatusList) {
-                    psMap.put(ps.getId(), ps.getDisplayCode());
-                }
+                Map<Integer, String> psMap = new HashMap<>();
+		processStatusList.forEach((ps) -> {
+		    psMap.put(ps.getId(), ps.getDisplayCode());
+		});
 
                 //same with transport method names
                 List<TransportMethod> transporthMethods = configurationTransportManager.getTransportMethods(Arrays.asList(0, 1));
-                Map<Integer, String> tmMap = new HashMap<Integer, String>();
-                for (TransportMethod tms : transporthMethods) {
-                    tmMap.put(tms.getId(), tms.getTransportMethod());
-                }
+                Map<Integer, String> tmMap = new HashMap<>();
+		transporthMethods.forEach((tms) -> {
+		    tmMap.put(tms.getId(), tms.getTransportMethod());
+		});
 
                 //if we have lots of organization in the future we can tweak this to narrow down to orgs with batches
                 List<Organization> organizations = organizationmanager.getOrganizations();
-                Map<Integer, String> orgMap = new HashMap<Integer, String>();
-                for (Organization org : organizations) {
-                    orgMap.put(org.getId(), org.getOrgName());
-                }
+                Map<Integer, String> orgMap = new HashMap<>();
+		organizations.forEach((org) -> {
+		    orgMap.put(org.getId(), org.getOrgName());
+		});
 
                 //same goes for users
                 List<utUser> users = usermanager.getAllUsers();
-                Map<Integer, String> userMap = new HashMap<Integer, String>();
-                for (utUser user : users) {
-                    userMap.put(user.getId(), (user.getFirstName() + " " + user.getLastName()));
-                }
+                Map<Integer, String> userMap = new HashMap<>();
+		users.forEach((user) -> {
+		    userMap.put(user.getId(), (user.getFirstName() + " " + user.getLastName()));
+		});
 
-                for (batchUploads batch : rejectedBatches) {
-
-                    //the count is in totalRecordCount already, can skip re-count
-                    // batch.settotalTransactions(transactionInManager.getRecordCounts(batch.getId(), statusIds, false, false));
-                    batch.setStatusValue(psMap.get(batch.getStatusId()));
-
-                    batch.setOrgName(orgMap.get(batch.getOrgId()));
-
-                    batch.setTransportMethod(tmMap.get(batch.getTransportMethodId()));
-
-                    batch.setUsersName(userMap.get(batch.getUserId()));
-		    
+		rejectedBatches.stream().map((batch) -> {
+		    //the count is in totalRecordCount already, can skip re-count
+		    // batch.settotalTransactions(transactionInManager.getRecordCounts(batch.getId(), statusIds, false, false));
+		    batch.setStatusValue(psMap.get(batch.getStatusId()));
+		    return batch;
+		}).map((batch) -> {
+		    batch.setOrgName(orgMap.get(batch.getOrgId()));
+		    return batch;
+		}).map((batch) -> {
+		    batch.setTransportMethod(tmMap.get(batch.getTransportMethodId()));
+		    return batch;
+		}).map((batch) -> {
+		    batch.setUsersName(userMap.get(batch.getUserId()));
+		    return batch;
+		}).forEachOrdered((batch) -> {
 		    batch.setConfigName(cMap.get(batch.getConfigId()));
-
-                }
+		});
             }
 
             mav.addObject("batches", rejectedBatches);
@@ -1426,6 +1462,8 @@ public class adminProcessingActivity {
      * The '/wsmessageOut' GET request will serve up the list of outbound web services messages
      *
      *
+     * @param session
+     * @return 
      * @Objects	(1) An object containing all the found wsMessagesOut
      *
      * @throws Exception
@@ -1469,10 +1507,10 @@ public class adminProcessingActivity {
             if (!wsMessagesList.isEmpty()) {
                 //if we have lots of organization in the future we can tweak this to narrow down to orgs with batches
                 List<Organization> organizations = organizationmanager.getOrganizations();
-                Map<Integer, String> orgMap = new HashMap<Integer, String>();
-                for (Organization org : organizations) {
-                    orgMap.put(org.getId(), org.getOrgName());
-                }
+                Map<Integer, String> orgMap = new HashMap<>();
+		organizations.forEach((org) -> {
+		    orgMap.put(org.getId(), org.getOrgName());
+		});
 
                 for (wsMessagesOut wsOut : wsMessagesList) {
                     //set org name
@@ -1501,7 +1539,11 @@ public class adminProcessingActivity {
     /**
      * The '/wsMessageOut' POST request will serve up a list of outbound WSMessages received by the system.
      *
-     * @param page	The page parameter will hold the page to view when pagination is built.
+     * @param fromDate
+     * @param toDate
+     * @param response
+     * @param request
+     * @param session
      * @return The list of wsMessages
      *
      * @Objects	(1) An object containing all the found wsMessages
@@ -1539,19 +1581,18 @@ public class adminProcessingActivity {
 
                 //if we have lots of organization in the future we can tweak this to narrow down to orgs with batches
                 List<Organization> organizations = organizationmanager.getOrganizations();
-                Map<Integer, String> orgMap = new HashMap<Integer, String>();
-                for (Organization org : organizations) {
-                    orgMap.put(org.getId(), org.getOrgName());
-                }
+                Map<Integer, String> orgMap = new HashMap<>();
+		organizations.forEach((org) -> {
+		    orgMap.put(org.getId(), org.getOrgName());
+		});
 
-                for (wsMessagesOut ws : wsMessagesList) {
-
-                    if (ws.getOrgId() == 0) {
-                        ws.setOrgName("No Org Match");
-                    } else {
-                        ws.setOrgName(orgMap.get(ws.getOrgId()));
-                    }
-                }
+		wsMessagesList.forEach((ws) -> {
+		    if (ws.getOrgId() == 0) {
+			ws.setOrgName("No Org Match");
+		    } else {
+			ws.setOrgName(orgMap.get(ws.getOrgId()));
+		    }
+		});
             }
 
             mav.addObject("wsMessages", wsMessagesList);
@@ -1565,12 +1606,13 @@ public class adminProcessingActivity {
 
     /**
      * this displays the soap message*
+     * @param wsId
+     * @return 
+     * @throws java.lang.Exception 
      */
     @RequestMapping(value = "/wsmessage/viewSoapMessage.do", method = RequestMethod.POST)
     public @ResponseBody
-    ModelAndView viewSoapMessage(
-            @RequestParam Integer wsId)
-            throws Exception {
+    ModelAndView viewSoapMessage(@RequestParam Integer wsId) throws Exception {
 
         ModelAndView mav = new ModelAndView();
         mav.setViewName("/administrator/processing-activities/viewSoapMessage");
@@ -1583,12 +1625,13 @@ public class adminProcessingActivity {
 
     /**
      * this displays the soap response*
+     * @param wsId
+     * @return 
+     * @throws java.lang.Exception
      */
     @RequestMapping(value = "/wsmessage/viewSoapResponse.do", method = RequestMethod.POST)
     public @ResponseBody
-    ModelAndView viewSoapResponse(
-            @RequestParam Integer wsId)
-            throws Exception {
+    ModelAndView viewSoapResponse(@RequestParam Integer wsId) throws Exception {
 
         ModelAndView mav = new ModelAndView();
         mav.setViewName("/administrator/processing-activities/viewSoapResponse");
@@ -1603,6 +1646,9 @@ public class adminProcessingActivity {
      * The '/wsmessageOut' GET request will serve up the list of outbound web services messages
      *
      *
+     * @param session
+     * @param batchName
+     * @return 
      * @Objects	(1) An object containing all the found wsMessagesOut
      *
      * @throws Exception
@@ -1674,6 +1720,9 @@ public class adminProcessingActivity {
      * The '/wsmessage' GET request will serve up the list of inbound web services messages
      *
      *
+     * @param session
+     * @param batchName
+     * @return 
      * @Objects	(1) An object containing all the found wsMessagesIn
      *
      * @throws Exception
@@ -1718,13 +1767,13 @@ public class adminProcessingActivity {
 
                 //we can map the process status so we only have to query once
                 List<TableData> errorCodeList = sysAdminManager.getDataList("lu_ErrorCodes", "");
-                Map<Integer, String> errorMap = new HashMap<Integer, String>();
-                for (TableData error : errorCodeList) {
-                    errorMap.put(error.getId(), error.getDisplayText());
-                }
+                Map<Integer, String> errorMap = new HashMap<>();
+		errorCodeList.forEach((error) -> {
+		    errorMap.put(error.getId(), error.getDisplayText());
+		});
 
                 //ws status map
-                Map<Integer, String> statusMap = new HashMap<Integer, String>();
+                Map<Integer, String> statusMap = new HashMap<>();
                 statusMap.put(1, "To be processed");
                 statusMap.put(2, "Processed");
                 statusMap.put(3, "Rejected");
@@ -1935,6 +1984,9 @@ public class adminProcessingActivity {
      * batchName
      *NjM2NjguMjYxLjE3OTk=
      *
+     * @param batchName
+     * @return 
+     * @throws java.lang.Exception
      */
     @RequestMapping(value = "/deleteBatch.do", method = RequestMethod.POST)
     public @ResponseBody String deleteBatch(@RequestParam(value = "batchName", required = true) String batchName) throws Exception {
@@ -1971,7 +2023,9 @@ public class adminProcessingActivity {
      * @param errorId
      * @param totalErrors
      * @param indexVal
+     * @param type
      * @return 
+     * @throws java.lang.Exception 
      */
     @RequestMapping(value = "/loadErrors.do", method = RequestMethod.GET)
     public @ResponseBody ModelAndView loadErrors(
@@ -1997,8 +2051,6 @@ public class adminProcessingActivity {
 	    reportableFields = transactionInManager.getErrorReportField(batchId);
 	}
 	
-	
-	
 	customCols.add("Column Name");
 	
 	//Set the custom columns based on the error selected
@@ -2009,15 +2061,17 @@ public class adminProcessingActivity {
 		    customCols.add("Field Value");
 		
 		    sql = "select case when b.containsHeaderRow = 1 then a.rownumber+1 else a.rownumber end as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name,a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
-			+ "from batchuploadauditerrors a inner join "
+			+ "from batchuploadauditerrors a left outer  join "
 			+ "configurationmessagespecs b on a.configId = b.configId "
 			+ "where a.batchUploadId = " + batchId + " and a.errorId = " + errorId + " order by a.id asc limit 50 ";
 		}
 		else {
-		    sql = "select e.transactionTargetId, e.fieldNo as fieldNumber, c.fieldLabel as column_name "
-			    + "from transactionouterrors e inner join "
-			    + "configurationformfields c on c.configId = e.configId and c.fieldNo = e.fieldNo "
-			    + "where e.batchDownloadId = " + batchId + " and e.errorId = " + errorId + " order by e.transactionTargetId asc limit 50 ";
+		    customCols.add("Field Value");
+		
+		    sql = "select case when b.containsHeaderRow = 1 then a.rownumber+1 else a.rownumber end as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name,a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
+			+ "from batchdownloadauditerrors a left outer  join "
+			+ "configurationmessagespecs b on a.configId = b.configId "
+			+ "where a.batcDownloadId = " + batchId + " and a.errorId = " + errorId + " order by a.id asc limit 50 ";
 		}
 		
 		break;
@@ -2029,16 +2083,17 @@ public class adminProcessingActivity {
 		    customCols.add("Field Value");
 
 		    sql = "select case when b.containsHeaderRow = 1 then a.rownumber+1 else a.rownumber end as rownumber, a.fieldNo as fieldNumber, a.fieldName as column_name, a.errorDetails as validation_type, a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
-			+ "from batchuploadauditerrors a inner join "
+			+ "from batchuploadauditerrors a left outer  join "
 			+ "configurationmessagespecs b on a.configId = b.configId "
 			+ "where a.batchUploadId = " + batchId + " and a.errorId = " + errorId + " order by a.id asc limit 50 ";
 		}
 		else {
-		    sql = "select e.transactionTargetId, e.fieldNo as fieldNumber, c.fieldLabel as column_name, v.validationType as validation_type "
-			    + "from transactionouterrors e inner join "
-			    + "configurationformfields c on c.configId = e.configId and c.fieldNo = e.fieldNo inner join "
-			    + "ref_validationtypes v on e.validationTypeId = v.id "
-			    + "where e.batchDownloadId = " + batchId + " and e.errorId = " + errorId + " order by e.transactionTargetId asc limit 50 ";
+		    customCols.add("Field Value");
+
+		    sql = "select case when b.containsHeaderRow = 1 then a.rownumber+1 else a.rownumber end as rownumber, a.fieldNo as fieldNumber, a.fieldName as column_name, a.errorDetails as validation_type, a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
+			+ "from batchdownloadauditerrors a left outer  join "
+			+ "configurationmessagespecs b on a.configId = b.configId "
+			+ "where a.batcDownloadId = " + batchId + " and a.errorId = " + errorId + " order by a.id asc limit 50 ";
 		}
 		
 		break;
@@ -2050,16 +2105,15 @@ public class adminProcessingActivity {
 		    customCols.add("Field Value");	
 
 		    sql = "select case when b.containsHeaderRow = 1 then a.rownumber+1 else a.rownumber end as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name, a.errorDetails as crosswalk, a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
-			+ "from batchuploadauditerrors a inner join "
+			+ "from batchuploadauditerrors a left outer join "
 			+ "configurationmessagespecs b on a.configId = b.configId "
 			+ "where a.batchUploadId = " + batchId + " and a.errorId = " + errorId + " order by a.id asc limit 50 ";
 		}
 		else {
-		    sql = "select e.transactionTargetId, e.fieldNo as fieldNumber, c.fieldLabel as column_name, cw.name as crosswalk "
-			    + "from transactionouterrors e inner join "
-			    + "configurationformfields c on c.configId = e.configId and c.fieldNo = e.fieldNo inner join "
-			    + "crosswalks cw on e.cwId = cw.id "
-			    + "where e.batchDownloadId = " + batchId + " and e.errorId = " + errorId + " order by e.transactionTargetId asc limit 50 ";
+		    sql = "select case when b.containsHeaderRow = 1 then a.rownumber+1 else a.rownumber end as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name, a.errorDetails as crosswalk, a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
+			+ "from batchdownloadauditerrors a left outer join "
+			+ "configurationmessagespecs b on a.configId = b.configId "
+			+ "where a.batcDownloadId = " + batchId + " and a.errorId = " + errorId + " order by a.id asc limit 50 ";
 		}
 		break;
 		
@@ -2070,16 +2124,17 @@ public class adminProcessingActivity {
 		    customCols.add("Field Value");
 
 		    sql = "select case when b.containsHeaderRow = 1 then a.rownumber+1 else a.rownumber end as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name,a.errorDetails as macro, a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
-			+ "from batchuploadauditerrors a inner join "
+			+ "from batchuploadauditerrors a left outer  join "
 			+ "configurationmessagespecs b on a.configId = b.configId "
 			+ "where a.batchUploadId = " + batchId + " and a.errorId = " + errorId + " order by a.id asc limit 50 ";
 		}
 		else {
-		    sql = "select e.transactionTargetId, e.fieldNo as fieldNumber, c.fieldLabel as column_name, m.macro_name as macro "
-			+ "from transactionouterrors e inner join "
-			+ "configurationformfields c on c.configId = e.configId and c.fieldNo = e.fieldNo inner join "
-			+ "macro_names m on e.macroId = m.id "
-			+ "where e.batchDownloadId = " + batchId + " and e.errorId = " + errorId + " order by e.transactionTargetId asc limit 50 ";
+		    customCols.add("Field Value");
+
+		    sql = "select case when b.containsHeaderRow = 1 then a.rownumber+1 else a.rownumber end as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name,a.errorDetails as macro, a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
+			+ "from batchdownloadauditerrors a left outer  join "
+			+ "configurationmessagespecs b on a.configId = b.configId "
+			+ "where a.batcDownloadId = " + batchId + " and a.errorId = " + errorId + " order by a.id asc limit 50 ";
 		}
 		
 		break;
@@ -2089,15 +2144,17 @@ public class adminProcessingActivity {
 		    customCols.add("Field Value");
 
 		    sql = "select case when b.containsHeaderRow = 1 then a.rownumber+1 else a.rownumber end as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name,a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
-			+ "from batchuploadauditerrors a inner join "
+			+ "from batchuploadauditerrors a left outer  join "
 			+ "configurationmessagespecs b on a.configId = b.configId "
 			+ "where a.batchUploadId = " + batchId + " and a.errorId = " + errorId + " order by a.id asc limit 50 ";
 		}
 		else {
-		    sql = "select e.transactionTargetId, e.fieldNo as fieldNumber, c.fieldLabel as column_name "
-			    + "from transactionouterrors e inner join "
-			    + "configurationformfields c on c.configId = e.configId and c.fieldNo = e.fieldNo "
-			    + "where e.batchDownloadId = " + batchId + " and e.errorId = " + errorId + " order by e.transactionTargetId asc limit 50 ";
+		    customCols.add("Field Value");
+
+		    sql = "select case when b.containsHeaderRow = 1 then a.rownumber+1 else a.rownumber end as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name,a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
+			+ "from batchdownloadauditerrors a left outer  join "
+			+ "configurationmessagespecs b on a.configId = b.configId "
+			+ "where a.batcDownloadId = " + batchId + " and a.errorId = " + errorId + " order by a.id asc limit 50 ";
 		}
 		
 		break;
@@ -2130,6 +2187,12 @@ public class adminProcessingActivity {
      * The '/invalidIn' GET request will serve up the list of inbound batches that errored
      *
      *
+     * @param fromDate
+     * @param toDate
+     * @param request
+     * @param response
+     * @param session
+     * @return 
      * @Objects	(1) An object containing all the found invalidIn
      *
      * @throws Exception
@@ -2177,54 +2240,56 @@ public class adminProcessingActivity {
 		
 		//we can map the process status so we only have to query once
                 List<utConfiguration> configurationList = configurationManager.getConfigurations();
-                Map<Integer, String> cMap = new HashMap<Integer, String>();
-                for (utConfiguration c : configurationList) {
-                    cMap.put(c.getId(), c.getconfigName());
-                }
+                Map<Integer, String> cMap = new HashMap<>();
+		configurationList.forEach((c) -> {
+		    cMap.put(c.getId(), c.getconfigName());
+		});
 		
                 //we can map the process status so we only have to query once
                 List<lu_ProcessStatus> processStatusList = sysAdminManager.getAllProcessStatus();
-                Map<Integer, String> psMap = new HashMap<Integer, String>();
-                for (lu_ProcessStatus ps : processStatusList) {
-                    psMap.put(ps.getId(), ps.getDisplayCode());
-                }
+                Map<Integer, String> psMap = new HashMap<>();
+		processStatusList.forEach((ps) -> {
+		    psMap.put(ps.getId(), ps.getDisplayCode());
+		});
 
                 //same with transport method names
                 List<TransportMethod> transporthMethods = configurationTransportManager.getTransportMethods(Arrays.asList(0, 1));
-                Map<Integer, String> tmMap = new HashMap<Integer, String>();
-                for (TransportMethod tms : transporthMethods) {
-                    tmMap.put(tms.getId(), tms.getTransportMethod());
-                }
+                Map<Integer, String> tmMap = new HashMap<>();
+		transporthMethods.forEach((tms) -> {
+		    tmMap.put(tms.getId(), tms.getTransportMethod());
+		});
 
                 //if we have lots of organization in the future we can tweak this to narrow down to orgs with batches
                 List<Organization> organizations = organizationmanager.getOrganizations();
-                Map<Integer, String> orgMap = new HashMap<Integer, String>();
-                for (Organization org : organizations) {
-                    orgMap.put(org.getId(), org.getOrgName());
-                }
+                Map<Integer, String> orgMap = new HashMap<>();
+		organizations.forEach((org) -> {
+		    orgMap.put(org.getId(), org.getOrgName());
+		});
 
                 //same goes for users
                 List<utUser> users = usermanager.getAllUsers();
-                Map<Integer, String> userMap = new HashMap<Integer, String>();
-                for (utUser user : users) {
-                    userMap.put(user.getId(), (user.getFirstName() + " " + user.getLastName()));
-                }
+                Map<Integer, String> userMap = new HashMap<>();
+		users.forEach((user) -> {
+		    userMap.put(user.getId(), (user.getFirstName() + " " + user.getLastName()));
+		});
 
-                for (batchUploads batch : invalidInboundBatches) {
-
-                    //the count is in totalRecordCount already, can skip re-count
-                    // batch.settotalTransactions(transactionInManager.getRecordCounts(batch.getId(), statusIds, false, false));
-                    batch.setStatusValue(psMap.get(batch.getStatusId()));
-
-                    batch.setOrgName(orgMap.get(batch.getOrgId()));
-
-                    batch.setTransportMethod(tmMap.get(batch.getTransportMethodId()));
-
-                    batch.setUsersName(userMap.get(batch.getUserId()));
-		    
+		invalidInboundBatches.stream().map((batch) -> {
+		    //the count is in totalRecordCount already, can skip re-count
+		    // batch.settotalTransactions(transactionInManager.getRecordCounts(batch.getId(), statusIds, false, false));
+		    batch.setStatusValue(psMap.get(batch.getStatusId()));
+		    return batch;
+		}).map((batch) -> {
+		    batch.setOrgName(orgMap.get(batch.getOrgId()));
+		    return batch;
+		}).map((batch) -> {
+		    batch.setTransportMethod(tmMap.get(batch.getTransportMethodId()));
+		    return batch;
+		}).map((batch) -> {
+		    batch.setUsersName(userMap.get(batch.getUserId()));
+		    return batch;
+		}).forEachOrdered((batch) -> {
 		    batch.setConfigName(cMap.get(batch.getConfigId()));
-
-                }
+		});
             }
 
             mav.addObject("batches", invalidInboundBatches);
@@ -2294,38 +2359,38 @@ public class adminProcessingActivity {
 		
 		//we can map the process status so we only have to query once
                 List<utConfiguration> configurationList = configurationManager.getConfigurations();
-                Map<Integer, String> cMap = new HashMap<Integer, String>();
-                for (utConfiguration c : configurationList) {
-                    cMap.put(c.getId(), c.getconfigName());
-                }
+                Map<Integer, String> cMap = new HashMap<>();
+		configurationList.forEach((c) -> {
+		    cMap.put(c.getId(), c.getconfigName());
+		});
 
                 //we can map the process status so we only have to query once
                 List<lu_ProcessStatus> processStatusList = sysAdminManager.getAllProcessStatus();
-                Map<Integer, String> psMap = new HashMap<Integer, String>();
-                for (lu_ProcessStatus ps : processStatusList) {
-                    psMap.put(ps.getId(), ps.getDisplayCode());
-                }
+                Map<Integer, String> psMap = new HashMap<>();
+		processStatusList.forEach((ps) -> {
+		    psMap.put(ps.getId(), ps.getDisplayCode());
+		});
 
                 //same with transport method names
                 List<TransportMethod> transporthMethods = configurationTransportManager.getTransportMethods(Arrays.asList(0, 1));
-                Map<Integer, String> tmMap = new HashMap<Integer, String>();
-                for (TransportMethod tms : transporthMethods) {
-                    tmMap.put(tms.getId(), tms.getTransportMethod());
-                }
+                Map<Integer, String> tmMap = new HashMap<>();
+		transporthMethods.forEach((tms) -> {
+		    tmMap.put(tms.getId(), tms.getTransportMethod());
+		});
 
                 //if we have lots of organization in the future we can tweak this to narrow down to orgs with batches
                 List<Organization> organizations = organizationmanager.getOrganizations();
-                Map<Integer, String> orgMap = new HashMap<Integer, String>();
-                for (Organization org : organizations) {
-                    orgMap.put(org.getId(), org.getOrgName());
-                }
+                Map<Integer, String> orgMap = new HashMap<>();
+		organizations.forEach((org) -> {
+		    orgMap.put(org.getId(), org.getOrgName());
+		});
 
                 //same goes for users
                 List<utUser> users = usermanager.getAllUsers();
-                Map<Integer, String> userMap = new HashMap<Integer, String>();
-                for (utUser user : users) {
-                    userMap.put(user.getId(), (user.getFirstName() + " " + user.getLastName()));
-                }
+                Map<Integer, String> userMap = new HashMap<>();
+		users.forEach((user) -> {
+		    userMap.put(user.getId(), (user.getFirstName() + " " + user.getLastName()));
+		});
 
                 for (batchDownloads batch : invalidOutboundBatches) {
 
@@ -2724,7 +2789,11 @@ public class adminProcessingActivity {
     /**
      * The '/dashboardGenericBatches' POST request will serve up the existing list of generated referrals and feedback reports based on a search or date
      *
-     * @param page	The page parameter will hold the page to view when pagination is built.
+     * @param fromDate
+     * @param toDate
+     * @param request
+     * @param response
+     * @param session
      * @return The list of inbound batch list
      *
      * @Objects	(1) An object containing all the found batches
@@ -2756,26 +2825,24 @@ public class adminProcessingActivity {
 	    
 	    if(watchlistEntries != null) {
 		if(!watchlistEntries.isEmpty()) {
-		    for(watchlistEntry entry : watchlistEntries) {
-			
+		    watchlistEntries.stream().map((entry) -> {
 			batchUploads watchlistEntry = new batchUploads();
 			watchlistEntry.setDateSubmitted(entry.getDateCreated());
-			
 			if(entry.isWatchListCompleted()) {
 			    watchlistEntry.setDashboardRowColor("table-success");
 			}
 			else {
 			    watchlistEntry.setDashboardRowColor("table-primary");
 			}
-			
 			watchlistEntry.setId(entry.getId());
 			watchlistEntry.setUploadType("Watch List Entry");
 			watchlistEntry.setEntryMessage(entry.getEntryMessage());
 			watchlistEntry.setWatchListCompleted(entry.isWatchListCompleted());
 			watchlistEntry.setWatchListEntryId(entry.getWatchlistentryId());
-			
+			return watchlistEntry;			
+		    }).forEachOrdered((watchlistEntry) -> {
 			dashboardUploads.add(watchlistEntry);
-		    }
+		    });
 		}
 	    }
 
@@ -2871,13 +2938,15 @@ public class adminProcessingActivity {
             
             mav.addObject("batchDetails", batchDetails);
 	    
-            
+            if (batchDetails.getTotalErrorCount() > 0) {
+		List<batchErrorSummary> batchErrorSummary = transactionInManager.getBatchErrorSummary(batchDetails.getId());
+		mav.addObject("batchErrorSummary", batchErrorSummary);
+	    }
 	   
 	    
         } else {
             mav.addObject("doesNotExist", true);
         }
-	
 	
         mav.addObject("canCancel", canCancel);
         mav.addObject("canReset", canReset);
@@ -2938,6 +3007,11 @@ public class adminProcessingActivity {
 		//Delete all target tables
 		transactionOutManager.deleteBatchDownloadTables(batchId);
 		
+		//Rest total record and error counts
+		batchDetails.setTotalRecordCount(0);
+		batchDetails.setTotalErrorCount(0);
+		transactionOutManager.submitBatchDownloadChanges(batchDetails);
+		
 		//Need to check to see if the transactiontranslatedin_BatchUploadId table exists
 		boolean transactionInTableForBatchExists = transactionOutManager.chechForTransactionInTable(batchDetails.getBatchUploadId());
 		
@@ -2946,7 +3020,6 @@ public class adminProcessingActivity {
 		    transactionOutManager.updateTargetBatchStatus(batchId, 61, "startDateTime");
 		}
 		else {
-		    //Reset status to 61 to start the outbound process over
 		    transactionOutManager.updateTargetBatchStatus(batchId, 66, "startDateTime");
 		    
 		    //Clear transaction counts
@@ -2964,7 +3037,7 @@ public class adminProcessingActivity {
 		    File encodedUploadedFile = new File(myProps.getProperty("ut.directory.utRootDir") + transportDetails.getfileLocation().replace("/HELProductSuite/universalTranslator/","") + "encoded_" + batchUploadDetails.getUtBatchName());
 		    
 		    //File Dropped
-		    if(transportDetails.gettransportMethodId() == 10) {
+		    if(transportDetails.gettransportMethodId() == 10 || transportDetails.gettransportMethodId() == 13) {
 			List<configurationFileDropFields> fileDropDetails = configurationTransportManager.getTransFileDropDetails(transportDetails.getId());
 			
 			if(fileDropDetails != null) {
@@ -3019,6 +3092,16 @@ public class adminProcessingActivity {
 			    }
 			}
 		    }
+		    
+		    //log user activity
+		    utUserActivity ua = new utUserActivity();
+		    ua.setUserId(0);
+		    ua.setFeatureId(0);
+		    ua.setAccessMethod("System");
+		    ua.setPageAccess("/outnboundBatchOptions");
+		    ua.setActivity("Inbound batchId:"+batchDetails.getId() + " will be reprocessed due to outbound batch being reset and inbound batch tables have been removed.");
+		    ua.setBatchUploadId(batchDetails.getBatchUploadId());
+		    usermanager.insertUserLog(ua);
 		    
 		    transactionInManager.updateBatchStatus(batchDetails.getBatchUploadId(), 35, "startDateTime");
 		}

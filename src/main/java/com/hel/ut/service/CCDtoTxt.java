@@ -7,6 +7,7 @@ package com.hel.ut.service;
 
 import com.hel.ut.model.Organization;
 import com.hel.ut.model.configurationMessageSpecs;
+import com.hel.ut.model.utUserActivity;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.PrintStream;
@@ -31,6 +32,9 @@ public class CCDtoTxt {
     private organizationManager organizationmanager;
     
     @Autowired
+    private userManager usermanager;
+    
+    @Autowired
     private utConfigurationManager configurationManager;
     
     @Resource(name = "myProps")
@@ -39,7 +43,7 @@ public class CCDtoTxt {
     @Autowired
     private utConfigurationTransportManager configurationTransportManager;
 
-    public String TranslateCCDtoTxt(String fileLocation, String ccdFileName, int orgId, int configId, String targetOrgName) throws Exception {
+    public String TranslateCCDtoTxt(String fileLocation, String ccdFileName, int orgId, int configId, String targetOrgName, Integer batchId) throws Exception {
 	
         Organization orgDetails = organizationmanager.getOrganizationById(orgId);
 	
@@ -70,6 +74,15 @@ public class CCDtoTxt {
 	
 	if(!"".equals(templatefileName)) {
 	    
+	    //log batch activity
+	    utUserActivity ua = new utUserActivity();
+	    ua.setUserId(0);
+	    ua.setFeatureId(0);
+	    ua.setAccessMethod("System");
+	    ua.setActivity("XML/CCD Parsing Template found: " + directory + templatefileName);
+	    ua.setBatchUploadId(batchId);
+	    usermanager.insertUserLog(ua);
+	    
 	    URLClassLoader loader = new URLClassLoader(new URL[]{new URL("file://" + directory + templatefileName)});
 	    
 	    Class cls = null;
@@ -79,6 +92,15 @@ public class CCDtoTxt {
 		cls = loader.loadClass(templatefileName.substring(0, templatefileName.lastIndexOf('.')));
 	    }
 	    catch (Exception ex) {
+		//log batch activity
+		ua = new utUserActivity();
+		ua.setUserId(0);
+		ua.setFeatureId(0);
+		ua.setAccessMethod("System");
+		ua.setActivity("Error loading XML/CCD Parsing Template: " + directory + templatefileName + " Error: " + ex.getMessage());
+		ua.setBatchUploadId(batchId);
+		usermanager.insertUserLog(ua);
+		
 		ex.printStackTrace();
 	    }
 	    
@@ -120,7 +142,6 @@ public class CCDtoTxt {
 	    } else {
 		newFile.createNewFile();
 		newfileName = newFile.getName();
-
 	    }
 
 	    try {
@@ -140,10 +161,28 @@ public class CCDtoTxt {
 		PrintStream ps = new PrintStream(newFile);
 		ex.printStackTrace(ps);
 		ps.close();
+		
+		//log batch activity
+		ua = new utUserActivity();
+		ua.setUserId(0);
+		ua.setFeatureId(0);
+		ua.setAccessMethod("System");
+		ua.setActivity("Error using XML/CCD Parsing Template. Error: " + ex.getMessage());
+		ua.setBatchUploadId(batchId);
+		usermanager.insertUserLog(ua);
 	    }
 	}
 	else {
 	    newfileName = "ERRORERRORERROR";
+	    
+	    //log batch activity
+	    utUserActivity ua = new utUserActivity();
+	    ua.setUserId(0);
+	    ua.setFeatureId(0);
+	    ua.setAccessMethod("System");
+	    ua.setActivity("No XML/CCD parsing template was set up for configId:"+configId);
+	    ua.setBatchUploadId(batchId);
+	    usermanager.insertUserLog(ua);
 	}
         
         return newfileName;

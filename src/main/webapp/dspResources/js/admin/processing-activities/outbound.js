@@ -30,6 +30,28 @@ require(['./main'], function () {
 	    populateMessages(fromDate,toDate);
 	    
 	});
+	
+	//This function will release the batch
+        $(document).on('click', '.releaseOutboundBatch', function () {
+
+            var confirmed = confirm("Are you sure you want to release this outbound batch?");
+
+            if (confirmed) {
+                $("#actionRowBottom").hide();
+                $("#actionRowTop").hide();
+                $.ajax({
+                    url: '/administrator/processing-activity/outboundBatchOptions',
+                    data: {
+			'batchOption': $(this).attr('rel'), 
+			'batchId': $(this).attr('rel2')
+		    },
+                    type: "POST",
+                    success: function (data) {
+                        window.location.href = '/administrator/processing-activity/outbound';
+                    }
+                });
+            }
+        });
 
     });
 });
@@ -182,7 +204,12 @@ function populateMessages(fromDate,toDate) {
 		   var returnData = '<div class="dropdown pull-left"><button class="btn btn-sm btn-default dropdown-toggle" type="button" data-toggle="dropdown"><i class="fa fa-cog"></i></button><ul class="dropdown-menu pull-right">';
 		   
 		   if(data != 2) {
-		       returnData += '<li><a href="/administrator/processing-activity/outbound/auditReport/'+row.utBatchName+'" title="View Audit Report"><span class="glyphicon glyphicon-edit"></span>View Audit Report</a></li>';
+		       returnData += '<li><a href="/administrator/processing-activity/outbound/batchActivities/'+row.utBatchName+'" class="viewBatchActivities" title="View Batch Activities"><span class="glyphicon glyphicon-edit"></span>View Batch Activities</a></li>';
+		       returnData += '<li><a href="/administrator/processing-activity/outbound/auditReport/'+row.utBatchName+'" title="View Audit Report"><span class="glyphicon glyphicon-edit"></span> View Audit Report</a></li>';
+		   }
+		   
+		   if(row.statusId == 64 || row.statusId == 59) {
+		       returnData += '<li><a href="#!" id="release" class="releaseOutboundBatch" rel="releaseBatch" rel2="'+row.id+'"><span class="glyphicon glyphicon-ok-sign"></span> Process Now</a></li>';
 		   }
 		   
 		   return returnData;

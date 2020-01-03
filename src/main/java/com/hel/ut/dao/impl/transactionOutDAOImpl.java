@@ -9,6 +9,7 @@ import com.hel.ut.dao.transactionOutDAO;
 import com.hel.ut.model.RestAPIMessagesOut;
 import com.hel.ut.model.batchDLRetry;
 import com.hel.ut.model.batchDownloads;
+import com.hel.ut.model.batchdownloadactivity;
 import com.hel.ut.model.utConfiguration;
 import com.hel.ut.model.configurationConnection;
 import com.hel.ut.model.configurationConnectionReceivers;
@@ -17,6 +18,7 @@ import com.hel.ut.model.configurationSchedules;
 import com.hel.ut.model.configurationTransport;
 import com.hel.ut.model.configurationconnectionfieldmappings;
 import com.hel.ut.model.custom.ConfigOutboundForInsert;
+import com.hel.ut.model.custom.batchErrorSummary;
 import com.hel.ut.model.directmessagesout;
 import com.hel.ut.model.targetOutputRunLogs;
 import com.hel.ut.model.transactionOutRecords;
@@ -609,7 +611,7 @@ public class transactionOutDAOImpl implements transactionOutDAO {
 
     @Override
     @Transactional(readOnly = false)
-    public Integer writeOutputToTextFile(configurationTransport transportDetails, Integer batchDownloadId, String filePathAndName, String fieldNos) {
+    public Integer writeOutputToTextFile(configurationTransport transportDetails, Integer batchDownloadId, String filePathAndName, String fieldNos, Integer batchUploadId) {
 
 	String sql = "";
 
@@ -618,14 +620,23 @@ public class transactionOutDAOImpl implements transactionOutDAO {
 	    sql = ("call getJSONForConfig(:configId, :batchDownloadId, :filePathAndName, :jsonWrapperElement);");
 	} 
 	else {
+	    
+	    List<configurationTransport> handlingDetails = transactionInManager.getHandlingDetailsByBatch(batchUploadId);
            
 	    //we use utConfiguration info 
 	    //build this sql
 	    sql = "SELECT " + fieldNos + " "
 		+ "FROM transactionTranslatedOut_" + batchDownloadId + " "
-		+ "where statusId = 9 and configId = :configId "
-		+ "INTO OUTFILE  '" + filePathAndName + "' "
-		+ "FIELDS TERMINATED BY '" + transportDetails.getDelimChar()+"' LINES TERMINATED BY '\\n';";
+		+ "where configId = :configId and ";
+	    
+	    if(handlingDetails.get(0).geterrorHandling() == 4) {
+		sql += "statusId in (9,14) ";
+	    }
+	    else {
+		sql += "statusId = 9 ";
+	    }
+	    sql += "INTO OUTFILE  '" + filePathAndName + "' "
+	    + "FIELDS TERMINATED BY '" + transportDetails.getDelimChar()+"' LINES TERMINATED BY '\\n';";
 	}
 
 	if (!"".equals(sql)) {
@@ -640,7 +651,6 @@ public class transactionOutDAOImpl implements transactionOutDAO {
             try {
 		query.list();
 	    } catch (Exception ex) {
-		System.out.println(ex.getMessage());
 	    }
 	}
 
@@ -728,18 +738,26 @@ public class transactionOutDAOImpl implements transactionOutDAO {
 
     @Override
     @Transactional(readOnly = true)
-    public List getOutputForCustomTargetFile(configurationTransport transportDetails, Integer batchDownloadId, String fieldNos) {
+    public List getOutputForCustomTargetFile(configurationTransport transportDetails, Integer batchDownloadId, String fieldNos, Integer batchUploadId) {
+	
+	List<configurationTransport> handlingDetails = transactionInManager.getHandlingDetailsByBatch(batchUploadId);
 	
 	String sql = "SELECT " + fieldNos
-		+ " FROM transactiontranslatedout_"+batchDownloadId + " "
-		+ "where statusId = 9 and configId = :configId";
+	    + " FROM transactiontranslatedout_"+batchDownloadId + " "
+	    + "where configId = :configId and ";
+	
+	if(handlingDetails.get(0).geterrorHandling() == 4) {
+	    sql += "statusId in (9,14)";
+	}
+	else {
+	    sql += "statusId = 9";
+	}
 	
 	Query query = sessionFactory.getCurrentSession().createSQLQuery(sql);
 	query.setParameter("configId", transportDetails.getconfigId());
 	try {
 	    return query.list();
 	} catch (Exception ex) {
-	    System.out.println(ex.getMessage());
 	    return null;
 	}
     }
@@ -1047,7 +1065,6 @@ public class transactionOutDAOImpl implements transactionOutDAO {
 	query = sessionFactory.getCurrentSession().createSQLQuery(sqlinsert);
 	query.executeUpdate();
 	
-	
 	try {
 	    
 	    String sql = "insert into transactionoutrecords_"+batchDownloadId+" "
@@ -1126,39 +1143,6 @@ public class transactionOutDAOImpl implements transactionOutDAO {
 	    return 0;
 	} catch (Exception ex) {
 	    System.err.println("clearBatchTransactionTables_" + batchDownloadId + " " + ex.getCause());
-	    return 1;
-	}
-    }
-
-     /**
-     * errorId = 1 is required field missing* we do not re-check REL records
-     */
-    @Override
-    @Transactional(readOnly = false)
-    public Integer insertFailedRequiredFields(configurationFormFields cff, Integer batchDownloadId) {
-	
-	try {
-	    
-	    String sql = "insert into transactionouterrors_"+batchDownloadId
-		+ " (batchDownloadId, configId, transactionOutRecordsId, fieldNo, errorid) "
-		+ "select " + batchDownloadId + ", " + cff.getconfigId() + ", transactionOutRecordsId, " + cff.getFieldNo()
-		+ ",1 from transactiontranslatedout_"+batchDownloadId + " where configId = :configId "
-		+ "and (F" + cff.getFieldNo()+" is null "
-		+ "or length(trim(F" + cff.getFieldNo() + ")) = 0 "
-		+ "or length(REPLACE(REPLACE(F" + cff.getFieldNo() + ", '\n', ''), '\r', '')) = 0) "
-		+ "and configId = :configId and (statusId is null or statusId not in (:transRELId));";
-	    
-	    Query insertData = sessionFactory.getCurrentSession().createSQLQuery(sql)
-		.setParameter("configId", cff.getconfigId())
-		.setParameterList("transRELId", transRELId);
-	    
-	    insertData.executeUpdate();
-	    return 0;
-	    
-	} catch (Exception ex) {
-	    System.err.println("insertFailedRequiredFields  failed for outbound batch - " + batchDownloadId + " " + ex.getCause());
-	    ex.printStackTrace();
-	    
 	    return 1;
 	}
     }
@@ -1289,8 +1273,8 @@ public class transactionOutDAOImpl implements transactionOutDAO {
 		dateSQLStringTotal += "dateCreated between '"+mysqlDateFormat.format(fromDate)+"' ";
 
 		if(!"".equals(toDate)) {
-		    dateSQLString += "AND '"+mysqlDateFormat.format(toDate)+"'";
-		    dateSQLStringTotal += "AND '"+mysqlDateFormat.format(toDate)+"'";
+		    dateSQLString += "AND '"+mysqlDateFormat.format(toDate).replace("00:00:00", "23:59:59")+"'";
+		    dateSQLStringTotal += "AND '"+mysqlDateFormat.format(toDate).replace("00:00:00", "23:59:59")+"'";
 		}
 		else {
 		    dateSQLString += "AND '"+mysqlDateFormat.format(fromDate)+" 23:59:59'";
@@ -1299,7 +1283,7 @@ public class transactionOutDAOImpl implements transactionOutDAO {
 	    }
 	    else {
 		if(!"".equals(toDate)) {
-		    dateSQLString += "a.dateCreated between '"+mysqlDateFormat.format(toDate)+"' ";
+		    dateSQLString += "a.dateCreated between '"+mysqlDateFormat.format(toDate).replace("00:00:00", "23:59:59")+"' ";
 		    dateSQLString += "AND '"+mysqlDateFormat.format(toDate)+" 23:59:59'";
 		}
 		else {
@@ -1317,7 +1301,7 @@ public class transactionOutDAOImpl implements transactionOutDAO {
 		+ "statusValue, endUserDisplayText, orgName, transportMethod, fromBatchName, fromBatchFile, totalMessages "
 		+ "FROM ("
 		+ "select a.id, a.orgId, a.utBatchName, a.transportMethodId, a.outputFileName, a.totalRecordCount, a.totalErrorCount, b.configName, b.threshold,"
-		+ "a.statusId, a.dateCreated, c.endUserDisplayCode as statusValue, c.endUserDisplayText as endUserDisplayText, d.orgName, e.transportMethod, f.utBatchName as fromBatchName,"
+		+ "a.statusId, a.dateCreated, c.displayCode as statusValue, c.endUserDisplayText as endUserDisplayText, d.orgName, e.transportMethod, f.utBatchName as fromBatchName,"
 		+ "case when f.transportMethodId = 5 THEN CONCAT(f.utBatchName,'.',SUBSTRING_INDEX(f.originalFileName,'.',-1)) "
 		+ "when f.transportMethodId = 1 THEN CONCAT(f.utBatchName,'.',SUBSTRING_INDEX(f.originalFileName,'.',-1)) "
 		+ "else '' end as fromBatchFile,"
@@ -1377,4 +1361,141 @@ public class transactionOutDAOImpl implements transactionOutDAO {
 	sessionFactory.getCurrentSession().save(newDirectMessageOut);
     }
     
+    @Override
+    @Transactional(readOnly = false)
+    public void populateOutboundAuditReport(Integer configId, Integer batchDownloadId, Integer batchUploadId, Integer batchUploadConfigId) throws Exception {
+	
+	String sql = "call populateOutboundAuditReport(:configId, :batchDownloadId, :batchUploadId, :batchUploadConfigId);";
+	Query query = sessionFactory.getCurrentSession().createSQLQuery(sql);
+	query.setParameter("configId", configId);
+	query.setParameter("batchDownloadId", batchDownloadId);
+	query.setParameter("batchUploadId", batchUploadId);
+	query.setParameter("batchUploadConfigId", batchUploadConfigId);
+	query.executeUpdate();
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public List<batchErrorSummary> getBatchErrorSummary(int batchId) throws Exception {
+	try {
+	    String sql = ("select count(e.id) as totalErrors, e.errorId, c.displayText as errorDisplayText "
+		    + "from batchdownloadauditerrors e "
+		    + "inner join lu_errorcodes c on c.id = e.errorId "
+		    + "where e.batchDownloadId = :batchId group by e.errorId");
+
+	    Query query = sessionFactory.getCurrentSession().createSQLQuery(sql)
+		    .addScalar("errorDisplayText", StandardBasicTypes.STRING)
+		    .addScalar("errorId", StandardBasicTypes.INTEGER)
+		    .addScalar("totalErrors", StandardBasicTypes.INTEGER)
+		    .setResultTransformer(Transformers.aliasToBean(batchErrorSummary.class));
+	    query.setParameter("batchId", batchId);
+
+	    List<batchErrorSummary> batchErrorSummaries = query.list();
+
+	    return batchErrorSummaries;
+
+	} catch (Exception ex) {
+	    System.err.println("getBatchErrorSummary " + ex.getCause());
+	    ex.printStackTrace();
+	    return null;
+	}
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    @SuppressWarnings("unchecked")
+    public List<batchdownloadactivity> getBatchActivities(batchDownloads batchInfo) {
+	
+	String sql = " select * from batchdownloadactivity where batchDownloadId = :batchId order by id asc";
+
+	try {
+	    Query query = sessionFactory.getCurrentSession().createSQLQuery(sql).setResultTransformer(Transformers.aliasToBean(batchdownloadactivity.class));
+	    query.setParameter("batchId", batchInfo.getId());
+	    List<batchdownloadactivity> batchActivities = query.list();
+
+	    return batchActivities;
+
+	} catch (Exception ex) {
+	    System.err.println("getBatchActivities " + ex.getCause());
+	    ex.printStackTrace();
+	    return null;
+	}
+    }
+    
+    
+    /**
+     * 
+     * @param ba 
+     */
+    @Override
+    @Transactional(readOnly = false)
+    public void submitBatchActivityLog(batchdownloadactivity ba) {
+	sessionFactory.getCurrentSession().save(ba);
+    }
+    
+    /**
+     * errorId = 1 is required field missing* we do not re-check REL records
+     * @param cff
+     * @param batchDownloadId
+     * @return 
+     */
+    @Override
+    @Transactional(readOnly = false)
+    public Integer insertFailedRequiredFields(configurationFormFields cff, Integer batchDownloadId) {
+	
+	try {
+	    
+	    String sql = "insert into transactionouterrors_"+batchDownloadId
+		+ " (batchDownloadId, configId, transactionOutRecordsId, fieldNo, errorid) "
+		+ "select " + batchDownloadId + ", " + cff.getconfigId() + ", transactionOutRecordsId, " + cff.getFieldNo()
+		+ ",1 from transactiontranslatedout_"+batchDownloadId + " where configId = :configId "
+		+ "and (F" + cff.getFieldNo()+" is null "
+		+ "or length(trim(F" + cff.getFieldNo() + ")) = 0 "
+		+ "or length(REPLACE(REPLACE(F" + cff.getFieldNo() + ", '\n', ''), '\r', '')) = 0) "
+		+ "and configId = :configId and (statusId is null or statusId not in (:transRELId));";
+	    
+	    Query insertData = sessionFactory.getCurrentSession().createSQLQuery(sql)
+		.setParameter("configId", cff.getconfigId())
+		.setParameterList("transRELId", transRELId);
+	    
+	    insertData.executeUpdate();
+	    
+	    List missingField = getMissingRequiredField(batchDownloadId,cff.getconfigId(),cff.getFieldNo());
+	    
+	    if(missingField == null) {
+		return 0;
+	    }
+	    else if(!missingField.isEmpty()) {
+		return 1;
+	    }
+	    else {
+		return 0;
+	    }
+	    
+	} catch (Exception ex) {
+	    System.err.println("insertFailedRequiredFields  failed for outbound batch - " + batchDownloadId + " " + ex.getCause());
+	    ex.printStackTrace();
+	    
+	    return 1;
+	}
+    }
+    
+    /**
+     * The 'getMissingRequiredField' function will query to see if the required field is missing
+     *
+     * @param batchDownloadId
+     * @param configId
+     * @param fieldNo
+     * @return This function will return a list of internal status codes
+     */
+    @Transactional(readOnly = true)
+    public List getMissingRequiredField(Integer batchDownloadId,Integer configId,Integer fieldNo) {
+	
+	Query query = sessionFactory.getCurrentSession().createSQLQuery("SELECT id FROM transactionouterrors_"+batchDownloadId+" where errorId = 1 and batchDownloadId = :batchDownloadId and configId = :configId and fieldNo = :fieldNo");
+	query.setParameter("configId", configId);
+	query.setParameter("batchDownloadId", batchDownloadId);
+	query.setParameter("fieldNo", fieldNo);
+	
+	return query.list();
+    }
 }
