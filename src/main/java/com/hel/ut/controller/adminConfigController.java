@@ -1149,6 +1149,10 @@ public class adminConfigController {
     /**
      * The '/translations' POST request will submit the selected data translations and save it to the data base.
      *
+     * @param session
+     * @param categoryId
+     * @return 
+     * @throws java.lang.Exception 
      */
     @RequestMapping(value = "/translations", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
     public @ResponseBody
@@ -1209,6 +1213,11 @@ public class adminConfigController {
     /**
      * The '/getTranslations.do' function will return the list of existing translations set up for the selected utConfiguration/transportMethod.
      *
+     * @param session
+     * @param reload
+     * @param categoryId
+     * @return 
+     * @throws java.lang.Exception 
      * @Return list of translations
      */
     @RequestMapping(value = "/getTranslations.do", method = RequestMethod.GET)
@@ -1220,21 +1229,31 @@ public class adminConfigController {
 	Integer configId = (Integer) session.getAttribute("manageconfigId");
         mav.setViewName("/administrator/configurations/existingTranslations");
 	
-	
 	List<configurationDataTranslations> translations;
-	if(categoryId == 1) {
+	if(null == categoryId) {
 	    translations = (List<configurationDataTranslations>) session.getAttribute("confgirationDataTranslastions");
 	}
-	else if(categoryId == 2) {
-	    translations = (List<configurationDataTranslations>) session.getAttribute("confgirationDataPreProcessingTranslastions");
-	}
-	else {
-	    translations = (List<configurationDataTranslations>) session.getAttribute("confgirationDataPostProcessingTranslastions");
+	else switch (categoryId) {
+	    case 1:
+		translations = (List<configurationDataTranslations>) session.getAttribute("confgirationDataTranslastions");
+		break;
+	    case 2:
+		translations = (List<configurationDataTranslations>) session.getAttribute("confgirationDataPreProcessingTranslastions");
+		break;
+	    case 3:
+		translations = (List<configurationDataTranslations>) session.getAttribute("confgirationDataPostProcessingTranslastions");
+		break;
+	    default:
+		translations = (List<configurationDataTranslations>) session.getAttribute("confgirationDataTranslastions");
+		break;
 	}
 	
         //only get the saved translations if reload == 0
         //We only want to retrieve the saved ones on initial load
         if (reload == false) {
+	    
+	    
+	    
             //Need to get a list of existing translations
             List<configurationDataTranslations> existingTranslations = utconfigurationmanager.getDataTranslationsWithFieldNo(configId, categoryId);
 
@@ -1326,17 +1345,33 @@ public class adminConfigController {
 	Integer configId = (Integer) session.getAttribute("manageconfigId");
 	
 	List<configurationDataTranslations> translations;
-	if(categoryId == 1) {
-	    translations = (List<configurationDataTranslations>) session.getAttribute("confgirationDataTranslastions");
-	}
-	else if(categoryId == 2) {
-	    translations = (List<configurationDataTranslations>) session.getAttribute("confgirationDataPreProcessingTranslastions");
-	}
-	else {
+	
+	if(null == categoryId) {
 	    translations = (List<configurationDataTranslations>) session.getAttribute("confgirationDataPostProcessingTranslastions");
 	}
+	else switch (categoryId) {
+	    case 1:
+		translations = (List<configurationDataTranslations>) session.getAttribute("confgirationDataTranslastions");
+		break;
+	    case 2:
+		translations = (List<configurationDataTranslations>) session.getAttribute("confgirationDataPreProcessingTranslastions");
+		break;
+	    default:
+		translations = (List<configurationDataTranslations>) session.getAttribute("confgirationDataPostProcessingTranslastions");
+		break;
+	}
 	
-        int processOrder = translations.size() + 1;
+	Integer processOrder = 0;
+	
+	if(translations == null) {
+	    processOrder = 1;
+	}
+	else if(translations.isEmpty()) {
+	    processOrder = 1;
+	}
+	else {
+	    processOrder = translations.size() + 1;
+	}
 
         if (macroId == null) {
             macroId = 0;
@@ -1346,7 +1381,7 @@ public class adminConfigController {
             cwId = 0;
             cwText = null;
         }
-
+	
         configurationDataTranslations translation = new configurationDataTranslations();
         translation.setconfigId(configId);
         translation.setFieldId(field);
@@ -1362,7 +1397,7 @@ public class adminConfigController {
         translation.setProcessOrder(processOrder);
         translation.setPassClear(passClear);
         translation.setCategoryId(categoryId);
-
+	
         if (cwId > 0) {
             Map<String, String> defaultValues = new HashMap<>();
             String optionDesc;
@@ -1383,9 +1418,23 @@ public class adminConfigController {
 
             translation.setDefaultValues(defaultValues);
         }
+	
+	if(translations == null) {
+	    translations = new ArrayList<>();
+	    switch(categoryId) {
+		case 1:
+		    session.setAttribute("confgirationDataTranslastions", translations);
+		case 2:
+		    session.setAttribute("confgirationDataPreProcessingTranslastions", translations);
+		case 3:
+		    session.setAttribute("confgirationDataPostProcessingTranslastions", translations);
+		default:
+		    session.setAttribute("confgirationDataTranslastions", translations);
+	    }
+	}
 
         translations.add(translation);
-
+	
         ModelAndView mav = new ModelAndView();
         mav.setViewName("/administrator/configurations/existingTranslations");
         mav.addObject("dataTranslations", translations);
@@ -1444,6 +1493,7 @@ public class adminConfigController {
      * @param session
      * @param currProcessOrder
      * @param newProcessOrder
+     * @param categoryId
      * @return 
      * @throws java.lang.Exception 
      *
@@ -1958,11 +2008,16 @@ public class adminConfigController {
 
     /**
      * The '/preprocessing' GET request will display the utConfiguration preprocessing page
+     * @param session
+     * @return 
+     * @throws java.lang.Exception 
      */
     @RequestMapping(value = "/preprocessing", method = RequestMethod.GET)
     public ModelAndView getPreProcessing(HttpSession session) throws Exception {
+	
+	List<configurationDataTranslations> preProcessingTranslations = new CopyOnWriteArrayList<>();
+	session.setAttribute("confgirationDataPreProcessingTranslastions", preProcessingTranslations);
 
-       
         ModelAndView mav = new ModelAndView();
 	Integer configId = 0;
 	
@@ -2004,12 +2059,10 @@ public class adminConfigController {
 
         //Loop through list of macros to mark the ones that need
         //fields filled in
-        List<Integer> macroLookUpList = new ArrayList<Integer>();
-        for (Macros macro : macros) {
-            if (macro.getfieldAQuestion() != null || macro.getfieldBQuestion() != null || macro.getcon1Question() != null || macro.getcon2Question() != null) {
-                macroLookUpList.add(macro.getId());
-            }
-        }
+        List<Integer> macroLookUpList = new ArrayList<>();
+	macros.stream().filter((macro) -> (macro.getfieldAQuestion() != null || macro.getfieldBQuestion() != null || macro.getcon1Question() != null || macro.getcon2Question() != null)).forEachOrdered((macro) -> {
+	    macroLookUpList.add(macro.getId());
+	});
         mav.addObject("macroLookUpList", macroLookUpList);
 
 	if(transportDetails.getRestAPIType() == 2) {
@@ -2025,9 +2078,15 @@ public class adminConfigController {
 
     /**
      * The '/postprocessing' GET request will display the utConfiguration post processing page
+     * @param session
+     * @return 
+     * @throws java.lang.Exception
      */
     @RequestMapping(value = "/postprocessing", method = RequestMethod.GET)
     public ModelAndView getPostProcessing(HttpSession session) throws Exception {
+	
+	List<configurationDataTranslations> postProcessingTranslations = new CopyOnWriteArrayList<>();
+	session.setAttribute("confgirationDataPostProcessingTranslastions", postProcessingTranslations);
 
         ModelAndView mav = new ModelAndView();
 	Integer configId = 0;
@@ -2070,12 +2129,10 @@ public class adminConfigController {
 
         //Loop through list of macros to mark the ones that need
         //fields filled in
-        List<Integer> macroLookUpList = new ArrayList<Integer>();
-        for (Macros macro : macros) {
-            if (macro.getfieldAQuestion() != null || macro.getfieldBQuestion() != null || macro.getcon1Question() != null || macro.getcon2Question() != null) {
-                macroLookUpList.add(macro.getId());
-            }
-        }
+        List<Integer> macroLookUpList = new ArrayList<>();
+	macros.stream().filter((macro) -> (macro.getfieldAQuestion() != null || macro.getfieldBQuestion() != null || macro.getcon1Question() != null || macro.getcon2Question() != null)).forEachOrdered((macro) -> {
+	    macroLookUpList.add(macro.getId());
+	});
         mav.addObject("macroLookUpList", macroLookUpList);
 
 	if(transportDetails.getRestAPIType() == 2) {
@@ -2093,6 +2150,7 @@ public class adminConfigController {
      * The '/removeElementComponent.do' function will remove the selected HL7 element component
      *
      * @param componentId The selected id of the element component
+     * @return 
      *
      */
     @RequestMapping(value = "/removeElementComponent.do", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -2107,8 +2165,9 @@ public class adminConfigController {
     /**
      * The '/removeElement.do' function will remove the selected HL7 element
      *
-     * @param componentId The selected id of the element
      *
+     * @param elementId
+     * @return 
      */
     @RequestMapping(value = "/removeElement.do", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
     public @ResponseBody
@@ -2123,6 +2182,7 @@ public class adminConfigController {
      * The '/removeSegment.do' function will remove the selected HL7 segment
      *
      * @param segmentId The selected id of the segment
+     * @return 
      *
      */
     @RequestMapping(value = "/removeSegment.do", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -2136,6 +2196,9 @@ public class adminConfigController {
 
     /**
      * The '/CCD' GET request will display the CCD customization form.
+     * @param session
+     * @return 
+     * @throws java.lang.Exception
      */
     @RequestMapping(value = "/CCD", method = RequestMethod.GET)
     public ModelAndView getCCDForm(HttpSession session) throws Exception {

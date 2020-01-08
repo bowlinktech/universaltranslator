@@ -153,7 +153,10 @@ public class directManager {
 
 	envelopeInfoObject.put("fromDirectAddress","healthelinktest@hl.medalliesdirect.org");
 	envelopeInfoObject.put("messageId","urn:uuid:"+uuid);
-	envelopeInfoObject.put("toDirectAddress","QTAC.DPP@hl.medalliesdirect.org");
+	
+	JSONArray envelopeInfoToAddressArray = new JSONArray();
+	envelopeInfoToAddressArray.add("QTAC.DPP@hl.medalliesdirect.org");
+	envelopeInfoObject.put("toDirectAddress",envelopeInfoToAddressArray);
 
 	jsonObjectToSend.put("envelopeInfo", envelopeInfoObject);
 	
@@ -309,7 +312,12 @@ public class directManager {
 		
 		envelopeInfoObject.put("fromDirectAddress",batchUploadDetails.getRecipientEmail());
 		envelopeInfoObject.put("messageId","urn:uuid:"+uuid);
-		envelopeInfoObject.put("toDirectAddress",batchUploadDetails.getSenderEmail());
+		
+		JSONArray envelopeInfoToAddressArray = new JSONArray();
+		envelopeInfoToAddressArray.add(batchUploadDetails.getSenderEmail());
+		envelopeInfoObject.put("toDirectAddress",envelopeInfoToAddressArray);
+		
+		//envelopeInfoObject.put("toDirectAddress",batchUploadDetails.getSenderEmail());
 		
 		jsonObjectToSend.put("envelopeInfo", envelopeInfoObject);
 		
