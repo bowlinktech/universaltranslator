@@ -5,5 +5,3 @@
 - Test resetting a received REST API file
 
 - Implement CSRF
-
-- Add option for target configuration to update inbound audit report.
