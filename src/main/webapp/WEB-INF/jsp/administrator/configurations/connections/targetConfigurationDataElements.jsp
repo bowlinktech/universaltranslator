@@ -32,7 +32,7 @@
 		<td class="center-text">
 		    <div id="matchField${fields.fieldNo}" class="form-group">
 			<select fieldNo="${fields.fieldNo}" fieldDesc="${fields.fieldDesc}" class="form-control matchField">
-			    <option value="0">-</option>
+			    <option value="0">- Blank Value -</option>
 			    <c:forEach var="sourceFields" items="${sourceconfigurationDataElements}">
 				<option value="${sourceFields.fieldNo}" <c:if test="${sourceFields.mappedToField == fields.fieldNo}">selected</c:if>>${sourceFields.fieldDesc} - ${sourceFields.fieldNo}</option>
 			    </c:forEach>

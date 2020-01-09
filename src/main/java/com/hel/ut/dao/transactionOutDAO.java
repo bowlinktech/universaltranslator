@@ -127,4 +127,6 @@ public interface transactionOutDAO {
     List<batchdownloadactivity> getBatchActivities(batchDownloads batchInfo);
     
     void submitBatchActivityLog(batchdownloadactivity ba);
+    
+    Integer getTotalErrors(Integer batchId) throws Exception;
 }

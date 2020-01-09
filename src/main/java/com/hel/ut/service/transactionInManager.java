@@ -261,7 +261,7 @@ public interface transactionInManager {
     
     BigInteger getUserRejectedCount(Integer userId, Integer orgId, String fromDate, String toDate) throws Exception;
     
-    List<batchErrorSummary> getBatchErrorSummary(int batchId) throws Exception;
+    List<batchErrorSummary> getBatchErrorSummary(int batchId, String inboundOutbound) throws Exception;
     
     List getErrorDataBySQLStmt(String sqlStmt) throws Exception;
     
@@ -328,4 +328,6 @@ public interface transactionInManager {
     Integer updateDirectAPIMessage(directmessagesin directMessage);
     
     List<batchUploads> getAllUploadBatchesPaged(Date fromDate, Date toDate, Integer displayStart, Integer displayRecords, String searchTerm, String sortColumnName, String sortDirection) throws Exception;
+    
+    void updateRecordCountsFromAuditErrorTable(Integer batchUploadId) throws Exception;
 }

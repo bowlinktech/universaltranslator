@@ -19,13 +19,13 @@
         <section class="panel panel-default">
             <div class="panel-body">
                 <div class="form-container scrollable">
-                    <table class="table table-striped table-hover table-default" <c:if test="${not empty connections}">id="dataTable"</c:if>>
+                    <table class="table table-striped table-hover table-default" <c:if test="${not empty connections}">id="connectiondataTable"</c:if>>
                             <thead>
                                 <tr>
+				    <th scope="col">Id</th>
                                     <th scope="col">Source Details</th>
                                     <th scope="col">Target Details</th>
                                     <th scope="col" class="center-text">Date Created</th>
-				    <th scope="col" style="display:none"></th>
                                     <th scope="col" class="center-text">Status</th>
                                     <th scope="col" class="center-text"></th>
                                 </tr>
@@ -35,6 +35,7 @@
                                 <c:when test="${not empty connections}">
                                     <c:forEach var="connection" items="${connections}">
                                         <tr>
+					     <td scope="row">${connection.id}</td>
                                             <td scope="row">
                                                 Organization: <strong>${connection.srcConfigDetails.getOrgName()}</strong>
 						<br />
@@ -50,7 +51,6 @@
 						Transport Method: <strong>${connection.tgtConfigDetails.gettransportMethod()}</strong>
                                             </td>
                                             <td class="center-text"><fmt:formatDate value="${connection.dateCreated}" type="date" pattern="M/dd/yyyy" /></td>
-					    <td class="center-text" style="display:none">${connection.dateCreated}</td>
                                             <td class="center-text actions-col">
                                                 <c:choose>
                                                     <c:when test="${connection.status == true}">
@@ -97,6 +97,3 @@
         </section>
     </div>
 </div>
-
-<!-- Connections modal -->
-<div class="modal fade" id="connectionsModal" role="dialog" tabindex="-1" aria-labeledby="Add Configuration Connection" aria-hidden="true" aria-describedby="Add Configuration Connection"></div>

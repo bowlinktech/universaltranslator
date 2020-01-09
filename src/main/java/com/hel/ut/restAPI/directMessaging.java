@@ -108,7 +108,6 @@ public class directMessaging {
                             messageInfo = JsonPath.using(conf).parse(jsonSent).read("$", type);
                         }
                         catch (Exception ex) {
-			    System.out.println(ex.getMessage());
                             //Need to send email of error
                             return new ResponseEntity("Invalid JSON Payload!", HttpStatus.BAD_REQUEST);
                         }

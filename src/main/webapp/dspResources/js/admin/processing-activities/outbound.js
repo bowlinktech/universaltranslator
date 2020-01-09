@@ -135,7 +135,7 @@ function populateMessages(fromDate,toDate) {
 		"mData": "transportMethod", 
 		"defaultContent": "",
 		"bSortable":true,
-		"sWidth": "20%",
+		"sWidth": "15%",
 		"className": "center-text",
 		"render": function ( data, type, row, meta ) {
 		    var returnData = '';
@@ -168,7 +168,7 @@ function populateMessages(fromDate,toDate) {
 		"mData": "totalRecordCount", 
 		"defaultContent": "",
 		"bSortable":false,
-		"sWidth": "10%",
+		"sWidth": "15%",
 		"render": function ( data, type, row, meta ) {
 		    var returnData = 'Total Transactions: <strong>';
 		    returnData += commaSeparateNumber(data) + '</strong><br />';

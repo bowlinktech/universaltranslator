@@ -13,6 +13,7 @@ public class batchErrorSummary {
     
     private Integer totalErrors = 0, errorId = 0;
     private String errorDisplayText = "";
+    private boolean fromOutboundConfig  = false;
 
     public Integer getTotalErrors() {
 	return totalErrors;
@@ -37,5 +38,14 @@ public class batchErrorSummary {
     public void setErrorId(Integer errorId) {
 	this.errorId = errorId;
     }
+
+    public boolean isFromOutboundConfig() {
+	return fromOutboundConfig;
+    }
+
+    public void setFromOutboundConfig(boolean fromOutboundConfig) {
+	this.fromOutboundConfig = fromOutboundConfig;
+    }
+    
     
 }

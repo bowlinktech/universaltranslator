@@ -98,10 +98,10 @@ require(['./main'], function () {
 		var targetUseField = $('#useField'+targetFieldNo).is(':checked');
 		var matchingField = $(this).val();
 		
-		if(matchingField == 0 && targetUseField) {
+		/*if(matchingField == 0 && targetUseField) {
 		    $('#matchField'+targetFieldNo).addClass('has-error');
 		    errorFound = 1;
-		}
+		}*/
 		mappingArray.push(targetFieldNo+'|'+targetFieldDesc+'|'+targetUseField+'|'+matchingField);
 		
 	    });
@@ -167,10 +167,10 @@ require(['./main'], function () {
 		var targetUseField = $('#useField'+targetFieldNo).is(':checked');
 		var matchingField = $(this).val();
 		
-		if(matchingField == 0 && targetUseField) {
+		/*if(matchingField == 0 && targetUseField) {
 		    $('#matchField'+targetFieldNo).addClass('has-error');
 		    errorFound = 1;
-		}
+		}*/
 		
 		mappingArray.push(targetFieldNo+'|'+targetFieldDesc+'|'+targetUseField+'|'+matchingField);
 		

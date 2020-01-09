@@ -2223,17 +2223,27 @@ public class transactionInDAOImpl implements transactionInDAO {
 
     @Override
     @Transactional(readOnly = true)
-    public List<batchErrorSummary> getBatchErrorSummary(int batchId) throws Exception {
+    public List<batchErrorSummary> getBatchErrorSummary(int batchId, String inboundOutbound) throws Exception {
+	
+	
 	try {
-	    String sql = ("select count(e.id) as totalErrors, e.errorId, c.displayText as errorDisplayText "
+	    String sql = "select count(e.id) as totalErrors, e.errorId, e.fromOutboundConfig, c.displayText as errorDisplayText "
 		    + "from batchuploadauditerrors e "
 		    + "inner join lu_errorcodes c on c.id = e.errorId "
-		    + "where e.batchUploadId = :batchId group by e.errorId");
+		    + "where e.batchUploadId = :batchId group by e.errorId";
+	    
+	    if("outbound".equals(inboundOutbound.toLowerCase())) {
+		sql = "select count(e.id) as totalErrors, e.errorId, 0 as fromOutboundConfig, c.displayText as errorDisplayText "
+		    + "from batchdownloadauditerrors e "
+		    + "inner join lu_errorcodes c on c.id = e.errorId "
+		    + "where e.batchDownloadId = :batchId group by e.errorId";
+	    }
 
 	    Query query = sessionFactory.getCurrentSession().createSQLQuery(sql)
 		    .addScalar("errorDisplayText", StandardBasicTypes.STRING)
 		    .addScalar("errorId", StandardBasicTypes.INTEGER)
 		    .addScalar("totalErrors", StandardBasicTypes.INTEGER)
+		    .addScalar("fromOutboundConfig", StandardBasicTypes.BOOLEAN)
 		    .setResultTransformer(Transformers.aliasToBean(batchErrorSummary.class));
 	    query.setParameter("batchId", batchId);
 
@@ -3147,5 +3157,22 @@ public class transactionInDAOImpl implements transactionInDAO {
     @Transactional(readOnly = false)
     public void submitBatchActivityLog(batchuploadactivity ba) {
 	sessionFactory.getCurrentSession().save(ba);
+    }
+    
+    @Override
+    @Transactional(readOnly = false)
+    public void updateRecordCountsFromAuditErrorTable(Integer batchUploadId) throws Exception {
+	
+	String  sql = "update batchuploads set errorRecordCount = "
+	    + "(select count(id) as total from batchuploadauditerrors where batchUploadId = :batchId) "
+	    + "where id = :batchId";
+	
+	Query updateData = sessionFactory.getCurrentSession().createSQLQuery(sql).setParameter("batchId", batchUploadId);
+	
+	try {
+	    updateData.executeUpdate();
+	} catch (Exception ex) {
+	    System.err.println("updateRecordCountsFromAuditErrorTable " + ex.getCause());
+	}
     }
 }

@@ -4,11 +4,17 @@
 require(['./main'], function () {
     require(['jquery'], function ($) {
 	
+	$('#myTabContent a[href="#source-config"]').tab('show');
+	
+	 $("a[data-toggle=\"tab\"]").on("shown.bs.tab", function (e) {
+		$($.fn.dataTable.tables( true ) ).css('width', '100%');
+		$($.fn.dataTable.tables( true ) ).DataTable().columns.adjust().draw();
+            });
+	
 	try {
 	    /* Table initialisation */
 	    var sourceconfigdatatable = $('#sourceconfigdatatable').dataTable({
-		"bStateSave": true,
-		"iCookieDuration": 60,
+		"bStateSave": false,
 		"sPaginationType": "bootstrap",
 		"oLanguage": {
 		    "sSearch": "_INPUT_",
@@ -22,16 +28,14 @@ require(['./main'], function () {
 			    '</select>'
 		}
 	    });
-	    sourceconfigdatatable.fnSetColumnVis(5,false);
-	    sourceconfigdatatable.fnSort([[5, 'desc']]);
+	    sourceconfigdatatable.fnSort([[0, 'desc']]);
 	}
 	catch(err) {}
 	
 	try {
 	    /* Table initialisation */
 	    var targetconfigdatatable = $('#targetconfigdatatable').dataTable({
-		"bStateSave": true,
-		"iCookieDuration": 60,
+		"bStateSave": false,
 		"sPaginationType": "bootstrap",
 		"oLanguage": {
 		    "sSearch": "_INPUT_",
@@ -45,12 +49,10 @@ require(['./main'], function () {
 			    '</select>'
 		}
 	    });
-	    targetconfigdatatable.fnSetColumnVis(5,false);
-	    targetconfigdatatable.fnSort([[5, 'desc']]);
+	    targetconfigdatatable.fnSort([[0, 'desc']]);
 	}
 	catch(err) {}
-
-
+	
         $.ajaxSetup({
             cache: false
         });

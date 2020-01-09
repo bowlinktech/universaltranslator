@@ -234,35 +234,29 @@ public class transactionOutManagerImpl implements transactionOutManager {
 	List<configurationDataTranslations> dataTranslations = configurationManager.getDataTranslationsWithFieldNo(configId, categoryId);
 
 	for (configurationDataTranslations cdt : dataTranslations) {
+	   
             
 	    if (cdt.getCrosswalkId() > 0) {
 		try {
-		    errorCount = errorCount + transactionInManager.processCrosswalk(configId, batchId, cdt, true);
-		    if (errorCount > 0) { //we break as we shouldn't waste time running all for outbound. Should not have any errors.
-			return 1;
-		    }
+		    transactionInManager.processCrosswalk(configId, batchId, cdt, true);
+		    
 		} catch (Exception e) {
 		    //throw new Exception("Error occurred processing crosswalks. crosswalkId: "+cdt.getCrosswalkId()+" configId: "+configId,e);
 		    //insert error into transactionouterrors
 		    transactionInManager.flagCWErrors(configId, batchId, cdt, true);
 		    e.printStackTrace();
-		    return 1;
 		}
 	    } else if (cdt.getMacroId() != 0) {
 		try {
-		    errorCount = errorCount + transactionInManager.processMacro(configId, batchId, cdt, true);
-		    if (errorCount > 0) { //we break as we shouldn't waste time running all for outbound. Should not have any errors.
-			transactionInManager.flagMacroErrors(configId, batchId, cdt, true);
-			return 1;
-		    }
+		    transactionInManager.processMacro(configId, batchId, cdt, true);
+		   
 		} catch (Exception e) {
 		    transactionInManager.flagMacroErrors(configId, batchId, cdt, true);
 		    e.printStackTrace();
-		    return 1;
 		}
 	    }
 	}
-	return errorCount;
+	return 0;
     }
 
     /**
@@ -1376,25 +1370,19 @@ public class transactionOutManagerImpl implements transactionOutManager {
 
 	Integer statusId = 37;
         
-	// 1. cw/macro
-	// 2. required
-	// 3. validate 
-	Integer processingError = translateTargetRecords(0, batchDownload.getConfigId(), batchDownload.getId(), 1);
+	// cw/macro checks, this does not return an error count
+	Integer totalErrorCount = translateTargetRecords(0, batchDownload.getConfigId(), batchDownload.getId(), 1);
+	
+	//Check for any errors logged with translating Macros and crosswalks
+	totalErrorCount = transactionOutDAO.getTotalErrors(batchDownload.getId());
         
-	if (processingError > 0) {
-	    
+	if (totalErrorCount > 0) {
 	    ba = new batchdownloadactivity();
-	    ba.setActivity("Error(s) occurred while translating target records");
+	    ba.setActivity("Crosswalk/Marcor Error(s) occurred while translating target records");
 	    ba.setBatchDownloadId(batchDownload.getId());
 	    transactionOutDAO.submitBatchActivityLog(ba);
-	    
-	    //we stop processing and retry the file as output shouldn't have errors
-	    updateTargetBatchStatus(batchDownload.getId(), 30, "endDateTime");
-	    return 1;
 	}
 	
-	Integer totalErrorCount = 0;
-
 	//check R/O
 	List<configurationFormFields> reqFields = transactionInManager.getRequiredFieldsForConfig(batchDownload.getConfigId());
 
@@ -1441,7 +1429,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
 	    
 	    if(transportDetails.isPopulateInboundAuditReport()) {
 		//Update inbound file for total errors
-		transactionInManager.updateRecordCounts(batchDownload.getBatchUploadId(), rejectIds, true, "errorRecordCount");
+		transactionInManager.updateRecordCountsFromAuditErrorTable(batchDownload.getBatchUploadId());
 		
 		//Update inbound status
 		transactionInManager.updateBatchStatus(batchDownload.getBatchUploadId(), 41, "endDateTime");
@@ -1470,7 +1458,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
 		
 		if(transportDetails.isPopulateInboundAuditReport()) {
 		    //Update inbound file for total errors
-		    transactionInManager.updateRecordCounts(batchDownload.getBatchUploadId(), rejectIds, true, "errorRecordCount");
+		    transactionInManager.updateRecordCountsFromAuditErrorTable(batchDownload.getBatchUploadId());
 		    
 		    ba = new batchdownloadactivity();
 		    ba.setActivity("Populate inbound batch Audit Report and error count for batchId:"+batchDownload.getBatchUploadId());
@@ -2397,7 +2385,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
     
     @Override
     public List<batchErrorSummary> getBatchErrorSummary(int batchId) throws Exception {
-	return transactionInDAO.getBatchErrorSummary(batchId);
+	return transactionInDAO.getBatchErrorSummary(batchId,"outbound");
     }
     
     @Override

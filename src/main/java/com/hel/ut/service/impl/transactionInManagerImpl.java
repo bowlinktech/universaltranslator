@@ -3392,8 +3392,8 @@ public class transactionInManagerImpl implements transactionInManager {
     }
 
     @Override
-    public List<batchErrorSummary> getBatchErrorSummary(int batchId) throws Exception {
-	return transactionInDAO.getBatchErrorSummary(batchId);
+    public List<batchErrorSummary> getBatchErrorSummary(int batchId, String inboundOutbound) throws Exception {
+	return transactionInDAO.getBatchErrorSummary(batchId,inboundOutbound);
     }
 
     @Override
@@ -4349,5 +4349,10 @@ public class transactionInManagerImpl implements transactionInManager {
     @Override
     public List<batchUploads> getAllUploadBatchesPaged(Date fromDate, Date toDate, Integer displayStart, Integer displayRecords, String searchTerm, String sortColumnName, String sortDirection) throws Exception {
 	return transactionInDAO.getAllUploadBatchesPaged(fromDate,toDate, displayStart, displayRecords, searchTerm, sortColumnName, sortDirection);
+    }
+    
+    @Override
+    public void updateRecordCountsFromAuditErrorTable(Integer batchUploadId) throws Exception {
+	transactionInDAO.updateRecordCountsFromAuditErrorTable(batchUploadId);
     }
 }

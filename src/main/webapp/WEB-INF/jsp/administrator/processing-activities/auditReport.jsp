@@ -268,10 +268,10 @@
 			    <div class="col-md-12">
 				<section class="panel panel-default">
 				    <div class="panel-heading">
-					<a data-toggle="collapse" rel="${batchDetails.id}" error="${batchError.errorId}" total="${batchError.totalErrors}" rel2="${i.index}" rel3="${OutboundBatch ? 'outbound' : 'inbound'}" class="errorCollapse" href="#collapse-${i.index}">
+					<a data-toggle="collapse" rel="${batchDetails.id}" error="${batchError.errorId}" total="${batchError.totalErrors}" rel2="${i.index}" rel3="${batchDownload ? 'outbound' : 'inbound'}" class="errorCollapse" href="#collapse-${i.index}">
 					   <div class="clearfix">
 						<div class="pull-left">
-						    <h3 class="panel-title">Error: ${batchError.errorDisplayText}</h3>
+						    <h3 class="panel-title">Error: ${batchError.errorDisplayText} <c:if test="${batchError.fromOutboundConfig}"><span class="text-info">(From Outbound Config)</span></c:if></h3>
 						</div>
 						<div class="pull-right">
 						    <h3 class="panel-title" style="color:red">Total Found: <fmt:formatNumber value = "${batchError.totalErrors}" type = "number"/></h3>
