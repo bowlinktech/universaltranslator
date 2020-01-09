@@ -4,17 +4,15 @@ require.config({
     paths: {
         'jquery': '../vendor/jquery-1.12.2.min',
         'bootstrap': '../vendor/bootstrap',
-        'responsive-tables': '../vendor/responsive-tables',
         'mediaModal': '../mediaModal',
         'overlay': '../overlay',
         'sprintf': '../vendor/sprintf',
         'moment': '../vendor/moment',
         'daterangepicker': '../vendor/daterangepicker',
-        'dataTables': '../vendor/jquery.dataTables.min'
+        'dataTables': '../vendor/datatables.min'
     },
     shim: {
         'bootstrap': ['jquery'],
-        'responsive-tables': ['jquery'],
         'daterangepicker': ['jquery', 'bootstrap'],
         'dataTables': ['jquery']
     },
@@ -23,7 +21,7 @@ require.config({
 
 var datatable;
 
-define(['jquery', 'moment', 'bootstrap', 'responsive-tables', 'mediaModal', 'overlay', 'daterangepicker', 'dataTables'], function ($, moment) {
+define(['jquery', 'moment', 'bootstrap', 'mediaModal', 'overlay', 'daterangepicker', 'dataTables'], function ($, moment) {
 
 
     $.ajaxSetup({
@@ -198,6 +196,7 @@ define(['jquery', 'moment', 'bootstrap', 'responsive-tables', 'mediaModal', 'ove
     
     /* Table initialisation */
     datatable = $('#dataTable').dataTable({
+	responsive: true,
 	"bStateSave": true,
         "iCookieDuration": 60,
         "sPaginationType": "bootstrap",

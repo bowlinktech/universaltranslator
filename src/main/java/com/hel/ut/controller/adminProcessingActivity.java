@@ -815,7 +815,7 @@ public class adminProcessingActivity {
             mav.addObject("batchDetails", batchDetails);
 	    
             if (batchDetails.getErrorRecordCount()> 0) {
-		List<batchErrorSummary> batchErrorSummary = transactionInManager.getBatchErrorSummary(batchDetails.getId());
+		List<batchErrorSummary> batchErrorSummary = transactionInManager.getBatchErrorSummary(batchDetails.getId(),"inbound");
 		mav.addObject("batchErrorSummary", batchErrorSummary);
 	    }
            
@@ -2071,7 +2071,7 @@ public class adminProcessingActivity {
 		    sql = "select case when b.containsHeaderRow = 1 then a.rownumber+1 else a.rownumber end as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name,a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
 			+ "from batchdownloadauditerrors a left outer  join "
 			+ "configurationmessagespecs b on a.configId = b.configId "
-			+ "where a.batcDownloadId = " + batchId + " and a.errorId = " + errorId + " order by a.id asc limit 50 ";
+			+ "where a.batchDownloadId = " + batchId + " and a.errorId = " + errorId + " order by a.id asc limit 50 ";
 		}
 		
 		break;
@@ -2093,7 +2093,7 @@ public class adminProcessingActivity {
 		    sql = "select case when b.containsHeaderRow = 1 then a.rownumber+1 else a.rownumber end as rownumber, a.fieldNo as fieldNumber, a.fieldName as column_name, a.errorDetails as validation_type, a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
 			+ "from batchdownloadauditerrors a left outer  join "
 			+ "configurationmessagespecs b on a.configId = b.configId "
-			+ "where a.batcDownloadId = " + batchId + " and a.errorId = " + errorId + " order by a.id asc limit 50 ";
+			+ "where a.batchDownloadId = " + batchId + " and a.errorId = " + errorId + " order by a.id asc limit 50 ";
 		}
 		
 		break;
@@ -2113,7 +2113,7 @@ public class adminProcessingActivity {
 		    sql = "select case when b.containsHeaderRow = 1 then a.rownumber+1 else a.rownumber end as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name, a.errorDetails as crosswalk, a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
 			+ "from batchdownloadauditerrors a left outer join "
 			+ "configurationmessagespecs b on a.configId = b.configId "
-			+ "where a.batcDownloadId = " + batchId + " and a.errorId = " + errorId + " order by a.id asc limit 50 ";
+			+ "where a.batchDownloadId = " + batchId + " and a.errorId = " + errorId + " order by a.id asc limit 50 ";
 		}
 		break;
 		
@@ -2134,7 +2134,7 @@ public class adminProcessingActivity {
 		    sql = "select case when b.containsHeaderRow = 1 then a.rownumber+1 else a.rownumber end as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name,a.errorDetails as macro, a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
 			+ "from batchdownloadauditerrors a left outer  join "
 			+ "configurationmessagespecs b on a.configId = b.configId "
-			+ "where a.batcDownloadId = " + batchId + " and a.errorId = " + errorId + " order by a.id asc limit 50 ";
+			+ "where a.batchDownloadId = " + batchId + " and a.errorId = " + errorId + " order by a.id asc limit 50 ";
 		}
 		
 		break;
@@ -2154,7 +2154,7 @@ public class adminProcessingActivity {
 		    sql = "select case when b.containsHeaderRow = 1 then a.rownumber+1 else a.rownumber end as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name,a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
 			+ "from batchdownloadauditerrors a left outer  join "
 			+ "configurationmessagespecs b on a.configId = b.configId "
-			+ "where a.batcDownloadId = " + batchId + " and a.errorId = " + errorId + " order by a.id asc limit 50 ";
+			+ "where a.batchDownloadId = " + batchId + " and a.errorId = " + errorId + " order by a.id asc limit 50 ";
 		}
 		
 		break;
@@ -2939,7 +2939,7 @@ public class adminProcessingActivity {
             mav.addObject("batchDetails", batchDetails);
 	    
             if (batchDetails.getTotalErrorCount() > 0) {
-		List<batchErrorSummary> batchErrorSummary = transactionInManager.getBatchErrorSummary(batchDetails.getId());
+		List<batchErrorSummary> batchErrorSummary = transactionInManager.getBatchErrorSummary(batchDetails.getId(),"outbound");
 		mav.addObject("batchErrorSummary", batchErrorSummary);
 	    }
 	   

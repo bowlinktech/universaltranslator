@@ -8,12 +8,24 @@ require(['./main'], function () {
             $('.alert').delay(2000).fadeOut(1000);
         }
 	
-	if($("#dataTable" ).length > 0) {
-	    var oSettings = datatable.fnSettings();
-        
-	    datatable.fnSort( [ [3,'desc'] ] );
-	    
-	}
+	var connectiondataTable = $('#connectiondataTable').dataTable({
+	    "bStateSave": true,
+	    "iCookieDuration": 60,
+	    "sPaginationType": "bootstrap",
+	    "oLanguage": {
+		"sSearch": "_INPUT_",
+		"sLengthMenu": '<select class="form-control" style="width:150px">' +
+			'<option value="10">10 Records</option>' +
+			'<option value="20">20 Records</option>' +
+			'<option value="30">30 Records</option>' +
+			'<option value="40">40 Records</option>' +
+			'<option value="50">50 Records</option>' +
+			'<option value="-1">All</option>' +
+			'</select>'
+	    }
+	});
+	connectiondataTable.fnSort([[0, 'desc']]);
+	
 	
 	$(document).on('click', '.deleteConnection', function() {
             

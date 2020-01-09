@@ -1049,10 +1049,15 @@ public class transactionOutDAOImpl implements transactionOutDAO {
 	StringBuilder insertFields = new StringBuilder();
 	
 	connectionFieldMappings.forEach(configfield -> {
-		if(configfield.isUseField()) {
-		    selectFields.append("F").append(configfield.getAssociatedFieldNo()).append(",");
-		    insertFields.append("F").append(configfield.getFieldNo()).append(",");
+	    if(configfield.isUseField()) {
+		if(configfield.getAssociatedFieldNo() == 0) {
+		    selectFields.append("''").append(",");
 		}
+		else {
+		    selectFields.append("F").append(configfield.getAssociatedFieldNo()).append(",");
+		}
+		insertFields.append("F").append(configfield.getFieldNo()).append(",");
+	    }
 	});
 	
 	//Need to copy transaction in tables into temp table
@@ -1497,5 +1502,21 @@ public class transactionOutDAOImpl implements transactionOutDAO {
 	query.setParameter("fieldNo", fieldNo);
 	
 	return query.list();
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public Integer getTotalErrors(Integer batchId) throws Exception {
+
+	String sql = "select * from transactionouterrors_"+batchId;
+
+	Query getTotalErrors = sessionFactory.getCurrentSession().createSQLQuery(sql);
+	
+	if(getTotalErrors.list() == null) {
+	    return 0;
+	}
+	else {
+	    return getTotalErrors.list().size();
+	}
     }
 }
