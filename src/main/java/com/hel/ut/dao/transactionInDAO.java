@@ -286,4 +286,6 @@ public interface transactionInDAO {
     void submitBatchActivityLog(batchuploadactivity ba);
     
     void updateRecordCountsFromAuditErrorTable(Integer batchUploadId) throws Exception;
+    
+    List<directmessagesin> getDirectMessagesInListPaged(Date fromDate, Date toDate, Integer displayStart, Integer displayRecords, String searchTerm, String sortColumnName, String sortDirection) throws Exception;
 }

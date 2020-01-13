@@ -26,16 +26,10 @@ import org.springframework.format.annotation.DateTimeFormat;
 public class directmessagesin {
     
     @Transient
-    private String orgName = null;
+    private String orgName = null, statusName = null, batchName = null;
 
     @Transient
-    private String statusName = null;
-
-    @Transient
-    private String errorDisplayText = null;
-
-    @Transient
-    private String batchName = null;
+    private Integer totalMessages = 0;
     
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -97,14 +91,6 @@ public class directmessagesin {
 
     public void setStatusName(String statusName) {
         this.statusName = statusName;
-    }
-
-    public String getErrorDisplayText() {
-        return errorDisplayText;
-    }
-
-    public void setErrorDisplayText(String errorDisplayText) {
-        this.errorDisplayText = errorDisplayText;
     }
 
     public String getBatchName() {
@@ -217,6 +203,14 @@ public class directmessagesin {
 
     public void setOriginalDirectMessage(String originalDirectMessage) {
 	this.originalDirectMessage = originalDirectMessage;
+    }
+
+    public Integer getTotalMessages() {
+	return totalMessages;
+    }
+
+    public void setTotalMessages(Integer totalMessages) {
+	this.totalMessages = totalMessages;
     }
     
 }

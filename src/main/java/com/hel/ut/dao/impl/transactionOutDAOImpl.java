@@ -1519,4 +1519,98 @@ public class transactionOutDAOImpl implements transactionOutDAO {
 	    return getTotalErrors.list().size();
 	}
     }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public List<directmessagesout> getDirectMessagesOutListPaged(Date fromDate, Date toDate, Integer displayStart, Integer displayRecords, String searchTerm, String sortColumnName, String sortDirection) throws Exception {
+	
+	String dateSQLString = "";
+	String dateSQLStringTotal = "";
+	
+	if(!"".equals(fromDate)) {
+	    dateSQLString += "a.dateCreated between '"+mysqlDateFormat.format(fromDate)+" 00:00:00' ";
+	    dateSQLStringTotal += "dateCreated between '"+mysqlDateFormat.format(fromDate)+" 00:00:00' ";
+	    
+	    if(!"".equals(toDate)) {
+		dateSQLString += "AND '"+mysqlDateFormat.format(toDate)+" 00:00:00'";
+		dateSQLStringTotal += "AND '"+mysqlDateFormat.format(toDate)+" 00:00:00'";
+	    }
+	    else {
+		dateSQLString += "AND '"+mysqlDateFormat.format(fromDate)+" 23:59:59'";
+		dateSQLStringTotal += "AND '"+mysqlDateFormat.format(fromDate)+" 23:59:59'";
+	    }
+	}
+	else {
+	    if(!"".equals(toDate)) {
+		dateSQLString += "a.dateCreated between '"+mysqlDateFormat.format(toDate)+" 00:00:00' ";
+		dateSQLString += "AND '"+mysqlDateFormat.format(toDate)+" 23:59:59'";
+	    }
+	    else {
+		dateSQLString += "a.id > 0";
+	    }
+	}
+	
+	
+	String sqlQuery = "select id, statusName, orgName, dateCreated, configId, batchDownloadId, batchName, totalMessages "
+		+ "from ("
+		+ "select a.id, a.batchDownloadId, a.dateCreated, a.configId, IFNULL(b.orgName,\"\") as orgName,"
+		+ "CASE WHEN a.statusId = 1 THEN 'To be processed' WHEN a.statusId = 2 THEN 'Processed' ELSE 'Rejected' END as statusName,"
+		+ "IFNULL(c.utBatchName,\"\") as batchName,"
+		+ "(select count(id) as total from directmessagesout where "+dateSQLStringTotal+") as totalMessages "
+		+ "FROM directmessagesout a left outer join  "
+		+ "organizations b on b.id = a.orgId left outer join  "
+		+ "batchdownloads c on c.id = a.batchDownloadId "
+		+ "where " + dateSQLString + ") as messagesOut ";
+	
+	if(!"".equals(searchTerm)){
+	    sqlQuery += " where ("
+	    + "id like '%"+searchTerm+"%' "
+	    + "OR configId like '%"+searchTerm+"%' "
+	    + "OR orgName like '%"+searchTerm+"%' "
+	    + "OR batchName like '%"+searchTerm+"%' "
+	    + "OR statusName like '%"+searchTerm+"%' "
+	    + "OR dateCreated like '%"+searchTerm+"%' "
+	    + ") ";
+	}	
+	
+	sqlQuery += "order by "+sortColumnName+" "+sortDirection;
+        sqlQuery += " limit " + displayStart + ", " + displayRecords;
+	
+	Query query = sessionFactory.getCurrentSession().createSQLQuery(sqlQuery)
+	    .addScalar("id", StandardBasicTypes.INTEGER)
+	    .addScalar("statusName", StandardBasicTypes.STRING)
+	    .addScalar("orgName", StandardBasicTypes.STRING)
+	    .addScalar("dateCreated", StandardBasicTypes.TIMESTAMP)
+	    .addScalar("batchDownloadId", StandardBasicTypes.INTEGER)
+	    .addScalar("configId", StandardBasicTypes.INTEGER)
+	    .addScalar("batchName", StandardBasicTypes.STRING)
+	    .addScalar("totalMessages", StandardBasicTypes.INTEGER)
+	    .setResultTransformer(Transformers.aliasToBean(directmessagesout.class));
+	
+	List<directmessagesout> directmessagesout = query.list();
+	
+        return directmessagesout;
+
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    @SuppressWarnings("unchecked")
+    public directmessagesout getDirectAPIMessagesById(Integer directMessageId) {
+	//1 if list of statusId is null, we get all
+	try {
+	    Criteria findDirectAPIMessage = sessionFactory.getCurrentSession().createCriteria(directmessagesout.class);
+	    findDirectAPIMessage.add(Restrictions.eq("id", directMessageId));
+
+	    List<directmessagesout> directAPIMessages = findDirectAPIMessage.list();
+	    if (!directAPIMessages.isEmpty()) {
+		return directAPIMessages.get(0);
+	    }
+	} catch (Exception ex) {
+	    System.err.println("getDirectAPIMessagesById " + ex.getCause());
+	    ex.printStackTrace();
+	    return null;
+	}
+	return null;
+    }
 }

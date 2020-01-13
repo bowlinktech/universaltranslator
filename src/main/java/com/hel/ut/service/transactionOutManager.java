@@ -117,4 +117,6 @@ public interface transactionOutManager {
     
     List<batchdownloadactivity> getBatchActivities(batchDownloads batchInfo);
     
+    directmessagesout getDirectAPIMessagesById(Integer directMessageId);
+    
 }

@@ -6,10 +6,12 @@
 package com.hel.ut.restAPI;
 
 import com.hel.ut.dao.RestAPIDAO;
+import com.hel.ut.dao.transactionInDAO;
 import com.hel.ut.dao.transactionOutDAO;
 import com.hel.ut.model.batchDownloads;
 import com.hel.ut.model.batchUploads;
 import com.hel.ut.model.configurationTransport;
+import com.hel.ut.model.directmessagesin;
 import com.hel.ut.model.directmessagesout;
 import com.hel.ut.model.hisps;
 import com.hel.ut.service.emailMessageManager;
@@ -42,6 +44,8 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.security.cert.X509Certificate;
+import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
@@ -62,6 +66,9 @@ public class directManager {
 
     @Autowired
     private transactionOutDAO transactionOutDAO;
+    
+    @Autowired
+    private transactionInDAO transactionInDAO;
 
     @Autowired
     private transactionOutManager transactionoutmanager;
@@ -411,10 +418,15 @@ public class directManager {
 	    
 	}
 	catch (Exception e) {
-	    System.out.println(e.getMessage());
 	    throw new Exception("Error occurred trying to send out a direct message to MedAllies. batch Download Id: " + batchDownloadId, e);
 	}
     }
-    
+   
+    public List<directmessagesin> getDirectMessagesInListPaged(Date fromDate, Date toDate, Integer displayStart, Integer displayRecords, String searchTerm, String sortColumnName, String sortDirection) throws Exception {
+	return transactionInDAO.getDirectMessagesInListPaged(fromDate,toDate,displayStart,displayRecords,searchTerm,sortColumnName,sortDirection);
+    }
 
+    public List<directmessagesout> getDirectMessagesOutListPaged(Date fromDate, Date toDate, Integer displayStart, Integer displayRecords, String searchTerm, String sortColumnName, String sortDirection) throws Exception {
+	return transactionOutDAO.getDirectMessagesOutListPaged(fromDate,toDate,displayStart,displayRecords,searchTerm,sortColumnName,sortDirection);
+    }
 }
