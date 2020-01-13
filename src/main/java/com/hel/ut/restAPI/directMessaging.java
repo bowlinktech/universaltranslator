@@ -218,10 +218,9 @@ public class directMessaging {
 								sendingResponse = "Failed to find configuration. OrgId: " + directDetails.getOrgId() + "; To Direct Address: " + messageInfo.getToDirectAddress();
 							    }
                                                         }
+							
                                                         
                                                         if(newDMMessageID > 0 && statusId == 1) {
-							    //Call the method to start processing this message immediately
-							    transactionInManager.processDirectAPIMessages();
 							    
 							    JSONObject responseObject = new JSONObject();
 							    if(!"".equals(messageInfo.getMessageId())) {
@@ -241,6 +240,9 @@ public class directMessaging {
 							    directMessageDetails.setStatusId(statusId);
 							    directMessageDetails.setSendingResponse(sendingResponse);
 							    transactionInManager.updateDirectAPIMessage(directMessageDetails);
+							    
+							    //Call the method to start processing this message immediately
+							    transactionInManager.processDirectAPIMessages();
 							    
                                                             return new ResponseEntity(responseObject, HttpStatus.OK);
 							    
