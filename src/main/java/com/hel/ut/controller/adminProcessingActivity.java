@@ -29,6 +29,7 @@ import com.hel.ut.model.custom.TableData;
 import com.hel.ut.model.custom.batchErrorSummary;
 import com.hel.ut.model.custom.searchParameters;
 import com.hel.ut.model.directmessagesin;
+import com.hel.ut.model.directmessagesout;
 import com.hel.ut.model.fieldSelectOptions;
 import com.hel.ut.model.lutables.lu_ProcessStatus;
 import com.hel.ut.model.referralActivityExports;
@@ -36,6 +37,7 @@ import com.hel.ut.model.systemSummary;
 import com.hel.ut.model.transactionOutRecords;
 import com.hel.ut.model.transactionRecords;
 import com.hel.ut.model.watchlistEntry;
+import com.hel.ut.restAPI.directManager;
 import com.hel.ut.restAPI.restfulManager;
 import com.hel.ut.security.decryptObject;
 import com.hel.ut.security.encryptObject;
@@ -128,6 +130,9 @@ public class adminProcessingActivity {
     
     @Autowired
     private restfulManager restfulmanager;
+    
+    @Autowired
+    private directManager directmanager;
 
     private String topSecret = "Hello123JavaTomcatMysqlDPHSystem2016";
 
@@ -3138,6 +3143,228 @@ public class adminProcessingActivity {
         mav.setViewName("/administrator/processing-activities/directHISPDetails");
 
         directmessagesin directMessageDetails = transactionInManager.getDirectAPIMessagesByBatchUploadId(batchUploadId);
+	mav.addObject("directMessageDetails",directMessageDetails);
+
+        return mav;
+    }
+    
+    /**
+     * The '/directmessages' GET request will serve up the list of inbound direct messages
+     *
+     *
+     * @param pathVariables
+     * @param session
+     * @return 
+     * @Objects	(1) An object containing all the found directmessagesIn
+     *
+     * @throws Exception
+     */
+    @RequestMapping(value={ "/directmessages", "/directmessages/{batchName}" }, method = RequestMethod.GET)
+    public ModelAndView listInBoundDirectMessages(@PathVariable Map<String, String> pathVariables, HttpSession session) throws Exception {
+
+        int year = 114;
+        int month = 0;
+        int day = 1;
+        Date originalDate = new Date(year, month, day);
+
+        Date fromDate = getMonthDate("START");
+        Date toDate = getMonthDate("END");
+
+        /* Retrieve search parameters from session */
+        searchParameters searchParameters = (searchParameters) session.getAttribute("searchParameters");
+
+        ModelAndView mav = new ModelAndView();
+        mav.setViewName("/administrator/processing-activity/directmessages");
+
+        if ("".equals(searchParameters.getsection()) || !"inbound".equals(searchParameters.getsection())) {
+            searchParameters.setfromDate(fromDate);
+            searchParameters.settoDate(toDate);
+            searchParameters.setsection("inbound");
+        } else {
+            fromDate = searchParameters.getfromDate();
+            toDate = searchParameters.gettoDate();
+        }
+
+        mav.addObject("fromDate", fromDate);
+        mav.addObject("toDate", toDate);
+        mav.addObject("originalDate", originalDate);
+	mav.addObject("batchName", pathVariables.get("batchName"));
+
+        return mav;
+    }
+    
+    @RequestMapping(value = "/ajax/getDirectMessagesIn", method = RequestMethod.GET)
+    @ResponseBody
+    public String getDirectMessagesIn(HttpServletRequest request, HttpServletResponse response, HttpSession session, @RequestParam Date fromDate, @RequestParam Date toDate, @RequestParam String batchName) throws Exception {
+	
+	Gson gson = new Gson();
+        JsonObject jsonResponse = new JsonObject();
+	Integer iDisplayStart = Integer.parseInt(request.getParameter("iDisplayStart"));
+        Integer iDisplayLength = Integer.parseInt(request.getParameter("iDisplayLength"));
+        String sortColumn = request.getParameter("iSortCol_0");
+        String sortColumnName = request.getParameter("mDataProp_"+sortColumn);
+        String searchTerm = request.getParameter("sSearch").toLowerCase();
+        String sEcho = request.getParameter("sEcho");
+        String sortDirection = request.getParameter("sSortDir_0");
+        Integer totalRecords = 0;
+	
+	//Retrieve search parameters from session 
+        searchParameters searchParameters = (searchParameters) session.getAttribute("searchParameters");
+        searchParameters.setfromDate(fromDate);
+        searchParameters.settoDate(toDate);
+        searchParameters.setsection("inbound");
+	
+	if(!"".equals(batchName)) {
+	    searchTerm = batchName;
+	}
+	
+        // Get all direct messages in 
+        List<directmessagesin> directMessagesList = directmanager.getDirectMessagesInListPaged(fromDate, toDate,iDisplayStart, iDisplayLength, searchTerm, sortColumnName, sortDirection);
+	
+	if(directMessagesList.isEmpty()) {
+	    totalRecords = 0;
+	}
+	else {
+	    totalRecords = directMessagesList.get(0).getTotalMessages();
+	}
+	
+	jsonResponse.addProperty("sEcho", sEcho);
+        jsonResponse.addProperty("iTotalRecords", totalRecords);
+        jsonResponse.addProperty("iTotalDisplayRecords", totalRecords);
+        jsonResponse.add("aaData", gson.toJsonTree(directMessagesList));
+	
+        return jsonResponse.toString();
+    }
+    
+    /**
+     * The '/directmessagesOut' GET request will serve up the list of outbound direct messages
+     *
+     *
+     * @param pathVariables
+     * @param session
+     * @return 
+     * @Objects	(1) An object containing all the found directmessagesOut
+     *
+     * @throws Exception
+     */
+    @RequestMapping(value={ "/directmessagesOut", "/directmessagesOut/{batchName}" }, method = RequestMethod.GET)
+    public ModelAndView listOutBoundDirectMessages(@PathVariable Map<String, String> pathVariables, HttpSession session) throws Exception {
+
+        int year = 114;
+        int month = 0;
+        int day = 1;
+        Date originalDate = new Date(year, month, day);
+
+        Date fromDate = getMonthDate("START");
+        Date toDate = getMonthDate("END");
+
+        /* Retrieve search parameters from session */
+        searchParameters searchParameters = (searchParameters) session.getAttribute("searchParameters");
+
+        ModelAndView mav = new ModelAndView();
+        mav.setViewName("/administrator/processing-activity/directmessagesOut");
+
+        if ("".equals(searchParameters.getsection()) || !"outbound".equals(searchParameters.getsection())) {
+            searchParameters.setfromDate(fromDate);
+            searchParameters.settoDate(toDate);
+            searchParameters.setsection("outbound");
+        } else {
+            fromDate = searchParameters.getfromDate();
+            toDate = searchParameters.gettoDate();
+        }
+
+        mav.addObject("fromDate", fromDate);
+        mav.addObject("toDate", toDate);
+        mav.addObject("originalDate", originalDate);
+	mav.addObject("batchName", pathVariables.get("batchName"));
+
+        return mav;
+
+    }
+
+    @RequestMapping(value = "/ajax/getDirectMessagesOut", method = RequestMethod.GET)
+    @ResponseBody
+    public String getDirectMessagesOut(HttpServletRequest request, HttpServletResponse response, HttpSession session, @RequestParam Date fromDate, @RequestParam Date toDate, @RequestParam String batchName) throws Exception {
+	
+	Gson gson = new Gson();
+        JsonObject jsonResponse = new JsonObject();
+	Integer iDisplayStart = Integer.parseInt(request.getParameter("iDisplayStart"));
+        Integer iDisplayLength = Integer.parseInt(request.getParameter("iDisplayLength"));
+        String sortColumn = request.getParameter("iSortCol_0");
+        String sortColumnName = request.getParameter("mDataProp_"+sortColumn);
+        String searchTerm = request.getParameter("sSearch").toLowerCase();
+        String sEcho = request.getParameter("sEcho");
+        String sortDirection = request.getParameter("sSortDir_0");
+        Integer totalRecords = 0;
+	
+	//Retrieve search parameters from session 
+        searchParameters searchParameters = (searchParameters) session.getAttribute("searchParameters");
+        searchParameters.setfromDate(fromDate);
+        searchParameters.settoDate(toDate);
+        searchParameters.setsection("inbound");
+	
+	if(!"".equals(batchName)) {
+	    searchTerm = batchName;
+	}
+	
+        List<directmessagesout> directMessagesList = directmanager.getDirectMessagesOutListPaged(fromDate, toDate,iDisplayStart, iDisplayLength, searchTerm, sortColumnName, sortDirection);
+	
+	if(directMessagesList.isEmpty()) {
+	    totalRecords = 0;
+	}
+	else {
+	    totalRecords = directMessagesList.get(0).getTotalMessages();
+	}
+	
+	jsonResponse.addProperty("sEcho", sEcho);
+        jsonResponse.addProperty("iTotalRecords", totalRecords);
+        jsonResponse.addProperty("iTotalDisplayRecords", totalRecords);
+        jsonResponse.add("aaData", gson.toJsonTree(directMessagesList));
+	
+        return jsonResponse.toString();
+    }
+    
+    /**
+     * The '/viewDirectDetailsById{directMessageId}' function will return the details of the selected batch uploaded message received from a HISP via DIRECT.The results will be displayed in the overlay.
+     *
+     * @param directMessageId
+     * @return 
+     * @throws java.lang.Exception
+     * @Param	batchUploadId This will hold the id of the selected batch uploaded message
+     *
+     * @Return	This function will return the direct details view.
+     */
+    @RequestMapping(value = "/viewDirectDetailsById{directMessageId}", method = RequestMethod.GET)
+    public @ResponseBody
+    ModelAndView viewDirectDetailsById(@PathVariable int directMessageId) throws Exception {
+
+        ModelAndView mav = new ModelAndView();
+        mav.setViewName("/administrator/processing-activities/directHISPDetails");
+
+        directmessagesin directMessageDetails = transactionInManager.getDirectAPIMessagesById(directMessageId);
+	mav.addObject("directMessageDetails",directMessageDetails);
+
+        return mav;
+    }
+    
+    /**
+     * The '/viewDirectDetailsOutById{directMessageId}' function will return the details of the selected batch uploaded message received from a HISP via DIRECT.The results will be displayed in the overlay.
+     *
+     * @param directMessageId
+     * @return 
+     * @throws java.lang.Exception
+     * @Param	batchUploadId This will hold the id of the selected batch uploaded message
+     *
+     * @Return	This function will return the direct details view.
+     */
+    @RequestMapping(value = "/viewDirectDetailsOutById{directMessageId}", method = RequestMethod.GET)
+    public @ResponseBody
+    ModelAndView viewDirectDetailsOutById(@PathVariable int directMessageId) throws Exception {
+
+        ModelAndView mav = new ModelAndView();
+        mav.setViewName("/administrator/processing-activities/directOutDetails");
+
+        directmessagesout directMessageDetails = transactionOutManager.getDirectAPIMessagesById(directMessageId);
 	mav.addObject("directMessageDetails",directMessageDetails);
 
         return mav;

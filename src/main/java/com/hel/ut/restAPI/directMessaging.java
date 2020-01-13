@@ -123,12 +123,30 @@ public class directMessaging {
                                 //Need to send email of error
                                 return new ResponseEntity("Invalid JSON Attachment List!", HttpStatus.BAD_REQUEST);
                             }
+			    
+			    //Need to create an entry in the received Direct Messages table
+			    directmessagesin newDirectMessageIn = new directmessagesin();
+			    newDirectMessageIn.setArchiveFileName("archivesIn/"+dateFormat.format(date)+".json");
+			    newDirectMessageIn.setConfigId(0);
+			    newDirectMessageIn.setFromDirectAddress(messageInfo.getFromDirectAddress());
+			    newDirectMessageIn.setToDirectAddress(messageInfo.getToDirectAddress());
+			    newDirectMessageIn.setHispId(0);
+			    newDirectMessageIn.setStatusId(3);
+			    newDirectMessageIn.setReferralFileName("");
+			    newDirectMessageIn.setOrgId(0);
+			    newDirectMessageIn.setSendingResponse("");
+			    newDirectMessageIn.setOriginalDirectMessage(originalDirectMessageName);
+
+			    Integer newDMMessageID = transactionInManager.insertDMMessage(newDirectMessageIn);
+
+			    directmessagesin directMessageDetails = transactionInManager.getDirectAPIMessagesById(newDMMessageID);
                             
                             if(!attachmentList.isEmpty()) {
-                                
+				
                                 if(messageInfo.getToDirectAddress().contains("@")) {
                                 
                                     if(messageInfo.getFromDirectAddress().contains("@")) {
+					
                                         String DMDomain = messageInfo.getFromDirectAddress().substring(messageInfo.getFromDirectAddress().indexOf("@")+1,messageInfo.getFromDirectAddress().length());
 
                                         organizationDirectDetails directDetails = configurationtransportmanager.getDirectMessagingDetails(DMDomain);
@@ -137,6 +155,11 @@ public class directMessaging {
                                             Organization orgDetails = organizationmanager.getOrganizationById(directDetails.getOrgId());
 
                                             if (!validateHISPCredentials(credvalues, directDetails)) {
+						directMessageDetails.setOrgId(directDetails.getOrgId());
+						directMessageDetails.setHispId(directDetails.getHispId());
+						directMessageDetails.setSendingResponse("Invalid Credentials");
+						transactionInManager.updateDirectAPIMessage(directMessageDetails);
+						
                                                 return new ResponseEntity("Invalid Credentials!", HttpStatus.UNAUTHORIZED);
                                             } 
                                             else {
@@ -196,21 +219,6 @@ public class directMessaging {
 							    }
                                                         }
                                                         
-                                                        //Need to create an entry in the received Direct Messages table
-                                                        directmessagesin newDirectMessageIn = new directmessagesin();
-                                                        newDirectMessageIn.setArchiveFileName("archivesIn/"+dateFormat.format(date)+".json");
-                                                        newDirectMessageIn.setConfigId(configId);
-                                                        newDirectMessageIn.setFromDirectAddress(messageInfo.getFromDirectAddress());
-                                                        newDirectMessageIn.setToDirectAddress(messageInfo.getToDirectAddress());
-                                                        newDirectMessageIn.setHispId(directDetails.getHispId());
-                                                        newDirectMessageIn.setStatusId(statusId);
-                                                        newDirectMessageIn.setReferralFileName(CCDATitle);
-                                                        newDirectMessageIn.setOrgId(directDetails.getOrgId());
-							newDirectMessageIn.setSendingResponse(sendingResponse);
-							newDirectMessageIn.setOriginalDirectMessage(originalDirectMessageName);
-                                                        
-                                                        Integer newDMMessageID = transactionInManager.insertDMMessage(newDirectMessageIn);
-				
                                                         if(newDMMessageID > 0 && statusId == 1) {
 							    //Call the method to start processing this message immediately
 							    transactionInManager.processDirectAPIMessages();
@@ -225,6 +233,15 @@ public class directMessaging {
 							    responseObject.put("status","SUCCESS");
 							    responseObject.put("result","Successfully received and processed your message.");
 							    
+							    //Need to create an entry in the received Direct Messages table
+							    directMessageDetails.setConfigId(configId);
+							    directMessageDetails.setOrgId(directDetails.getOrgId());
+							    directMessageDetails.setHispId(directDetails.getHispId());
+							    directMessageDetails.setReferralFileName(CCDATitle);
+							    directMessageDetails.setStatusId(statusId);
+							    directMessageDetails.setSendingResponse(sendingResponse);
+							    transactionInManager.updateDirectAPIMessage(directMessageDetails);
+							    
                                                             return new ResponseEntity(responseObject, HttpStatus.OK);
 							    
                                                         }
@@ -238,6 +255,15 @@ public class directMessaging {
 							    }
 							    responseObject.put("status","FAILED");
 							    responseObject.put("result","Failed to process your message.");
+							    
+							    //Need to create an entry in the received Direct Messages table
+							    directMessageDetails.setConfigId(configId);
+							    directMessageDetails.setOrgId(directDetails.getOrgId());
+							    directMessageDetails.setHispId(directDetails.getHispId());
+							    directMessageDetails.setReferralFileName(CCDATitle);
+							    directMessageDetails.setSendingResponse(sendingResponse);
+							    transactionInManager.updateDirectAPIMessage(directMessageDetails);
+							    
                                                             return new ResponseEntity(responseObject, HttpStatus.EXPECTATION_FAILED);
                                                         }
 
@@ -252,7 +278,13 @@ public class directMessaging {
 							}
 							responseObject.put("status","FAILED");
 							responseObject.put("result","Received attachment extension (" + FilenameUtils.getExtension(CCDATitle).toLowerCase()+ ") does not match the expected file extension - ." + directDetails.getExpectedFileExt());
-                                                        return new ResponseEntity(responseObject, HttpStatus.BAD_REQUEST);
+                                                        
+							directMessageDetails.setOrgId(directDetails.getOrgId());
+							directMessageDetails.setHispId(directDetails.getHispId());
+							directMessageDetails.setSendingResponse("Received attachment extension (" + FilenameUtils.getExtension(CCDATitle).toLowerCase()+ ") does not match the expected file extension - ." + directDetails.getExpectedFileExt());
+							transactionInManager.updateDirectAPIMessage(directMessageDetails);
+							
+							return new ResponseEntity(responseObject, HttpStatus.BAD_REQUEST);
                                                     }
                                                 }
                                                 else {
@@ -265,6 +297,12 @@ public class directMessaging {
 						    }
 						    responseObject.put("status","FAILED");
 						    responseObject.put("result","missing message attachments");
+						    
+						    directMessageDetails.setOrgId(directDetails.getOrgId());
+						    directMessageDetails.setHispId(directDetails.getHispId());
+						    directMessageDetails.setSendingResponse("missing message attachments");
+						    transactionInManager.updateDirectAPIMessage(directMessageDetails);
+						    
                                                     return new ResponseEntity(responseObject, HttpStatus.BAD_REQUEST);
                                                 }
                                             }
@@ -279,6 +317,10 @@ public class directMessaging {
 					    }
 					    responseObject.put("status","FAILED");
 					    responseObject.put("result","sending direct message is invalid - " + messageInfo.getFromDirectAddress());
+					    
+					    directMessageDetails.setSendingResponse("sending direct message is invalid - " + messageInfo.getFromDirectAddress());
+					    transactionInManager.updateDirectAPIMessage(directMessageDetails);
+					    
                                             return new ResponseEntity(responseObject, HttpStatus.BAD_REQUEST);
                                         }
                                     }
@@ -292,6 +334,10 @@ public class directMessaging {
 					}
 					responseObject.put("status","FAILED");
 					responseObject.put("result","sending direct message is invalid - " + messageInfo.getFromDirectAddress());
+					
+					directMessageDetails.setSendingResponse("sending direct message is invalid - " + messageInfo.getFromDirectAddress());
+					transactionInManager.updateDirectAPIMessage(directMessageDetails);
+					
                                         return new ResponseEntity(responseObject, HttpStatus.BAD_REQUEST);
                                     }
                                 }
@@ -305,6 +351,10 @@ public class directMessaging {
 				    }
 				    responseObject.put("status","FAILED");
 				    responseObject.put("result","recipient direct message is invalid - " + messageInfo.getToDirectAddress());
+				    
+				    directMessageDetails.setSendingResponse("recipient direct message is invalid - " + messageInfo.getToDirectAddress());
+				    transactionInManager.updateDirectAPIMessage(directMessageDetails);
+				    
                                     return new ResponseEntity("recipient direct message is invalid - " + messageInfo.getToDirectAddress(), HttpStatus.BAD_REQUEST);
                                 }
                             }
@@ -318,6 +368,10 @@ public class directMessaging {
 				}
 				responseObject.put("status","FAILED");
 				responseObject.put("result","missing message attachments");
+				
+				directMessageDetails.setSendingResponse("missing message attachments");
+				transactionInManager.updateDirectAPIMessage(directMessageDetails);
+				
                                 return new ResponseEntity(responseObject, HttpStatus.BAD_REQUEST);
                             }
                         }

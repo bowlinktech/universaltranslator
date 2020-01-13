@@ -3175,4 +3175,77 @@ public class transactionInDAOImpl implements transactionInDAO {
 	    System.err.println("updateRecordCountsFromAuditErrorTable " + ex.getCause());
 	}
     }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public List<directmessagesin> getDirectMessagesInListPaged(Date fromDate, Date toDate, Integer displayStart, Integer displayRecords, String searchTerm, String sortColumnName, String sortDirection) throws Exception {
+	
+	String dateSQLString = "";
+	String dateSQLStringTotal = "";
+	
+	if(!"".equals(fromDate)) {
+	    dateSQLString += "a.dateCreated between '"+mysqlDateFormat.format(fromDate)+" 00:00:00' ";
+	    dateSQLStringTotal += "dateCreated between '"+mysqlDateFormat.format(fromDate)+" 00:00:00' ";
+	    
+	    if(!"".equals(toDate)) {
+		dateSQLString += "AND '"+mysqlDateFormat.format(toDate)+" 00:00:00'";
+		dateSQLStringTotal += "AND '"+mysqlDateFormat.format(toDate)+" 00:00:00'";
+	    }
+	    else {
+		dateSQLString += "AND '"+mysqlDateFormat.format(fromDate)+" 23:59:59'";
+		dateSQLStringTotal += "AND '"+mysqlDateFormat.format(fromDate)+" 23:59:59'";
+	    }
+	}
+	else {
+	    if(!"".equals(toDate)) {
+		dateSQLString += "a.dateCreated between '"+mysqlDateFormat.format(toDate)+" 00:00:00' ";
+		dateSQLString += "AND '"+mysqlDateFormat.format(toDate)+" 23:59:59'";
+	    }
+	    else {
+		dateSQLString += "a.id > 0";
+	    }
+	}
+	
+	
+	String sqlQuery = "select id, statusName, orgName, dateCreated, configId, batchUploadId, batchName, totalMessages "
+		+ "from ("
+		+ "select a.id, a.batchUploadId, a.dateCreated, a.configId, IFNULL(b.orgName,\"\") as orgName,"
+		+ "CASE WHEN a.statusId = 1 THEN 'To be processed' WHEN a.statusId = 2 THEN 'Processed' ELSE 'Rejected' END as statusName,"
+		+ "IFNULL(c.utBatchName,\"\") as batchName,"
+		+ "(select count(id) as total from directmessagesin where "+dateSQLStringTotal+") as totalMessages "
+		+ "FROM directmessagesin a left outer join  "
+		+ "organizations b on b.id = a.orgId left outer join  "
+		+ "batchuploads c on c.id = a.batchUploadId "
+		+ "where " + dateSQLString + ") as messagesIn ";
+	
+	if(!"".equals(searchTerm)){
+	    sqlQuery += " where ("
+	    + "id like '%"+searchTerm+"%' "
+	    + "OR configId like '%"+searchTerm+"%' "
+	    + "OR orgName like '%"+searchTerm+"%' "
+	    + "OR batchName like '%"+searchTerm+"%' "
+	    + "OR statusName like '%"+searchTerm+"%' "
+	    + "OR dateCreated like '%"+searchTerm+"%' "
+	    + ") ";
+	}	
+	
+	sqlQuery += "order by "+sortColumnName+" "+sortDirection;
+        sqlQuery += " limit " + displayStart + ", " + displayRecords;
+	
+	Query query = sessionFactory.getCurrentSession().createSQLQuery(sqlQuery)
+	    .addScalar("id", StandardBasicTypes.INTEGER)
+	    .addScalar("statusName", StandardBasicTypes.STRING)
+	    .addScalar("orgName", StandardBasicTypes.STRING)
+	    .addScalar("dateCreated", StandardBasicTypes.TIMESTAMP)
+	    .addScalar("batchUploadId", StandardBasicTypes.INTEGER)
+	    .addScalar("configId", StandardBasicTypes.INTEGER)
+	    .addScalar("batchName", StandardBasicTypes.STRING)
+	    .addScalar("totalMessages", StandardBasicTypes.INTEGER)
+	    .setResultTransformer(Transformers.aliasToBean(directmessagesin.class));
+	
+	List<directmessagesin> directmessagesin = query.list();
+	
+        return directmessagesin;
+
+    }
 }

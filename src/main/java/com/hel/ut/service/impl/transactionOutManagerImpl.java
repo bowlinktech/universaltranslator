@@ -2392,4 +2392,9 @@ public class transactionOutManagerImpl implements transactionOutManager {
     public List<batchdownloadactivity> getBatchActivities(batchDownloads batchInfo) {
 	return transactionOutDAO.getBatchActivities(batchInfo);
     }
+    
+    @Override
+    public directmessagesout getDirectAPIMessagesById(Integer directMessageId) {
+	return transactionOutDAO.getDirectAPIMessagesById(directMessageId);
+    }
 }

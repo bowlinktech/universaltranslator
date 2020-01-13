@@ -129,4 +129,8 @@ public interface transactionOutDAO {
     void submitBatchActivityLog(batchdownloadactivity ba);
     
     Integer getTotalErrors(Integer batchId) throws Exception;
+    
+    List<directmessagesout> getDirectMessagesOutListPaged(Date fromDate, Date toDate, Integer displayStart, Integer displayRecords, String searchTerm, String sortColumnName, String sortDirection) throws Exception;
+    
+    directmessagesout getDirectAPIMessagesById(Integer directMessageId);
 }

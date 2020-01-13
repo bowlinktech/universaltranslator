@@ -13,6 +13,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 import org.springframework.format.annotation.DateTimeFormat;
 
@@ -23,6 +24,12 @@ import org.springframework.format.annotation.DateTimeFormat;
 @Entity
 @Table(name = "directmessagesout")
 public class directmessagesout {
+    
+    @Transient
+    private String orgName = null, statusName = null, batchName = null;
+    
+    @Transient
+    private Integer totalMessages = 0;
     
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -170,5 +177,37 @@ public class directmessagesout {
 	this.responseMessage = responseMessage;
     }
 
+    public Integer getTotalMessages() {
+	return totalMessages;
+    }
+
+    public void setTotalMessages(Integer totalMessages) {
+	this.totalMessages = totalMessages;
+    }
+
+    public String getOrgName() {
+	return orgName;
+    }
+
+    public void setOrgName(String orgName) {
+	this.orgName = orgName;
+    }
+
+    public String getStatusName() {
+	return statusName;
+    }
+
+    public void setStatusName(String statusName) {
+	this.statusName = statusName;
+    }
+
+    public String getBatchName() {
+	return batchName;
+    }
+
+    public void setBatchName(String batchName) {
+	this.batchName = batchName;
+    }
+    
     
 }

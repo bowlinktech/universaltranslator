@@ -43,6 +43,12 @@
 		    <c:when test="${param['page'] == 'invalidout'}">
                         <a href="javascript:void(0);" title="Invalid Outbound Batches" class="unstyled-link">Invalid Outbound Batches</a>
                     </c:when>
+		    <c:when test="${param['page'] == 'directmessages'}">
+                        <a href="javascript:void(0);" title="Direct Messages In" class="unstyled-link">Direct Messages In</a>
+                    </c:when>
+		   <c:when test="${param['page'] == 'directmessagesout'}">
+                        <a href="javascript:void(0);" title="Direct Messages Out" class="unstyled-link">Direct Messages Out</a>
+                    </c:when>
                 </c:choose>
             </h1>
         </div>
