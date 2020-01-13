@@ -48,7 +48,7 @@
 	    <div class="col-md-3 col-sm-3 col-xs-6">
 		<section class="panel panel-default panel-stats" role="widget" aria-labelleby="Rejected Received">
 		    <div class="panel-body">
-			    <span class="stat-number"><a href="/administrator/processing-activity/inbound"><c:choose><c:when test="${totalRejectedReceived >= 0}"><fmt:formatNumber value = "${totalRejectedReceived}" type = "number"/></c:when><c:otherwise>0</c:otherwise></c:choose></a></span>
+			    <span class="stat-number"><a href="/administrator/processing-activity/invalidIn"><c:choose><c:when test="${totalRejectedReceived >= 0}"><fmt:formatNumber value = "${totalRejectedReceived}" type = "number"/></c:when><c:otherwise>0</c:otherwise></c:choose></a></span>
 			<h3>Rejected Received</h3>
 		    </div>
 		</section>
@@ -64,7 +64,7 @@
 	    <div class="col-md-3 col-sm-3 col-xs-6">
 		<section class="panel panel-default panel-stats" role="widget" aria-labelleby="Rejected Delivered">
 		    <div class="panel-body">
-			    <span class="stat-number"><a href="/administrator/processing-activity/outbound"><c:choose><c:when test="${totalDeliveredRejected >= 0}"><fmt:formatNumber value = "${totalDeliveredRejected}" type = "number"/></c:when><c:otherwise>0</c:otherwise></c:choose></a></span>
+			    <span class="stat-number"><a href="/administrator/processing-activity/invalidOut"><c:choose><c:when test="${totalDeliveredRejected >= 0}"><fmt:formatNumber value = "${totalDeliveredRejected}" type = "number"/></c:when><c:otherwise>0</c:otherwise></c:choose></a></span>
 			<h3>Rejected Delivered</h3>
 		    </div>
 		</section>

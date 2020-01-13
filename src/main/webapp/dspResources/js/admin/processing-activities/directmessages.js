@@ -109,8 +109,14 @@ function populateMessages(fromDate,toDate) {
 		"sWidth": "15%",
 		"className": "center-text",
 		"render": function ( data, type, row, meta ) {
-		    var dateC = new Date(row.dateCreated);
-		    var myDateFormatted = ((dateC.getMonth()*1)+1)+'/'+dateC.getDate()+'/'+dateC.getFullYear();
+		    var dateC = new Date(data);
+		    var minutes = dateC.getMinutes();
+		    var hours = dateC.getHours();
+		    var ampm =  hours >= 12 ? 'pm' : 'am';
+		    hours = hours % 12;
+		    hours = hours ? hours : 12;
+		    minutes = minutes < 10 ? '0'+minutes : minutes;
+		    var myDateFormatted = ((dateC.getMonth()*1)+1)+'/'+dateC.getDate()+'/'+dateC.getFullYear() + ' ' + hours+':'+minutes+ ' ' + ampm;
 		    return myDateFormatted;
 		}
 	    },
