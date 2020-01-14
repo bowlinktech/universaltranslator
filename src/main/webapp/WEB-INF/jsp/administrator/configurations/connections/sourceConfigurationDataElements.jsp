@@ -2,8 +2,16 @@
 <%@ taglib prefix="spring" uri="http://www.springframework.org/tags" %> 
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 
+<c:set var="showStrikethrough" value="false" />
 
-<table class="table table-striped table-hover table-default">
+<c:forEach items="${sourceConfigurationDataElements}" var="fields" >
+    <c:if test="${fields.useField == false}">
+	<c:set var="showStrikethrough" value="true" />
+    </c:if>
+</c:forEach>
+
+<c:if test="${showStrikethrough == true}"><p class="text-danger"><strong>Strikethrough rows are not in use.</strong></p></c:if>
+<table class="table table-striped table-hover table-default" style="border-collapse:collapse">
     <thead>
 	<tr>
 	    <th scope="col" class="center-text">Field No</th>
@@ -13,7 +21,7 @@
     </thead>
     <tbody>
 	<c:forEach items="${sourceConfigurationDataElements}" var="fields" varStatus="field">
-	    <tr class="uFieldRow" rel="${fields.fieldNo}" rel2="${field.index}">
+	    <tr class="uFieldRow ${fields.useField == false ? 'strikeout':''}" rel="${fields.fieldNo}" rel2="${field.index}">
 		<td scope="row" class="center-text">
 		    ${fields.fieldNo}
 		</td>

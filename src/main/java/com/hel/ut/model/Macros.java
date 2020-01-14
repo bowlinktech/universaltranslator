@@ -66,6 +66,9 @@ public class Macros {
 
     @Column(name = "CategoryId", nullable = true)
     private int categoryId;
+    
+    @Column(name = "macroDesc", nullable = true)
+    private String macroDesc = "";
 
     public boolean isPopulateFieldA() {
         return populateFieldA;
@@ -251,4 +254,13 @@ public class Macros {
         this.categoryId = categoryId;
     }
 
+    public String getMacroDesc() {
+	return macroDesc;
+    }
+
+    public void setMacroDesc(String macroDesc) {
+	this.macroDesc = macroDesc;
+    }
+
+    
 }

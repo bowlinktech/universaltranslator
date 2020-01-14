@@ -1252,8 +1252,6 @@ public class adminConfigController {
         //We only want to retrieve the saved ones on initial load
         if (reload == false) {
 	    
-	    
-	    
             //Need to get a list of existing translations
             List<configurationDataTranslations> existingTranslations = utconfigurationmanager.getDataTranslationsWithFieldNo(configId, categoryId);
 
@@ -1294,9 +1292,9 @@ public class adminConfigController {
                 //Get the macro name by id
                 if (translation.getMacroId() > 0) {
                     Macros macroDetails = utconfigurationmanager.getMacroById(translation.getMacroId());
-                    macroName = macroDetails.getmacroShortName();
+                    macroName = macroDetails.getMacroName();
                     if (macroName.contains("DATE")) {
-                        macroName = macroDetails.getmacroShortName() + " " + macroDetails.getdateDisplay();
+                        macroName = macroDetails.getMacroName()+ " " + macroDetails.getdateDisplay();
                     }
                     translation.setMacroName(macroName);
                 }
@@ -3092,5 +3090,25 @@ public class adminConfigController {
         }
 
         return configurations;
+    }
+    
+    /**
+     * The '/macroDefinitions' GET request will be used to return a the macro definition page.
+     *
+     * @return	The macro definition page
+     * @throws java.lang.Exception
+     *
+     */
+    @RequestMapping(value = "/macroDefinitions", method = RequestMethod.GET)
+    public @ResponseBody
+    ModelAndView macroDefinitions() throws Exception {
+
+        ModelAndView mav = new ModelAndView();
+        mav.setViewName("/administrator/configurations/macroDefinitions");
+	
+        List<Macros> macros = utconfigurationmanager.getMacros();
+        mav.addObject("macros", macros);
+
+        return mav;
     }
 }

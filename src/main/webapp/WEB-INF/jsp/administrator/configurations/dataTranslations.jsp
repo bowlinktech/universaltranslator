@@ -68,17 +68,17 @@
                             <span id="crosswalkMsg" class="control-label"></span>
                         </div>
                         <div id="macroDiv" class="form-group ${status.error ? 'has-error' : '' }">
-                            <label class="control-label" for=""macro"">Macro</label>
+                            <label class="control-label" for="macro">Macro <a href="#crosswalkModal" data-toggle="modal" class="macroDefinitions">(View Macro Definitions)</a></label>
                             <select id="macro" class="form-control half">
                                 <option value="">- Select -</option>
                                 <c:forEach items="${macros}" var="macro" varStatus="mStatus">
                                     <option value="${macro.id}">
                                         <c:choose> 
                                             <c:when test="${macro.macroShortName.contains('DATE')}">
-                                                ${macro.macroShortName} (${macro.dateDisplay})
+                                                ${macro.macroName} (${macro.dateDisplay})
                                             </c:when>
                                             <c:otherwise>
-                                                ${macro.macroShortName}
+                                                ${macro.macroName}
                                             </c:otherwise>  
                                         </c:choose>
                                     </option>
