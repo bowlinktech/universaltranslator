@@ -1813,7 +1813,7 @@ public class transactionInDAOImpl implements transactionInDAO {
 		+ "from batchuploadauditerrors a inner join "
 		+ "batchUploads b on a.batchUploadId = b.id "
 		+ "where (b.dateSubmitted >= '" + fromDate + "' and b.dateSubmitted < '" + toDate + "')";
-
+	
 	Query getRejectedCount = sessionFactory.getCurrentSession().createSQLQuery(sql);
 
 	return (BigInteger) getRejectedCount.uniqueResult();
