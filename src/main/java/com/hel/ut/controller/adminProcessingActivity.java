@@ -2901,7 +2901,7 @@ public class adminProcessingActivity {
     public ModelAndView viewOutboundAuditReport(@PathVariable String batchName) throws Exception {
 
         ModelAndView mav = new ModelAndView();
-        mav.setViewName("/administrator/processing-activity/auditReport");
+        mav.setViewName("/administrator/processing-activity/outbound/auditReport");
         boolean canCancel = false;
         boolean canReset = false;
 	boolean canEdit = false;
