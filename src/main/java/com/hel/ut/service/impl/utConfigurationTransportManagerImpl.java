@@ -127,8 +127,8 @@ public class utConfigurationTransportManagerImpl implements utConfigurationTrans
     }
     
     @SuppressWarnings("rawtypes")
-    public List getTransportMethodsByType(Integer configurationType) {
-        return configurationTransportDAO.getTransportMethodsByType(configurationType);
+    public List getTransportMethodsByType(utConfiguration configurationDetails) {
+        return configurationTransportDAO.getTransportMethodsByType(configurationDetails);
     }
 
     @Override
@@ -674,4 +674,10 @@ public class utConfigurationTransportManagerImpl implements utConfigurationTrans
     public void saveConnectionFieldMapping(configurationconnectionfieldmappings fieldMapping) throws Exception {
 	configurationTransportDAO.saveConnectionFieldMapping(fieldMapping);
     }
+    
+    @Override
+    public List<configurationFTPFields> getFTPSourceConfigurations() throws Exception {
+	return configurationTransportDAO.getFTPSourceConfigurations();
+    }
+      
 }

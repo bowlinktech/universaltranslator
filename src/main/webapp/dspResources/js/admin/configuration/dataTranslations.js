@@ -8,6 +8,9 @@ require(['./main'], function () {
             $.ajax({
                 url: 'macroDefinitions',
                 type: "GET",
+		data: {
+		    'macroCategory': 1
+		},
                 success: function (data) {
                     $("#crosswalkModal").html(data);
                 }

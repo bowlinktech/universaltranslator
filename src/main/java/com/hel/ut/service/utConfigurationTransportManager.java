@@ -34,7 +34,7 @@ public interface utConfigurationTransportManager {
 
     List getTransportMethods();
     
-    List getTransportMethodsByType(Integer configurationType);
+    List getTransportMethodsByType(utConfiguration configurationDetails);
 
     List<configurationFTPFields> getTransportFTPDetails(int transportDetailId) throws Exception;
 
@@ -141,5 +141,7 @@ public interface utConfigurationTransportManager {
     void deleteConnectionMappedFields(Integer connectionId) throws Exception;
     
     void saveConnectionFieldMapping(configurationconnectionfieldmappings fieldMapping) throws Exception;
+    
+    List<configurationFTPFields> getFTPSourceConfigurations() throws Exception;
 
 }

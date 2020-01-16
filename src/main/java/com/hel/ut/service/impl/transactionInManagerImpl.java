@@ -94,10 +94,20 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 import com.hel.ut.service.utConfigurationManager;
 import com.hel.ut.service.utConfigurationTransportManager;
+import com.jcraft.jsch.Channel;
+import com.jcraft.jsch.ChannelSftp;
+import com.jcraft.jsch.ChannelSftp.LsEntry;
+import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.JSchException;
+import com.jcraft.jsch.Session;
+import com.jcraft.jsch.SftpException;
 import com.registryKit.registry.fileUploads.fileUploadManager;
 import com.registryKit.registry.fileUploads.uploadedFile;
 import com.registryKit.registry.submittedMessages.submittedMessage;
 import com.registryKit.registry.submittedMessages.submittedMessageManager;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.Vector;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 
@@ -4354,5 +4364,169 @@ public class transactionInManagerImpl implements transactionInManager {
     @Override
     public void updateRecordCountsFromAuditErrorTable(Integer batchUploadId) throws Exception {
 	transactionInDAO.updateRecordCountsFromAuditErrorTable(batchUploadId);
+    }
+    
+    @Override
+    public void checkRemoteSFTPConfigurations() throws Exception {
+	
+	//Need to find all source configurations with FTP enabled
+	List<configurationFTPFields> ftpConfigurations = configurationtransportmanager.getFTPSourceConfigurations();
+	
+	if(!ftpConfigurations.isEmpty()) {
+	    //Parallel processing of FTP Configurations
+	    ExecutorService executor = Executors.newCachedThreadPool();
+	    for (configurationFTPFields ftpConfiguration : ftpConfigurations) {
+		executor.execute(new Runnable() {
+		    @Override
+		    public void run() {
+			try {
+			    connectToRemoteFTP(ftpConfiguration);
+			} catch (Exception ex) {
+			    Logger.getLogger(transactionInManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
+			}
+		    }
+		});
+	    }
+	}
+    }
+    
+    /**
+     * 
+     * @param ftpConfiguration
+     * @throws Exception 
+     */
+    public void connectToRemoteFTP(configurationFTPFields ftpConfiguration) throws Exception,JSchException {
+	
+	if(ftpConfiguration != null) {
+	    
+	    //Need to get the configuration file drop details
+	    configurationFileDropFields fileDropDetails = configurationtransportmanager.getTransFileDropDetailsPull(ftpConfiguration.gettransportId());
+	    
+	    configurationTransport transportDetails= configurationtransportmanager.getTransportDetailsByTransportId(ftpConfiguration.gettransportId());
+	    
+	    //Get configuration details
+	    utConfiguration configDetails = configurationManager.getConfigurationById(transportDetails.getconfigId());
+	    
+	    if(fileDropDetails != null) {
+		if(!"".equals(fileDropDetails.getDirectory())) {
+		    
+		    JSch jSch = new JSch();
+		    
+		    Session session = null;
+		    Channel channel = null;
+		    ChannelSftp channelSftp = null;
+		    
+		    try {
+			
+			//If using Key File do this below
+			/*
+			    String privateKey = "LOCATION OF KEY FILE";
+			    jSch.addIdentity(privateKey, "Private Key for Key file");
+			*/
+			
+			session = jSch.getSession(ftpConfiguration.getusername(),ftpConfiguration.getip(),ftpConfiguration.getport());
+			
+			// Set password here if not using key file
+			session.setPassword(ftpConfiguration.getpassword());
+			
+			java.util.Properties config = new java.util.Properties();
+			config.put("StrictHostKeyChecking", "no");
+			session.setConfig(config);
+			
+			session.connect();
+
+			channel = session.openChannel("sftp");
+			channelSftp.cd(ftpConfiguration.getdirectory());
+
+			Vector filelist = channelSftp.ls(ftpConfiguration.getdirectory());
+
+			if(filelist.size() > 0) {
+			    for(int i=0; i<filelist.size();i++){
+				LsEntry entry = (LsEntry) filelist.get(i);
+
+				if(!entry.getAttrs().isDir()) {
+				    boolean fileMoved = false;
+
+				   //Move the file locally
+				   try {
+
+				       channelSftp.get(entry.getFilename(),fileDropDetails.getDirectory() + entry.getFilename());
+				       fileMoved = true;
+				   }
+				   catch (SftpException e) {
+					StringWriter errors = new StringWriter();
+					e.printStackTrace(new PrintWriter(errors));
+					try {
+					    String emailBody = "IP: " + ftpConfiguration.getip() + "<br/> Port:" + ftpConfiguration.getport() + "<br />Folder: " + ftpConfiguration.getdirectory() + "<br />Config Id:" + configDetails.getId() + "<br /><br />Error:<br />"+errors.toString();
+					    mailMessage mail = new mailMessage();
+					    mail.setfromEmailAddress("support@health-e-link.net");
+					    mail.setmessageBody(emailBody);
+					    mail.setmessageSubject("Error retriving FTP files" + " " + myProps.getProperty("server.identity"));
+					    mail.settoEmailAddress(myProps.getProperty("admin.email"));
+					    emailManager.sendEmail(mail);
+					} catch (Exception ex) {
+					    ex.printStackTrace();
+					    throw new Exception(ex);
+					}
+					e.printStackTrace();
+				   }
+
+				   if(fileMoved) {
+				       channelSftp.rm(entry.getFilename());
+				   }
+				}
+
+			    }
+			}
+		    } catch (JSchException e) {
+			StringWriter errors = new StringWriter();
+			e.printStackTrace(new PrintWriter(errors));
+			try {
+			    String emailBody = "IP: " + ftpConfiguration.getip() + "<br/> Port:" + ftpConfiguration.getport() + "<br />Folder: " + ftpConfiguration.getdirectory() + "<br />Config Id:" + configDetails.getId() + "<br /><br />Error:<br />"+errors.toString();
+			    mailMessage mail = new mailMessage();
+			    mail.setfromEmailAddress("support@health-e-link.net");
+			    mail.setmessageBody(emailBody);
+			    mail.setmessageSubject("Error retriving FTP files" + " " + myProps.getProperty("server.identity"));
+			    mail.settoEmailAddress(myProps.getProperty("admin.email"));
+			    emailManager.sendEmail(mail);
+			} catch (Exception ex) {
+			    ex.printStackTrace();
+			    throw new Exception(ex);
+			}
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		    } catch (SftpException e) {
+			StringWriter errors = new StringWriter();
+			e.printStackTrace(new PrintWriter(errors));
+			try {
+			    String emailBody = "IP: " + ftpConfiguration.getip() + "<br/> Port:" + ftpConfiguration.getport() + "<br />Folder: " + ftpConfiguration.getdirectory() + "<br />Config Id:" + configDetails.getId() + "<br /><br />Error:<br />"+errors.toString();
+			    mailMessage mail = new mailMessage();
+			    mail.setfromEmailAddress("support@health-e-link.net");
+			    mail.setmessageBody(emailBody);
+			    mail.setmessageSubject("Error retriving FTP files" + " " + myProps.getProperty("server.identity"));
+			    mail.settoEmailAddress(myProps.getProperty("admin.email"));
+			    emailManager.sendEmail(mail);
+			} catch (Exception ex) {
+			    ex.printStackTrace();
+			    throw new Exception(ex);
+			}
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		    }finally{
+			if(channelSftp!=null){
+			    channelSftp.disconnect();
+			    channelSftp.exit();
+			}
+			if(channel!=null) channel.disconnect();
+
+			if(session!=null) session.disconnect();
+			
+		    }
+		    
+		}
+	    }
+	    
+	}
+	
     }
 }

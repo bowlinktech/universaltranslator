@@ -330,4 +330,6 @@ public interface transactionInManager {
     List<batchUploads> getAllUploadBatchesPaged(Date fromDate, Date toDate, Integer displayStart, Integer displayRecords, String searchTerm, String sortColumnName, String sortDirection) throws Exception;
     
     void updateRecordCountsFromAuditErrorTable(Integer batchUploadId) throws Exception;
+    
+    void checkRemoteSFTPConfigurations() throws Exception;
 }

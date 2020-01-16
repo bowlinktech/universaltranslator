@@ -311,6 +311,23 @@ public class adminConfigController {
         if (transportDetails != null) {
             configurationDetails.settransportMethod(utconfigurationTransportManager.getTransportMethodById(transportDetails.gettransportMethodId()));
 	    session.setAttribute("configmappings", 1);
+	    
+	    if (transportDetails.getfileType() == 4 && configurationDetails.getType() == 2) {
+		session.setAttribute("configHL7", true);
+		session.setAttribute("configCCD", false);
+	    } else {
+		session.setAttribute("configHL7", false);
+		session.setAttribute("configCCD", false);
+	    }
+
+	    if ((transportDetails.getfileType() == 9 || transportDetails.getfileType() == 12) && configurationDetails.getType() == 2) {
+		session.setAttribute("configHL7", false);
+		session.setAttribute("configCCD", true);
+	    } else {
+		session.setAttribute("configHL7", false);
+		session.setAttribute("configCCD", false);
+	    }
+	    
         }
 	
 	//Get a list of other active sourceconfigurations
@@ -467,11 +484,11 @@ public class adminConfigController {
             List<configurationFTPFields> emptyFTPFields = new ArrayList<configurationFTPFields>();
             configurationFTPFields pushFTPFields = new configurationFTPFields();
             pushFTPFields.setmethod(1);
-            pushFTPFields.setdirectory("/sFTP/" + orgDetails.getcleanURL() + "/input/"+configurationDetails.getconfigName().toLowerCase().replace(" ", "")+"/");
+            pushFTPFields.setdirectory("");
 
             configurationFTPFields getFTPFields = new configurationFTPFields();
             getFTPFields.setmethod(2);
-            getFTPFields.setdirectory("/sFTP/" + orgDetails.getcleanURL() + "/output/");
+            getFTPFields.setdirectory("");
 
             emptyFTPFields.add(pushFTPFields);
             emptyFTPFields.add(getFTPFields);
@@ -564,7 +581,7 @@ public class adminConfigController {
         mav.addObject("configurationDetails", configurationDetails);
 
         //Get the list of available transport methods
-        List transportMethods = utconfigurationTransportManager.getTransportMethodsByType(configurationDetails.getType());
+        List transportMethods = utconfigurationTransportManager.getTransportMethodsByType(configurationDetails);
 	mav.addObject("transportMethods", transportMethods);
 
         //Get the list of available file delimiters
@@ -1634,9 +1651,14 @@ public class adminConfigController {
         redirectAttr.addFlashAttribute("savedStatus", "updated");
 	
 	boolean HL7Val = false;
+	boolean CCDVal = false;
 	
 	if(session.getAttribute("configHL7") != null) {
 	    HL7Val = (boolean) session.getAttribute("configHL7");
+	}
+	
+	if(session.getAttribute("configCCD") != null) {
+	    CCDVal = (boolean) session.getAttribute("configCCD");
 	}
 	
         if ("save".equals(action)) {
@@ -1650,10 +1672,16 @@ public class adminConfigController {
 		return mav;
 	    }
            
-        } else if (HL7Val) {
+        } 
+	else if (HL7Val) {
             ModelAndView mav = new ModelAndView(new RedirectView("HL7"));
             return mav;
-        } else {
+        } 
+	else if (CCDVal) {
+            ModelAndView mav = new ModelAndView(new RedirectView("CCD"));
+            return mav;
+        } 
+	else {
             ModelAndView mav = new ModelAndView(new RedirectView("preprocessing"));
             return mav;
         }
@@ -3095,18 +3123,19 @@ public class adminConfigController {
     /**
      * The '/macroDefinitions' GET request will be used to return a the macro definition page.
      *
+     * @param macroCategory
      * @return	The macro definition page
      * @throws java.lang.Exception
      *
      */
     @RequestMapping(value = "/macroDefinitions", method = RequestMethod.GET)
     public @ResponseBody
-    ModelAndView macroDefinitions() throws Exception {
+    ModelAndView macroDefinitions(@RequestParam(value = "macroCategory", required = true) Integer macroCategory) throws Exception {
 
         ModelAndView mav = new ModelAndView();
         mav.setViewName("/administrator/configurations/macroDefinitions");
 	
-        List<Macros> macros = utconfigurationmanager.getMacros();
+        List<Macros> macros = utconfigurationmanager.getMacrosByCategory(macroCategory);
         mav.addObject("macros", macros);
 
         return mav;

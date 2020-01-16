@@ -17,15 +17,22 @@
 		    </tr>
 		</thead>
 		<tbody>
-		    <c:forEach items="${macros}" var="macro">
-			<tr>
-			    <td scope="row">${macro.macroName}</td>
-			    <td>${macro.macroDesc}</td>
-			    <td style=" vertical-align: middle">
-				<a href="#!" class="btn btn-primary btn-xs useMacro"  data-dismiss="modal" rel="${macro.id}" title="Use This Macro">Use This Macro</a>
-			    </td>
-			</tr>
-		    </c:forEach>
+		    <c:choose>
+			<c:when test="${not empty macros}">
+			    <c:forEach items="${macros}" var="macro">
+				<tr>
+				    <td scope="row">${macro.macroName}</td>
+				    <td>${macro.macroDesc}</td>
+				    <td style=" vertical-align: middle">
+					<a href="#!" class="btn btn-primary btn-xs useMacro"  data-dismiss="modal" rel="${macro.id}" title="Use This Macro">Use This Macro</a>
+				    </td>
+				</tr>
+			    </c:forEach>
+			</c:when>
+			<c:otherwise>
+			    <tr><td colspan="2">There are currently no macros found for this section.</td></tr>
+			</c:otherwise>
+		    </c:choose>
 		</tbody>
 	    </table>
 	</div>
