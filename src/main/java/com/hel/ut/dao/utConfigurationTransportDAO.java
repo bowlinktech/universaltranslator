@@ -17,6 +17,7 @@ import org.springframework.stereotype.Repository;
 import com.hel.ut.model.configurationWebServiceFields;
 import com.hel.ut.model.configurationconnectionfieldmappings;
 import com.hel.ut.model.organizationDirectDetails;
+import com.hel.ut.model.utConfiguration;
 
 @Repository
 public interface utConfigurationTransportDAO {
@@ -37,7 +38,7 @@ public interface utConfigurationTransportDAO {
 
     List getTransportMethods();
     
-    List getTransportMethodsByType(Integer configurationType);
+    List getTransportMethodsByType(utConfiguration configurationDetails);
 
     List<configurationFTPFields> getTransportFTPDetails(int transportDetailId) throws Exception;
 
@@ -150,4 +151,6 @@ public interface utConfigurationTransportDAO {
     void deleteConnectionMappedFields(Integer connectionId) throws Exception;
     
     void saveConnectionFieldMapping(configurationconnectionfieldmappings fieldMapping) throws Exception;
+    
+    List<configurationFTPFields> getFTPSourceConfigurations() throws Exception;
 }
