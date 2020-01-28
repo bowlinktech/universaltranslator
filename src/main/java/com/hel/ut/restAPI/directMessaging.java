@@ -43,6 +43,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.json.simple.JSONObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
@@ -176,6 +177,17 @@ public class directMessaging {
                                                 }
 
                                                 if(CCDAContent != null) {
+						    if(StringUtils.containsWhitespace(CCDATitle)) {
+							dateFormat = new SimpleDateFormat("yyyyMMddHHmmssS");
+							date = new Date();
+							CCDATitle = new StringBuilder().append("direct").append(directDetails.getHispId()).append(directDetails.getOrgId()).append(dateFormat.format(date)).toString();
+						    }
+						    
+						    //Check to see if title has extension
+						    if(!"".equals(FilenameUtils.getExtension(CCDATitle).toLowerCase())) {
+							CCDATitle = CCDATitle + ".xml";
+						    }
+						   
                                                     if(FilenameUtils.getExtension(CCDATitle).toLowerCase().equals(directDetails.getExpectedFileExt().toLowerCase())) {
 							
 							//Find the configuration by dm keyword from target direct address
