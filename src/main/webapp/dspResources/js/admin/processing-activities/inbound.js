@@ -139,7 +139,12 @@ function populateMessages(fromDate,toDate) {
 			}
 			
 			if(row.inboundBatchConfigurationType == 1 && (row.transportMethodId == 10 || row.transportMethodId == 13)) {
-			   returnData += '<br /><a href="/FileDownload/downloadFile.do?filename=archive_'+row.utBatchName+'.'+row.originalFileName.split('.')[1].toString().toLowerCase()+'&foldername=archivesIn" title="View Pipe File">Translated File - '+row.utBatchName+'</a>';
+			   if(row.transportMethod.indexOf("Direct") > 0) {
+			       returnData += '<br /><a href="/FileDownload/downloadFile.do?filename='+row.utBatchName+'.txt&foldername=loadFiles" title="View Pipe File">Translated File - '+row.utBatchName+'.txt</a>';
+			   }
+			   else {
+			       returnData += '<br /><a href="/FileDownload/downloadFile.do?filename=archive_'+row.utBatchName+'.'+row.originalFileName.split('.')[1].toString().toLowerCase()+'&foldername=archivesIn" title="View Pipe File">Translated File - '+row.utBatchName+'</a>';
+			   }
 			}
 		    }
 		    
