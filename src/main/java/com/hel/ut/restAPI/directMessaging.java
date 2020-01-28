@@ -184,7 +184,7 @@ public class directMessaging {
 						    }
 						    
 						    //Check to see if title has extension
-						    if(!"".equals(FilenameUtils.getExtension(CCDATitle).toLowerCase())) {
+						    if("".equals(FilenameUtils.getExtension(CCDATitle).toLowerCase())) {
 							CCDATitle = CCDATitle + ".xml";
 						    }
 						   
