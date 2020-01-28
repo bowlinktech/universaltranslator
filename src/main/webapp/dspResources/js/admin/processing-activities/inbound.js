@@ -139,7 +139,7 @@ function populateMessages(fromDate,toDate) {
 			}
 			
 			if(row.inboundBatchConfigurationType == 1 && (row.transportMethodId == 10 || row.transportMethodId == 13)) {
-			   if(row.transportMethod.indexOf("Direct") > 0) {
+			   if(row.transportMethod.indexOf("Direct") > 0 || row.transportMethod.indexOf("File Drop") > 0) {
 			       returnData += '<br /><a href="/FileDownload/downloadFile.do?filename='+row.utBatchName+'.txt&foldername=loadFiles" title="View Pipe File">Translated File - '+row.utBatchName+'.txt</a>';
 			   }
 			   else {

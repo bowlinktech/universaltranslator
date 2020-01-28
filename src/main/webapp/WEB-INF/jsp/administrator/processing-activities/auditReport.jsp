@@ -231,13 +231,13 @@
 					    
 					    <c:choose>
 						<c:when test="${batchDetails.transportMethodId == 9 || batchDetails.transportMethodId == 13}">
-						    <c:set var="hrefLink" value="/FileDownload/downloadFile.do?filename=${batchDetails.utBatchName}.${fn:toLowerCase(ext)}&foldername=archivesIn"/>
+						     <c:set var="hreftranslateLink" value="/FileDownload/downloadFile.do?filename=${batchDetails.utBatchName}.txt&foldername=loadFiles"/>
 						     <c:choose>
 							 <c:when test="${fn:contains(batchDetails.utBatchName,'direct')}">
-							     <c:set var="hreftranslateLink" value="/FileDownload/downloadFile.do?filename=${batchDetails.utBatchName}.txt&foldername=loadFiles"/>
+							     <c:set var="hrefLink" value="/FileDownload/downloadFile.do?filename=${batchDetails.utBatchName}.${fn:toLowerCase(ext)}&foldername=archivesIn"/>
 							 </c:when>
 							 <c:otherwise>
-							     <c:set var="hreftranslateLink" value="/FileDownload/downloadFile.do?filename=archive_${batchDetails.utBatchName}.${fn:toLowerCase(ext)}&foldername=archivesIn"/>
+							     <c:set var="hrefLink" value="/FileDownload/downloadFile.do?filename=archive_${batchDetails.utBatchName}.${fn:toLowerCase(ext)}&foldername=archivesIn"/>
 							 </c:otherwise>
 						    </c:choose>
 						</c:when>
