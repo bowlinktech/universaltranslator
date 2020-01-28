@@ -232,14 +232,22 @@
 					    <c:choose>
 						<c:when test="${batchDetails.transportMethodId == 9 || batchDetails.transportMethodId == 13}">
 						    <c:set var="hrefLink" value="/FileDownload/downloadFile.do?filename=${batchDetails.utBatchName}.${fn:toLowerCase(ext)}&foldername=archivesIn"/>
-						    <c:set var="hreftranslateLink" value="/FileDownload/downloadFile.do?filename=archive_${batchDetails.utBatchName}.${fn:toLowerCase(ext)}&foldername=archivesIn"/>
+						     <c:choose>
+							 <c:when test="${fn:contains(batchDetails.utBatchName,'direct')}">
+							     <c:set var="hreftranslateLink" value="/FileDownload/downloadFile.do?filename=${batchDetails.utBatchName}.txt&foldername=loadFiles"/>
+							 </c:when>
+							 <c:otherwise>
+							     <c:set var="hreftranslateLink" value="/FileDownload/downloadFile.do?filename=archive_${batchDetails.utBatchName}.${fn:toLowerCase(ext)}&foldername=archivesIn"/>
+							 </c:otherwise>
+						    </c:choose>
 						</c:when>
 						<c:otherwise>
 						    <c:set var="hrefLink" value="/FileDownload/downloadFile.do?filename=archive_${batchDetails.utBatchName}.${fn:toLowerCase(ext)}&foldername=archivesIn"/>
 						</c:otherwise>
 					    </c:choose>
 					    <p>
-						<strong>Uploaded File:</strong><br /><a href="${hrefLink}" title="View Original File">${batchDetails.originalFileName}</a>
+						<strong>Uploaded File:</strong><br />
+						<a href="${hrefLink}" title="View Original File">${batchDetails.originalFileName}</a>
 						<c:if test="${batchDetails.transportMethodId == 9 || batchDetails.transportMethodId == 13}">
 						    <br /><a href="${hreftranslateLink}" title="View Translated File">Download Translated File</a></p>
 						</c:if>
