@@ -129,17 +129,22 @@ function populateMessages(fromDate,toDate) {
 		    if(row.transportMethodId != 2) {
 		    
 			if(row.transportMethodId == 9 || row.transportMethodId == 12) {
-			   returnData += '<br /><a href="/FileDownload/downloadFile.do?filename='+row.utBatchName+'.'+row.originalFileName.split('.')[1]+'&foldername=archivesIn" title="View Original File">'+row.originalFileName+'</a>';
+			   returnData += '<br /><a href="/FileDownload/downloadFile.do?filename='+row.utBatchName+'.'+row.originalFileName.split('.')[1].toString().toLowerCase()+'&foldername=archivesIn" title="View Original File">'+row.originalFileName+'</a>';
 			}
 			else if (row.transportMethodId == 6) {
-			    returnData += '<br /><a href="/FileDownload/downloadFile.do?filename='+row.utBatchName+'_dec.'+row.originalFileName.split('.')[1]+'&foldername=archivesIn" title="View Original File">'+row.originalFileName+'</a>';
+			    returnData += '<br /><a href="/FileDownload/downloadFile.do?filename='+row.utBatchName+'_dec.'+row.originalFileName.split('.')[1].toString().toLowerCase()+'&foldername=archivesIn" title="View Original File">'+row.originalFileName+'</a>';
 			}
 			else {
-			   returnData += '<br /><a href="/FileDownload/downloadFile.do?filename=encoded_'+row.utBatchName+'.'+row.originalFileName.split('.')[1]+'&foldername=input files&orgId='+row.orgId+'" title="View Original File">'+row.originalFileName+'</a>'; 
+			   returnData += '<br /><a href="/FileDownload/downloadFile.do?filename=encoded_'+row.utBatchName+'.'+row.originalFileName.split('.')[1].toString().toLowerCase()+'&foldername=input files&orgId='+row.orgId+'" title="View Original File">'+row.originalFileName+'</a>'; 
 			}
 			
-			if(row.inboundBatchConfigurationType == 1 && (row.transportMethodId == 10 || row.transportMethodId == 9)) {
-			   returnData += '<br /><a href="/FileDownload/downloadFile.do?filename=archive_'+row.utBatchName+'.'+row.originalFileName.split('.')[1]+'&foldername=archivesIn" title="View Pipe File">Translated File - '+row.utBatchName+'</a>';
+			if(row.inboundBatchConfigurationType == 1 && (row.transportMethodId == 10 || row.transportMethodId == 13)) {
+			   if(row.transportMethod.indexOf("Direct") > 0 || row.transportMethod === 'File Drop') {
+			       returnData += '<br /><a href="/FileDownload/downloadFile.do?filename='+row.utBatchName+'.txt&foldername=loadFiles" title="View Pipe File">Translated File - '+row.utBatchName+'.txt</a>';
+			   }
+			   else {
+			       returnData += '<br /><a href="/FileDownload/downloadFile.do?filename=archive_'+row.utBatchName+'.'+row.originalFileName.split('.')[1].toString().toLowerCase()+'&foldername=archivesIn" title="View Pipe File">Translated File - '+row.utBatchName+'</a>';
+			   }
 			}
 		    }
 		    
@@ -153,11 +158,11 @@ function populateMessages(fromDate,toDate) {
 		"sWidth": "20%",
 		"className": "center-text",
 		"render": function ( data, type, row, meta ) {
-		    if(data ==='Rest API') {
+		    if(data.indexOf("Rest") > 0) {
 			return '<a href="/administrator/processing-activity/apimessages/'+row.utBatchName+'" title="View Rest API Message">'+data+'</a>';
 		    }
-		    else if (data === 'Direct Message from HISP') {
-			return '<a href="#directModal" data-toggle="modal" class="viewDirectDetails" rel="'+row.id+'" title="View Direct Message Details">'+data+'</a>';
+		    else if(data.indexOf("Direct") > 0) {
+			return '<a href="#directModal" data-toggle="modal" class="viewDirectDetails" rel="'+row.id+'" title="View Direct Message Details">File Drop (Direct)</a>';
 		    }
 		    else {
 			return data;

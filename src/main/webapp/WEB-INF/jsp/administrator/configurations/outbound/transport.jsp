@@ -20,6 +20,7 @@
     <form:hidden path="helSchemaName" id="helSchemaName" />
     <form:hidden path="mergeBatches" />
     <form:hidden path="restAPIType" value = "0" />
+    <form:hidden path="errorHandling" />
 
     <section class="panel panel-default">
 	<div class="panel-heading">
@@ -490,51 +491,29 @@
 	    </div>
 	</div>
     </section>
-    
-    <c:if test="${configurationDetails.messageTypeId == 2}">
-	<section class="panel panel-default">
-	    <div class="panel-heading">
-		<h3 class="panel-title">File Error Handling</h3>
-	    </div>
-	    <div class="panel-body">
-		<div class="form-container">
-		    <spring:bind path="populateInboundAuditReport">
-			<div class="form-group">
-			    <label class="control-label" for="populateInboundAuditReport">Do you want to populate the inbound audit report with errors found while processing this target file? *</label>
-			    <div>
-				<label class="radio-inline">
-				    <form:radiobutton class="populateInboundAuditReport" path="populateInboundAuditReport" value="0" disabled="${transportDetails.copiedTransportId > 0 ? 'true' : 'false'}" /> No
-				</label>
-				<label class="radio-inline">
-				    <form:radiobutton class="populateInboundAuditReport" path="populateInboundAuditReport" value="1" disabled="${transportDetails.copiedTransportId > 0 ? 'true' : 'false'}" /> Yes
-				</label>
-			    </div>
-			    <c:if test="${transportDetails.copiedTransportId > 0}">
-				<form:hidden path="populateInboundAuditReport" />
-			    </c:if>      
+    <section class="panel panel-default">
+	<div class="panel-heading">
+	    <h3 class="panel-title">File Error Handling</h3>
+	</div>
+	<div class="panel-body"> 
+	    <div class="form-container">
+		<spring:bind path="populateInboundAuditReport">
+		    <div class="form-group">
+			<label class="control-label" for="populateInboundAuditReport">Do you want to populate the inbound audit report with errors found while processing this target file? *</label>
+			<div>
+			    <label class="radio-inline">
+				<form:radiobutton class="populateInboundAuditReport" path="populateInboundAuditReport" value="1" disabled="${transportDetails.copiedTransportId > 0 ? 'true' : 'false'}" /> Yes
+			    </label>
+			    <label class="radio-inline">
+				<form:radiobutton class="populateInboundAuditReport" path="populateInboundAuditReport" value="0" disabled="${transportDetails.copiedTransportId > 0 ? 'true' : 'false'}" /> No
+			    </label>
 			</div>
-		    </spring:bind>
-		    <spring:bind path="errorHandling">
-			<div class="form-group errorHandlingDiv" style="display:${transportDetails.populateInboundAuditReport == true ? 'block' : 'none'}">
-			    <label class="control-label" for="errorHandling">Error Handling *</label>
-			    <div>
-				<label class="radio-inline">
-				    <form:radiobutton id="errorHandling" path="errorHandling" value="2" disabled="${transportDetails.copiedTransportId > 0 ? 'true' : 'false'}" /> Reject individual inbound and outbound transactions on error
-				</label>
-				<label class="radio-inline">
-				    <form:radiobutton id="errorHandling" path="errorHandling" value="3" disabled="${transportDetails.copiedTransportId > 0 ? 'true' : 'false'}" /> Reject entire inbound and outbound file on a single transaction error
-				</label>
-				<label class="radio-inline">
-				    <form:radiobutton id="errorHandling" path="errorHandling" value="4" disabled="${transportDetails.copiedTransportId > 0 ? 'true' : 'false'}" /> Ignore errors and pass through to the target file
-				</label>
-			    </div>
-			    <c:if test="${transportDetails.copiedTransportId > 0}">
-				<form:hidden path="errorHandling" />
-			    </c:if>      
-			</div>
-		    </spring:bind>
-		</div>
+			<c:if test="${transportDetails.copiedTransportId > 0}">
+			    <form:hidden path="populateInboundAuditReport" />
+			</c:if>      
+		    </div>
+		</spring:bind>
 	    </div>
-	</section>
-    </c:if>		
+	</div>
+    </section>	
 </form:form>

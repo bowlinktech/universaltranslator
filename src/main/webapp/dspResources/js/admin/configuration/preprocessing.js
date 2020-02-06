@@ -9,6 +9,26 @@ require(['./main'], function () {
     require(['jquery'], function ($) {
 
         $("input:text,form").attr("autocomplete", "off");
+	
+	//This function will launch the new crosswalk overlay with a blank form
+        $(document).on('click', '.macroDefinitions', function () {
+            $.ajax({
+                url: 'macroDefinitions',
+                type: "GET",
+		data: {
+		    'macroCategory': 2
+		},
+                success: function (data) {
+                    $("#macroModal").html(data);
+                }
+            });
+        });
+	
+	$(document).on('click', '.useMacro', function() {
+	    var macroId = $(this).attr('rel');
+	    $('#macro').val(macroId);
+	    $('#macro').trigger( "change" );
+	});
 
         populateExistingMacros(0);
 
@@ -22,7 +42,7 @@ require(['./main'], function () {
         $('#macro').change(function () {
             var selMacro = $(this).val();
             var list = $('#macroLookUpList').val();
-
+	    
             if (selMacro > 0) {
                 if (list.indexOf(selMacro) !== -1) {
                     $.ajax({

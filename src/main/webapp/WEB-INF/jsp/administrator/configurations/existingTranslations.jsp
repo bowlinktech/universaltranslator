@@ -2,18 +2,18 @@
 <%@ taglib prefix="spring" uri="http://www.springframework.org/tags" %> 
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 
-<table class="table table-striped table-hover responsive">
+<table class="table responsive table-bordered table-hover">
     <thead>
-        <tr>
+        <tr style="background-color:#f5f5f5">
             <th scope="col">Field</th>
-            <th scope="col">Macro</th>
-            <th scope="col">Crosswalk</th>
-            <th scope="col" class="center-text">Pass/Clear Error</th>
-            <th scope="col">Field A</th>
-            <th scope="col">Field B</th>
-            <th scope="col">Constant 1</th>
-            <th scope="col">Constant 2</th>
-            <th scope="col">Process Order</th>
+            <th scope="col">Macro Name</th>
+            <th scope="col">Crosswalk Name</th>
+            <th scope="col" class="center-text">Pass/Clear</th>
+            <th scope="col" class="center-text">Field A</th>
+            <th scope="col" class="center-text">Field B</th>
+            <th scope="col" class="center-text">Constant 1</th>
+            <th scope="col" class="center-text">Constant 2</th>
+            <th scope="col" class="center-text">Process Order</th>
             <th scope="col" class="center-text"></th>
         </tr>
     </thead>
@@ -26,7 +26,7 @@
                             ${dataTranslations[tStatus.index].fieldName} <c:if test="${dataTranslations[tStatus.index].fieldNo > 0}">- F${dataTranslations[tStatus.index].fieldNo}</c:if>
                         </td>
                         <td>
-                            ${dataTranslations[tStatus.index].macroName} 
+                            ${dataTranslations[tStatus.index].macroName}
                         </td>
                         <td>
                             ${dataTranslations[tStatus.index].crosswalkName}
@@ -34,19 +34,19 @@
                         <td class="center-text">
                             <c:choose><c:when test="${dataTranslations[tStatus.index].passClear == 1}">Pass</c:when><c:otherwise>Clear</c:otherwise></c:choose>
 			</td>
-			<td>
+			<td class="center-text">
                             ${dataTranslations[tStatus.index].fieldA} 
                         </td>
-                        <td>
+                        <td class="center-text">
                             ${dataTranslations[tStatus.index].fieldB} 
                         </td>
-                        <td>
+                        <td class="center-text">
                             ${dataTranslations[tStatus.index].constant1} 
                         </td>
-                        <td>
+                        <td class="center-text">
                             ${dataTranslations[tStatus.index].constant2} 
                         </td>
-                        <td>
+                        <td class="center-text">
                             <select rel="${dataTranslations[tStatus.index].processOrder}" name="processOrder" class="processOrder">
                                 <option value="">- Select -</option>
                                 <c:forEach begin="1" end="${dataTranslations.size()}" var="i">

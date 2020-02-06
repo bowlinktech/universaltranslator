@@ -19,19 +19,11 @@
 				<ul class="dropdown-menu pull-right">
 				    <c:if test="${canSend == true}">
 					<c:choose>
-					    <c:when test="${batchDownload && batchDetails.statusId == 64}">
+					    <c:when test="${batchDownload && (batchDetails.statusId == 64 || batchDetails.statusId == 59)}">
 						<li>
 						    <a href="#!" id="release" class="releaseOutboundBatch" rel="releaseBatch" rel2="${batchDetails.id}">
 							<span class="glyphicon glyphicon-ok-sign"></span>
 							<strong>Process Outbound Batch</strong>
-						    </a>
-						</li>
-					    </c:when>
-					    <c:when test="${batchDownload && batchDetails.statusId == 59}">
-						<li>
-						    <a href="#!" id="release" class="releaseOutboundBatch" rel="releaseBatch" rel2="${batchDetails.id}">
-							<span class="glyphicon glyphicon-ok-sign"></span>
-							<strong>Process Outbound Batch Now</strong>
 						    </a>
 						</li>
 					    </c:when>
@@ -238,14 +230,28 @@
 					    <c:set var="ext" value="${text[fn:length(text)-1]}" />
 					    
 					    <c:choose>
-						<c:when test="${batchDetails.transportMethodId == 9 || batchDetails.transportMethodId == 12}">
-						    <c:set var="hrefLink" value="/FileDownload/downloadFile.do?filename=${batchDetails.utBatchName}.${fn:toLowerCase(ext)}&foldername=archivesIn"/>
+						<c:when test="${batchDetails.transportMethodId == 9 || batchDetails.transportMethodId == 13}">
+						     <c:set var="hreftranslateLink" value="/FileDownload/downloadFile.do?filename=${batchDetails.utBatchName}.txt&foldername=loadFiles"/>
+						     <c:choose>
+							 <c:when test="${fn:contains(batchDetails.utBatchName,'direct')}">
+							     <c:set var="hrefLink" value="/FileDownload/downloadFile.do?filename=${batchDetails.utBatchName}.${fn:toLowerCase(ext)}&foldername=archivesIn"/>
+							 </c:when>
+							 <c:otherwise>
+							     <c:set var="hrefLink" value="/FileDownload/downloadFile.do?filename=archive_${batchDetails.utBatchName}.${fn:toLowerCase(ext)}&foldername=archivesIn"/>
+							 </c:otherwise>
+						    </c:choose>
 						</c:when>
 						<c:otherwise>
 						    <c:set var="hrefLink" value="/FileDownload/downloadFile.do?filename=archive_${batchDetails.utBatchName}.${fn:toLowerCase(ext)}&foldername=archivesIn"/>
 						</c:otherwise>
 					    </c:choose>
-					    <p><strong>Uploaded File:</strong><br /><a href="${hrefLink}" title="View Original File">${batchDetails.originalFileName}</a></p>
+					    <p>
+						<strong>Uploaded File:</strong><br />
+						<a href="${hrefLink}" title="View Original File">${batchDetails.originalFileName}</a>
+						<c:if test="${batchDetails.transportMethodId == 9 || batchDetails.transportMethodId == 13}">
+						    <br /><a href="${hreftranslateLink}" title="View Translated File">Download Translated File</a></p>
+						</c:if>
+					    </p>
 					</c:if>
 				    </c:otherwise>
 				</c:choose>
@@ -270,10 +276,10 @@
 			    <div class="col-md-12">
 				<section class="panel panel-default">
 				    <div class="panel-heading">
-					<a data-toggle="collapse" rel="${batchDetails.id}" error="${batchError.errorId}" total="${batchError.totalErrors}" rel2="${i.index}" rel3="${OutboundBatch ? 'outbound' : 'inbound'}" class="errorCollapse" href="#collapse-${i.index}">
+					<a data-toggle="collapse" rel="${batchDetails.id}" error="${batchError.errorId}" total="${batchError.totalErrors}" rel2="${i.index}" rel3="${batchDownload ? 'outbound' : 'inbound'}" class="errorCollapse" href="#collapse-${i.index}">
 					   <div class="clearfix">
 						<div class="pull-left">
-						    <h3 class="panel-title">Error: ${batchError.errorDisplayText}</h3>
+						    <h3 class="panel-title">Error: ${batchError.errorDisplayText} <c:if test="${batchError.fromOutboundConfig}"><span class="text-info">(From Outbound Config)</span></c:if></h3>
 						</div>
 						<div class="pull-right">
 						    <h3 class="panel-title" style="color:red">Total Found: <fmt:formatNumber value = "${batchError.totalErrors}" type = "number"/></h3>

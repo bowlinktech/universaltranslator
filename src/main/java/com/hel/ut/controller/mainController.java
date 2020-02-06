@@ -2,7 +2,9 @@ package com.hel.ut.controller;
 
 import com.hel.ut.model.utUser;
 import com.hel.ut.model.mailMessage;
+import com.hel.ut.restAPI.directManager;
 import com.hel.ut.service.emailMessageManager;
+import com.hel.ut.service.transactionInManager;
 import com.hel.ut.service.userManager;
 import java.math.BigInteger;
 import java.util.Random;
@@ -40,6 +42,12 @@ public class mainController {
 
     @Autowired
     private emailMessageManager emailMessageManager;
+    
+    @Autowired
+    private directManager directManager;
+    
+    @Autowired
+    private transactionInManager transactionInManager;
     
     
     /**

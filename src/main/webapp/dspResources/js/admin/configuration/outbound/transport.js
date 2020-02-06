@@ -42,6 +42,7 @@ require(['./main'], function () {
 		$('#fileExt').val('txt');
 	    }
 	    else {
+		 $('#ergFileDownloadDiv').hide();
 		$('#helRegistryConfigDiv').hide();
 		$('#helRegistryConfigId').find('option').remove().end().append('<option value="">- Select Registry Configuration -</option>').val('');
 	    }
@@ -49,15 +50,6 @@ require(['./main'], function () {
 	    showCorrectFieldsByTransportMethod(methodId);
         });
 	
-	$(document).on('change','.populateInboundAuditReport',function() {
-	    
-	    if($(this).val() == 1) {
-		$('.errorHandlingDiv').show();
-	    }
-	    else {
-		$('.errorHandlingDiv').hide();
-	    }
-	});
 	
 	$(document).on('change','#ergFileDownload',function() {
 	    var fileDropDir = $('#directory2').val();
@@ -218,15 +210,16 @@ function showCorrectFieldsByTransportMethod(transportMethod) {
     $('#fileDetailsDiv').show();
     $('#ftpDetailsDiv').hide();
     $('#restDetailsDiv').hide();
+    $('#fileDropDetailsDiv').hide();
    
     if(transportMethod == 13) {
 	$('#fileDropDetailsDiv').show();
     }
     else if(transportMethod == 9) {
-	$('#restDetailsDiv').hide();
+	$('#restDetailsDiv').show();
     }
     else if(transportMethod == 12) {
-	$('#directMessageDetailsDiv').hide();
+	$('#directMessageDetailsDiv').show();
     }
 }
 

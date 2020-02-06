@@ -159,7 +159,7 @@ require(['./main'], function () {
 });
 
 function populateConfigurations(orgId) {
-
+    
     var currConfigId = $('#config').attr('rel');
 
     $.ajax({

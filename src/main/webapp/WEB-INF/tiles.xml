@@ -597,7 +597,18 @@
         <put-attribute name="title" value="Administrator - Processing Activities" />
         <put-attribute name="header" value="/WEB-INF/jsp/common/adminHeader.jsp?sect=activity" />
         <put-attribute name="actions" value="/WEB-INF/jsp/administrator/processing-activities/actionBar.jsp?page=auditReport" />
-        <put-attribute name="menu" value="/WEB-INF/jsp/administrator/processing-activities/menu.jsp" />
+        <put-attribute name="menu" value="/WEB-INF/jsp/administrator/processing-activities/menu.jsp?page=auditReport" />
+        <put-attribute name="body" value="/WEB-INF/jsp/administrator/processing-activities/auditReport.jsp" />
+        <put-attribute name="jscript" value="/dspResources/js/admin/processing-activities/auditReport.js" />
+    </definition>
+    
+    <definition name="/administrator/processing-activity/outbound/auditReport" extends="base.definition.admin">
+        <put-attribute name="page-id" value="processing-inbound" />
+        <put-attribute name="page-section" value="section-processing" />
+        <put-attribute name="title" value="Administrator - Processing Activities" />
+        <put-attribute name="header" value="/WEB-INF/jsp/common/adminHeader.jsp?sect=activity" />
+        <put-attribute name="actions" value="/WEB-INF/jsp/administrator/processing-activities/actionBar.jsp?page=auditReportOutbound" />
+        <put-attribute name="menu" value="/WEB-INF/jsp/administrator/processing-activities/menu.jsp?page=auditReportOutbound" />
         <put-attribute name="body" value="/WEB-INF/jsp/administrator/processing-activities/auditReport.jsp" />
         <put-attribute name="jscript" value="/dspResources/js/admin/processing-activities/auditReport.js" />
     </definition>
@@ -690,6 +701,40 @@
         <put-attribute name="menu" value="/WEB-INF/jsp/administrator/processing-activities/menu.jsp?page=apimessagesout" />
         <put-attribute name="body" value="/WEB-INF/jsp/administrator/processing-activities/apimessagesOut.jsp" />
         <put-attribute name="jscript" value="/dspResources/js/admin/processing-activities/apimessagesOut.js" />
+    </definition>
+    
+    <!--  this lists data rows for hisps -->    
+    <definition name="/administrator/sysadmin/hisps" extends="base.definition.admin">
+        <put-attribute name="page-id" value="sysadmin-hisps" />
+        <put-attribute name="page-section" value="section-sysadmin" />
+        <put-attribute name="title" value="Administrator - Manage HISPS" />
+        <put-attribute name="header" value="/WEB-INF/jsp/common/adminHeader.jsp?sect=sysadmin" />
+        <put-attribute name="actions" value="/WEB-INF/jsp/administrator/sysadmin/actionBar.jsp?page=hisps" />
+        <put-attribute name="menu" value="/WEB-INF/jsp/administrator/sysadmin/menu.jsp?page=hisps" />
+        <put-attribute name="body" value="/WEB-INF/jsp/administrator/sysadmin/hisps/list.jsp" />
+        <put-attribute name="jscript" value="/dspResources/js/admin/sysadmin/hisps/list.js" />
+    </definition>
+    
+    <definition name="/administrator/processing-activity/directmessages" extends="base.definition.admin">
+        <put-attribute name="page-id" value="processing-wsmessage" />
+        <put-attribute name="page-section" value="section-processing" />
+        <put-attribute name="title" value="Administrator - Processing Activities" />
+        <put-attribute name="header" value="/WEB-INF/jsp/common/adminHeader.jsp?sect=activity" />
+        <put-attribute name="actions" value="/WEB-INF/jsp/administrator/processing-activities/actionBar.jsp?page=directmessages" />
+        <put-attribute name="menu" value="/WEB-INF/jsp/administrator/processing-activities/menu.jsp?page=directmessages" />
+        <put-attribute name="body" value="/WEB-INF/jsp/administrator/processing-activities/directmessages.jsp" />
+        <put-attribute name="jscript" value="/dspResources/js/admin/processing-activities/directmessages.js" />
+    </definition>
+    
+    <definition name="/administrator/processing-activity/directmessagesOut" extends="base.definition.admin">
+        <put-attribute name="page-id" value="processing-wsmessage" />
+        <put-attribute name="page-section" value="section-processing" />
+        <put-attribute name="title" value="Administrator - Processing Activities" />
+        <put-attribute name="header" value="/WEB-INF/jsp/common/adminHeader.jsp?sect=activity" />
+        <put-attribute name="actions" value="/WEB-INF/jsp/administrator/processing-activities/actionBar.jsp?page=directmessagesout" />
+        <put-attribute name="menu" value="/WEB-INF/jsp/administrator/processing-activities/menu.jsp?page=directmessagesout" />
+        <put-attribute name="body" value="/WEB-INF/jsp/administrator/processing-activities/directmessagesOut.jsp" />
+        <put-attribute name="jscript" value="/dspResources/js/admin/processing-activities/directmessagesOut.js" />
     </definition>
     
      <!-- Exception handling -->

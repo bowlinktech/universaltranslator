@@ -9,4 +9,6 @@ public interface hispManager {
     List<hisps> getAllActiveHisps() throws Exception;
 
     hisps getHispById(Integer hispId) throws Exception;
+    
+    void saveHisp(hisps hispDetails) throws Exception;
 }

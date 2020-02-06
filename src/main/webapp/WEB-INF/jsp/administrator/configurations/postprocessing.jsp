@@ -53,7 +53,7 @@
                             <span id="fieldMsg" class="control-label"></span>
                         </div>
                         <div id="macroDiv" class="form-group ${status.error ? 'has-error' : '' }">
-                            <label class="control-label" for=""macro"">Macro</label>
+                            <label class="control-label" for=""macro"">Macro <a href="#macroModal" data-toggle="modal" class="macroDefinitions">(View Macro Definitions)</a></label>
                             <select id="macro" class="form-control half">
                                 <option value="">- Select -</option>
                                 <c:forEach items="${macros}" var="macro" varStatus="mStatus">

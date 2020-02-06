@@ -7,7 +7,6 @@ package com.hel.ut.service;
 
 import com.hel.ut.model.activityReportList;
 import com.hel.ut.model.MoveFilesLog;
-import com.hel.ut.model.utUserActivity;
 import com.hel.ut.model.CrosswalkData;
 import com.hel.ut.model.Macros;
 import com.hel.ut.model.RestAPIMessagesIn;
@@ -17,6 +16,7 @@ import com.hel.ut.model.WSMessagesIn;
 import com.hel.ut.model.batchDownloads;
 import com.hel.ut.model.batchRetry;
 import com.hel.ut.model.batchUploads;
+import com.hel.ut.model.batchuploadactivity;
 import com.hel.ut.model.configurationConnection;
 import com.hel.ut.model.configurationDataTranslations;
 import com.hel.ut.model.configurationFTPFields;
@@ -155,7 +155,7 @@ public interface transactionInManager {
 
     boolean allowBatchClear(Integer batchUploadId);
 
-    List<utUserActivity> getBatchActivities(batchUploads batchInfo, boolean forUsers, boolean foroutboundProcessing);
+    List<batchuploadactivity> getBatchActivities(batchUploads batchInfo);
 
     Integer insertSFTPRun(MoveFilesLog sftpJob);
 
@@ -261,7 +261,7 @@ public interface transactionInManager {
     
     BigInteger getUserRejectedCount(Integer userId, Integer orgId, String fromDate, String toDate) throws Exception;
     
-    List<batchErrorSummary> getBatchErrorSummary(int batchId) throws Exception;
+    List<batchErrorSummary> getBatchErrorSummary(int batchId, String inboundOutbound) throws Exception;
     
     List getErrorDataBySQLStmt(String sqlStmt) throws Exception;
     
@@ -328,4 +328,8 @@ public interface transactionInManager {
     Integer updateDirectAPIMessage(directmessagesin directMessage);
     
     List<batchUploads> getAllUploadBatchesPaged(Date fromDate, Date toDate, Integer displayStart, Integer displayRecords, String searchTerm, String sortColumnName, String sortDirection) throws Exception;
+    
+    void updateRecordCountsFromAuditErrorTable(Integer batchUploadId) throws Exception;
+    
+    void checkRemoteSFTPConfigurations() throws Exception;
 }

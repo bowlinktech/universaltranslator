@@ -4990,6 +4990,13 @@ body.modal-open,
         padding-top: 30px;
         padding-bottom: 30px;
     }
+    .modal-dialog-big {
+        left: 50%;
+        right: auto;
+        width: 900px;
+        padding-top: 30px;
+        padding-bottom: 30px;
+    }
     .modal-content {
         -webkit-box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
         box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
@@ -6457,4 +6464,14 @@ input[type="checkbox"] {
     text-decoration: underline;
     cursor: pointer;
     color:#000
+}
+
+tr.strikeout td { position:relative        }
+tr.strikeout td:before {
+    content: " ";
+    position: absolute;
+    top: 50%;
+    left: 0;
+    border-bottom: 1px solid #111;
+    width: 100%;
 }

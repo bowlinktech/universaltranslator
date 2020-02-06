@@ -27,6 +27,7 @@ import org.springframework.stereotype.Repository;
 import com.hel.ut.dao.utConfigurationTransportDAO;
 import com.hel.ut.model.configurationconnectionfieldmappings;
 import com.hel.ut.model.organizationDirectDetails;
+import com.hel.ut.model.utConfiguration;
 
 @Repository
 public class utConfigurationTransportDAOImpl implements utConfigurationTransportDAO {
@@ -107,13 +108,19 @@ public class utConfigurationTransportDAOImpl implements utConfigurationTransport
      */
     @Override
     @Transactional(readOnly = true)
-    public List getTransportMethodsByType(Integer configurationType) {
+    public List getTransportMethodsByType(utConfiguration configurationDetails) {
 	
 	 Query query;
 	 
 	//Source configuration
-	if(configurationType == 1) {
-	    query = sessionFactory.getCurrentSession().createSQLQuery("SELECT id, transportMethod FROM ref_transportMethods where active = 1 and id in (10,13) order by transportMethod asc");
+	if(configurationDetails.getType() == 1) {
+	    //eReferral configuration (allow online form and file drop)
+	    if(configurationDetails.getMessageTypeId() == 1) {
+		query = sessionFactory.getCurrentSession().createSQLQuery("SELECT id, transportMethod FROM ref_transportMethods where active = 1 and id in (10,13) order by transportMethod asc");
+	    }
+	    else {
+		query = sessionFactory.getCurrentSession().createSQLQuery("SELECT id, transportMethod FROM ref_transportMethods where active = 1 and id = 13 order by transportMethod asc");
+	    }
 	}
 	
 	//Target configuration
@@ -1387,4 +1394,26 @@ public class utConfigurationTransportDAOImpl implements utConfigurationTransport
     public void saveConnectionFieldMapping(configurationconnectionfieldmappings fieldMapping) throws Exception {
 	sessionFactory.getCurrentSession().save(fieldMapping);
     }
+    
+    /**
+     * The 'getFTPSourceConfigurations' function will return a list of source configurations that have FTP enabled
+     *
+     *
+     * @return	This function will return a list of configurationFTPFields configurations
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public List<configurationFTPFields> getFTPSourceConfigurations() {
+        
+	String sql = "select a.transportId, a.IP as ip, a.directory, a.username, a.password, a.port "
+	    + "from rel_transportftpdetails a "
+	    + "inner join configurationtransportdetails b on b.id = a.transportId "
+	    + "inner join configurations c on c.id = b.configId "
+	    + "where c.deleted = 0 and c.status = 1 and c.type = 1;";
+	
+	Query query = sessionFactory.getCurrentSession().createSQLQuery(sql).setResultTransformer(Transformers.aliasToBean(configurationFTPFields.class));
+           
+        return query.list();
+    }
 }
+

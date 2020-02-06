@@ -8,12 +8,14 @@ package com.hel.ut.dao;
 import com.hel.ut.model.RestAPIMessagesOut;
 import com.hel.ut.model.batchDLRetry;
 import com.hel.ut.model.batchDownloads;
+import com.hel.ut.model.batchdownloadactivity;
 import com.hel.ut.model.configurationFormFields;
 import com.hel.ut.model.configurationSchedules;
 import com.hel.ut.model.configurationTransport;
 import com.hel.ut.model.targetOutputRunLogs;
 import com.hel.ut.model.transactionOutRecords;
 import com.hel.ut.model.custom.ConfigOutboundForInsert;
+import com.hel.ut.model.custom.batchErrorSummary;
 import com.hel.ut.model.directmessagesout;
 
 import java.math.BigInteger;
@@ -64,7 +66,7 @@ public interface transactionOutDAO {
 
     List<batchDownloads> getAllBatches(Date fromDate, Date toDate, String batchName) throws Exception;
 
-    Integer writeOutputToTextFile(configurationTransport transportDetails, Integer batchDLId, String filePathAndName, String configFields);
+    Integer writeOutputToTextFile(configurationTransport transportDetails, Integer batchDLId, String filePathAndName, String configFields, Integer batchUploadId);
 
     List<ConfigOutboundForInsert> setConfigOutboundForInsert(int configId, int batchDownloadId) throws Exception;
 
@@ -76,7 +78,7 @@ public interface transactionOutDAO {
 
     String getCustomXMLFieldsForOutput(Integer configId) throws Exception;
 
-    List getOutputForCustomTargetFile(configurationTransport transportDetails, Integer batchDownloadId, String fieldNos) throws Exception;
+    List getOutputForCustomTargetFile(configurationTransport transportDetails, Integer batchDownloadId, String fieldNos, Integer batchUploadId) throws Exception;
 
     List<batchDownloads> getBatchesByStatusIdsAndDate(Date fromDate, Date toDate, Integer fetchSize, List<Integer> statusIds) throws Exception;
 
@@ -117,4 +119,18 @@ public interface transactionOutDAO {
     List<batchDownloads> getAllSentBatchesPaged(Date fromDate, Date toDate, Integer displayStart, Integer displayRecords, String searchTerm, String sortColumnName, String sortDirection) throws Exception;
     
     void insertDMMessage(directmessagesout newDirectMessageOut) throws Exception;
+    
+    void populateOutboundAuditReport(Integer configId, Integer batchDownloadId, Integer batchUploadId, Integer batchUploadConfigId) throws Exception;
+    
+    List<batchErrorSummary> getBatchErrorSummary(int batchId) throws Exception;
+    
+    List<batchdownloadactivity> getBatchActivities(batchDownloads batchInfo);
+    
+    void submitBatchActivityLog(batchdownloadactivity ba);
+    
+    Integer getTotalErrors(Integer batchId) throws Exception;
+    
+    List<directmessagesout> getDirectMessagesOutListPaged(Date fromDate, Date toDate, Integer displayStart, Integer displayRecords, String searchTerm, String sortColumnName, String sortDirection) throws Exception;
+    
+    directmessagesout getDirectAPIMessagesById(Integer directMessageId);
 }

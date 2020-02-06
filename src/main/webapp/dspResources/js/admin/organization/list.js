@@ -162,7 +162,7 @@ require(['./main'], function () {
 			"sWidth": "10%",
 			"className": "center-text",
 			"render": function ( data, type, row, meta ) {
-			    var editLink = '<a href="javascript:void(0);" class="btn btn-link" title="Edit this organization" role="button"><span class="glyphicon glyphicon-edit"></span> Edit</a>';
+			    var editLink = '<a href="#" class="btn btn-link" title="Edit this organization" role="button"><span class="glyphicon glyphicon-edit"></span> Edit</a>';
 			    return editLink;
 			},
 			'createdCell':  function (td, cellData, rowData, row, col) {

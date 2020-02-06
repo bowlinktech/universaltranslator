@@ -1,8 +1,0 @@
-ALTER TABLE `universaltranslator`.`configurationtransportdetails` 
-ADD COLUMN `ergFileDownload` BIT(0) NULL DEFAULT b'0' AFTER `dmConfigKeyword`;
-
-ALTER TABLE `universaltranslator`.`directmessagesin` 
-ADD COLUMN `originalDirectMessage` VARCHAR(255) NULL AFTER `sendingResponse`;
-
-ALTER TABLE `universaltranslator`.`configurationtransportdetails` 
-ADD COLUMN `populateInboundAuditReport` BIT(1) NULL DEFAULT b'0' AFTER `ergFileDownload`;

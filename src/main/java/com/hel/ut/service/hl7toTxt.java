@@ -7,6 +7,7 @@ package com.hel.ut.service;
 
 import com.hel.ut.model.Organization;
 import com.hel.ut.model.configurationMessageSpecs;
+import com.hel.ut.model.utUserActivity;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -32,6 +33,9 @@ public class hl7toTxt {
     private organizationManager organizationmanager;
     
     @Autowired
+    private userManager usermanager;
+    
+    @Autowired
     private utConfigurationManager configurationManager;
     
     @Resource(name = "myProps")
@@ -40,7 +44,7 @@ public class hl7toTxt {
     @Autowired
     private utConfigurationTransportManager configurationtransportmanager;
 
-    public String TranslateHl7toTxt(String fileLocation, String fileName, int orgId, int configId) throws Exception {
+    public String TranslateHl7toTxt(String fileLocation, String fileName, int orgId, int configId, Integer batchId) throws Exception {
 
         Organization orgDetails = organizationmanager.getOrganizationById(orgId);
 
@@ -69,6 +73,15 @@ public class hl7toTxt {
 	}
 	
 	if(!"".equals(templatefileName)) {
+	    //log batch activity
+	    utUserActivity ua = new utUserActivity();
+	    ua.setUserId(0);
+	    ua.setFeatureId(0);
+	    ua.setAccessMethod("System");
+	    ua.setActivity("HL7 Parsing Template found: " + directory + templatefileName);
+	    ua.setBatchUploadId(batchId);
+	    usermanager.insertUserLog(ua);
+	    
 	    URLClassLoader loader = new URLClassLoader(new URL[]{new URL("file://" + directory + templatefileName)});
 
 	    // Remove the .class extension
@@ -118,13 +131,35 @@ public class hl7toTxt {
 
 		FileWriter fw = new FileWriter(newFile, true);
 
-		/* END */
 		String fileRecords = (String) myMethod.invoke(HL7Obj, new Object[]{hl7File});
+		
+		if (fileRecords.equalsIgnoreCase("")) {
+		    newfileName = "ERRORERRORERROR";
+		    
+		    //log batch activity
+		    ua = new utUserActivity();
+		    ua.setUserId(0);
+		    ua.setFeatureId(0);
+		    ua.setAccessMethod("System");
+		    ua.setActivity("Error loading the HL7 Parsing Template: " + directory + templatefileName + " Error: fileRecords was empty.");
+		    ua.setBatchUploadId(batchId);
+		    usermanager.insertUserLog(ua);
+		}
 
 		fw.write(fileRecords);
 
 		fw.close();
 	    } catch (Exception ex) {
+		
+		//log batch activity
+		ua = new utUserActivity();
+		ua.setUserId(0);
+		ua.setFeatureId(0);
+		ua.setAccessMethod("System");
+		ua.setActivity("Error loading the HL7 Parsing Template: " + directory + templatefileName + " Error: " + ex.getMessage());
+		ua.setBatchUploadId(batchId);
+		usermanager.insertUserLog(ua);
+		
 		ex.printStackTrace();
 		newfileName = "ERRORERRORERROR";
 		PrintStream ps = new PrintStream(newFile);
@@ -134,6 +169,15 @@ public class hl7toTxt {
 	}
 	else {
 	    newfileName = "ERRORERRORERROR";
+	    
+	    //log batch activity
+	    utUserActivity ua = new utUserActivity();
+	    ua.setUserId(0);
+	    ua.setFeatureId(0);
+	    ua.setAccessMethod("System");
+	    ua.setActivity("No HL7 parsing template was set up for configId:"+configId);
+	    ua.setBatchUploadId(batchId);
+	    usermanager.insertUserLog(ua);
 	}
         
         return newfileName;

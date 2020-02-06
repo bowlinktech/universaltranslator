@@ -3,6 +3,26 @@
 require(['./main'], function () {
     require(['jquery'], function ($) {
 	
+	//This function will launch the new crosswalk overlay with a blank form
+        $(document).on('click', '.macroDefinitions', function () {
+            $.ajax({
+                url: 'macroDefinitions',
+                type: "GET",
+		data: {
+		    'macroCategory': 1
+		},
+                success: function (data) {
+                    $("#crosswalkModal").html(data);
+                }
+            });
+        });
+	
+	$(document).on('click', '.useMacro', function() {
+	    var macroId = $(this).attr('rel');
+	    $('#macro').val(macroId);
+	    $('#macro').trigger( "change" );
+	});
+	
 	$(document).on('click', '.createCrosswalkDownload', function() {
            $.ajax({
                 url: '/administrator/configurations/createCrosswalkDownload',

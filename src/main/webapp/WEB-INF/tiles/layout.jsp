@@ -48,7 +48,7 @@
         </body>
         <tiles:importAttribute name="jscript" toName="script" ignore="true" />
         <c:if test="${not empty script}">
-        <script type="text/javascript">
+        <script type="text/javascript" nonce="9483TZ393HIE383">
             require(["<%=request.getContextPath()%><tiles:getAsString name='jscript' ignore='true' />"]);
         </script>
     </c:if>

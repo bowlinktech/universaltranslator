@@ -9,6 +9,7 @@ import com.hel.ut.model.Transaction;
 import com.hel.ut.model.batchDLRetry;
 import com.hel.ut.model.batchDownloads;
 import com.hel.ut.model.batchUploads;
+import com.hel.ut.model.batchdownloadactivity;
 import com.hel.ut.model.utConfiguration;
 import com.hel.ut.model.configurationFormFields;
 import com.hel.ut.model.configurationTransport;
@@ -16,6 +17,7 @@ import com.hel.ut.model.pendingDeliveryTargets;
 import com.hel.ut.model.systemSummary;
 import com.hel.ut.model.transactionOutRecords;
 import com.hel.ut.model.custom.ConfigOutboundForInsert;
+import com.hel.ut.model.custom.batchErrorSummary;
 import com.hel.ut.model.directmessagesout;
 import java.io.File;
 
@@ -61,7 +63,7 @@ public interface transactionOutManager {
 
     Integer processMassOutputBatch(batchDownloads batchDownload) throws Exception;
 
-    Integer writeOutputToTextFile(configurationTransport transportDetails, Integer batchUploadId, String filePathAndName, String fieldNos) throws Exception;
+    Integer writeOutputToTextFile(configurationTransport transportDetails, Integer batchDownloadId, String filePathAndName, String fieldNos, Integer batchUploadId) throws Exception;
 
     String generateDLBatchName(String utBatchName, configurationTransport transportDetails, utConfiguration configDetails, batchUploads batchUploadDetails, Date date) throws Exception;
 
@@ -110,5 +112,11 @@ public interface transactionOutManager {
     List<batchDownloads> getAllSentBatchesPaged(Date fromDate, Date toDate, Integer displayStart, Integer displayRecords, String searchTerm, String sortColumnName, String sortDirection) throws Exception;
     
     void insertDMMessage(directmessagesout newDirectMessageOut) throws Exception;
+    
+    List<batchErrorSummary> getBatchErrorSummary(int batchId) throws Exception;
+    
+    List<batchdownloadactivity> getBatchActivities(batchDownloads batchInfo);
+    
+    directmessagesout getDirectAPIMessagesById(Integer directMessageId);
     
 }
