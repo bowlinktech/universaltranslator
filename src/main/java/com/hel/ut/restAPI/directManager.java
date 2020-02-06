@@ -306,7 +306,8 @@ public class directManager {
 		JSONObject emailAttachmentListObject = new JSONObject();
 		emailAttachmentListObject.put("attachmentClass","text/xml");
 		emailAttachmentListObject.put("attachmentContent", encodedContent);
-		emailAttachmentListObject.put("attachmentTitle",batchDownloadDetails.getOutputFileName().replaceAll("\\|", ""));
+		//emailAttachmentListObject.put("attachmentTitle",batchDownloadDetails.getOutputFileName().replaceAll("\\|", ""));
+		emailAttachmentListObject.put("attachmentTitle",batchDownloadDetails.getUtBatchName()+".xml");
 		
 		emailAttachmentListArray.add(emailAttachmentListObject);
 		
@@ -323,8 +324,6 @@ public class directManager {
 		JSONArray envelopeInfoToAddressArray = new JSONArray();
 		envelopeInfoToAddressArray.add(batchUploadDetails.getSenderEmail());
 		envelopeInfoObject.put("toDirectAddress",envelopeInfoToAddressArray);
-		
-		//envelopeInfoObject.put("toDirectAddress",batchUploadDetails.getSenderEmail());
 		
 		jsonObjectToSend.put("envelopeInfo", envelopeInfoObject);
 		
