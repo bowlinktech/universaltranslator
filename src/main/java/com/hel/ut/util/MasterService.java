@@ -34,7 +34,7 @@ public class MasterService {
 	
 	MasterService masterservice = new MasterService();
 	masterservice.loadProperties();
-	String defaultDBName = masterservice.configProp.getProperty("jdbc.defaultUTDBName");
+	String defaultDBName = masterservice.configProp.getProperty("jdbc.defaultUTTESTDBName");
 	
 	DriverManagerDataSource defaultdataSource = new DriverManagerDataSource();
         defaultdataSource.setDriverClassName("com.mysql.cj.jdbc.Driver");
