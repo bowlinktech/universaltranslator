@@ -39,7 +39,6 @@ import com.sun.jersey.api.client.config.DefaultClientConfig;
 import com.sun.jersey.api.client.filter.HTTPBasicAuthFilter;
 import com.sun.jersey.client.urlconnection.HTTPSProperties;
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileWriter;
@@ -367,8 +366,9 @@ public class directManager {
 		    //Save the sending JSON into the archives folder
 		    String sentJSONFileName = batchDownloadDetails.getUtBatchName()+".json";
 		    File sentJSONFile = new File(myProps.getProperty("ut.directory.utRootDir") + "medAlliesArchives/" + sentJSONFileName);
-		    BufferedWriter output = new BufferedWriter(new FileWriter(sentJSONFile));
-		    output.write(jsonObjectToSend.toString().replace("\\/", "/"));
+		    FileWriter writer = new FileWriter(sentJSONFile);
+		    writer.write(jsonObjectToSend.toString().replace("\\/", "/"));
+		    writer.close();
 		    
 		    ClientResponse response = webResource.type("application/json").post(ClientResponse.class, jsonObjectToSend.toString().replace("\\/", "/"));
 		    directMessageOut.setResponseStatus(response.getStatus());
