@@ -41,6 +41,7 @@ import com.sun.jersey.client.urlconnection.HTTPSProperties;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileWriter;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.security.cert.X509Certificate;
@@ -306,7 +307,6 @@ public class directManager {
 		JSONObject emailAttachmentListObject = new JSONObject();
 		emailAttachmentListObject.put("attachmentClass","text/xml");
 		emailAttachmentListObject.put("attachmentContent", encodedContent);
-		//emailAttachmentListObject.put("attachmentTitle",batchDownloadDetails.getOutputFileName().replaceAll("\\|", ""));
 		emailAttachmentListObject.put("attachmentTitle",batchDownloadDetails.getUtBatchName()+".xml");
 		
 		emailAttachmentListArray.add(emailAttachmentListObject);
@@ -324,6 +324,8 @@ public class directManager {
 		JSONArray envelopeInfoToAddressArray = new JSONArray();
 		envelopeInfoToAddressArray.add(batchUploadDetails.getSenderEmail());
 		envelopeInfoObject.put("toDirectAddress",envelopeInfoToAddressArray);
+		
+		//envelopeInfoObject.put("toDirectAddress",batchUploadDetails.getSenderEmail());
 		
 		jsonObjectToSend.put("envelopeInfo", envelopeInfoObject);
 		
@@ -361,6 +363,13 @@ public class directManager {
 		WebResource webResource = client.resource(hispDetails.getHispAPIURL());
 		
 		try {
+		    //Save the sending JSON into the archives folder
+		    String sentJSONFileName = batchDownloadDetails.getUtBatchName()+".json";
+		    File sentJSONFile = new File(myProps.getProperty("ut.directory.utRootDir") + "medAlliesArchives/" + sentJSONFileName);
+		    FileWriter writer = new FileWriter(sentJSONFile);
+		    writer.write(jsonObjectToSend.toString().replace("\\/", "/"));
+		    writer.close();
+		    
 		    ClientResponse response = webResource.type("application/json").post(ClientResponse.class, jsonObjectToSend.toString().replace("\\/", "/"));
 		    directMessageOut.setResponseStatus(response.getStatus());
 		    
