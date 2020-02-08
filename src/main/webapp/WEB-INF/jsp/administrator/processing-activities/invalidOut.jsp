@@ -72,14 +72,14 @@
                                             <td>
 						<strong>${batch.configName}</strong><br />
                                                 ${batch.utBatchName}
-                                                <c:if test="${not empty batch.outputFIleName 
+                                                <c:if test="${not empty batch.outputFileName 
 						    && (
 						    batch.statusId == 28 || 
 						    batch.statusId == 58 || 
 						    batch.statusId == 59 || 
 						    batch.statusId == 30)}">
                                                     <br />
-                                                    <a href="/FileDownload/downloadFile.do?filename=${batch.outputFIleName}&utBatchName=${batch.outputFIleName}&foldername=archivesOut&orgId=0" title="View Original File">
+                                                    <a href="/FileDownload/downloadFile.do?filename=${batch.outputFileName}&utBatchName=${batch.outputFileName}&foldername=archivesOut&orgId=0" title="View Original File">
                                                         Download Outbound File
                                                     </a>
                                                 </c:if>
