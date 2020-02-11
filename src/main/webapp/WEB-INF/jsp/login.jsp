@@ -10,7 +10,7 @@
     <div class="login clearfix">
         <header class="login-header" role="banner">
             <div class="login-header-content">
-                <p style="color:white; font-family: sans-serif; font-size: 25px">Health-e-Link Universal Translator</p>
+                <p style="color:white; font-family: sans-serif; font-size: 25px">EAH Universal Translator</p>
             </div>
         </header>
         <c:if test="${not empty error}">
