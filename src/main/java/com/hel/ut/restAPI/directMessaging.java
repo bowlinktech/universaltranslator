@@ -129,7 +129,7 @@ public class directMessaging {
 			    directmessagesin newDirectMessageIn = new directmessagesin();
 			    newDirectMessageIn.setArchiveFileName("archivesIn/"+dateFormat.format(date)+".json");
 			    newDirectMessageIn.setConfigId(0);
-			    newDirectMessageIn.setFromDirectAddress(messageInfo.getFromDirectAddress());
+			    newDirectMessageIn.setFromDirectAddress(messageInfo.getFromDirectAddress().replace("mailto:",""));
 			    newDirectMessageIn.setToDirectAddress(messageInfo.getToDirectAddress());
 			    newDirectMessageIn.setHispId(0);
 			    newDirectMessageIn.setStatusId(3);
