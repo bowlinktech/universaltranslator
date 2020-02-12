@@ -72,6 +72,12 @@
         <property name="location" value="file:${catalina.home}/properties/HELRegistryManagement.properties"/>
     </bean>
     
+    <bean id="taskExecutor" class="org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor">
+	    <property name="corePoolSize" value="5" />
+	    <property name="maxPoolSize" value="10" />
+	    <property name="WaitForTasksToCompleteOnShutdown" value="true" />
+    </bean>
+    
     <!-- adds system properties -->
     <bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
         <property name="targetObject">
