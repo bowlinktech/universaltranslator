@@ -84,8 +84,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import javax.annotation.Resource;
 import org.apache.commons.io.comparator.LastModifiedFileComparator;
 import org.apache.commons.io.filefilter.HiddenFileFilter;
@@ -110,6 +108,7 @@ import java.io.StringWriter;
 import java.util.Vector;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 /**
  *
@@ -183,6 +182,9 @@ public class transactionInManagerImpl implements transactionInManager {
     
     @Autowired
     fileUploadManager fileuploadmanager;
+    
+    @Autowired
+    ThreadPoolTaskExecutor executor;
 
     private int processingSysErrorId = 5;
 
@@ -194,7 +196,7 @@ public class transactionInManagerImpl implements transactionInManager {
     
 
     private List<String> zipExtensions = Arrays.asList("gz", "zip");
-
+    
     @Override
     public String getFieldValue(String tableName, String tableCol, String idCol, int idValue) {
 	return transactionInDAO.getFieldValue(tableName, tableCol, idCol, idValue);
@@ -1571,7 +1573,7 @@ public class transactionInManagerImpl implements transactionInManager {
     @Override
     public Integer moveFileDroppedFiles() {
 	Integer sysErrors = 0;
-
+	
 	try {
 	    
 	    //1 . Find all configurations that have file dropped transport methods (Method = 1)
@@ -1619,6 +1621,7 @@ public class transactionInManagerImpl implements transactionInManager {
 			
 			//paths are from root instead of /home
 			String inPath = directoryHome + fileDropInfo.getDirectory().replace("/HELProductSuite/universalTranslator/","");
+			
 			File f = new File(inPath);
 			
 			if (!f.exists()) {
@@ -2030,8 +2033,7 @@ public class transactionInManagerImpl implements transactionInManager {
 	    List<batchUploads> batches = getBatchesByStatusIds(Arrays.asList(42, 2));
 	    if (batches != null) {
 		if (!batches.isEmpty()) {
-		    //Parallel processing of batches
-		    ExecutorService executor = Executors.newCachedThreadPool();
+		    
 		    for (batchUploads batch : batches) {
 			executor.execute(new Runnable() {
 			    @Override
@@ -2883,7 +2885,6 @@ public class transactionInManagerImpl implements transactionInManager {
 		
 		if (batches != null && batches.size() != 0) {
 		    //Parallel processing of batches
-		    ExecutorService executor = Executors.newCachedThreadPool();
 		    for (batchUploads batch : batches) {
 			executor.execute(new Runnable() {
 			    @Override
@@ -3468,7 +3469,6 @@ public class transactionInManagerImpl implements transactionInManager {
 	    if (RestAPIMessageList != null) {
 		
 		//Parallel processing of batches
-		ExecutorService executor = Executors.newCachedThreadPool();
 		for (RestAPIMessagesIn RestAPIMessage : RestAPIMessageList) {
 		    //we check to make sure again as time could have pass and it could have been processed already
 		    RestAPIMessagesIn RestAPIRecheck = getRestAPIMessagesById(RestAPIMessage.getId());
@@ -4088,7 +4088,6 @@ public class transactionInManagerImpl implements transactionInManager {
 	    if (directMessageList != null) {
 		
 		//Parallel processing of batches
-		ExecutorService executor = Executors.newCachedThreadPool();
 		for (directmessagesin directmessage : directMessageList) {
 		    //we check to make sure again as time could have pass and it could have been processed already
 		    directmessagesin directMessageRecheck = getDirectAPIMessagesById(directmessage.getId());
@@ -4374,7 +4373,6 @@ public class transactionInManagerImpl implements transactionInManager {
 	
 	if(!ftpConfigurations.isEmpty()) {
 	    //Parallel processing of FTP Configurations
-	    ExecutorService executor = Executors.newCachedThreadPool();
 	    for (configurationFTPFields ftpConfiguration : ftpConfigurations) {
 		executor.execute(new Runnable() {
 		    @Override

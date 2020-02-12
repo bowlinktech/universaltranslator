@@ -96,8 +96,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import com.hel.ut.service.utConfigurationManager;
 import com.hel.ut.service.utConfigurationTransportManager;
 import com.registryKit.registry.helRegistry;
@@ -108,6 +106,7 @@ import java.security.SecureRandom;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.net.ftp.FTPClient;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 /**
  *
@@ -173,9 +172,11 @@ public class transactionOutManagerImpl implements transactionOutManager {
     @Autowired
     private hispManager hispManager;
     
-     @Autowired
+    @Autowired
     private directManager directManager;
-
+     
+    @Autowired
+    ThreadPoolTaskExecutor executor;
 
     private int processingSysErrorId = 5;
     
@@ -1285,7 +1286,6 @@ public class transactionOutManagerImpl implements transactionOutManager {
 		if (batches != null && batches.size() != 0) {
 
 		    //Parallel processing of batches
-		    ExecutorService executor = Executors.newCachedThreadPool();
 		    for (batchDownloads batch : batches) {
 			executor.execute(new Runnable() {
 			    @Override
@@ -1809,7 +1809,9 @@ public class transactionOutManagerImpl implements transactionOutManager {
 			directory.mkdirs();
 		    }
 		    
-		    File targetFile = new File(targetDirectory + batchDownload.getUtBatchName() + "." + fileExt);
+		    
+		    //File targetFile = new File(targetDirectory + batchDownload.getUtBatchName() + "." + fileExt);
+		    File targetFile = new File(targetDirectory + batchDownload.getOutputFileName());
 		    
 		    Files.copy(archiveFile.toPath(), targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
 		    
