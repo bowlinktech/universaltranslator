@@ -1614,12 +1614,20 @@ public class transactionInDAOImpl implements transactionInDAO {
     @Override
     @Transactional(readOnly = false)
     public Integer clearBatchDownloads(List<Integer> batchIds) {
-	String sql = "delete from batchDownloads where id in (:batchIds);";
+	
+	String clearSQL = "";
+	clearSQL += "delete from batchdownloadauditerrors where batchDownloadId in (:batchIds);";
+	
 	try {
-	    Query deleteTable = sessionFactory.getCurrentSession().createSQLQuery(sql).setParameterList("batchIds", batchIds);
+	    Query deleteTable = sessionFactory.getCurrentSession().createSQLQuery(clearSQL).setParameterList("batchIds", batchIds);
+	    deleteTable.executeUpdate();
+	    
+	    clearSQL = "delete from batchDownloads where id in (:batchIds);";
+	    deleteTable = sessionFactory.getCurrentSession().createSQLQuery(clearSQL).setParameterList("batchIds", batchIds);
 	    deleteTable.executeUpdate();
 	    return 0;
-	} catch (Exception ex) {
+	}
+	catch (Exception ex) {
 	    ex.printStackTrace();
 	    System.err.println("clearBatchDownloads " + ex.getCause().getMessage());
 	    return 1;
@@ -2827,7 +2835,7 @@ public class transactionInDAOImpl implements transactionInDAO {
 	deleteSQL += "DROP TABLE IF EXISTS `transactionindetailauditerrors_" + batchId + "`;";
 	deleteSQL += "DROP TABLE IF EXISTS `transactiontranslatedlistin_" + batchId + "`;";
 	deleteSQL += "DROP TABLE IF EXISTS `transactiontranslatedin_" + batchId + "`;";
-	deleteSQL += "DROP TABLE IF EXISTS `transactioninrecords_" + batchId + "`;";
+	//deleteSQL += "DROP TABLE IF EXISTS `transactioninrecords_" + batchId + "`;";
 	deleteSQL += "DROP TABLE IF EXISTS `transactioninerrors_" + batchId + "`;";
 	
 	deleteQuery = sessionFactory.getCurrentSession().createSQLQuery(deleteSQL);

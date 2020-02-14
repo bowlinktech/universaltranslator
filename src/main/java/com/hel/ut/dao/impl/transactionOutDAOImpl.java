@@ -1122,7 +1122,7 @@ public class transactionOutDAOImpl implements transactionOutDAO {
 	Query deleteQuery;
 	deleteSQL += "DROP TABLE IF EXISTS `transactionindetailauditerrors_" + batchId + "`;";
 	deleteSQL += "DROP TABLE IF EXISTS `transactiontranslatedlistin_" + batchId + "`;";
-	deleteSQL += "DROP TABLE IF EXISTS `transactioninrecords_" + batchId + "`;";
+	//deleteSQL += "DROP TABLE IF EXISTS `transactioninrecords_" + batchId + "`;";
 	deleteSQL += "DROP TABLE IF EXISTS `transactioninerrors_" + batchId + "`;";
 
 	deleteQuery = sessionFactory.getCurrentSession().createSQLQuery(deleteSQL);
@@ -1369,14 +1369,18 @@ public class transactionOutDAOImpl implements transactionOutDAO {
     @Override
     @Transactional(readOnly = false)
     public void populateOutboundAuditReport(Integer configId, Integer batchDownloadId, Integer batchUploadId, Integer batchUploadConfigId) throws Exception {
-	
-	String sql = "call populateOutboundAuditReport(:configId, :batchDownloadId, :batchUploadId, :batchUploadConfigId);";
-	Query query = sessionFactory.getCurrentSession().createSQLQuery(sql);
-	query.setParameter("configId", configId);
-	query.setParameter("batchDownloadId", batchDownloadId);
-	query.setParameter("batchUploadId", batchUploadId);
-	query.setParameter("batchUploadConfigId", batchUploadConfigId);
-	query.executeUpdate();
+	try {
+	    String sql = "call populateOutboundAuditReport(:configId, :batchDownloadId, :batchUploadId, :batchUploadConfigId);";
+	    Query query = sessionFactory.getCurrentSession().createSQLQuery(sql);
+	    query.setParameter("configId", configId);
+	    query.setParameter("batchDownloadId", batchDownloadId);
+	    query.setParameter("batchUploadId", batchUploadId);
+	    query.setParameter("batchUploadConfigId", batchUploadConfigId);
+	    query.executeUpdate();
+	} catch (Exception ex) {
+	    System.err.println("populateOutboundAuditReport " + ex.getCause());
+	    ex.printStackTrace();
+	}   
     }
     
     @Override
