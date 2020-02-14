@@ -755,6 +755,9 @@ public class adminProcessingActivity {
 
         if (batchDetails != null) {
 	    
+	    utConfiguration configDetails = configurationManager.getConfigurationById(batchDetails.getConfigId());
+	    mav.addObject("configDetails",configDetails);
+	    
 	    Organization orgDetails = organizationmanager.getOrganizationById(batchDetails.getOrgId());
             batchDetails.setOrgName(orgDetails.getOrgName());
 	    
@@ -781,7 +784,7 @@ public class adminProcessingActivity {
             }
 
             List<Integer> resetStatusList = Arrays.asList(2, 22, 23, 1, 8, 35, 28); //DNP (21) is not a final status for admin
-            if (!resetStatusList.contains(batchDetails.getStatusId())) {
+            if (!resetStatusList.contains(batchDetails.getStatusId()) && configDetails.getMessageTypeId() != 2) {
                 canReset = true;
             }
 
@@ -813,7 +816,7 @@ public class adminProcessingActivity {
             }
 
             if (batchDetails.getConfigId() != 0) {
-                batchDetails.setConfigName(configurationManager.getMessageTypeNameByConfigId(batchDetails.getConfigId()));
+                batchDetails.setConfigName(configDetails.getconfigName());
             } else {
                 batchDetails.setConfigName("Multiple Message Types");
             }
@@ -848,6 +851,7 @@ public class adminProcessingActivity {
         mav.addObject("canEdit", canEdit);
         mav.addObject("canSend", canSend);
 	mav.addObject("batchDownload",false);
+	
 	
 	if(canReset || canCancel || canEdit || canSend || batchDetails.getStatusId() == 2 || batchDetails.getStatusId() == 3 || batchDetails.getStatusId() == 36) {
 	    showButtons = true;
@@ -2916,6 +2920,9 @@ public class adminProcessingActivity {
        
         if (batchDetails != null) {
 	    
+	    utConfiguration configDetails = configurationManager.getConfigurationById(batchDetails.getConfigId());
+	    mav.addObject("configDetails",configDetails);
+	    
 	    Organization orgDetails = organizationmanager.getOrganizationById(batchDetails.getOrgId());
             batchDetails.setTgtorgName(orgDetails.getOrgName());
 	    
@@ -2931,7 +2938,7 @@ public class adminProcessingActivity {
             }
 
             List<Integer> resetStatusList = Arrays.asList(28,30,31,41,58); //DNP (21) is not a final status for admin
-            if (resetStatusList.contains(batchDetails.getStatusId())) {
+	    if (!resetStatusList.contains(batchDetails.getStatusId()) && configDetails.getMessageTypeId() != 2) {
                 canReset = true;
             }
 	    
