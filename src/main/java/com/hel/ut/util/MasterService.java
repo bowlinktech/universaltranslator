@@ -24,7 +24,7 @@ public class MasterService {
     private InputStream input = null;
     
     public void loadProperties() throws IOException {
-	File propDir = new File(System.getProperty("catalina.base"), "properties");
+	File propDir = new File(System.getProperty("catalina.home"), "properties");
 	File propFile = new File(propDir, "HELRegistryManagement.properties");
 	input = new FileInputStream(propFile);
 	configProp.load(input);
