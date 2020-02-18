@@ -35,7 +35,7 @@ require(['./main'], function () {
 		populateHELRegistryConfigs(helRegistryId,helSchemaName);
 		
 		//Set the file drop location
-		$('#directory2').val('/HELProductSuite/registries/'+$('#helRegistryFolderName').val()+'/loadFiles/');
+		$('#directory2').val('/HELCAProductSuite/registries/'+$('#helRegistryFolderName').val()+'/loadFiles/');
 		
 		//If method == 10 (Coming from a HEL Registry online form preset the values
 		$('#fileType').val(2);

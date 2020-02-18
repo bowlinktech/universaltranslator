@@ -25,7 +25,7 @@ public class MasterService {
     
     public void loadProperties() throws IOException {
 	File propDir = new File(System.getProperty("catalina.home"), "properties");
-	File propFile = new File(propDir, "HELRegistryManagement.properties");
+	File propFile = new File(propDir, "HELCARegistryManagement.properties");
 	input = new FileInputStream(propFile);
 	configProp.load(input);
     }
@@ -59,32 +59,4 @@ public class MasterService {
 	return defaultdataSource;
     }
     
-    /*public static ComboPooledDataSource getComboPooledDataSource(String tenantIdentifier) throws IOException {
-	MasterService masterservice = new MasterService();
-	masterservice.loadProperties();
-	
-	//DriverManagerDataSource defaultdataSource = new DriverManagerDataSource();
-        //defaultdataSource.setDriverClassName("com.mysql.cj.jdbc.Driver");
-        //defaultdataSource.setUrl("jdbc:mysql://"+masterservice.configProp.getProperty("jdbc.url")+"/"+tenantIdentifier+"?allowMultiQueries=true&serverTimezone=UTC");
-        //defaultdataSource.setUsername(masterservice.configProp.getProperty("jdbc.user"));
-        //defaultdataSource.setPassword(masterservice.configProp.getProperty("jdbc.password"));
-	
-	ComboPooledDataSource cpds = new ComboPooledDataSource(tenantIdentifier);
-	cpds.setJdbcUrl("jdbc:mysql://"+masterservice.configProp.getProperty("jdbc.url")+"/"+tenantIdentifier+"?allowMultiQueries=true");
-	cpds.setUser(masterservice.configProp.getProperty("jdbc.user"));
-        cpds.setPassword(masterservice.configProp.getProperty("jdbc.password"));
-        cpds.setInitialPoolSize(1);
-        cpds.setMaxConnectionAge(10000);
-	cpds.setMaxIdleTime(600);
-	cpds.setMaxIdleTimeExcessConnections(120);
-	
-	try {
-	    cpds.setDriverClass("com.mysql.cj.jdbc.Driver");
-	} catch (PropertyVetoException ex) {
-	    Logger.getLogger(MasterService.class.getName()).log(Level.SEVERE, null, ex);
-	}
-	
-	return cpds;
-	
-    }*/
 }

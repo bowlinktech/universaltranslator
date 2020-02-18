@@ -280,7 +280,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
 	OutputStream outputStream = null;
 
 	String filelocation = transportDetails.getfileLocation();
-	filelocation = filelocation.replace("/HELProductSuite/universalTranslator/", "");
+	filelocation = filelocation.replace("/HELCAProductSuite/universalTranslator/", "");
 	String directory = myProps.getProperty("ut.directory.utRootDir") + filelocation;
 
 	boolean hl7 = false;
@@ -1762,7 +1762,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
 			    }
 			}
 			
-			File targetFile = new File(myProps.getProperty("registry.directory.path") + fileDropDir.replace("/HELProductSuite/registries/", "") + batchDownload.getOutputFileName());
+			File targetFile = new File(myProps.getProperty("registry.directory.path") + fileDropDir.replace("/HELCAProductSuite/registries/", "") + batchDownload.getOutputFileName());
 			
 			if(transportDetails.isErgFileDownload()) {
 			    Files.copy(massOutFile.toPath(), targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING);

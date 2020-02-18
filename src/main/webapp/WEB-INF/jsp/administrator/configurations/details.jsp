@@ -51,9 +51,9 @@
 			 <div class="form-group">
                             <label for="messageTypeId">Message Type *</label>
                             <div>
-                                <label class="radio-inline">
+                                <!--<label class="radio-inline">
                                     <form:radiobutton id="messageTypeId" path="messageTypeId" value="1" class="type" disabled="${configurationDetails.id == 0 ? 'false' : 'true' }"/> eReferral Configuration
-                                </label>
+                                </label>-->
                                 <label class="radio-inline">
                                     <form:radiobutton id="messageTypeId" path="messageTypeId" value="2" class="type" disabled="${configurationDetails.id == 0 ? 'false' : 'true' }"/> Family Planning Configuration
                                 </label>

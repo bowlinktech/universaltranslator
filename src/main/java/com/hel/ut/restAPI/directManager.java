@@ -280,7 +280,7 @@ public class directManager {
 	    directMessageOut.setHispId(hispDetails.getId());
 
 	    String filelocation = transportDetails.getfileLocation();
-	    filelocation = filelocation.replace("/HELProductSuite/universalTranslator/", "");
+	    filelocation = filelocation.replace("/HELCAProductSuite/universalTranslator/", "");
 	    
 	    File file = new File(myProps.getProperty("ut.directory.utRootDir") + filelocation + fileName);
 	   

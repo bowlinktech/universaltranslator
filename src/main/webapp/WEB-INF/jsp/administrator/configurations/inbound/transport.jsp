@@ -22,7 +22,7 @@
     <section class="panel panel-default">
 	<div class="panel-heading">
 	    <h3 class="panel-title">
-		Transport Method (How is the file getting to the UT?)
+		Transport Method (How is the file getting to the EAH UT?)
 	    </h3>
 	</div>
 	<div class="panel-body">
@@ -67,7 +67,7 @@
 		<div id="fileDetailsDiv"  style="display:none">
 		    <spring:bind path="fileLocation">
 			<div class="form-group ${status.error ? 'has-error' : '' }">
-			    <label class="control-label" for="fileLocation">Where will the file be stored on the UT prior to processing? *</label>
+			    <label class="control-label" for="fileLocation">Where will the file be stored on the EAH UT prior to processing? *</label>
 			    <form:input origVal="${transportDetails.fileLocation}" path="fileLocation" id="fileLocation" class="form-control" type="text" maxLength="255" />
 			    <form:errors path="fileLocation" cssClass="control-label" element="label" />
 			</div>
@@ -219,7 +219,7 @@
 			      <input name="fileDropFields[${field.index}].directory" id="directory${fileDropDetails.method}" class="form-control" type="hidden" maxLength="255" value="${fileDropDetails.directory}"  />
 			    </c:if>
 			    <c:if test="${fileDropDetails.method == 1}">
-				<label class="control-label" for="directory${fileDropDetails.method}">Location on the UT where files will be dropped</label>
+				<label class="control-label" for="directory${fileDropDetails.method}">Location on the EAH UT where files will be dropped</label>
 				<p>Make sure to add a sub folder after "/input files"</p>
 				<input name="fileDropFields[${field.index}].directory" id="directory${fileDropDetails.method}" class="form-control" type="text" maxLength="255" value="${fileDropDetails.directory}"  />
 				<span id="rDirectory${fileDropDetails.method}Msg" class="control-label"></span>

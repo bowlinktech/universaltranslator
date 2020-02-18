@@ -23,6 +23,7 @@
             <form:hidden path="dateCreated" />
 	    <form:hidden path="helRegistrySchemaName" id="helRegistrySchemaName" />
 	    <form:hidden path="helRegistryId" id="helRegistryId" />
+	    <form:hidden path="helRegistryOrgId" value="0" />
 
             <section class="panel panel-default">
                 <div class="panel-heading">
@@ -50,12 +51,12 @@
 				    <option value="4" <c:if test="${organization.orgType == 4}">selected</c:if>>Data Warehouse</option>
 				    <option value="1" <c:if test="${organization.orgType == 1}">selected</c:if>>Health Care Provider</option>
 				    <option value="3" <c:if test="${organization.orgType == 3}">selected</c:if>>Health Management Information System</option>
-				    <option value="5" <c:if test="${organization.orgType == 5}">selected</c:if>>Internal Health-e-Link Registry</option>
+				    <!--<option value="5" <c:if test="${organization.orgType == 5}">selected</c:if>>Internal Health-e-Link Registry</option>-->
 				</form:select>
 				<form:errors path="orgType" cssClass="control-label" element="label" />
 			    </div>
                         </div>  
-			<div class="form-group">
+			<!--<div class="form-group">
 			    <label for="orgType">Is this organization from a Health-e-Link Registry?</label>
 			    <select id="isHELRegistry" class="form-control half">
 				<option value="" <c:if test="${organization.id == 0}">selected</c:if>>- Select -</option>
@@ -82,8 +83,8 @@
 				    </div>
 				</spring:bind> 
 			    </div>
-			</div>	
-			<div id="orgDetails" style="${organization.id > 0 ? 'display:block':'display:none'}">
+			</div>	-->
+			<div id="orgDetails" ><!--style="${organization.id > 0 ? 'display:block':'display:none'}"-->
 			    <spring:bind path="orgName">
 				<div class="form-group ${status.error ? 'has-error' : '' } ${not empty existingOrg ? 'has-error' : ''}">
 				    <label class="control-label" for="orgName">Organization Name *</label>

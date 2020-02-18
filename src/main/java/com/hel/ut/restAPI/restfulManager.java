@@ -149,7 +149,7 @@ public class restfulManager {
 	    apiMessageOut.setOrgId(batchFileInfo.getOrgId());
 
 	    String filelocation = transportDetails.getfileLocation();
-	    filelocation = filelocation.replace("/HELProductSuite/universalTranslator/", "");
+	    filelocation = filelocation.replace("/HELCAProductSuite/universalTranslator/", "");
 
 	    File file = new File(myProps.getProperty("ut.directory.utRootDir") + filelocation + fileName);
 
@@ -442,7 +442,7 @@ public class restfulManager {
 	    }
 
 	    String filelocation = transportDetails.getfileLocation();
-	    filelocation = filelocation.replace("/HELProductSuite/universalTranslator/", "");
+	    filelocation = filelocation.replace("/HELCAProductSuite/universalTranslator/", "");
 	    
 	    File file = new File(myProps.getProperty("ut.directory.utRootDir") + filelocation + fileName);
 	    File folder = new File(myProps.getProperty("ut.directory.utRootDir") + filelocation);
@@ -792,7 +792,7 @@ public class restfulManager {
 	    apiMessageOut.setOrgId(batchFileInfo.getOrgId());
 
 	    String filelocation = transportDetails.getfileLocation();
-	    filelocation = filelocation.replace("/HELProductSuite/universalTranslator/", "");
+	    filelocation = filelocation.replace("/HELCAProductSuite/universalTranslator/", "");
 	    
 	    File file = new File(myProps.getProperty("ut.directory.utRootDir") + filelocation + fileName);
 

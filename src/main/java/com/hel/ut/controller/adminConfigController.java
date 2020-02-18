@@ -459,9 +459,9 @@ public class adminConfigController {
             transportDetails = new configurationTransport();
 
             if (configurationDetails.getType() == 1) {
-                transportDetails.setfileLocation("/HELProductSuite/universalTranslator/" + orgDetails.getcleanURL() + "/input files/");
+                transportDetails.setfileLocation("/HELCAProductSuite/universalTranslator/" + orgDetails.getcleanURL() + "/input files/");
             } else {
-                transportDetails.setfileLocation("/HELProductSuite/universalTranslator/" + orgDetails.getcleanURL() + "/output files/");
+                transportDetails.setfileLocation("/HELCAProductSuite/universalTranslator/" + orgDetails.getcleanURL() + "/output files/");
             }
 
             List<Integer> assocMessageTypes = new ArrayList<Integer>();
@@ -511,7 +511,7 @@ public class adminConfigController {
 		 pushRFields.setDirectory("/bowlink/");
 	    }
 	    else if(configurationDetails.getMessageTypeId() == 1) { 
-		 pushRFields.setDirectory("/HELProductSuite/universalTranslator/" + orgDetails.getcleanURL() + "/input files/"+configurationDetails.getconfigName().toLowerCase().replace(" ", "")+"/");
+		 pushRFields.setDirectory("/HELCAProductSuite/universalTranslator/" + orgDetails.getcleanURL() + "/input files/"+configurationDetails.getconfigName().toLowerCase().replace(" ", "")+"/");
 	    }
 	    else {
 		pushRFields.setDirectory("/");
@@ -523,7 +523,7 @@ public class adminConfigController {
 		getRFields.setDirectory("/bowlink/");
 	    }
 	    else if(configurationDetails.getMessageTypeId() == 1) { 
-		getRFields.setDirectory("/HELProductSuite/universalTranslator/" + orgDetails.getcleanURL() + "/output files/"+configurationDetails.getconfigName().toLowerCase().replace(" ", "")+"/");
+		getRFields.setDirectory("/HELCAProductSuite/universalTranslator/" + orgDetails.getcleanURL() + "/output files/"+configurationDetails.getconfigName().toLowerCase().replace(" ", "")+"/");
 	    }
 	    else {
 		getRFields.setDirectory("/");
@@ -686,7 +686,7 @@ public class adminConfigController {
 	    
             for (configurationFTPFields ftpFields : transportDetails.getFTPFields()) {
 		if(!"".equals(ftpFields.getip())) {
-		    dir.creatFTPDirectory(directory+ftpFields.getdirectory().replace("/HELProductSuite/universalTranslator/",""));
+		    dir.creatFTPDirectory(directory+ftpFields.getdirectory().replace("/HELCAProductSuite/universalTranslator/",""));
 		
 		    ftpFields.settransportId(transportId);
 		    utconfigurationTransportManager.saveTransportFTP(configurationDetails.getorgId(), ftpFields);
@@ -703,7 +703,7 @@ public class adminConfigController {
 	    
 	     for (configurationFileDropFields fileDropFields : transportDetails.getFileDropFields()) {
 		
-		dir.createFileDroppedDirectory(directory+fileDropFields.getDirectory().replace("/HELProductSuite/universalTranslator/",""));
+		dir.createFileDroppedDirectory(directory+fileDropFields.getDirectory().replace("/HELCAProductSuite/universalTranslator/",""));
 		
                fileDropFields.setTransportId(transportId);
                utconfigurationTransportManager.saveTransportFileDrop(fileDropFields);

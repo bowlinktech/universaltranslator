@@ -207,7 +207,7 @@ public class restful {
 						    }
 						}
 						
-						FileOutputStream fos = new FileOutputStream(utRootDir + fileDropDir.replace("/HELProductSuite/universalTranslator/", "") + attachmentTitle);
+						FileOutputStream fos = new FileOutputStream(utRootDir + fileDropDir.replace("/HELCAProductSuite/universalTranslator/", "") + attachmentTitle);
 
 						//Check if content is base64 encoded
 						if(org.apache.commons.codec.binary.Base64.isBase64(attachmentContent.replace("\n", ""))) {

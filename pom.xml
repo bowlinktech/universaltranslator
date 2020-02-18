@@ -12,7 +12,7 @@
     <packaging>war</packaging>
     <version>3.0</version>
     
-    <name>UT</name>
+    <name>UT CA</name>
   
     <properties>
 	<org.springframework.version>4.3.18.RELEASE</org.springframework.version>

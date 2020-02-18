@@ -47,7 +47,7 @@ public class utConfiguration {
     private Integer type = 1;
 
     @Column(name = "MESSAGETYPEID", nullable = false)
-    private Integer messageTypeId = 1;
+    private Integer messageTypeId = 2;
 
     @Column(name = "STEPSCOMPLETED", nullable = false)
     private Integer stepsCompleted = 0;

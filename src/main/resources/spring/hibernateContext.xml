@@ -6,25 +6,7 @@
             http://www.springframework.org/schema/tx
             http://www.springframework.org/schema/tx/spring-tx.xsd">
     
-    
-    <!--<bean id="dataSource" class="org.apache.tomcat.jdbc.pool.DataSource">
-        <property name="driverClassName" value="${jdbc.driver}" />
-        <property name="url" value="${jdbc.url}" />
-        <property name="username" value="${jdbc.user}" />
-        <property name="password" value="${jdbc.password}" />
-        <property name="logAbandoned" value="${jdbc.logAbandoned}" />
-        <property name="removeAbandoned" value="${jdbc.removeAbandoned}" />
-        <property name="initialSize" value="${jdbc.initialSize}" />
-        <property name="maxActive" value="${jdbc.maxActive}" />
-        <property name="maxIdle" value="${jdbc.maxIdle}" />
-        <property name="minIdle" value="${jdbc.minIdle}" />
-        <property name="timeBetweenEvictionRunsMillis" value="${jdbc.timeBetweenEvictionRunsMillis}" />
-        <property name="validationQuery" value="${jdbc.validationQuery}" />
-        <property name="validationInterval" value="${jdbc.validationInterval}" />
-        <property name="testOnBorrow" value="${jdbc.testOnBorrow}" />
-        <property name="removeAbandonedTimeout" value="${jdbc.removeAbandonedTimeout}" />
-    </bean>-->
-    
+   
     <bean id="sessionFactory" class="org.springframework.orm.hibernate4.LocalSessionFactoryBean">
         <property name="hibernateProperties">
             <props>
