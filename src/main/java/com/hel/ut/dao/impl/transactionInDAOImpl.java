@@ -2109,8 +2109,11 @@ public class transactionInDAOImpl implements transactionInDAO {
 	if (cms.getrptField4() != 0) {
 	    sql += "f" + cms.getrptField4() + " as reportField4Data,";
 	}
-	sql = sql + "transactionInRecordsId as matchId from transactiontranslatedin_"+batchUploadId+" "
-	    + "where statusId in (13)) tbl_concat "
+	sql = sql + "id as matchId from transactioninrecords_"+batchUploadId+" tir "
+	    + " join (select transactionInRecordsId from "
+	    + " transactiontranslatedin_"+batchUploadId 
+	    + " where statusId in (13,14)) tti on tti.transactionInRecordsId = tir.id"
+	    + ") tbl_concat "
 	    + "ON transactionIndetailauditerrors_"+batchUploadId +".transactionInRecordsId = tbl_concat.matchid"
 	    + " SET transactionIndetailauditerrors_"+batchUploadId+".errorData = tbl_concat.errorData ";
 	
