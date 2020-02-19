@@ -1,0 +1,2 @@
+ALTER TABLE `universaltranslator`.`configurationconnectionfieldmappings` 
+ADD COLUMN `populateErrorFieldNo` INT(11) NULL DEFAULT NULL AFTER `associatedFieldNo`;
