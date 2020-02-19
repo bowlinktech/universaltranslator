@@ -1886,8 +1886,8 @@ public class transactionInManagerImpl implements transactionInManager {
 
 	//String[] ccAddresses = new String[2];
 	List<String> ccAddresses = new ArrayList<String>();
-	ccAddresses.add("chadmccue05@gmail.com");
-
+	ccAddresses.add("monitor@health-e-link.net");
+	
 	//build message
 	String message = "Uploaded File (Batch Id:" + batch.getUtBatchName() + ") contains " + batch.getErrorRecordCount() + " error(s).";
 
