@@ -514,7 +514,8 @@ public class adminConfigController {
 		 pushRFields.setDirectory("/HELCAProductSuite/universalTranslator/" + orgDetails.getcleanURL() + "/input files/"+configurationDetails.getconfigName().toLowerCase().replace(" ", "")+"/");
 	    }
 	    else {
-		pushRFields.setDirectory("/");
+		String directory = myProps.getProperty("ut.directory.utRootDir");
+		pushRFields.setDirectory(directory + orgDetails.getcleanURL() + "/input files/"+configurationDetails.getconfigName().toLowerCase().replace(" ", "")+"/");
 	    }
 
 	    configurationFileDropFields getRFields = new configurationFileDropFields();

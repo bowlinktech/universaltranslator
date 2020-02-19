@@ -18,6 +18,8 @@
             <form:hidden path="id" id="id" />
             <form:hidden path="dateCreated" />
             <form:hidden path="stepsCompleted" />
+	    <form:hidden path="messageTypeId" id="messageTypeId" value="2" />
+	    
             <section class="panel panel-default">
 
                 <div class="panel-heading">
@@ -48,12 +50,12 @@
                                 <c:if test="${configurationDetails.id > 0}"><form:hidden id="typeVal" path="type"/></c:if>  
 			    </div>
 			</div>
-			 <div class="form-group">
+			<!--<div class="form-group">
                             <label for="messageTypeId">Message Type *</label>
                             <div>
-                                <!--<label class="radio-inline">
+                                <label class="radio-inline">
                                     <form:radiobutton id="messageTypeId" path="messageTypeId" value="1" class="type" disabled="${configurationDetails.id == 0 ? 'false' : 'true' }"/> eReferral Configuration
-                                </label>-->
+                                </label>
                                 <label class="radio-inline">
                                     <form:radiobutton id="messageTypeId" path="messageTypeId" value="2" class="type" disabled="${configurationDetails.id == 0 ? 'false' : 'true' }"/> Family Planning Configuration
                                 </label>
@@ -62,7 +64,7 @@
                                 </label>
                                 <c:if test="${configurationDetails.id > 0}"><form:hidden id="messageTypeId" path="messageTypeId"/></c:if>  
                                 </div>
-			</div>    
+			</div>-->    
 			<div id="configurationTypeDiv" class="form-group" style="display:${configurationDetails.type == 1 ? 'block' : 'none'}">
 			   <label for="type">Processing Type * </label>
 			   <div>
