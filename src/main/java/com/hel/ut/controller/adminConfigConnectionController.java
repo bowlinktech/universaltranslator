@@ -191,9 +191,10 @@ public class adminConfigConnectionController {
 	    
 	    sourceOrgId = utconfigurationmanager.getConfigurationById(connectionDetails.getsourceConfigId()).getorgId();
 	    sourceConfigId = connectionDetails.getsourceConfigId();
-	    targetOrgId = utconfigurationmanager.getConfigurationById(connectionDetails.gettargetConfigId()).getorgId();
-	    targetConfigId = connectionDetails.gettargetConfigId();
 	    
+	    utConfiguration targetConfigDetails = utconfigurationmanager.getConfigurationById(connectionDetails.gettargetConfigId());
+	    targetOrgId = targetConfigDetails.getorgId();
+	   targetConfigId = connectionDetails.gettargetConfigId();
 	    connectionId = connectionDetails.getId();
 	}
 	
@@ -211,7 +212,7 @@ public class adminConfigConnectionController {
     }
 
     /**
-     * The '/editConnection' funtion will handle displaying the edit utConfiguration connection screen.
+     * The '/editConnection' function will handle displaying the edit utConfiguration connection screen.
      *
      * @param connectionId The id of the clicked utConfiguration connection
      *
@@ -541,23 +542,29 @@ public class adminConfigConnectionController {
 	   
 	}
 	else {
+	    boolean showErrorField = false;
 	    mav.setViewName("/administrator/configurations/connections/targetConfigurationDataElements");
 	    List<configurationFormFields> sourceconfigurationDataElements = utconfigurationTransportManager.getConfigurationFields(sourceConfigId, 0);
+	    
+	     
+	    configurationTransport targetConfigTransportDetails = utconfigurationTransportManager.getTransportDetails(selConfigId);
+	    
+	    if(targetConfigTransportDetails.isPopulateInboundAuditReport()) {
+		showErrorField = true;
+	    }
 	    
 	    if(connectionId > 0) {
 		List<configurationconnectionfieldmappings> fieldMappings = utconfigurationTransportManager.getConnectionFieldMappings(selConfigId, sourceConfigId);
 		
 		if(!fieldMappings.isEmpty()) {
 		    for(configurationconnectionfieldmappings fieldMapping : fieldMappings) {
-			for(configurationFormFields srcDataElements : sourceconfigurationDataElements) {
-			    if(fieldMapping.getAssociatedFieldNo() == srcDataElements.getFieldNo()) {
-				srcDataElements.setMappedToField(fieldMapping.getFieldNo());
-			    }
-			}
-			
 			for(configurationFormFields tgtDataElements : configurationDataElements) {
 			    if(fieldMapping.getFieldNo() == tgtDataElements.getFieldNo() && !fieldMapping.isUseField()) {
 				tgtDataElements.setUseField(false);
+			    }
+			    if(fieldMapping.getFieldNo() == tgtDataElements.getFieldNo()) {
+				tgtDataElements.setMappedErrorField(fieldMapping.getPopulateErrorFieldNo());
+				tgtDataElements.setMappedToField(fieldMapping.getAssociatedFieldNo());
 			    }
 			}
 		    }
@@ -565,6 +572,7 @@ public class adminConfigConnectionController {
 	    }
 	    mav.addObject("targetConfigurationDataElements",configurationDataElements);
 	    mav.addObject("sourceconfigurationDataElements",sourceconfigurationDataElements);
+	    mav.addObject("showErrorField",showErrorField);
 	}
         
         return mav;
@@ -576,7 +584,8 @@ public class adminConfigConnectionController {
 	    @RequestParam(value = "connectionId", required = true) Integer connectionId, 
 	    @RequestParam(value = "sourceConfigId", required = true) Integer sourceConfigId, 
 	    @RequestParam(value = "targetConfigId", required = true) Integer targetConfigId, 
-	    @RequestParam(value = "mappedFields[]", required = true) String mappedFields) throws Exception {
+	    @RequestParam(value = "mappedFields[]", required = true) String mappedFields,
+	    @RequestParam(value = "mappedErrorFields[]", required = false) String mappedErrorFields) throws Exception {
 	
 	
 	if(connectionId == 0) {
@@ -606,6 +615,14 @@ public class adminConfigConnectionController {
 	    newFieldMapping.setFieldDesc(mappedDetails[1]);
 	    newFieldMapping.setUseField(Boolean.parseBoolean(mappedDetails[2]));
 	    newFieldMapping.setAssociatedFieldNo(Integer.parseInt(mappedDetails[3]));
+	    
+	    if(mappedErrorFields != null) {
+		String[] mappedErrorFieldsAsArray = mappedErrorFields.split(",");
+		newFieldMapping.setPopulateErrorFieldNo(Integer.parseInt(mappedErrorFieldsAsArray[i]));
+	    }
+	    else {
+		newFieldMapping.setPopulateErrorFieldNo(Integer.parseInt(mappedDetails[3]));
+	    }
 	    
 	    
 	    utconfigurationTransportManager.saveConnectionFieldMapping(newFieldMapping);
