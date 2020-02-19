@@ -546,6 +546,10 @@ public class transactionInManagerImpl implements transactionInManager {
 		sysError = sysError + executeMacro(configId, batchId, cdt, foroutboundProcessing, macro);
 		// insert macro errors
 		Integer intMacroReturn = flagMacroErrors(configId, batchId, cdt, foroutboundProcessing);
+		
+		//flag as error in transactionIn or transactionOut table
+		updateStatusForErrorTrans(batchId, 14, foroutboundProcessing);
+		
 		return sysError;
 	    } catch (Exception e) {
 		e.printStackTrace();
