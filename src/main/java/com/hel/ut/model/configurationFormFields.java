@@ -17,7 +17,7 @@ public class configurationFormFields {
     private String fieldValue = null, associatedFieldDetails;
     
     @Transient
-    private Integer copiedId = 0, mappedToField = 0;
+    private Integer copiedId = 0, mappedToField = 0, mappedErrorField = 0;
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -165,5 +165,12 @@ public class configurationFormFields {
 	this.associatedFieldDetails = associatedFieldDetails;
     }
 
-    
+    public Integer getMappedErrorField() {
+	return mappedErrorField;
+    }
+
+    public void setMappedErrorField(Integer mappedErrorField) {
+	this.mappedErrorField = mappedErrorField;
+    }
+
 }

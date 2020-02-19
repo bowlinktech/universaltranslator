@@ -2,6 +2,8 @@
 
 require(['./main'], function () {
     require(['jquery'], function ($) {
+	
+	$('[data-toggle="tooltip"]').tooltip();   
 
         //Fade out the updated/created message after being displayed.
         if ($('.alert').length > 0) {
@@ -17,6 +19,12 @@ require(['./main'], function () {
 	if(selTgtOrgId > 0) {
 	     populateConfigurations(selTgtOrgId, 'tgtConfig');
 	}
+	
+	$(document).on('change','.matchField', function() {
+	    if($(this).attr('copyErrorField') === 'yes') {
+		$('#errorFieldSel'+$(this).attr('fieldNo')).val($(this).val());
+	    }
+	});
 
         //Go get the existing message types for the selected organization'
         $(document).on('change', '.selSendingOrganization', function () {
@@ -89,6 +97,7 @@ require(['./main'], function () {
 	    var connectionId = $('#connectionId').val();
 	    
 	    var mappingArray = [];
+	    var mappingErrorArray = [];
 	    
 	    var errorFound = 0;
 	    
@@ -98,11 +107,16 @@ require(['./main'], function () {
 		var targetUseField = $('#useField'+targetFieldNo).is(':checked');
 		var matchingField = $(this).val();
 		
-		/*if(matchingField == 0 && targetUseField) {
-		    $('#matchField'+targetFieldNo).addClass('has-error');
-		    errorFound = 1;
-		}*/
 		mappingArray.push(targetFieldNo+'|'+targetFieldDesc+'|'+targetUseField+'|'+matchingField);
+		
+	    });
+	    
+	    console.log(mappingArray);
+	    
+	    $('.errorField').each(function() {
+		var errorField = $(this).val();
+		
+		mappingErrorArray.push(errorField);
 		
 	    });
 	    
@@ -139,7 +153,8 @@ require(['./main'], function () {
 			    'connectionId': connectionId,
 			    'sourceConfigId': selectedSourceConfig,
 			    'targetConfigId': selectedTargetConfig,
-			    'mappedFields': mappingArray
+			    'mappedFields': mappingArray,
+			    'mappedErrorFields':mappingErrorArray
 			},
 			success: function (data) {
 			    window.location.replace('/administrator/configurations/connections/details?i='+data+'&msg=saved');
