@@ -377,7 +377,7 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
     @Override
     @Transactional(readOnly = true)
     public List<Macros> getMacrosByCategory(int categoryId) {
-        Query query = sessionFactory.getCurrentSession().createQuery("from Macros where categoryId = :categoryId order by macro_short_name asc");
+        Query query = sessionFactory.getCurrentSession().createQuery("from Macros where categoryId = :categoryId order by macroName asc");
         query.setParameter("categoryId", categoryId);
 
         List<Macros> macros = query.list();
@@ -394,7 +394,7 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
     @Override
     @Transactional(readOnly = true)
     public List<Macros> getMacros() {
-        Query query = sessionFactory.getCurrentSession().createQuery("from Macros where categoryId = 1 order by macro_short_name asc");
+        Query query = sessionFactory.getCurrentSession().createQuery("from Macros where categoryId = 1 order by macroName asc");
         return query.list();
     }
 
