@@ -3359,18 +3359,8 @@ public class transactionInManagerImpl implements transactionInManager {
 
     @Override
     public void populateAuditReport(Integer batchUploadId, configurationMessageSpecs cms) throws Exception {
-	
-	//first we run store procedure
-	transactionInDAO.populateAuditReport(batchUploadId, cms.getconfigId());
-	
-	// get distinct fieldNo involved
-	List<Integer> fieldNoList = getErrorFieldNos(batchUploadId);
-	//update field data
-	for (Integer fieldNo : fieldNoList) {
-	    populateFieldError(batchUploadId, fieldNo, cms);
+    	transactionInDAO.populateAuditReport(batchUploadId, cms.getconfigId());
 	}
-
-    }
 
     @Override
     public List<Integer> getErrorFieldNos(Integer batchUploadId)
