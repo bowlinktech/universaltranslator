@@ -882,6 +882,7 @@ public class transactionOutDAOImpl implements transactionOutDAO {
 		    + "batchDownloadId int(11) DEFAULT NULL," 
 		    + "configId int(11) NOT NULL,"
 		    + "dateCreated datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,"
+		    + "transactionInRecordsId int(11) NOT NULL,"
 		    + "PRIMARY KEY (`id`),"
 		    + "KEY `torFK_idx` (`batchDownloadId`)"
 		    + ") ENGINE=InnoDB DEFAULT CHARSET=latin1;";
@@ -1075,17 +1076,17 @@ public class transactionOutDAOImpl implements transactionOutDAO {
 	    String sql = "insert into transactionoutrecords_"+batchDownloadId+" "
 	    + "("+insertFields;
 
-	    sql+= "batchDownloadId, configId) ";
+	    sql+= "batchDownloadId, configId,transactionInRecordsId) ";
 
 	    sql+= "select "+insertFields;
 	    
 	    //Source configuration error handling is set to pass through all transaction errors.
 	    if(handlingDetails.get(0).geterrorHandling() == 4) {
-		sql+= batchDownloadId + ","+configId +" from temp_transactiontranslatedin_"+batchUploadId+"_"+batchDownloadId+" where statusId in (9,14);";
+		sql+= batchDownloadId + ","+configId +",transactionInRecordsId from temp_transactiontranslatedin_"+batchUploadId+"_"+batchDownloadId+" where statusId in (9,14);";
 	    }
 	    //Otherwise only send transactions that have zero errors
 	    else {
-		sql+= batchDownloadId + ","+configId +" from temp_transactiontranslatedin_"+batchUploadId+"_"+batchDownloadId+" where statusId = 9;";
+		sql+= batchDownloadId + ","+configId +",transactionInRecordsId from temp_transactiontranslatedin_"+batchUploadId+"_"+batchDownloadId+" where statusId = 9;";
 	    }
 	    
 	    query = sessionFactory.getCurrentSession().createSQLQuery(sql);
