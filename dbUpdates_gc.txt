@@ -299,10 +299,55 @@ DELIMITER ;
 /** outbound SP Change **/
 
 USE `universaltranslator`;
+DROP procedure IF EXISTS `createTempErrorTable`;
+
+DELIMITER $$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `createTempErrorTable`(in inBatchId int)
+proc_main:begin
+
+-- drop the table first
+SET @stmt = CONCAT("drop TABLE if exists transactionoutdetailauditerrorsforinbound_",inBatchId);
+
+			PREPARE stmt from @stmt;
+			EXECUTE stmt;
+			DEALLOCATE PREPARE stmt;
+
+
+SET @stmt = CONCAT("
+CREATE TABLE transactionoutdetailauditerrorsforinbound_",inBatchId," (
+  id int(11) NOT NULL AUTO_INCREMENT,
+  batchDownloadId int(11) NOT NULL,
+  configId int(11) NOT NULL,
+  transactionOutRecordsId int(11) NOT NULL,
+  fieldNo int(11) NOT NULL,
+  fieldName varchar(45) DEFAULT NULL,
+  errorId int(11) NOT NULL,
+  errorDetails varchar(200) DEFAULT NULL COMMENT 'This field is used to update cw name, validation type name, macro name',
+  errorData text,
+  reportField1Data varchar(45) DEFAULT NULL,
+  reportField2Data varchar(45) DEFAULT NULL,
+  reportField3Data varchar(45) DEFAULT NULL,
+  reportField4Data varchar(45) DEFAULT NULL,
+  transactionOutErrorId int(11) DEFAULT '0',
+  PRIMARY KEY (id),
+  KEY ttoauditKey",inBatchId,"Error_idx (batchDownloadId)
+  ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
+");
+
+			PREPARE stmt from @stmt;
+			EXECUTE stmt;
+			DEALLOCATE PREPARE stmt;
+
+
+end proc_main$$
+DELIMITER ;
+
+/** 20200221 **/
+
+USE `universaltranslator`;
 DROP procedure IF EXISTS `populateOutboundAuditReport`;
 
 DELIMITER $$
-USE `universaltranslator`$$
 CREATE DEFINER=`root`@`localhost` PROCEDURE `populateOutboundAuditReport`(in inConfigId int, in inBatchId int, in inBatchUpoadId int, in inBatchUploadConfigId int)
 proc_main:begin
 
@@ -513,7 +558,7 @@ if (@populateInboundAuditReport) then
     
 		-- run update to populate the data according to the populateFromFieldNo Id
 		SET @stmt = CONCAT("
-				select group_concat(distinct concat('F', inFieldNo)) from transactionoutdetailauditerrorsforinbound_",inBatchId," into @inboundFields;
+				select group_concat(distinct concat('F', inFieldNo)) from transactionoutdetailauditerrorsforinbound_",inBatchId,"  where infieldNo != 0  into @inboundFields;
 			 ");
             
             PREPARE stmt from @stmt;
@@ -527,7 +572,7 @@ if (@populateInboundAuditReport) then
 			
             SET @stmt = CONCAT("
 					select group_concat(distinct concat('when infieldNo = ', inFieldNo , ' then ',  concat('F', inFieldNo)) separator ' ' ) 
-                    from transactionoutdetailauditerrorsforinbound_",inBatchId," into @inUpdateFields;
+                    from transactionoutdetailauditerrorsforinbound_",inBatchId," where infieldNo != 0 into @inUpdateFields;
 				");
                 
 			PREPARE stmt from @stmt;
@@ -607,48 +652,6 @@ if (@populateInboundAuditReport) then
 end if;
 
 select '';
-
-end proc_main$$
-
-DELIMITER ;
-
-DELIMITER $$
-CREATE DEFINER=`root`@`localhost` PROCEDURE `createTempErrorTable`(in inBatchId int)
-proc_main:begin
-
--- drop the table first
-SET @stmt = CONCAT("drop TABLE if exists transactionoutdetailauditerrorsforinbound_",inBatchId);
-
-			PREPARE stmt from @stmt;
-			EXECUTE stmt;
-			DEALLOCATE PREPARE stmt;
-
-
-SET @stmt = CONCAT("
-CREATE TABLE transactionoutdetailauditerrorsforinbound_",inBatchId," (
-  id int(11) NOT NULL AUTO_INCREMENT,
-  batchDownloadId int(11) NOT NULL,
-  configId int(11) NOT NULL,
-  transactionOutRecordsId int(11) NOT NULL,
-  fieldNo int(11) NOT NULL,
-  fieldName varchar(45) DEFAULT NULL,
-  errorId int(11) NOT NULL,
-  errorDetails varchar(200) DEFAULT NULL COMMENT 'This field is used to update cw name, validation type name, macro name',
-  errorData text,
-  reportField1Data varchar(45) DEFAULT NULL,
-  reportField2Data varchar(45) DEFAULT NULL,
-  reportField3Data varchar(45) DEFAULT NULL,
-  reportField4Data varchar(45) DEFAULT NULL,
-  transactionOutErrorId int(11) DEFAULT '0',
-  PRIMARY KEY (id),
-  KEY ttoauditKey",inBatchId,"Error_idx (batchDownloadId)
-  ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
-");
-
-			PREPARE stmt from @stmt;
-			EXECUTE stmt;
-			DEALLOCATE PREPARE stmt;
-
 
 end proc_main$$
 DELIMITER ;
