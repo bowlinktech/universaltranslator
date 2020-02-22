@@ -706,6 +706,135 @@ end proc_main$$
 
 DELIMITER ;
 
+/** 20200222 new macro **/
+INSERT INTO `universaltranslator`.`macro_names` (`ID`, `CategoryId`, `Macro_Name`, `Macro_Short_Name`, `Formula`, `FieldA_Question`, `Con1_Question`, `Con2_Question`, `populateFieldA`) VALUES ('172', '1', 'If List Length is greater than expected length then Error', 'CheckListLengthIfGTError', 'CheckListLengthIfGTError', 'Please enter field to check', 'Please enter number the list length should be', 'Please enter error code to insert', True);
+
+DELIMITER $$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `CheckListLengthIfGTError`(in configId int, 
+in batchId int, in srcField varchar(10),
+in fieldA varchar(10), in fieldB varchar(10), in con1 varchar(255), 
+in con2 varchar(255), in macroId int, in foroutboundProcessing boolean, in passClear int, in transactionId int)
+proc_main:begin
+
+call setInboundOutBoundTables (foroutboundProcessing,batchId);
+SELECT 
+    @translatedTable,
+    @transactionTable,
+    @batchTable,
+    @batchIdType,
+    @errorTable,
+    @translateCol
+INTO @translatedTable , @transactionTable , @batchTable , @batchIdType , @errorTable, @translateCol;
+
+call getFinalStatusIds;
+SELECT @finalStatusIds INTO @finalStatusIds;
+
+
+if (transactionId = 0) then
+	set @whereString = concat("  configId = ",configId," and ", @batchIdType," = ",batchId," and statusId not in (",@finalStatusIds ,");");
+end if;
+
+if (transactionId != 0) then
+	set @whereString = concat("  ",	@transactionTable,"Id = ", transactionId,";");
+end if;
+
+
+    
+
+	set @stmt = concat("insert into ", @errorTable , " (" , @batchIdColumn, ", configId, " , @translateCol, 
+    ", fieldNo, errorId, macroId, fieldValue) select ",@batchIdType,", configId, id, replace('",fieldA,"', 'F', ''), ", con2, 
+    ", ",macroId,",",srcField," from ", @translatedTable, " where  LENGTH(",fieldA,") - LENGTH(REPLACE( ",fieldA,", ',', '')) + 1 > ",con1," and ", 
+    @whereString);
+	
+    PREPARE stmt from @stmt;
+	EXECUTE stmt;
+    DEALLOCATE PREPARE stmt;
+     
+     
+
+if (passClear = 2) THEN
+BEGIN
+
+END;
+END IF;
+
+
+select '';
+end proc_main$$
+DELIMITER ;
+
+
+/** check blank fields macro **/
+INSERT INTO `universaltranslator`.`macro_names` (`ID`, `CategoryId`, `Macro_Name`, `Macro_Short_Name`, `Formula`, `FieldA_Question`, `FieldB_Question`, `Con2_Question`, `populateFieldA`) VALUES ('173', '1', 'If Fields are blank then error', 'IfFieldsBlankThenError', 'IfFieldsBlankThenError', 'Please enter field no in addition to SF to check ', 'Please enter field no in addition to SF to check ', 'Please enter error code to insert', False);
+
+DELIMITER $$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `IfFieldsBlankThenError`(in configId int, 
+in batchId int, in srcField varchar(10),
+in fieldA varchar(10), in fieldB varchar(10), in con1 varchar(255), 
+in con2 varchar(255), in macroId int, in foroutboundProcessing boolean, in passClear int, in transactionId int)
+proc_main:begin
+
+call setInboundOutBoundTables (foroutboundProcessing,batchId);
+SELECT 
+    @translatedTable,
+    @transactionTable,
+    @batchTable,
+    @batchIdType,
+    @errorTable,
+    @translateCol
+INTO @translatedTable , @transactionTable , @batchTable , @batchIdType , @errorTable, @translateCol;
+
+call getFinalStatusIds;
+SELECT @finalStatusIds INTO @finalStatusIds;
+
+
+if (transactionId = 0) then
+	set @whereString = concat("  configId = ",configId," and ", @batchIdType," = ",batchId," and statusId not in (",@finalStatusIds ,");");
+end if;
+
+if (transactionId != 0) then
+	set @whereString = concat("  ",	@transactionTable,"Id = ", transactionId,";");
+end if;
+
+	set @sqlConstraintS = concat(" (",srcField," is null or length(",srcField,") = 0)");
+    set @sqlConstraintA = "";
+    set @sqlConstraintB = "";
+    
+    if (fieldA != 'F') then 
+		 set @sqlConstraintA = concat(" and  (",fieldA," is null or length(",fieldA,") = 0)");
+    end if;
+    
+    if (fieldB != 'F') then 
+		 set @sqlConstraintB = concat(" and  (",fieldB," is null or length(",fieldB,") = 0)");
+    end if;
+    
+
+	set @stmt = concat("insert into ", @errorTable , " (" , @batchIdColumn, ", configId, " , @translateCol, 
+    ", fieldNo, errorId, macroId) select ",@batchIdType,", configId, id, replace('",srcField,"', 'F', ''), ", con2, 
+    ", ",macroId," from ", @translatedTable, " where",@sqlConstraintS,@sqlConstraintA, @sqlConstraintB, "  and ", 
+    @whereString);
+	
+
+    PREPARE stmt from @stmt;
+	EXECUTE stmt;
+    DEALLOCATE PREPARE stmt;
+     
+     
+
+if (passClear = 2) THEN
+BEGIN
+
+END;
+END IF;
+
+
+select '';
+end proc_main$$
+DELIMITER ;
+
+/** error text update **/
+UPDATE `universaltranslator`.`lu_errorcodes` SET `displayText`='Engagement did not have procedure(s) or one visit type.', `description`='Engagement did not have procedure(s) or one visit type.' WHERE `id`='51';
+UPDATE `mainefp`.`lu_errorcodes` SET `displayText`='Engagement did not have procedure(s) or one visit type.', `description`='Engagement did not have procedure(s) or one visit type.' WHERE `id`='51';
 
 
 
