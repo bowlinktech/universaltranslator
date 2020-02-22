@@ -657,6 +657,55 @@ end proc_main$$
 DELIMITER ;
 
 
+/** macro update, referencing wrong field when updating **/
+USE `universaltranslator`;
+DROP procedure IF EXISTS `concatFieldToList`;
+
+DELIMITER $$
+USE `universaltranslator`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `concatFieldToList`(in configId int, 
+in batchId int, in srcField varchar(10),
+in fieldA varchar(10), in fieldB varchar(10), in con1 varchar(255), 
+in con2 varchar(255), in macroId int, in foroutboundProcessing boolean, in passClear int, in transactionId int)
+proc_main:begin
+
+
+
+
+
+call setInboundOutBoundTables (foroutboundProcessing,batchId);
+select @translatedTable, @transactionTable, @batchTable, @batchIdType , @errorTable
+into @translatedTable, @transactionTable, @batchTable, @batchIdType , @errorTable;
+
+call getFinalStatusIds;
+select @finalStatusIds into @finalStatusIds;
+
+set @fields = concat('F', replace(replace(con2, ' ', ''), ',', ',F'));
+set @sql = concat("concat_ws('",con1,"', " , @fields , ")");
+
+if (transactionId = 0) then
+	BEGIN
+		set @stmt = concat("update " ,@translatedTable,  " set ", fieldA, " = ", @sql , 
+		" where configId = ",configId," and ",@batchIdType," = ",batchId," and statusId not in (",@finalStatusIds,");");
+	end;
+end if;
+
+
+if (transactionId != 0) then
+	BEGIN
+		set @stmt = concat("update ",@translatedTable, " set ", fieldA," = ", @sql , " where ", @transactionTable,"Id = ", transactionId, ";");
+	end;
+end if;
+
+PREPARE stmt from @stmt;
+EXECUTE stmt;
+
+select '';
+
+end proc_main$$
+
+DELIMITER ;
+
 
 
 
