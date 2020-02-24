@@ -46,7 +46,7 @@
 		    <td class="center-text">
 			<div id="errorField${fields.fieldNo}" class="form-group">
 			    <select fieldNo="${fields.fieldNo}" id="errorFieldSel${fields.fieldNo}" class="form-control errorField">
-				<option value="0">- Blank Value -</option>
+				<option value="0">- Outbound Value -</option>
 				<c:forEach var="sourceFields" items="${sourceconfigurationDataElements}">
 				    <c:if test="${sourceFields.useField == true}">
 					<option value="${sourceFields.fieldNo}" <c:if test="${sourceFields.fieldNo == fields.mappedErrorField}">selected</c:if>>${sourceFields.fieldDesc} - ${sourceFields.fieldNo}</option>
