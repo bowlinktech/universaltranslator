@@ -7,7 +7,6 @@ package com.hel.ut.service;
 
 import com.hel.ut.model.Organization;
 import com.hel.ut.model.batchUploads;
-import com.hel.ut.reference.fileSystem;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -48,7 +47,7 @@ public class xlsToTxt {
 	String directory = myProps.getProperty("ut.directory.utRootDir") + orgDetails.getcleanURL() + "/loadFiles/";
 
     	/* Get the uploaded xls File */
-    	fileLocation = fileLocation.replace("/Applications/HELCAProductSuite/universalTranslator/", "").replace("/home/HELCAProductSuite/universalTranslator/", "").replace("/HELCAProductSuite/universalTranslator/", "");
+    	fileLocation = fileLocation.replace("/Applications/HELProductSuite/universalTranslator/", "").replace("/home/HELProductSuite/universalTranslator/", "").replace("/HELProductSuite/universalTranslator/", "");
     	directory = myProps.getProperty("ut.directory.utRootDir") + fileLocation;
 	
     	String excelFile = (excelFileName + ".xls");

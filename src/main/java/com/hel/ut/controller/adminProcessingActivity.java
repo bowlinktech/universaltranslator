@@ -3046,7 +3046,7 @@ public class adminProcessingActivity {
 		    //Need to get the configuration details and transport method
 		    configurationTransport transportDetails = configurationTransportManager.getTransportDetails(batchUploadDetails.getConfigId());
 		    
-		    File encodedUploadedFile = new File(myProps.getProperty("ut.directory.utRootDir") + transportDetails.getfileLocation().replace("/HELCAProductSuite/universalTranslator/","") + "encoded_" + batchUploadDetails.getUtBatchName());
+		    File encodedUploadedFile = new File(myProps.getProperty("ut.directory.utRootDir") + transportDetails.getfileLocation().replace("/HELProductSuite/universalTranslator/","") + "encoded_" + batchUploadDetails.getUtBatchName());
 		    
 		    //File Dropped
 		    if(transportDetails.gettransportMethodId() == 10 || transportDetails.gettransportMethodId() == 13) {
@@ -3056,7 +3056,7 @@ public class adminProcessingActivity {
 			    for(configurationFileDropFields fileDropDetail : fileDropDetails) {
 				if(fileDropDetail.getMethod() == 1) {
 				    
-				    if(archiveFile.renameTo(new File(myProps.getProperty("ut.directory.utRootDir") + fileDropDetail.getDirectory().replace("/HELCAProductSuite/universalTranslator/","") + batchUploadDetails.getOriginalFileName()))) {
+				    if(archiveFile.renameTo(new File(myProps.getProperty("ut.directory.utRootDir") + fileDropDetail.getDirectory().replace("/HELProductSuite/universalTranslator/","") + batchUploadDetails.getOriginalFileName()))) {
 					archiveFile.delete();
 					
 					if(archiveDecFile.exists()) {
@@ -3078,7 +3078,7 @@ public class adminProcessingActivity {
 			    for(configurationFTPFields ftpDetail : ftpDetails) {
 				if(ftpDetail.getmethod()== 1) {
 				    
-				    if(archiveFile.renameTo(new File(myProps.getProperty("ut.directory.utRootDir") + ftpDetail.getdirectory().replace("/sFTP","sFTP").replace("/HELCAProductSuite/universalTranslator/","") + batchUploadDetails.getOriginalFileName()))) {
+				    if(archiveFile.renameTo(new File(myProps.getProperty("ut.directory.utRootDir") + ftpDetail.getdirectory().replace("/sFTP","sFTP").replace("/HELProductSuite/universalTranslator/","") + batchUploadDetails.getOriginalFileName()))) {
 					archiveFile.delete();
 					
 					if(archiveDecFile.exists()) {
@@ -3093,7 +3093,7 @@ public class adminProcessingActivity {
 			}
 		    }
 		    else {
-			if(archiveFile.renameTo(new File(myProps.getProperty("ut.directory.utRootDir") + transportDetails.getfileLocation().replace("/HELCAProductSuite/universalTranslator/","") + batchUploadDetails.getOriginalFileName()))) {
+			if(archiveFile.renameTo(new File(myProps.getProperty("ut.directory.utRootDir") + transportDetails.getfileLocation().replace("/HELProductSuite/universalTranslator/","") + batchUploadDetails.getOriginalFileName()))) {
 			    archiveFile.delete();
 
 			    if(archiveDecFile.exists()) {
