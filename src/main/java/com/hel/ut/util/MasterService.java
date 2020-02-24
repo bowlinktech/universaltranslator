@@ -25,7 +25,7 @@ public class MasterService {
     
     public void loadProperties() throws IOException {
 	File propDir = new File(System.getProperty("catalina.home"), "properties");
-	File propFile = new File(propDir, "HELCARegistryManagement.properties");
+	File propFile = new File(propDir, "HELRegistryManagement.properties");
 	input = new FileInputStream(propFile);
 	configProp.load(input);
     }
@@ -34,7 +34,7 @@ public class MasterService {
 	
 	MasterService masterservice = new MasterService();
 	masterservice.loadProperties();
-	String defaultDBName = masterservice.configProp.getProperty("jdbc.defaultUTDBName");
+	String defaultDBName = masterservice.configProp.getProperty("jdbc.defaultUTCADBName");
 	
 	DriverManagerDataSource defaultdataSource = new DriverManagerDataSource();
         defaultdataSource.setDriverClassName("com.mysql.cj.jdbc.Driver");

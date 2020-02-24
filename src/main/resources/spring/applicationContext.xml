@@ -66,10 +66,10 @@
         <property name="mailSender" ref="mailSender" />
     </bean>
     
-     <context:property-placeholder location="file:${catalina.home}/properties/HELCARegistryManagement.properties"/>
+     <context:property-placeholder location="file:${catalina.home}/properties/HELRegistryManagement.properties"/>
     
     <bean id="myProps" class="org.springframework.beans.factory.config.PropertiesFactoryBean">
-        <property name="location" value="file:${catalina.home}/properties/HELCARegistryManagement.properties"/>
+        <property name="location" value="file:${catalina.home}/properties/HELRegistryManagement.properties"/>
     </bean>
     
     <bean id="taskExecutor" class="org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor">
