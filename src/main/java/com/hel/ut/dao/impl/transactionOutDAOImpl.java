@@ -617,7 +617,7 @@ public class transactionOutDAOImpl implements transactionOutDAO {
 
 	//If file type == JSON
 	if (transportDetails.getfileType() == 12) {
-	    sql = ("call getJSONForConfig(:configId, :batchDownloadId, :filePathAndName, :jsonWrapperElement);");
+	    sql = ("call getJSONForConfig(:batchConfigId, :batchDownloadId, :filePathAndName, :jsonWrapperElement);");
 	} 
 	else {
 	    
@@ -627,7 +627,7 @@ public class transactionOutDAOImpl implements transactionOutDAO {
 	    //build this sql
 	    sql = "SELECT " + fieldNos + " "
 		+ "FROM transactionTranslatedOut_" + batchDownloadId + " "
-		+ "where configId = :configId and ";
+		+ "where configId = " + transportDetails.getconfigId() + " and ";
 	    
 	    if(handlingDetails.get(0).geterrorHandling() == 4) {
 		sql += "statusId in (9,14) ";
@@ -638,12 +638,13 @@ public class transactionOutDAOImpl implements transactionOutDAO {
 	    sql += "INTO OUTFILE  '" + filePathAndName + "' "
 	    + "FIELDS TERMINATED BY '" + transportDetails.getDelimChar()+"' LINES TERMINATED BY '\\n';";
 	}
-
+	
 	if (!"".equals(sql)) {
 	    Query query = sessionFactory.getCurrentSession().createSQLQuery(sql);
-	    query.setParameter("configId", transportDetails.getconfigId());
-
+	    
 	    if (transportDetails.getfileType() == 12) {
+		query.setParameter("batchConfigId", transportDetails.getconfigId());
+		query.setParameter("batchDownloadId", batchDownloadId);
 		query.setParameter("filePathAndName", filePathAndName);
 		query.setParameter("jsonWrapperElement", transportDetails.getJsonWrapperElement());
 	    }

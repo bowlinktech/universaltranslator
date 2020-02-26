@@ -1012,22 +1012,12 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
     @Transactional(readOnly = true)
     public String getMessageTypeNameByConfigId(Integer configId) {
         try {
-            String sql = ("select name from messageTypes where id in (select messageTypeId from configurations where id = :configId);");
-            Query query = sessionFactory.getCurrentSession().createSQLQuery(sql).addScalar("name", StandardBasicTypes.STRING);
-            query.setParameter("configId", configId);
-	    
-	    String mtName = "N/A";
-	    
-	    if(query.list().isEmpty()) {
-		String configSQL = ("select configName from configurations where id = :configId");
-		Query configQuery = sessionFactory.getCurrentSession().createSQLQuery(configSQL).addScalar("configName", StandardBasicTypes.STRING);
-		configQuery.setParameter("configId", configId);
-		
-		mtName = (String) configQuery.list().get(0);
-	    }
-	    else {
-		mtName = (String) query.list().get(0);
-	    }
+            String mtName = "N/A";
+	    String configSQL = ("select configName from configurations where id = :configId");
+	    Query configQuery = sessionFactory.getCurrentSession().createSQLQuery(configSQL).addScalar("configName", StandardBasicTypes.STRING);
+	    configQuery.setParameter("configId", configId);
+
+	    mtName = (String) configQuery.list().get(0);
 	   
             return mtName;
         } catch (Exception ex) {
