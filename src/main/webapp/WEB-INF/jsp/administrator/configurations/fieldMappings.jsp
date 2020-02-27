@@ -29,11 +29,14 @@
 	<div class="col-md-6">
 	    <section class="panel panel-default">
 		<div class="panel-heading">
-		    <c:if test="${transportDetails.transportMethodId == 10 || (transportDetails.transportMethodId == 13 && configurationDetails.type == 2 && transportDetails.helRegistryConfigId > 0)}">
-			<div class="pull-right">
+                    <div class="pull-right">
+                        <c:if test="${not empty transportDetails.fields}">
+                            <a href="#appendNewFieldsModal" class="btn btn-primary btn-xs  btn-action" rel2="${transportDetails.id}" rel="${configurationDetails.id}" id="appendConfigurationFields" data-toggle="modal">Append New Fields</a>
+			 </c:if>
+                        <c:if test="${transportDetails.transportMethodId == 10 || (transportDetails.transportMethodId == 13 && configurationDetails.type == 2 && transportDetails.helRegistryConfigId > 0)}">
 			    <a class="btn btn-primary btn-xs  btn-action" rel2="${transportDetails.id}" rel="${configurationDetails.id}" id="reloadConfigurationFields" data-toggle="tooltip" data-original-title="Click here to reload Configuration Fields.">Reload Configuration Fields</a>
-			</div>
-		    </c:if>
+                        </c:if>
+                    </div>     
 		    <h3 class="panel-title"><c:choose><c:when test="${configurationDetails.type == 2}">Target</c:when><c:otherwise>Source</c:otherwise></c:choose> Configuration Fields</h3>
 		</div>
 		<div class="panel-body">
@@ -89,3 +92,4 @@
         </div>
     </div>
 </div>
+<div class="modal fade" id="appendNewFieldsModal" role="dialog" tabindex="-1" aria-labeledby="Append New Fields" aria-hidden="true" aria-describedby="Append New Fields"></div>

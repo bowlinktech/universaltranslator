@@ -34,6 +34,7 @@ import com.hel.ut.model.configurationFormFields;
 import com.hel.ut.model.configurationFileDropFields;
 import com.hel.ut.model.configurationWebServiceSenders;
 import com.hel.ut.model.Organization;
+import com.hel.ut.model.appenedNewconfigurationFormFields;
 import com.hel.ut.model.utUser;
 import com.hel.ut.model.configurationCCDElements;
 import com.hel.ut.model.configurationFTPFields;
@@ -2691,6 +2692,7 @@ public class adminConfigController {
         return mav;
     }
 
+    
     /**
      * The '/createCrosswalk' function will be used to create a new crosswalk
      *
@@ -2704,64 +2706,32 @@ public class adminConfigController {
      */
     @RequestMapping(value = "/createCrosswalk", method = RequestMethod.POST)
     public @ResponseBody
-    ModelAndView createCrosswalk(@ModelAttribute(value = "crosswalkDetails") Crosswalks crosswalkDetails, BindingResult result, RedirectAttributes redirectAttr, @RequestParam int orgId) throws Exception {
-
-        crosswalkDetails.setOrgId(orgId);
+    int createCrosswalk(@ModelAttribute(value = "crosswalkDetails") Crosswalks crosswalkDetails, BindingResult result, RedirectAttributes redirectAttr, @RequestParam int orgId) throws Exception {
+	
+	crosswalkDetails.setOrgId(orgId);
         int lastId = messagetypemanager.createCrosswalk(crosswalkDetails);
 
-        if (lastId == 0) {
-            redirectAttr.addFlashAttribute("savedStatus", "error");
-        } else {
-            redirectAttr.addFlashAttribute("savedStatus", "created");
-        }
-
-        //if orgId > 0 then need to send back to the configurations page
-        //otherwise send back to the message type libarary translation page.
-        if (orgId > 0) {
-            ModelAndView mav = new ModelAndView(new RedirectView("../configurations/translations"));
-            return mav;
-        } else {
-            ModelAndView mav = new ModelAndView(new RedirectView("translations"));
-            return mav;
-        }
+	return lastId;
     }
     
-    /**
+     /**
      * The '/UploadNewFile' function will be used to upload a new file for an existing crosswalk.
      *
      * @param crosswalkDetails
      * @param result
      * @param redirectAttr
-     * @param orgId
      * @return 
      * @throws java.lang.Exception 
      * @Return The function will either return the crosswalk form on error or redirect to the data translation page.
      */
     @RequestMapping(value = "/uploadnewfileCrosswalk", method = RequestMethod.POST)
     public @ResponseBody 
-        ModelAndView uploadnewfileCrosswalk(
-            @ModelAttribute(value = "crosswalkDetails") Crosswalks crosswalkDetails, 
-            BindingResult result, RedirectAttributes redirectAttr, @RequestParam int orgId
-    ) throws Exception {
+    int uploadnewfileCrosswalk(@ModelAttribute(value = "crosswalkDetails") Crosswalks crosswalkDetails, BindingResult result, RedirectAttributes redirectAttr, @RequestParam int orgId) throws Exception {
 
-        
         int lastId = messagetypemanager.uploadNewFileForCrosswalk(crosswalkDetails);
+	
+	return lastId;
 
-        if (lastId == 0) {
-            redirectAttr.addFlashAttribute("savedStatus", "error");
-        } else {
-            redirectAttr.addFlashAttribute("savedStatus", "updated");
-        }
-
-        //if orgId > 0 then need to send back to the configurations page
-        //otherwise send back to the message type libarary translation page.
-        if (orgId > 0) {
-            ModelAndView mav = new ModelAndView(new RedirectView("../configurations/translations"));
-            return mav;
-        } else {
-            ModelAndView mav = new ModelAndView(new RedirectView("translations"));
-            return mav;
-        }
     }
 
     /**
@@ -3140,5 +3110,97 @@ public class adminConfigController {
         mav.addObject("macros", macros);
 
         return mav;
+    }
+    
+    /**
+     * The 'appendConfigurationFields' GET request will return modal for appending new fields to the existing configuration field list.
+     *
+     * @param configId The id of the clicked configuration
+     * @param configTransportId
+     * @param session
+     * @return
+     * @throws Exception
+     */
+    @RequestMapping(value = "/appendConfigurationFields", method = RequestMethod.GET)
+    @ResponseBody
+    public ModelAndView appendConfigurationFields(
+	    @RequestParam(value = "configId", required = true) Integer configId,
+	    @RequestParam(value = "configTransportId", required = true) Integer configTransportId,HttpSession session) throws Exception {
+
+        ModelAndView mav = new ModelAndView();
+        mav.setViewName("/administrator/configurations/appendNewFields");
+	
+	configurationTransport transportDetails = utconfigurationTransportManager.getTransportDetails(configId);
+	
+	List<configurationFormFields> currentFields = utconfigurationTransportManager.getConfigurationFields(configId, configTransportId);
+	
+	Integer nextFieldNo = 1;
+	
+	if(currentFields != null) {
+	    if(!currentFields.isEmpty()) {
+		configurationFormFields lastField = currentFields.get(currentFields.size()-1);
+		nextFieldNo = lastField.getFieldNo()+1;
+		
+	    }
+	}
+	
+	List<appenedNewconfigurationFormFields> newFields = new ArrayList<>();
+	
+	for(int i = 0; i<10;i++) {
+	    appenedNewconfigurationFormFields newFormField = new appenedNewconfigurationFormFields();
+	    newFormField.setFieldNo(nextFieldNo);
+	    newFormField.setConfigId(configId);
+	    newFormField.setTransportDetailId(configTransportId);
+	    newFields.add(newFormField);
+	    
+	    nextFieldNo++;
+	}
+	
+	transportDetails.setNewfields(newFields);
+        
+	mav.addObject("transportDetails", transportDetails);
+	
+	List validationTypes = messagetypemanager.getValidationTypes();
+        mav.addObject("validationTypes", validationTypes);
+
+        return mav;
+    }
+    
+    /**
+     *
+     * @param transportDetails
+     * @return 
+     * @throws java.lang.Exception
+     */
+    @RequestMapping(value = "/saveNewConfigurationFields", method = RequestMethod.POST)
+    public ModelAndView checkCrosswalkName(@ModelAttribute(value = "transportDetails") configurationTransport transportDetails) throws Exception {
+	
+	//Get the list of fields
+        List<appenedNewconfigurationFormFields> fields = transportDetails.getNewfields();
+	
+	if(fields != null) {
+	    if(!fields.isEmpty()) {
+		for(appenedNewconfigurationFormFields field : fields) {
+		    if(field.isUseField() && !"".equals(field.getFieldDesc())) {
+			configurationFormFields newFormField = new configurationFormFields();
+			newFormField.setAssociatedFieldId(0);
+			newFormField.setconfigId(field.getConfigId());
+			newFormField.settransportDetailId(field.getTransportDetailId());
+			newFormField.setFieldNo(field.getFieldNo());
+			newFormField.setFieldDesc(field.getFieldDesc());
+			newFormField.setValidationType(field.getValidationType());
+			newFormField.setRequired(field.isRequired());
+			newFormField.setUseField(true);
+			
+			utconfigurationTransportManager.saveConfigurationFormFields(newFormField);
+		    }
+		    
+		}
+	    }
+	}
+
+        ModelAndView mav = new ModelAndView(new RedirectView("mappings"));
+        return mav;
+
     }
 }
