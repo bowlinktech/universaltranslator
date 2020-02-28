@@ -1053,7 +1053,18 @@ public class transactionOutDAOImpl implements transactionOutDAO {
 	connectionFieldMappings.forEach(configfield -> {
 	    if(configfield.isUseField()) {
 		if(configfield.getAssociatedFieldNo() == 0) {
-		    selectFields.append("''").append(",");
+		    //Check to see if field has a default value
+		    if(configfield.getDefaultValue() != null) {
+			if(!configfield.getDefaultValue().isEmpty()) {
+			    selectFields.append(configfield.getDefaultValue()).append(",");
+			}
+			else {
+			    selectFields.append("''").append(",");
+			}
+		    }
+		    else {
+			selectFields.append("''").append(",");
+		    }
 		}
 		else {
 		    selectFields.append("F").append(configfield.getAssociatedFieldNo()).append(",");

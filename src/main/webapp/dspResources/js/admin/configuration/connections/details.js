@@ -22,7 +22,9 @@ require(['./main'], function () {
 	
 	$(document).on('change','.matchField', function() {
 	    if($(this).attr('copyErrorField') === 'yes') {
-		$('#errorFieldSel'+$(this).attr('fieldNo')).val($(this).val());
+                if($(this).children("option:selected").text().indexOf('- Default ') == -1) {
+                    $('#errorFieldSel'+$(this).attr('fieldNo')).val($(this).val());
+                }
 	    }
 	});
 

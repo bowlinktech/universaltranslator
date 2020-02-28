@@ -52,6 +52,8 @@ public class configurationFormFields {
     @Column(name="associatedFieldNo", nullable = false)
     private Integer associatedFieldNo = 0;
 
+    @Column(name = "defaultValue", nullable = true)
+    private String defaultValue;
 
     public int getId() {
         return id;
@@ -171,6 +173,14 @@ public class configurationFormFields {
 
     public void setMappedErrorField(Integer mappedErrorField) {
 	this.mappedErrorField = mappedErrorField;
+    }
+
+    public String getDefaultValue() {
+	return defaultValue;
+    }
+
+    public void setDefaultValue(String defaultValue) {
+	this.defaultValue = defaultValue;
     }
 
 }

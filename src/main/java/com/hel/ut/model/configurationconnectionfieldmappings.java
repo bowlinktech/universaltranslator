@@ -43,6 +43,8 @@ public class configurationconnectionfieldmappings {
     @Column(name="populateErrorFieldNo", nullable = false)
     private Integer populateErrorFieldNo = 0;
     
+    @Column(name = "defaultValue", nullable = true)
+    private String defaultValue;
     
     public int getId() {
 	return id;
@@ -114,6 +116,14 @@ public class configurationconnectionfieldmappings {
 
     public void setPopulateErrorFieldNo(Integer populateErrorFieldNo) {
 	this.populateErrorFieldNo = populateErrorFieldNo;
+    }
+
+    public String getDefaultValue() {
+	return defaultValue;
+    }
+
+    public void setDefaultValue(String defaultValue) {
+	this.defaultValue = defaultValue;
     }
 
 }

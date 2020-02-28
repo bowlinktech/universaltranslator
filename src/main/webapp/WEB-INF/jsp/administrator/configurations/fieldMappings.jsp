@@ -26,7 +26,7 @@
 	</div>
     </div>
     <div class="row-fluid">
-	<div class="col-md-6">
+	<div class="${configurationDetails.type == 2 ? 'col-md-8' : 'col-md-6'}">
 	    <section class="panel panel-default">
 		<div class="panel-heading">
                     <div class="pull-right">
@@ -53,6 +53,7 @@
                                         <th scope="col" class="center-text">Use Field</th>
                                         <th scope="col" class="center-text">Required</th> 
                                         <th scope="col" class="center-text">Validation</th> 
+                                        <c:if test="${configurationDetails.type == 2}"><th scope="col" class="center-text">Default Value</th></c:if>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -65,6 +66,9 @@
 						<input type="hidden" name="fields[${field.index}].fieldNo" value="${mappings.fieldNo}" />
 						<input type="hidden" name="fields[${field.index}].fieldDesc" value="${mappings.fieldDesc}" />
 						<input type="hidden" name="fields[${field.index}].associatedFieldNo" value="${mappings.associatedFieldNo}" />
+                                                <c:if test="${configurationDetails.type == 1}">
+                                                    <input type="hidden" name="fields[${field.index}].defaultValue" value="${mappings.defaultValue}" />
+                                                </c:if>
 						${mappings.fieldNo}
 					    </td>
 					    <td>${mappings.fieldDesc}</td>
@@ -81,6 +85,11 @@
 						    </c:forEach>
 						</select>    
 					    </td>
+                                            <c:if test="${configurationDetails.type == 2}">
+                                                <td class="center-text">
+                                                    <input type="text" name="fields[${field.index}].defaultValue" value="${mappings.defaultValue}" maxlength="50" />
+                                                </td>
+                                            </c:if>
 					</tr>
 				    </c:forEach>
                                 </tbody>

@@ -614,7 +614,16 @@ public class adminConfigConnectionController {
 	    newFieldMapping.setFieldNo(Integer.parseInt(mappedDetails[0]));
 	    newFieldMapping.setFieldDesc(mappedDetails[1]);
 	    newFieldMapping.setUseField(Boolean.parseBoolean(mappedDetails[2]));
-	    newFieldMapping.setAssociatedFieldNo(Integer.parseInt(mappedDetails[3]));
+	    
+	    if(mappedDetails[3].contains("~")) {
+		String[] matchingFieldDetails = mappedDetails[3].split("\\~");
+		newFieldMapping.setAssociatedFieldNo(0);
+		newFieldMapping.setDefaultValue(matchingFieldDetails[1]);
+	    }
+	    else {
+		newFieldMapping.setAssociatedFieldNo(Integer.parseInt(mappedDetails[3]));
+	    }
+	    
 	    
 	    if(mappedErrorFields != null) {
 		String[] mappedErrorFieldsAsArray = mappedErrorFields.split(",");

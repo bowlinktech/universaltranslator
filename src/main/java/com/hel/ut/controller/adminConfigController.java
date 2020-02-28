@@ -881,7 +881,11 @@ public class adminConfigController {
     /**
      * The '/messagespecs' POST request submit all the utConfiguration message specs.
      *
+     * @param session
      * @param messageSpecs Will contain the contents of the utConfiguration message spec form.
+     * @param result
+     * @param redirectAttr
+     * @param action
      *
      * @return	This function will either return to the message spec details screen or redirect to the next step (Field Mappings)
      *
@@ -890,22 +894,26 @@ public class adminConfigController {
      */
     @SuppressWarnings("rawtypes")
     @RequestMapping(value = "/messagespecs", method = RequestMethod.POST)
-    public ModelAndView updateMessageSpecs(HttpSession session,@Valid @ModelAttribute(value = "messageSpecs") configurationMessageSpecs messageSpecs, BindingResult result, RedirectAttributes redirectAttr, @RequestParam String action) throws Exception {
+    public ModelAndView updateMessageSpecs(HttpSession session,
+	    @Valid @ModelAttribute(value = "messageSpecs") configurationMessageSpecs messageSpecs, 
+	    BindingResult result, RedirectAttributes redirectAttr, @RequestParam String action) throws Exception {
 
 	
 	/**
          * Need to pass the selected transport Type
          */
         configurationTransport transportDetails = utconfigurationTransportManager.getTransportDetails(messageSpecs.getconfigId());
+	
+	utConfiguration configDetails = utconfigurationmanager.getConfigurationById(messageSpecs.getconfigId());
 
         /**
          * Save/Update the configuration message specs
          */
-        utconfigurationmanager.updateMessageSpecs(messageSpecs, transportDetails.getId(), transportDetails.getfileType());
+	utconfigurationmanager.updateMessageSpecs(messageSpecs, transportDetails.getId(), transportDetails.getfileType(), messageSpecs.isHasHeader());
 
         redirectAttr.addFlashAttribute("savedStatus", "updated");
 	
-	utConfiguration configDetails = utconfigurationmanager.getConfigurationById(messageSpecs.getconfigId());
+	
 	if(configDetails.getstepsCompleted() < 3) {
 	    configDetails.setstepsCompleted(3);
 	    utconfigurationmanager.updateConfiguration(configDetails);

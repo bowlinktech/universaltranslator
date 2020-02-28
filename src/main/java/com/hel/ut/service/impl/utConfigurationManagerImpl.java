@@ -247,7 +247,7 @@ public class utConfigurationManagerImpl implements utConfigurationManager {
     }
 
     @Override
-    public void updateMessageSpecs(configurationMessageSpecs messageSpecs, int transportDetailId, int fileType) throws Exception {
+    public void updateMessageSpecs(configurationMessageSpecs messageSpecs, int transportDetailId, int fileType, boolean hasHeader) throws Exception {
 
 	//Need to get the selected organization clean url
 	utConfiguration configDetails = utConfigurationDAO.getConfigurationById(messageSpecs.getconfigId());
@@ -363,7 +363,7 @@ public class utConfigurationManagerImpl implements utConfigurationManager {
 
 	if (processFile == true) {
 	    try {
-		loadExcelContents(messageSpecs.getconfigId(), transportDetailId, fileName, directory);
+		loadExcelContents(messageSpecs.getconfigId(), transportDetailId, fileName, directory, hasHeader);
 	    } catch (Exception e1) {
 		e1.printStackTrace();
 		throw new Exception(e1);
@@ -383,8 +383,8 @@ public class utConfigurationManagerImpl implements utConfigurationManager {
      * @throws java.lang.Exception
      *
      */
-    public void loadExcelContents(int id, int transportDetailId, String fileName, String dir) throws Exception {
-	utConfigurationDAO.loadExcelContents(id, transportDetailId, fileName, dir);
+    public void loadExcelContents(int id, int transportDetailId, String fileName, String dir, boolean hasHeader) throws Exception {
+	utConfigurationDAO.loadExcelContents(id, transportDetailId, fileName, dir, hasHeader);
     }
 
     @Override

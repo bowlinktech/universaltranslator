@@ -1167,7 +1167,7 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
      */
     @Override
     @Transactional(readOnly = false)
-    public void loadExcelContents(int id, int transportDetailId, String fileName, String dir) throws Exception {
+    public void loadExcelContents(int id, int transportDetailId, String fileName, String dir, boolean hasHeader) throws Exception {
         String errorMessage = "";
         try {
            
@@ -1193,9 +1193,16 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
 
             //Iterate through each rows one by one
             Iterator<Row> rowIterator = sheet.iterator();
+	    
+	    Integer rowCounter = 0;
 
             while (rowIterator.hasNext()) {
                 Row row = rowIterator.next();
+		
+		if(hasHeader && rowCounter == 0) {
+		    row = rowIterator.next();
+		}
+		rowCounter++;
 
                 //Check to see if empty spacer row
                 Cell firstcell = row.getCell(1);
@@ -1203,6 +1210,8 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
 		//For each row, iterate through all the columns
 		Iterator<Cell> cellIterator = row.cellIterator();
 		boolean required = false;
+		String requiredAsString = "";
+		String defaultValue = "";
 		String fieldDesc = "";
 
 		//Increase the field number by 1
@@ -1217,8 +1226,36 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
 			    fieldDesc = cell.getStringCellValue();
 			    break;
 			case 1:
-			    required = cell.getBooleanCellValue();
+			    try {
+				required = cell.getBooleanCellValue();
+			    }
+			    catch (Exception ex) {
+				try {
+				    requiredAsString = cell.getStringCellValue();
+				    if("default".equals(requiredAsString.toLowerCase())) {
+					required = false;
+				    }
+				    else {
+					required = false;
+				    }
+				}
+				catch (Exception e) {
+				    required = false;
+				}
+			    }
 			    break;
+			case 2:
+			    try {
+				 defaultValue = cell.getStringCellValue();
+			    }
+			    catch (Exception ex) {
+				 try {
+				    defaultValue = String.valueOf((int) cell.getNumericCellValue());
+				 }
+				 catch(Exception e) {
+				     defaultValue = "";
+				 } 
+			    }
 			
 			default:
 			    break;
@@ -1226,13 +1263,14 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
 		}
 
 		//Need to insert all the fields into the message type Form Fields table
-		Query query = sessionFactory.getCurrentSession().createSQLQuery("INSERT INTO configurationFormFields (configId, transportDetailId, fieldNo, fieldDesc, validationType, required, useField)"
-			+ "VALUES (:configId, :transportDetailId, :fieldNo, :fieldDesc, 1, :required, 1)")
+		Query query = sessionFactory.getCurrentSession().createSQLQuery("INSERT INTO configurationFormFields (configId, transportDetailId, fieldNo, fieldDesc, validationType, required, useField, defaultValue)"
+			+ "VALUES (:configId, :transportDetailId, :fieldNo, :fieldDesc, 1, :required, 1, :defaultValue)")
 			.setParameter("configId", id)
 			.setParameter("transportDetailId", transportDetailId)
 			.setParameter("fieldNo", fieldNo)
 			.setParameter("fieldDesc", fieldDesc)
-			.setParameter("required", required);
+			.setParameter("required", required)
+			.setParameter("defaultValue", defaultValue);
 
 		query.executeUpdate();
             }
