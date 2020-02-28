@@ -55,6 +55,17 @@
 					    <a href="#dtDownloadModal" rel="${configurationDetails.id}" data-toggle="modal" class="btn btn-primary btn-xs btn-action createDataTranslationDownload" title="Download Existing Translations">Download Existing Translations</a>
 					</div>
 				    </c:if>
+                                    <div class="form-group">
+                                        <label for="hasHeader">Does the Template file have a header row? *</label>
+                                        <div>
+                                            <label class="radio-inline">
+                                                <form:radiobutton id="hasHeader" path="hasHeader" value="1" />Yes 
+                                            </label>
+                                            <label class="radio-inline">
+                                                <form:radiobutton id="hasHeader" path="hasHeader" value="0"/>No
+                                            </label>
+                                        </div>
+                                    </div>
 				    <spring:bind path="file">
 					<div id="templateFileDiv" class="form-group ${status.error ? 'has-error' : '' }">
 					    <label class="control-label" for="file"><c:if test="${not empty messageSpecs.templateFile}">New</c:if> File *</label>
