@@ -684,6 +684,28 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
 
         return (configurationMessageSpecs) query.uniqueResult();
     }
+    
+    /**
+     * The 'clearMessageSpecFormFields' function will save/update the utConfiguration message specs.
+     *
+     * @param messageSpecs The object that will hold the values from the message spec form
+     * @param transportDetailId
+     * @param clearFields
+     */
+    @Transactional(readOnly = false)
+    public void clearMessageSpecFormFields(configurationMessageSpecs messageSpecs, int transportDetailId) {
+
+	//Delete the existing data translactions
+	Query deleteTranslations = sessionFactory.getCurrentSession().createSQLQuery("DELETE from configurationDataTranslations where configId = :configId");
+	deleteTranslations.setParameter("configId", messageSpecs.getconfigId());
+	deleteTranslations.executeUpdate();
+
+	//Delete the existing form fields
+	Query deleteFields = sessionFactory.getCurrentSession().createSQLQuery("DELETE from configurationFormFields where configId = :configId and transportDetailId = :transportDetailId");
+	deleteFields.setParameter("configId", messageSpecs.getconfigId());
+	deleteFields.setParameter("transportDetailId", transportDetailId);
+	deleteFields.executeUpdate();
+    }
 
     /**
      * The 'updateMessageSpecs' function will save/update the utConfiguration message specs.
@@ -694,26 +716,8 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
      */
     @Override
     @Transactional(readOnly = false)
-    public void updateMessageSpecs(configurationMessageSpecs messageSpecs, int transportDetailId, int clearFields) {
-
-        //if clearFields == 1 then we need to clear out the utConfiguration form fields, mappings and data
-        //translations. This will allow the admin to change the utConfiguration transport method after
-        //one was previously selected. This will only be available while the utConfiguration is not active.
-        if (clearFields == 1) {
-            //Delete the existing data translactions
-            Query deleteTranslations = sessionFactory.getCurrentSession().createSQLQuery("DELETE from configurationDataTranslations where configId = :configId");
-            deleteTranslations.setParameter("configId", messageSpecs.getconfigId());
-            deleteTranslations.executeUpdate();
-
-            //Delete the existing form fields
-            Query deleteFields = sessionFactory.getCurrentSession().createSQLQuery("DELETE from configurationFormFields where configId = :configId and transportDetailId = :transportDetailId");
-            deleteFields.setParameter("configId", messageSpecs.getconfigId());
-            deleteFields.setParameter("transportDetailId", transportDetailId);
-            deleteFields.executeUpdate();
-        }
-
+    public void updateMessageSpecs(configurationMessageSpecs messageSpecs, int transportDetailId) {
         sessionFactory.getCurrentSession().saveOrUpdate(messageSpecs);
-
     }
 
     
@@ -1156,18 +1160,20 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
     }
     
     /**
-     * The 'loadExcelContents' will take the contents of the uploaded excel template file and populate the corresponding utConfiguration form fields table. This function will split up the contents into the appropriate buckets. Buckets (1 - 4) will be separated by spacer rows with in the excel file.
+     * The 'loadExcelContents' will take the contents of the uploaded excel template file and populate the corresponding utConfiguration form fields table.This function will split up the contents into the appropriate buckets.Buckets (1 - 4) will be separated by spacer rows with in the excel file.
      *
-     * @param id value of the latest added utConfiguration
+     * @param messageSpecs
      * @param transportDetailId
      * @param fileName	file name of the uploaded excel file.
+     * @param hasHeader
+     * @param fileLayout
      * @param dir	the directory of the uploaded file
      * @throws java.lang.Exception
      *
      */
     @Override
     @Transactional(readOnly = false)
-    public void loadExcelContents(int id, int transportDetailId, String fileName, String dir, boolean hasHeader) throws Exception {
+    public void loadExcelContents(configurationMessageSpecs messageSpecs, int transportDetailId, String fileName, String dir, boolean hasHeader, Integer fileLayout) throws Exception {
         String errorMessage = "";
         try {
            
@@ -1191,89 +1197,243 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
             //Get first/desired sheet from the workbook
             Sheet sheet = workbook.getSheetAt(0);
 
-            //Iterate through each rows one by one
-            Iterator<Row> rowIterator = sheet.iterator();
+	    //Iterate through each rows one by one
+	    Iterator<Row> rowIterator = sheet.iterator();
 	    
 	    Integer rowCounter = 0;
 
-            while (rowIterator.hasNext()) {
-                Row row = rowIterator.next();
-		
-		if(hasHeader && rowCounter == 0) {
-		    row = rowIterator.next();
+	    //Parse Vertical template file layout
+	    if(fileLayout == 2) {
+		//Check to make sure the sheet has no more than 3 columns
+		Integer startRow = 0;
+		Integer rowNumber = 0;
+
+		if(hasHeader) {
+		    startRow = 1;
 		}
-		rowCounter++;
 
-                //Check to see if empty spacer row
-                Cell firstcell = row.getCell(1);
+		Row row = sheet.getRow(startRow);
+		
+		if(row.getLastCellNum() > 3) {
+		    throw new Exception("The uploaded template file had more than 3 columns, please choose horizontal layout or check your uploaded template file.");
+		}
+		else if(row.getLastCellNum() < 2) {
+		    throw new Exception("The uploaded template file had only 1 column, please check your uploaded template file.");
+		}
+		else {
+		    
+		    //Clear existing fields
+		    clearMessageSpecFormFields(messageSpecs,transportDetailId);
+		    
+		    while (rowIterator.hasNext()) {
+			row = rowIterator.next();
 
-		//For each row, iterate through all the columns
-		Iterator<Cell> cellIterator = row.cellIterator();
-		boolean required = false;
-		String requiredAsString = "";
-		String defaultValue = "";
-		String fieldDesc = "";
+			if(hasHeader && rowCounter == 0) {
+			    row = rowIterator.next();
+			}
+			rowCounter++;
 
-		//Increase the field number by 1
-		fieldNo++;
+			//For each row, iterate through all the columns
+			Iterator<Cell> cellIterator = row.cellIterator();
+			boolean required = false;
+			String requiredAsString = "";
+			String defaultValue = "";
+			String fieldDesc = "";
+			boolean useField = true;
+			boolean hasDefault = false;
 
-		while (cellIterator.hasNext()) {
-		    Cell cell = cellIterator.next();
+			//Increase the field number by 1
+			fieldNo++;
 
-		    //Check the cell type and format accordingly
-		    switch (cell.getColumnIndex()) {
-			case 0:
-			    fieldDesc = cell.getStringCellValue();
-			    break;
-			case 1:
-			    try {
-				required = cell.getBooleanCellValue();
-			    }
-			    catch (Exception ex) {
-				try {
-				    requiredAsString = cell.getStringCellValue();
-				    if("default".equals(requiredAsString.toLowerCase())) {
-					required = false;
+			while (cellIterator.hasNext()) {
+			    Cell cell = cellIterator.next();
+
+			    //Check the cell type and format accordingly
+			    switch (cell.getColumnIndex()) {
+				case 0:
+				    fieldDesc = cell.getStringCellValue();
+
+				    if("not used".equals(fieldDesc.toLowerCase()) || "skip".equals(fieldDesc.toLowerCase()) || "not in use".equals(fieldDesc.toLowerCase())) {
+					useField = false;
 				    }
-				    else {
-					required = false;
+
+				    break;
+				case 1:
+				    try {
+					required = cell.getBooleanCellValue();
 				    }
-				}
-				catch (Exception e) {
-				    required = false;
-				}
+				    catch (Exception ex) {
+					try {
+					    requiredAsString = cell.getStringCellValue();
+					    if("default".equals(requiredAsString.toLowerCase()) || "d".equals(requiredAsString.toLowerCase())) {
+						hasDefault = true;
+						required = false;
+					    }
+					    else if("r".equals(requiredAsString.toLowerCase()) || "true".equals(requiredAsString.toLowerCase())) {
+						required = true;
+					    }
+					    else if("o".equals(requiredAsString.toLowerCase()) || "false".equals(requiredAsString.toLowerCase())) {
+						required = false;
+					    }
+					    else {
+						required = false;
+					    }
+					}
+					catch (Exception e) {
+					    required = false;
+					}
+				    }
+				    break;
+				case 2:
+				    try {
+					 defaultValue = cell.getStringCellValue();
+				    }
+				    catch (Exception ex) {
+					 try {
+					    defaultValue = String.valueOf((int) cell.getNumericCellValue());
+					 }
+					 catch(Exception e) {
+					     defaultValue = "";
+					 } 
+				    }
+
+				    if(!hasDefault) {
+					defaultValue = "";
+				    }
+				    break;
+
+				default:
+				    break;
 			    }
-			    break;
-			case 2:
-			    try {
-				 defaultValue = cell.getStringCellValue();
-			    }
-			    catch (Exception ex) {
-				 try {
-				    defaultValue = String.valueOf((int) cell.getNumericCellValue());
-				 }
-				 catch(Exception e) {
-				     defaultValue = "";
-				 } 
-			    }
-			
-			default:
-			    break;
+			}
+
+			//Need to insert all the fields into the message type Form Fields table
+			Query query = sessionFactory.getCurrentSession().createSQLQuery("INSERT INTO configurationFormFields (configId, transportDetailId, fieldNo, fieldDesc, validationType, required, useField, defaultValue)"
+			    + "VALUES (:configId, :transportDetailId, :fieldNo, :fieldDesc, 1, :required, :useField, :defaultValue)")
+			    .setParameter("configId", messageSpecs.getconfigId())
+			    .setParameter("transportDetailId", transportDetailId)
+			    .setParameter("fieldNo", fieldNo)
+			    .setParameter("fieldDesc", fieldDesc)
+			    .setParameter("required", required)
+			    .setParameter("useField", useField)
+			    .setParameter("defaultValue", defaultValue);
+
+			query.executeUpdate();
 		    }
 		}
+	    }
+	    else if(fileLayout == 1) {
+		
+		if(sheet.getLastRowNum() > 3) {
+		    throw new Exception("The uploaded template file had more than 3 rows, please choose vertical layout or check your uploaded template file.");
+		}
+		else if(sheet.getLastRowNum() < 2) {
+		    throw new Exception("The uploaded template file had less than 3 rows, please choose horizontal layout or check your uploaded template file.");
+		}
+		else {
+		    
+		    //Clear existing fields
+		    clearMessageSpecFormFields(messageSpecs,transportDetailId);
+		    
+		    Integer startRow = 0;
+		    Integer rowNumber = 0;
 
-		//Need to insert all the fields into the message type Form Fields table
-		Query query = sessionFactory.getCurrentSession().createSQLQuery("INSERT INTO configurationFormFields (configId, transportDetailId, fieldNo, fieldDesc, validationType, required, useField, defaultValue)"
-			+ "VALUES (:configId, :transportDetailId, :fieldNo, :fieldDesc, 1, :required, 1, :defaultValue)")
-			.setParameter("configId", id)
-			.setParameter("transportDetailId", transportDetailId)
-			.setParameter("fieldNo", fieldNo)
-			.setParameter("fieldDesc", fieldDesc)
-			.setParameter("required", required)
-			.setParameter("defaultValue", defaultValue);
+		    if(hasHeader) {
+			startRow = 1;
+		    }
 
-		query.executeUpdate();
-            }
+		    Row row = sheet.getRow(startRow);
+		    int totalCols = row.getLastCellNum();
+
+		    String fieldDesc = "";
+		    String defaultValue = "";
+		    boolean required = false;
+		    String requiredAsString = "";
+		    boolean useField = true;
+
+		    for(int colNumber = 0; colNumber<totalCols; colNumber++) {
+			fieldDesc = "";
+			defaultValue = "";
+			required = false;
+			requiredAsString = "";
+			fieldNo = colNumber+1;
+			useField = true;
+
+			rowNumber = startRow;
+			//Get the field name
+			row = sheet.getRow(rowNumber);
+
+			Cell cell = row.getCell(colNumber);
+			fieldDesc = cell.getStringCellValue();
+
+			if("not used".equals(fieldDesc.toLowerCase()) || "skip".equals(fieldDesc.toLowerCase()) || "not in use".equals(fieldDesc.toLowerCase())) {
+			    useField = false;
+			}
+
+			//Get the sample data/default value
+			rowNumber = rowNumber+1;
+			row = sheet.getRow(rowNumber);
+			cell = row.getCell(colNumber);
+			try {
+			    defaultValue = cell.getStringCellValue();
+			}
+			catch (Exception ex) {
+			    try {
+			       defaultValue = String.valueOf((int) cell.getNumericCellValue());
+			    }
+			    catch(Exception e) {
+				defaultValue = "";
+			    } 
+			}
+
+			//Get the r/o/d value
+			rowNumber = rowNumber+1;
+			row = sheet.getRow(rowNumber);
+			cell = row.getCell(colNumber);
+
+			try {
+			    required = cell.getBooleanCellValue();
+			}
+			catch (Exception ex) {
+			    try {
+				requiredAsString = cell.getStringCellValue();
+				if("default".equals(requiredAsString.toLowerCase()) || "d".equals(requiredAsString.toLowerCase())) {
+				    required = false;
+				}
+				else if("r".equals(requiredAsString.toLowerCase()) || "true".equals(requiredAsString.toLowerCase())) {
+				    required = true;
+				    defaultValue = "";
+				}
+				else if("o".equals(requiredAsString.toLowerCase()) || "false".equals(requiredAsString.toLowerCase())) {
+				    required = false;
+				    defaultValue = "";
+				}
+				else {
+				    required = false;
+				    defaultValue = "";
+				}
+			    }
+			    catch (Exception e) {
+				required = false;
+			    }
+			}
+
+			//Need to insert all the fields into the message type Form Fields table
+			Query query = sessionFactory.getCurrentSession().createSQLQuery("INSERT INTO configurationFormFields (configId, transportDetailId, fieldNo, fieldDesc, validationType, required, useField, defaultValue)"
+				+ "VALUES (:configId, :transportDetailId, :fieldNo, :fieldDesc, 1, :required, :useField, :defaultValue)")
+				.setParameter("configId", messageSpecs.getconfigId())
+				.setParameter("transportDetailId", transportDetailId)
+				.setParameter("fieldNo", fieldNo)
+				.setParameter("fieldDesc", fieldDesc)
+				.setParameter("required", required)
+				.setParameter("useField", useField)
+				.setParameter("defaultValue", defaultValue);
+
+			query.executeUpdate();
+		    }
+		}
+	    }
+	    
             try {
                 pkg.close();
             } catch (IOException e) {
@@ -1293,6 +1453,7 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
         }
 
     }
+    
     
     @Override
     @Transactional(readOnly = false)
@@ -1346,9 +1507,10 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
      * The 'getActiveConfigurationsByTransportType' function will return a list of configurations set up the passed in userId and passed in transport method
      *
      * @param userId The id of the logged in user
-     * @param transportMethod The id of the transport method to find configurations 1 = File Upload 2 = ERG
+     * @param transportMethods
      *
      * @return This function will return a list of ERG configurations.
+     * @throws java.lang.Exception
      */
     @Override
     @Transactional(readOnly = true)

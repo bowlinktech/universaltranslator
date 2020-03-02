@@ -19,7 +19,6 @@ import com.hel.ut.model.configurationMessageSpecs;
 import com.hel.ut.model.configurationSchedules;
 import com.hel.ut.model.watchlist;
 import com.hel.ut.model.watchlistEntry;
-import com.hel.ut.reference.fileSystem;
 import java.util.Date;
 
 import org.springframework.stereotype.Repository;
@@ -90,7 +89,7 @@ public interface utConfigurationDAO {
 
     configurationMessageSpecs getMessageSpecs(int configId);
 
-    void updateMessageSpecs(configurationMessageSpecs messageSpecs, int transportDetailId, int clearFields);
+    void updateMessageSpecs(configurationMessageSpecs messageSpecs, int transportDetailId);
 
     List<utConfiguration> getActiveConfigurationsByUserId(int userId, int transportMethod) throws Exception;
 
@@ -153,7 +152,7 @@ public interface utConfigurationDAO {
 
     configurationExcelDetails getExcelDetails(Integer configId, Integer orgId) throws Exception;
     
-    void loadExcelContents(int id, int transportDetailId, String fileName, String dir, boolean hasHeader) throws Exception;
+    void loadExcelContents(configurationMessageSpecs messageSpecs, int transportDetailId, String fileName, String dir, boolean hasHeader, Integer fileLayout) throws Exception;
     
     void updateExcelConfigDetails(Integer orgId, configurationMessageSpecs messageSpecs) throws Exception;
     

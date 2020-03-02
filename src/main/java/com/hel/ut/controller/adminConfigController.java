@@ -870,7 +870,6 @@ public class adminConfigController {
         //pass the utConfiguration detail object back to the page.
         mav.addObject("configurationDetails", configurationDetails);
 	
-
         //Need to get all available fields that can be used for the reportable fields
         List<configurationFormFields> fields = utconfigurationTransportManager.getConfigurationFields(configId, transportDetails.getId());
         mav.addObject("availableFields", fields);
@@ -909,8 +908,17 @@ public class adminConfigController {
         /**
          * Save/Update the configuration message specs
          */
-	utconfigurationmanager.updateMessageSpecs(messageSpecs, transportDetails.getId(), transportDetails.getfileType(), messageSpecs.isHasHeader());
-
+	try {
+	    utconfigurationmanager.updateMessageSpecs(messageSpecs, transportDetails.getId(), transportDetails.getfileType(), messageSpecs.isHasHeader(), messageSpecs.getFileLayout());
+	}
+	catch (Exception ex) {
+	    if(ex.getMessage().contains("The uploaded template")) {
+		redirectAttr.addFlashAttribute("templateError", ex.getMessage().replace("java.lang.Exception:", ""));
+		ModelAndView mav = new ModelAndView(new RedirectView("messagespecs"));
+		return mav;
+	    }
+	}
+	
         redirectAttr.addFlashAttribute("savedStatus", "updated");
 	
 	
