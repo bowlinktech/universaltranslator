@@ -247,7 +247,7 @@ public class utConfigurationManagerImpl implements utConfigurationManager {
     }
 
     @Override
-    public void updateMessageSpecs(configurationMessageSpecs messageSpecs, int transportDetailId, int fileType, boolean hasHeader) throws Exception {
+    public void updateMessageSpecs(configurationMessageSpecs messageSpecs, int transportDetailId, int fileType, boolean hasHeader, Integer fileLayout) throws Exception {
 
 	//Need to get the selected organization clean url
 	utConfiguration configDetails = utConfigurationDAO.getConfigurationById(messageSpecs.getconfigId());
@@ -256,7 +256,6 @@ public class utConfigurationManagerImpl implements utConfigurationManager {
 	
 	boolean processFile = false;
 	String fileName = null;
-	int clearFields = 0;
 	String directory = "";
 	
 	if(messageSpecs.getFile() != null) {
@@ -267,8 +266,6 @@ public class utConfigurationManagerImpl implements utConfigurationManager {
 		//If a file is uploaded
 		if (file != null && !file.isEmpty()) {
 		    processFile = true;
-
-		    clearFields = 1;
 
 		    fileName = file.getOriginalFilename();
 
@@ -359,11 +356,11 @@ public class utConfigurationManagerImpl implements utConfigurationManager {
 	    }
 	}
 
-	utConfigurationDAO.updateMessageSpecs(messageSpecs, transportDetailId, clearFields);
+	utConfigurationDAO.updateMessageSpecs(messageSpecs, transportDetailId);
 
 	if (processFile == true) {
 	    try {
-		loadExcelContents(messageSpecs.getconfigId(), transportDetailId, fileName, directory, hasHeader);
+		loadExcelContents(messageSpecs, transportDetailId, fileName, directory, hasHeader,fileLayout);
 	    } catch (Exception e1) {
 		e1.printStackTrace();
 		throw new Exception(e1);
@@ -374,17 +371,19 @@ public class utConfigurationManagerImpl implements utConfigurationManager {
     }
 
     /**
-     * The 'loadExcelContents' will take the contents of the uploaded excel template file and populate the corresponding utConfiguration form fields table. This function will split up the contents into the appropriate buckets. Buckets (1 - 4) will be separated by spacer rows with in the excel file.
+     * The 'loadExcelContents' will take the contents of the uploaded excel template file and populate the corresponding utConfiguration form fields table.This function will split up the contents into the appropriate buckets.Buckets (1 - 4) will be separated by spacer rows with in the excel file.
      *
      * @param id value of the latest added utConfiguration
      * @param transportDetailId
      * @param fileName	file name of the uploaded excel file.
      * @param dir	the directory of the uploaded file
+     * @param hasHeader
+     * @param fileLayout
      * @throws java.lang.Exception
      *
      */
-    public void loadExcelContents(int id, int transportDetailId, String fileName, String dir, boolean hasHeader) throws Exception {
-	utConfigurationDAO.loadExcelContents(id, transportDetailId, fileName, dir, hasHeader);
+    public void loadExcelContents(configurationMessageSpecs messageSpecs, int transportDetailId, String fileName, String dir, boolean hasHeader, Integer fileLayout) throws Exception {
+	utConfigurationDAO.loadExcelContents(messageSpecs, transportDetailId, fileName, dir, hasHeader, fileLayout);
     }
 
     @Override
@@ -641,7 +640,7 @@ public class utConfigurationManagerImpl implements utConfigurationManager {
     
     @Override
     public void updateMessageSpecs(configurationMessageSpecs messageSpecs) throws Exception {
-	utConfigurationDAO.updateMessageSpecs(messageSpecs, 0, 0);
+	utConfigurationDAO.updateMessageSpecs(messageSpecs, 0);
     }
     
     @Override
