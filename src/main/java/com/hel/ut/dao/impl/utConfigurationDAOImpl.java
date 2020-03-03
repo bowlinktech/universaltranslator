@@ -1640,13 +1640,12 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
     @Transactional(readOnly = true)
     public List<watchlist> getDashboardWatchList() throws Exception {
 	
-	String sql = "select a.entryMessage, a.id, b.orgName, c.configName, m.name as messageTypeName, e.transportMethod, a.expected, a.expectFirstFile, a.expectFirstFileTime "
+	String sql = "select a.entryMessage, a.id, b.orgName, c.configName, e.transportMethod, a.expected, a.expectFirstFile, a.expectFirstFileTime "
 		+ "from dashboardwatchlist a left outer join "
 		+ "organizations b on a.orgId = b.id left outer join "
 		+ "configurations c on a.configId = c.id left outer join " 
 		+ "configurationtransportdetails d on a.configId = d.configId left outer join " 
-		+ "ref_transportmethods e on d.transportMethodId = e.id left outer join " 
-		+ "messagetypes m on c.messageTypeId = m.id "
+		+ "ref_transportmethods e on d.transportMethodId = e.id "
 		+ "order by a.dateCreated desc";
 	
         Query query = sessionFactory.getCurrentSession().createSQLQuery(sql).setResultTransformer(
