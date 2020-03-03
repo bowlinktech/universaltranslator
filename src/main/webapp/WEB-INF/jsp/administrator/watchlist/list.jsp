@@ -24,7 +24,7 @@
                             <thead>
                                 <tr>
 				    <td scope="col">Source</th>
-				    <th scope="col">Message Type</th>
+				    <th scope="col">Configuration</th>
                                     <th scope="col">Interface</th>
 				    <th scope="col">Message</th>
                                     <th scope="col" class="center-text">Repeated</th>
@@ -50,8 +50,8 @@
                                             </td>
                                             <td>
 						<c:choose>
-						    <c:when test="${not empty watchEntry.messageTypeName}">
-							${watchEntry.messageTypeName}
+						    <c:when test="${not empty watchEntry.configName}">
+							${watchEntry.configName}
 						    </c:when>
 						    <c:otherwise>
 							N/A
