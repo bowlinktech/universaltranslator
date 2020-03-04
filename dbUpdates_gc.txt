@@ -837,5 +837,138 @@ UPDATE `universaltranslator`.`lu_errorcodes` SET `displayText`='Engagement did n
 UPDATE `mainefp`.`lu_errorcodes` SET `displayText`='Engagement did not have procedure(s) or one visit type.', `description`='Engagement did not have procedure(s) or one visit type.' WHERE `id`='51';
 
 
+/** batchdownloaddroppedvalues table 20200303 **/
+
+drop table if exists batchdownloaddroppedvalues;
+
+CREATE TABLE `batchdownloaddroppedvalues` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `fieldNo` int(11) NOT NULL,
+  `batchUploadId` int(11) DEFAULT NULL,
+  `batchDownloadId` int(11) NOT NULL,
+  `configId` int(11) NOT NULL,
+  `transactionOutRecordsId` int(11) DEFAULT NULL,
+  `fieldName` varchar(255) DEFAULT NULL,
+  `fieldValue` text,
+  `reportField1Data` varchar(45) DEFAULT NULL,
+  `reportField2Data` varchar(45) DEFAULT NULL,
+  `reportField3Data` varchar(45) DEFAULT NULL,
+  `reportField4Data` varchar(45) DEFAULT NULL,
+  `entity3Id` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `fk_batchDownload_idx` (`batchDownloadId`),
+  CONSTRAINT `fk_batchDownload` FOREIGN KEY (`batchDownloadId`) REFERENCES `batchdownloads` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
+
+
+
+drop table if exists batchuploaddroppedvalues;
+CREATE TABLE `batchuploaddroppedvalues` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `transactionInRecordsId` varchar(45) DEFAULT NULL,
+  `fieldNo` int(11) NOT NULL,
+  `batchUploadId` int(11) NOT NULL,
+  `configId` int(11) NOT NULL,
+  `fieldName` varchar(255) DEFAULT NULL,
+  `fieldValue` text,
+  `reportField1Data` varchar(45) DEFAULT NULL,
+  `reportField2Data` varchar(45) DEFAULT NULL,
+  `reportField3Data` varchar(45) DEFAULT NULL,
+  `reportField4Data` varchar(45) DEFAULT NULL,
+  `entity3Id` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `fk_batchUpload_idx` (`batchUploadId`),
+  CONSTRAINT `fk_batchUpload` FOREIGN KEY (`batchUploadId`) REFERENCES `batchuploads` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
+
+
+drop procedure if exists populateDroppedValues;
+
+DELIMITER $$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `populateDroppedValues`(in inConfigId int, in inBatchId int, in foroutboundProcessing boolean)
+proc_main:begin
+
+set @dvTableName = "batchuploaddroppedvalues";
+set @recordName = "transactioninrecords";
+set @batchIdCol = "batchUploadId";
+
+if (foroutboundProcessing) then
+	begin
+		set @dvTableName = "batchdownloaddroppedvalues";
+		set @recordName = "transactionoutrecords";
+        set @batchIdCol = "batchDownloadId";
+        
+        select batchuploadid into @batchUploadId from batchdownloads where id = inBatchId;
+        delete from   batchdownloaddroppedvalues where batchuploadId = @batchUploadId;
+    
+        
+        SET @stmt = CONCAT("
+			update  batchdownloaddroppedvalues t1 join (select batchuploadid, id from batchdownloads where id = ",inBatchId," limit 1) t2
+			on t1.batchdownloadId = t2.id
+			set t1.batchuploadId = t2.batchuploadid;
+		");
+
+
+PREPARE stmt from @stmt;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+        
+        
+	end;
+end if;
+
+select concat('F', fieldNo) into @entity3IdField from configurationformfields where configId = inConfigId and fieldDesc = 'rrEntity3' limit 1;
+
+
+SELECT concat('F',rptField1),concat('F',rptField2),concat('F',rptField3),concat('F',rptField4) INTO @rptField1, @rptField2,@rptField3,@rptField4 
+FROM configurationmessagespecs where configId = inConfigId LIMIT 1;
+
+-- get rrEntity3Id field
+
+if(@rptField1 = 'F0') then 
+	set @rptField1 = "F1";
+end if;
+
+if(@rptField2 = 'F0') then 
+	set @rptField2 = "F2";
+end if;
+
+if(@rptField3 = 'F0') then 
+	set @rptField3 = "F3";
+end if;
+
+if(@rptField4 = 'F0') then 
+	set @rptField4 = "F4";
+end if;
+
+if(@entity3IdField is null) then 
+	set @entity3IdField = "F1";
+end if;
+
+
+SET @stmt = CONCAT("
+update  ",@dvTableName," t1 join 
+(Select id, ",@rptField1," rptField1, ",@rptField2 ," rptField2, ",@rptField3," rptField3, ",@rptField4 ," rptField4, 
+",@entity3IdField," rrEntity3Id from ",@recordName ,"_",inBatchId,") t2
+on t1.",@recordName ,"Id = t2.id
+set reportField1Data = rptField1,
+reportField1Data = rptField1,
+reportField1Data = rptField1,
+reportField1Data = rptField1,
+entity3Id = rrEntity3Id
+where t1.",@batchIdCol," = ",inBatchId," and configId = ",inConfigId,";
+");
+
+PREPARE stmt from @stmt;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+select '';
+
+end proc_main$$
+DELIMITER ;
+
+ALTER TABLE `universaltranslator`.`batchdownloaddroppedvalues` 
+ADD INDEX `batchUploadIdIdx` (`batchUploadId` ASC);
 
 
