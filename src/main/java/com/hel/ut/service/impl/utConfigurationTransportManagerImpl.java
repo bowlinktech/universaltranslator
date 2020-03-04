@@ -679,5 +679,10 @@ public class utConfigurationTransportManagerImpl implements utConfigurationTrans
     public List<configurationFTPFields> getFTPSourceConfigurations() throws Exception {
 	return configurationTransportDAO.getFTPSourceConfigurations();
     }
+
+	@Override
+	public configurationFormFields getConfigurationFieldById(int fieldId) throws Exception {
+		 return configurationTransportDAO.getConfigurationFieldById(fieldId);
+	}
       
 }

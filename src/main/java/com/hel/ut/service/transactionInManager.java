@@ -332,4 +332,10 @@ public interface transactionInManager {
     void updateRecordCountsFromAuditErrorTable(Integer batchUploadId) throws Exception;
     
     void checkRemoteSFTPConfigurations() throws Exception;
+    
+    void insertCWDroppedValues(Integer configId, Integer batchId, configurationFormFields cff, configurationDataTranslations cdt, boolean foroutboundProcessing) throws Exception;
+    
+    void populateDroppedValues(Integer batchUploadId, Integer configId, boolean foroutboundProcessing) throws Exception;
+
+    
 }

@@ -596,13 +596,23 @@ public class transactionInDAOImpl implements transactionInDAO {
     public Integer clearBatchTransactionTables(Integer batchUploadId, Integer configId) {
 	
 	String clearSQL = "";
-	clearSQL += "delete from batchuploadauditerrors where batchUploadId = " + batchUploadId + ";";
-	Query clearData = sessionFactory.getCurrentSession().createSQLQuery(clearSQL);
+	clearSQL += "delete from batchuploadauditerrors where batchUploadId = :batchUploadId " + ";";
+	Query clearData = sessionFactory.getCurrentSession().createSQLQuery(clearSQL).setParameter("batchUploadId", batchUploadId);
 	
 	createBatchTables(batchUploadId, configId);
 
 	try {
 	    clearData.executeUpdate();
+	    
+	    clearSQL = "delete from batchuploaddroppedvalues where batchUploadId = :batchUploadId " + ";";
+		clearData = sessionFactory.getCurrentSession().createSQLQuery(clearSQL).setParameter("batchUploadId", batchUploadId);
+		clearData.executeUpdate();
+	    
+		clearSQL = "delete from batchdownloaddroppedvalues where batchUploadId = :batchUploadId " + ";";
+		clearData = sessionFactory.getCurrentSession().createSQLQuery(clearSQL).setParameter("batchUploadId", batchUploadId);
+		clearData.executeUpdate();
+	    
+	    
 	    return 0;
 	} catch (Exception ex) {
 	    System.err.println("clearBatchTransactionTables_" + batchUploadId + " " + ex.getCause());
@@ -3263,4 +3273,54 @@ public class transactionInDAOImpl implements transactionInDAO {
         return directmessagesin;
 
     }
+
+	@Override
+	@Transactional(readOnly = false)
+	public void insertCWDroppedValues(Integer configId, Integer batchId, configurationFormFields cff, configurationDataTranslations cdt,
+			boolean foroutboundProcessing) throws Exception {
+		String sql;
+		if (foroutboundProcessing == false) {
+		    sql = "insert into batchuploaddroppedvalues (batchUploadId, configId, "
+			+ "transactionInRecordsId, fieldNo, fieldname, fieldValue)"
+			+ " select " + batchId + ", " + configId + ",a.transactionInRecordsId, " + cdt.getFieldNo() 
+			+ ", '" + cff.getFieldDesc() + "', b.F"+cdt.getFieldNo()+" from transactiontranslatedin_"+batchId+" a "
+			+ "inner join transactioninrecords_"+batchId+" b on a.transactionInRecordsId = b.id where "
+			+ "a.configId = :configId "
+			+ "and (a.F" + cdt.getFieldNo() + " is not null and length(a.F" + cdt.getFieldNo() + ") != 0  and a.forcw is null)"
+			+ "and a.transactionInRecordsId in (select id from transactioninrecords_"+batchId+ " "
+			+ "where configId = :configId and (statusId is null or statusId not in (:transRELId)));";
+		    
+		} 
+		else {
+		    
+		    sql = "insert into batchdownloaddroppedvalues  (batchDownloadId, configId, "
+			+ "transactionOutRecordsId, fieldNo, fieldname, fieldValue)"
+			+ " select " + batchId + ", " + configId + ",a.transactionOutRecordsId, " + cdt.getFieldNo()
+			+ ", '" + cff.getFieldDesc() + "', b.F"+cdt.getFieldNo()+" from transactiontranslatedout_"+batchId+" a "
+			+ "inner join transactionoutrecords_"+batchId+" b on a.transactionOutRecordsId = b.id where "
+			+ "a.configId = :configId "
+			+ "and (a.F" + cdt.getFieldNo() + " is not null and length(a.F" + cdt.getFieldNo() + ") != 0  and a.forcw is null)"
+			+ "and a.transactionOutRecordsId in (select id from transactionoutrecords_"+batchId+ " "
+			+ "where configId = :configId and (statusId is null or statusId not in (:transRELId)));";
+		} 
+
+		
+		Query updateData = sessionFactory.getCurrentSession().createSQLQuery(sql)
+		    .setParameter("configId", configId)
+		    .setParameterList("transRELId", transRELId);
+			updateData.executeUpdate();
+	}
+
+	@Override
+	@Transactional(readOnly = false)
+	public void populateDroppedValues(Integer batchUploadId, Integer configId, boolean foroutboundProcessing) throws Exception {
+		String sql = "call populateDroppedValues(:configId, :batchUploadId, :foroutboundProcessing);";
+		Query query = sessionFactory.getCurrentSession().createSQLQuery(sql);
+		query.setParameter("configId", configId);
+		query.setParameter("batchUploadId", batchUploadId);
+		query.setParameter("foroutboundProcessing", foroutboundProcessing);
+		query.executeUpdate();
+	}
+		
+
 }
