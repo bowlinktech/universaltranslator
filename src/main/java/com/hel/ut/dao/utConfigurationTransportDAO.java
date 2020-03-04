@@ -153,4 +153,6 @@ public interface utConfigurationTransportDAO {
     void saveConnectionFieldMapping(configurationconnectionfieldmappings fieldMapping) throws Exception;
     
     List<configurationFTPFields> getFTPSourceConfigurations() throws Exception;
+    
+    configurationFormFields getConfigurationFieldById(int fieldId) throws Exception;
 }

@@ -520,6 +520,12 @@ public class transactionInManagerImpl implements transactionInManager {
 		    //flag as error in transactionIn or transactionOut table
 		    updateStatusForErrorTrans(batchId, 14, foroutboundProcessing);
 
+		} else {
+			configurationFormFields cff = configurationtransportmanager.getConfigurationFieldById(cdt.getFieldId());
+			if (!cff.getRequired()) {
+				//insert dropped values for non-required fields, required fields will be captured with error
+				insertCWDroppedValues(configId, batchId, cff, cdt, foroutboundProcessing);
+			}
 		}
 		//we replace original F[FieldNo] column with data in forcw
 		updateFieldNoWithCWData(configId, batchId, cdt.getFieldNo(), cdt.getPassClear(), foroutboundProcessing);
@@ -1890,7 +1896,7 @@ public class transactionInManagerImpl implements transactionInManager {
 
 	//String[] ccAddresses = new String[2];
 	List<String> ccAddresses = new ArrayList<String>();
-	ccAddresses.add("monitor@health-e-link.net");
+	ccAddresses.add(myProps.getProperty("admin.email"));
 	
 	//build message
 	String message = "Uploaded File (Batch Id:" + batch.getUtBatchName() + ") contains " + batch.getErrorRecordCount() + " error(s).";
@@ -3154,6 +3160,9 @@ public class transactionInManagerImpl implements transactionInManager {
 		//populate
 		populateAuditReport(batch.getId(), configurationManager.getMessageSpecs(batch.getConfigId()));
 		
+		//populate dropped values 
+		populateDroppedValues(batch.getId(), batch.getConfigId(), false);
+		
 		//log batch activity
 		ba = new batchuploadactivity();
 		ba.setActivity("Populated the batch audit report table of any errors found for batchId:" + batchUploadId);
@@ -3252,8 +3261,13 @@ public class transactionInManagerImpl implements transactionInManager {
 	ba.setBatchUploadId(batchUploadId);
 	transactionInDAO.submitBatchActivityLog(ba);
 
+	
 	//populate
 	populateAuditReport(batch.getId(), configurationManager.getMessageSpecs(batch.getConfigId()));
+	
+	//populate dropped values
+	populateDroppedValues(batch.getId(), batch.getConfigId(), false);
+	
 	
 	//log batch activity
 	ba = new batchuploadactivity();
@@ -4521,4 +4535,16 @@ public class transactionInManagerImpl implements transactionInManager {
 	}
 	
     }
+
+	@Override
+	public void insertCWDroppedValues(Integer configId, Integer batchId, configurationFormFields cff, configurationDataTranslations cdt,
+			boolean foroutboundProcessing) throws Exception {
+		transactionInDAO.insertCWDroppedValues(configId, batchId, cff, cdt, foroutboundProcessing);
+	}
+    
+    @Override
+    public void populateDroppedValues(Integer batchUploadId, Integer configId, boolean foroutboundProcessing) throws Exception {
+    	transactionInDAO.populateDroppedValues(batchUploadId, configId, foroutboundProcessing);
+    }
+    
 }
