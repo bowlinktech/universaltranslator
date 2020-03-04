@@ -1415,5 +1415,22 @@ public class utConfigurationTransportDAOImpl implements utConfigurationTransport
            
         return query.list();
     }
+    
+    /**
+     * The 'getConfigurationFieldsByFieldNo' function will return a list of form fields for the selected configuration and selected Field No
+     *
+     * @param configId The id of the selected configuration
+     * @param transporetDetailId The id of the selected transport method
+     * @param fieldNo The integer value of the field you want to return fields
+     */
+    @SuppressWarnings("unchecked")
+    @Override
+    @Transactional(readOnly = true)
+    public configurationFormFields getConfigurationFieldById(int fieldId) throws Exception {
+        Criteria criteria = sessionFactory.getCurrentSession().createCriteria(configurationFormFields.class)
+                .add(Restrictions.eq("id", fieldId));
+
+        return (configurationFormFields) criteria.uniqueResult();
+    }
 }
 

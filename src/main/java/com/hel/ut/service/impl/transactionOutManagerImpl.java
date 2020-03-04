@@ -1418,6 +1418,8 @@ public class transactionOutManagerImpl implements transactionOutManager {
 	    
 	    populateOutboundAuditReport(batchDownload.getConfigId(),batchDownload.getId(), batchDownload.getBatchUploadId(),batchUploadDetails.getConfigId());
 	    
+	    transactionInManager.populateDroppedValues(batchDownload.getId(), batchDownload.getConfigId(), true);
+	    
 	    ba = new batchdownloadactivity();
 	    ba.setActivity("Populate outbound Audit Report for batchId:"+batchDownload.getId());
 	    ba.setBatchDownloadId(batchDownload.getId());
@@ -1447,6 +1449,8 @@ public class transactionOutManagerImpl implements transactionOutManager {
 	    if(totalErrorCount > 0) {
 		populateOutboundAuditReport(batchDownload.getConfigId(),batchDownload.getId(), batchDownload.getBatchUploadId(),batchUploadDetails.getConfigId());
 		
+		transactionInManager.populateDroppedValues(batchDownload.getId(), batchDownload.getConfigId(), true);
+	    
 		ba = new batchdownloadactivity();
 		ba.setActivity("Populate outbound Audit Report for batchId:"+batchDownload.getId());
 		ba.setBatchDownloadId(batchDownload.getId());
