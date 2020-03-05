@@ -1,7 +1,6 @@
 package com.hel.ut.service.impl;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -13,9 +12,9 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
 import com.hel.ut.dao.sysAdminDAO;
+import com.hel.ut.model.Crosswalks;
 import com.hel.ut.model.custom.LookUpTable;
 import com.hel.ut.model.custom.TableData;
 import com.hel.ut.model.lutables.lu_ProcessStatus;
@@ -24,7 +23,6 @@ import com.hel.ut.model.MoveFilesLog;
 import com.hel.ut.model.mainHL7Details;
 import com.hel.ut.model.mainHL7Elements;
 import com.hel.ut.model.mainHL7Segments;
-import com.hel.ut.reference.fileSystem;
 import com.hel.ut.service.sysAdminManager;
 
 @Service
@@ -268,5 +266,13 @@ public class sysAdminManagerImpl implements sysAdminManager {
     	sysAdminDAO.deleteMoveFilesLog(moveFilesLog);
     }
 	
-
+    @Override
+    public Long findTotalStandardCrosswalks() throws Exception {
+        return sysAdminDAO.findTotalStandardCrosswalks();
+    }
+    
+    @Override
+    public List<Crosswalks> getStandardCrosswalks() throws Exception {
+	return sysAdminDAO.getStandardCrosswalks();
+    }
 }

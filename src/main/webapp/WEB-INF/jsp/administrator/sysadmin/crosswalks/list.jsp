@@ -8,84 +8,61 @@
     <div class="col-md-12">
         <c:if test="${not empty param.msg}">
             <div class="alert alert-success">
-                <c:choose><c:when test="${param.msg == 'updated'}">The macro has been successfully updated!</c:when>
-                    <c:when test="${param.msg == 'created'}">The macro has been successfully added!</c:when>
-                    <c:when test="${param.msg == 'deleted'}">The macro has been successfully deleted!</c:when>
-                    <c:when test="${param.msg == 'notDeleted'}">The macro was not deleted.  Please try again.</c:when>
+                <c:choose><c:when test="${param.msg == 'updated'}">The crosswalk has been successfully updated!</c:when>
+                    <c:when test="${param.msg == 'created'}">The crosswalk has been successfully added!</c:when>
+                    <c:when test="${param.msg == 'deleted'}">The crosswalk has been successfully deleted!</c:when>
                 </c:choose>
             </div>
         </c:if>
         <section class="panel panel-default">
             <div class="panel-heading">
-                <h3 class="panel-title">Macros</h3>
+                <h3 class="panel-title">Standard Crosswalks</h3>
             </div>
             <div class="panel-body">
                 <div class="table-actions">
                     <div class="form form-inline pull-left">
 
                     </div>
-                    <a href="#macroModal" id="createNewMacro" data-toggle="modal" class="btn btn-primary btn-sm pull-right" title="Create new macro">  
+                    <a href="#crosswalkModal" id="createNewCrosswalk" data-toggle="modal" class="btn btn-primary btn-sm pull-right" title="Create new Crosswalk">  
                         <span class="glyphicon glyphicon-plus"></span>
                     </a>
                 </div>
 
                 <div class="form-container scrollable">
-                    <table class="table table-striped table-hover table-default" <c:if test="${not empty macroList}">id="dataTable"</c:if>>
+                    <table class="table table-striped table-hover table-default" <c:if test="${not empty crosswalkList}">id="dataTable"</c:if>>
                             <thead>
                                 <tr>
-                                    <th scope="col">Category</th>
-                                    <th scope="col">Macro Short Name</th>
-                                    <th scope="col">Macro Name</th>
-                                    <th scope="col">Formula</th>
+                                    <th scope="col">Name</th>
+                                    <th scope="col">File Name</th>
+                                    <th scope="col">Date Created</th>
                                     <th scope="col"></th>
                                 </tr>
                             </thead>
                             <tbody>
                             <c:choose>
-                                <c:when test="${not empty macroList}">
-                                    <c:forEach var="macro" items="${macroList}">
+                                <c:when test="${not empty crosswalkList}">
+                                    <c:forEach var="crosswalk" items="${crosswalkList}">
                                         <tr id="dataRow">
                                             <td>
-                                                <c:if test="${macro.categoryId == 1}">Data Manipulation</c:if>
-                                                <c:if test="${macro.categoryId == 2}">Processing</c:if>
-                                                </td>
-                                                <td scope="row"><a href="#macroModal" data-toggle="modal" rel="${macro.id}" class="macroEdit" title="Edit this macro">${macro.macroShortName}</a>
+                                                ${crosswalk.name}
                                             </td>
                                             <td>
-                                                <c:choose>
-                                                    <c:when test="${fn:length(macro.macroName) > 45}">
-                                                        ${fn:substring(macro.macroName,0,44)}...
-                                                    </c:when>
-                                                    <c:otherwise>
-                                                        ${macro.macroName}
-                                                    </c:otherwise>
-                                                </c:choose>
+                                                ${crosswalk.fileName}
                                             </td>
                                             <td>
-                                                <c:choose>
-                                                    <c:when test="${fn:length(macro.formula) > 45}">
-                                                        ${fn:substring(macro.formula,0,44)}...
-                                                    </c:when>
-                                                    <c:otherwise>
-                                                        ${macro.formula}
-                                                    </c:otherwise>
-                                                </c:choose>
+                                                <fmt:formatDate value="${crosswalk.dateCreated}" type="date" pattern="M/dd/yyyy" />
                                             </td>
                                             <td class="actions-col">
-                                                <a href="#macroModal" data-toggle="modal" rel="${macro.id}" class="macroEdit" title="Edit this macro">
+                                                <a href="#crosswalkModal" data-toggle="modal" rel="?i=${crosswalk.id}" class="viewCrosswalk" title="Edit this Crosswalk">
                                                     <span class="glyphicon glyphicon-edit"></span>
                                                     Edit	
-                                                </a>
-                                                <a href="javascript:void(0);" rel="${macro.id}" class="btn btn-link marcoDelete" title="Delete this row">
-                                                    <span class="glyphicon glyphicon-remove"></span>
-                                                    Delete
                                                 </a>
                                             </td>
                                         </tr>
                                     </c:forEach>
                                 </c:when>
                                 <c:otherwise>
-                                    <tr><td colspan="5" class="center-text">There where no macros in the system.</td></tr>
+                                    <tr><td colspan="4" class="center-text">There are no standard crosswalks in the system.</td></tr>
                                 </c:otherwise>
                             </c:choose>
                         </tbody>
@@ -96,6 +73,6 @@
 </div>	
 
 <!-- Providers modal -->
-<div class="modal fade" id="macroModal" role="dialog" tabindex="-1" aria-labeledby="Add/ Edit Macros" aria-hidden="true" aria-describedby="Add/Edit Macros"></div>
+<div class="modal fade" id="crosswalkModal" role="dialog" tabindex="-1" aria-labeledby="Add/ Edit Crosswalks" aria-hidden="true" aria-describedby="Add/Edit Crosswalks"></div>
 
 
