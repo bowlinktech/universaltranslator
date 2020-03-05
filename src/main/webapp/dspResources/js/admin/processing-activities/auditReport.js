@@ -40,6 +40,38 @@ require(['./main'], function () {
                 }
             });
         });
+        
+        $(document).on('click', '.droppedValueCollapse', function() {
+	    var batchId = $(this).attr('rel');
+	    var totalErrors = $(this).attr('total');
+	    var type = $(this).attr('rel3');
+	    
+	    var isExpanded = $('#collapse-droppedValues').hasClass("expanded");
+	    
+	    if(isExpanded == false) {
+		$('#collapse-droppedValues').addClass("expanded");
+		$(".errorList-droppedValues").html("");
+		$(".spinner-droppedValues").show();
+		
+		//Go get error records;
+		$.ajax({
+		    url: '../../loadDroppedValues.do',
+		    data: {
+			'batchId': batchId,
+			'totalErrors': totalErrors,
+			'type': type
+		    },
+		    type: "GET",
+		    success: function (data) {
+			$(".spinner-droppedValues").hide();
+			$(".errorList-droppedValues").html(data);
+		    }
+		});
+	    }
+	    else {
+		$('#collapse-droppedValues').removeClass("expanded");
+	    } 
+	});
 	
 	$(document).on('click', '.errorCollapse', function() {
 	    var batchId = $(this).attr('rel');
