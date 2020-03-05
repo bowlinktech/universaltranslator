@@ -123,7 +123,7 @@
             <name>BatchUploadTableCleanUp</name>
             <group>processGroup</group>
             <description>
-		This process will run every morning and check for fully completed inbound batches and delete the
+		This process will run every 10 minutes and check for fully completed inbound batches and delete the
 		transactiontranslatedin_*batchId* table. A fully completed inbound batch means all associated 
 		batchDownload entries are at a status of 28.
 	    </description>

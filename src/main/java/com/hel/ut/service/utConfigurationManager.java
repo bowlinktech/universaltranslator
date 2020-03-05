@@ -86,7 +86,7 @@ public interface utConfigurationManager {
 
     configurationMessageSpecs getMessageSpecs(int configId);
 
-    void updateMessageSpecs(configurationMessageSpecs messageSpecs, int transportDetailId, int fileType) throws Exception;
+    void updateMessageSpecs(configurationMessageSpecs messageSpecs, int transportDetailId, int fileType, boolean hasHeader, Integer fileLayout) throws Exception;
 
     List<utConfiguration> getActiveConfigurationsByUserId(int userId, int transportMethod) throws Exception;
 

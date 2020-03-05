@@ -309,9 +309,33 @@ require(['./main'], function () {
                 event.preventDefault();
                 return false;
             }
+            else {
+               
+                //check and submit form
+		var form = $('#crosswalkdetailsform')[0];
+		var formData = new FormData(form);
+		$.ajax({
+		    url: '/administrator/configurations/'+actionValue+'Crosswalk',
+		    type: "POST",
+		    enctype: 'multipart/form-data',
+		    processData: false,  // Important!
+		    contentType: false,
+		    cache: false,
+		    data: formData,
+		    success: function(data) {
+		       $.ajax({
+                            url: 'viewCrosswalk?i=' + data,
+			    type: "GET",
+			    success: function(data) {
+				$("#crosswalkModal").html(data);
+			    }
+			});
+		    }
+		});
+            }
 
-            $('#crosswalkdetailsform').attr('action', actionValue + 'Crosswalk');
-            $('#crosswalkdetailsform').submit();
+            //$('#crosswalkdetailsform').attr('action', actionValue + 'Crosswalk');
+            //$('#crosswalkdetailsform').submit();
 
         });
 

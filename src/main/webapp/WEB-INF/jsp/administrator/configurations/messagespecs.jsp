@@ -5,11 +5,17 @@
 <div class="main clearfix" role="main">
     <div class="row-fluid">
         <div class="col-md-12">
+            <c:if test="${not empty templateError}" >
+                <div class="alert alert-danger">
+                    <strong>Template Error!</strong> 
+                    ${templateError}
+                </div>
+            </c:if>
             <c:if test="${not empty savedStatus}" >
                 <div class="alert alert-success">
                     <strong>Success!</strong> 
                     <c:choose><c:when test="${savedStatus == 'updated'}">The configuration message specs have been successfully updated!</c:when></c:choose>
-                        </div>
+                </div>
             </c:if>
             <section class="panel panel-default">
                 <div class="panel-body">
@@ -55,6 +61,28 @@
 					    <a href="#dtDownloadModal" rel="${configurationDetails.id}" data-toggle="modal" class="btn btn-primary btn-xs btn-action createDataTranslationDownload" title="Download Existing Translations">Download Existing Translations</a>
 					</div>
 				    </c:if>
+                                    <div class="form-group">
+                                        <label for="hasHeader">Does the Template file have a header row?</label>
+                                        <div>
+                                            <label class="radio-inline">
+                                                <form:radiobutton id="hasHeader" path="hasHeader" value="1" />Yes 
+                                            </label>
+                                            <label class="radio-inline">
+                                                <form:radiobutton id="hasHeader" path="hasHeader" value="0"/>No
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="fileLayout">Template File Layout? <span class="badge badge-help" data-placement="top" title="" data-html="true" data-original-title="<div style='text-align:left;'>Select Horizontal when all the field names are going across row 1. Row 1 = Field Names, Row 2 = Sample Data/Default Data, Row 3 = R/O/D</div><div style='text-align:left;padding-top:5px;'>Select Vertical when all the field names are going down in column 1. Col 1 = Field Names, Col 2 = R/O/D, Col 3 = Sample Data/Default Data</div>">?</span></label>
+                                        <div>
+                                            <label class="radio-inline">
+                                                <form:radiobutton id="fileLayout" path="fileLayout" value="1" />Horiztonal 
+                                            </label>
+                                            <label class="radio-inline">
+                                                <form:radiobutton id="fileLayout" path="fileLayout" value="2"/>Vertical
+                                            </label>
+                                        </div>
+                                    </div>
 				    <spring:bind path="file">
 					<div id="templateFileDiv" class="form-group ${status.error ? 'has-error' : '' }">
 					    <label class="control-label" for="file"><c:if test="${not empty messageSpecs.templateFile}">New</c:if> File *</label>

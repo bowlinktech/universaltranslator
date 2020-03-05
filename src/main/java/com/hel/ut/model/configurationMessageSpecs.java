@@ -25,6 +25,12 @@ public class configurationMessageSpecs {
 
     @Transient
     private CommonsMultipartFile file = null, parsingScriptFile = null;
+    
+    @Transient
+    private boolean hasHeader = false;
+    
+    @Transient
+    private Integer fileLayout = 1; //1 = Horizontal 2= Vertical
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -221,6 +227,22 @@ public class configurationMessageSpecs {
 
     public void setFileNameConfigHeader(String fileNameConfigHeader) {
 	this.fileNameConfigHeader = fileNameConfigHeader;
+    }
+
+    public boolean isHasHeader() {
+	return hasHeader;
+    }
+
+    public void setHasHeader(boolean hasHeader) {
+	this.hasHeader = hasHeader;
+    }
+
+    public Integer getFileLayout() {
+	return fileLayout;
+    }
+
+    public void setFileLayout(Integer fileLayout) {
+	this.fileLayout = fileLayout;
     }
     
 }
