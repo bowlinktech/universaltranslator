@@ -17,6 +17,7 @@ import com.hel.ut.model.utUserActivity;
 import com.hel.ut.model.WSMessagesIn;
 import com.hel.ut.model.batchDownloads;
 import com.hel.ut.model.batchRetry;
+import com.hel.ut.model.batchUploadDroppedValues;
 import com.hel.ut.model.batchUploads;
 import com.hel.ut.model.batchuploadactivity;
 import com.hel.ut.model.utConfiguration;
@@ -3343,5 +3344,13 @@ public class transactionInDAOImpl implements transactionInDAO {
 		query.executeUpdate();
 	}
 		
-
+	
+    @Override
+    @Transactional(readOnly = true)
+    public List<batchUploadDroppedValues> getBatchDroppedValues(Integer batchUploadId) throws Exception {
+	Query query = sessionFactory.getCurrentSession().createQuery("from batchUploadDroppedValues where batchUploadId = :batchUploadId");
+	query.setParameter("batchUploadId", batchUploadId);
+	
+	return query.list();
+    }
 }

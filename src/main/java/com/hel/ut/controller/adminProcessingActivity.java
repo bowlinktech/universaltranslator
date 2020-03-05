@@ -16,6 +16,7 @@ import com.hel.ut.model.TransportMethod;
 import com.hel.ut.model.utUser;
 import com.hel.ut.model.utUserActivity;
 import com.hel.ut.model.batchDownloads;
+import com.hel.ut.model.batchUploadDroppedValues;
 import com.hel.ut.model.batchUploads;
 import com.hel.ut.model.batchdownloadactivity;
 import com.hel.ut.model.batchuploadactivity;
@@ -826,7 +827,10 @@ public class adminProcessingActivity {
 		List<batchErrorSummary> batchErrorSummary = transactionInManager.getBatchErrorSummary(batchDetails.getId(),"inbound");
 		mav.addObject("batchErrorSummary", batchErrorSummary);
 	    }
-           
+	    
+	    //Check to see if we have any dropped values
+	    List<batchUploadDroppedValues> droppedValues = transactionInManager.getBatchDroppedValues(batchDetails.getId());
+            mav.addObject("batchUploadDroppedValues", droppedValues);
 	    
 	    //If allowed to cancel check if the outbound targets have already been sent
 	    if(canCancel) {
@@ -2059,6 +2063,9 @@ public class adminProcessingActivity {
 	if("inbound".equals(type)) {
 	    reportableFields = transactionInManager.getErrorReportField(batchId);
 	}
+	else {
+	    reportableFields = transactionOutManager.getErrorReportField(batchId);
+	}
 	
 	customCols.add("Column Name");
 	
@@ -2954,6 +2961,10 @@ public class adminProcessingActivity {
 		List<batchErrorSummary> batchErrorSummary = transactionInManager.getBatchErrorSummary(batchDetails.getId(),"outbound");
 		mav.addObject("batchErrorSummary", batchErrorSummary);
 	    }
+	    
+	    //Check to see if we have any dropped values
+	    List<batchUploadDroppedValues> droppedValues = transactionInManager.getBatchDroppedValues(batchDetails.getId());
+            mav.addObject("batchUploadDroppedValues", droppedValues);
 	   
 	    
         } else {
@@ -3375,5 +3386,76 @@ public class adminProcessingActivity {
 	mav.addObject("directMessageDetails",directMessageDetails);
 
         return mav;
+    }
+    
+    /**
+     * this displays the payload*
+     * @param batchId
+     * @param totalErrors
+     * @param type
+     * @return 
+     * @throws java.lang.Exception 
+     */
+    @RequestMapping(value = "/loadDroppedValues.do", method = RequestMethod.GET)
+    public @ResponseBody ModelAndView loadDroppedValues(
+	    @RequestParam Integer batchId,
+	    @RequestParam Integer totalErrors,
+	    @RequestParam String type) throws Exception {
+
+	ModelAndView mav = new ModelAndView();
+        mav.setViewName("/administrator/processing-activities/auditReportDroppedValues");
+	
+	List<String> customCols = new ArrayList<>();
+	
+	String sql = "";
+	
+	customCols.add("Row No.");
+	customCols.add("Field Number");
+	
+	List reportableFields = null;
+	
+	if("inbound".equals(type)) {
+	    reportableFields = transactionInManager.getErrorReportField(batchId);
+	}
+	else {
+	    reportableFields = transactionOutManager.getErrorReportField(batchId);
+	}
+	
+	customCols.add("Client Identifier");
+	customCols.add("Field");
+	customCols.add("Field Value");
+	
+	if("inbound".equals(type)) {
+	    sql = "select a.transactionInRecordsId as rownumber, a.fieldNo as fieldNumber,a.entity3Id as clientIdentifier, a.fieldName as column_name,a.fieldValue as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
+	    + "from batchuploaddroppedvalues a "
+	    + "where a.batchUploadId = " + batchId + " order by a.id asc limit 50 ";
+	}
+	else {
+	    sql = "select a.transactionOutRecordsId as rownumber, a.fieldNo as fieldNumber,a.entity3Id as clientIdentifier, a.fieldName as column_name,a.fieldValue as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
+	    + "from batchdownloaddroppedvalues a "
+	    + "where a.batchDownloadId = " + batchId + " order by a.id asc limit 50 ";
+	}
+	
+	if(reportableFields != null) {
+	    Iterator reportableFieldsIt = reportableFields.iterator();
+	
+	    while (reportableFieldsIt.hasNext()) {
+		Object rptFieldrow[] = (Object[]) reportableFieldsIt.next();
+		customCols.add(rptFieldrow[0].toString());
+		customCols.add(rptFieldrow[1].toString());
+		customCols.add(rptFieldrow[2].toString());
+		customCols.add(rptFieldrow[3].toString());
+	    }
+	}
+		
+	mav.addObject("customCols", customCols);
+	mav.addObject("totalErrors",totalErrors);
+	
+	List errors = transactionInManager.getErrorDataBySQLStmt(sql);
+	
+	mav.addObject("errors", errors);
+        
+        return mav;
+
     }
 }

@@ -281,6 +281,36 @@
 			<h3 class="panel-title">Transaction Errors</h3>
 		    </div>
 		    <div class="panel-body">
+                        
+                        <c:if test="${not empty batchUploadDroppedValues}">
+                            <div class="col-md-12">
+                                <section class="panel panel-default">
+                                    <div class="panel-heading">
+                                        <a data-toggle="collapse" rel="${batchDetails.id}" total="${fn:length(batchUploadDroppedValues)}" rel3="${batchDownload ? 'outbound' : 'inbound'}" class="droppedValueCollapse" href="#collapse-droppedValues">
+					   <div class="clearfix">
+						<div class="pull-left">
+						    <h3 class="panel-title">Error: Dropped Values</h3>
+						</div>
+						<div class="pull-right">
+						    <h3 class="panel-title" style="color:red">Total Found: <fmt:formatNumber value = "${fn:length(batchUploadDroppedValues)}" type = "number"/></h3>
+						</div>
+					    </div>
+					</a>	
+                                    </div>
+                                    <div id="collapse-droppedValues" class="panel-collapse collapse">       
+					<div class="panel-body clearfix" style="height:300px;">
+					    <div class="col-md-12 clearfix">
+						<div class="col-md-6 col-md-offset-6 spinner-droppedValues">
+						    <i class="fa fa-spinner fa-spin fa-4x"></i>
+						</div>
+						<div class="errorList-droppedValues" style=" overflow: auto; height:250px;"></div>
+					    </div>
+					</div>
+				    </div>            
+                                </section>
+                            </div>
+                        </c:if>
+                        
 			<c:forEach varStatus="i" var="batchError" items="${batchErrorSummary}">
 			    <div class="col-md-12">
 				<section class="panel panel-default">
