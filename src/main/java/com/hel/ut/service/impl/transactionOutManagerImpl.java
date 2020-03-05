@@ -2403,4 +2403,9 @@ public class transactionOutManagerImpl implements transactionOutManager {
     public directmessagesout getDirectAPIMessagesById(Integer directMessageId) {
 	return transactionOutDAO.getDirectAPIMessagesById(directMessageId);
     }
+    
+    @Override
+    public List getErrorReportField(Integer batchDownloadId) throws Exception {
+	return transactionOutDAO.getErrorReportField(batchDownloadId);
+    }
 }

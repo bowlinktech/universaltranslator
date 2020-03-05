@@ -119,4 +119,6 @@ public interface transactionOutManager {
     
     directmessagesout getDirectAPIMessagesById(Integer directMessageId);
     
+    List getErrorReportField(Integer batchDownloadId) throws Exception;
+    
 }
