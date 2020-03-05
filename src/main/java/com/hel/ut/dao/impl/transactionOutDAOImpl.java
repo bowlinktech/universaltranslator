@@ -617,7 +617,7 @@ public class transactionOutDAOImpl implements transactionOutDAO {
 
 	//If file type == JSON
 	if (transportDetails.getfileType() == 12) {
-	    sql = ("call getJSONForConfig(:configId, :batchDownloadId, :filePathAndName, :jsonWrapperElement);");
+	    sql = ("call getJSONForConfig(:batchConfigId, :batchDownloadId, :filePathAndName, :jsonWrapperElement);");
 	} 
 	else {
 	    
@@ -627,7 +627,7 @@ public class transactionOutDAOImpl implements transactionOutDAO {
 	    //build this sql
 	    sql = "SELECT " + fieldNos + " "
 		+ "FROM transactionTranslatedOut_" + batchDownloadId + " "
-		+ "where configId = :configId and ";
+		+ "where configId = " + transportDetails.getconfigId() + " and ";
 	    
 	    if(handlingDetails.get(0).geterrorHandling() == 4) {
 		sql += "statusId in (9,14) ";
@@ -638,12 +638,13 @@ public class transactionOutDAOImpl implements transactionOutDAO {
 	    sql += "INTO OUTFILE  '" + filePathAndName + "' "
 	    + "FIELDS TERMINATED BY '" + transportDetails.getDelimChar()+"' LINES TERMINATED BY '\\n';";
 	}
-
+	
 	if (!"".equals(sql)) {
 	    Query query = sessionFactory.getCurrentSession().createSQLQuery(sql);
-	    query.setParameter("configId", transportDetails.getconfigId());
-
+	    
 	    if (transportDetails.getfileType() == 12) {
+		query.setParameter("batchConfigId", transportDetails.getconfigId());
+		query.setParameter("batchDownloadId", batchDownloadId);
 		query.setParameter("filePathAndName", filePathAndName);
 		query.setParameter("jsonWrapperElement", transportDetails.getJsonWrapperElement());
 	    }
@@ -882,6 +883,7 @@ public class transactionOutDAOImpl implements transactionOutDAO {
 		    + "batchDownloadId int(11) DEFAULT NULL," 
 		    + "configId int(11) NOT NULL,"
 		    + "dateCreated datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,"
+		    + "transactionInRecordsId int(11) NOT NULL,"
 		    + "PRIMARY KEY (`id`),"
 		    + "KEY `torFK_idx` (`batchDownloadId`)"
 		    + ") ENGINE=InnoDB DEFAULT CHARSET=latin1;";
@@ -1005,7 +1007,22 @@ public class transactionOutDAOImpl implements transactionOutDAO {
 	    query = sessionFactory.getCurrentSession().createSQLQuery(transactionoutdetailauditerrorsTable);
 	    query.executeUpdate();
 	    
-
+	    // create tables to track dropped values from macros
+	    String transactionoutmacrodroppedvalues = ""
+	    		+ "drop table if exists transactionoutmacrodroppedvalues_" + batchDownloadId + ";"
+	    		+ "CREATE TABLE transactionoutmacrodroppedvalues_" + batchDownloadId + " ( id int(11) NOT NULL AUTO_INCREMENT, batchDownloadId int(11) not null, transactionOutRecordsId int(11) NOT NULL, configId int(11) not null, fieldNo int(11) NOT NULL, fieldValue text, matchId varchar(255) NULL, PRIMARY KEY (id), KEY outDrop (matchId));"
+	    		;
+	    query = sessionFactory.getCurrentSession().createSQLQuery(transactionoutmacrodroppedvalues);
+	    query.executeUpdate();
+	    
+	    String transactionoutmacrokeptvalues = ""
+	    		+ "drop table if exists transactionoutmacrokeptvalues_" + batchDownloadId + ";"
+	    		+ "CREATE TABLE transactionoutmacrokeptvalues_" + batchDownloadId + " ( id int(11) NOT NULL AUTO_INCREMENT, batchDownloadId int(11) not null, transactionOutRecordsId int(11) NOT NULL, configId int(11) not null, fieldNo int(11) NOT NULL, fieldValue text, matchId varchar(255) NULL, PRIMARY KEY (id), KEY inkept (matchId));"
+	    		;
+	    query = sessionFactory.getCurrentSession().createSQLQuery(transactionoutmacrokeptvalues);
+	    query.executeUpdate();
+	    
+	    
 	} catch (Exception ex) {
 	    System.err.println("Create Batch Download tables for batch (Id: " + batchDownloadId +") "+ ex.getCause());
 	}
@@ -1051,7 +1068,18 @@ public class transactionOutDAOImpl implements transactionOutDAO {
 	connectionFieldMappings.forEach(configfield -> {
 	    if(configfield.isUseField()) {
 		if(configfield.getAssociatedFieldNo() == 0) {
-		    selectFields.append("''").append(",");
+		    //Check to see if field has a default value
+		    if(configfield.getDefaultValue() != null) {
+			if(!configfield.getDefaultValue().isEmpty()) {
+			    selectFields.append(configfield.getDefaultValue()).append(",");
+			}
+			else {
+			    selectFields.append("''").append(",");
+			}
+		    }
+		    else {
+			selectFields.append("''").append(",");
+		    }
 		}
 		else {
 		    selectFields.append("F").append(configfield.getAssociatedFieldNo()).append(",");
@@ -1075,17 +1103,17 @@ public class transactionOutDAOImpl implements transactionOutDAO {
 	    String sql = "insert into transactionoutrecords_"+batchDownloadId+" "
 	    + "("+insertFields;
 
-	    sql+= "batchDownloadId, configId) ";
+	    sql+= "batchDownloadId, configId,transactionInRecordsId) ";
 
 	    sql+= "select "+insertFields;
 	    
 	    //Source configuration error handling is set to pass through all transaction errors.
 	    if(handlingDetails.get(0).geterrorHandling() == 4) {
-		sql+= batchDownloadId + ","+configId +" from temp_transactiontranslatedin_"+batchUploadId+"_"+batchDownloadId+" where statusId in (9,14);";
+		sql+= batchDownloadId + ","+configId +",transactionInRecordsId from temp_transactiontranslatedin_"+batchUploadId+"_"+batchDownloadId+" where statusId in (9,14);";
 	    }
 	    //Otherwise only send transactions that have zero errors
 	    else {
-		sql+= batchDownloadId + ","+configId +" from temp_transactiontranslatedin_"+batchUploadId+"_"+batchDownloadId+" where statusId = 9;";
+		sql+= batchDownloadId + ","+configId +",transactionInRecordsId from temp_transactiontranslatedin_"+batchUploadId+"_"+batchDownloadId+" where statusId = 9;";
 	    }
 	    
 	    query = sessionFactory.getCurrentSession().createSQLQuery(sql);
@@ -1121,10 +1149,13 @@ public class transactionOutDAOImpl implements transactionOutDAO {
 	String deleteSQL = "";
 	Query deleteQuery;
 	deleteSQL += "DROP TABLE IF EXISTS `transactionindetailauditerrors_" + batchId + "`;";
-	deleteSQL += "DROP TABLE IF EXISTS `transactiontranslatedlistin_" + batchId + "`;";
+	// need transactiontranslatedlistin_to populate some dropped values
+	//deleteSQL += "DROP TABLE IF EXISTS `transactiontranslatedlistin_" + batchId + "`;";
 	//deleteSQL += "DROP TABLE IF EXISTS `transactioninrecords_" + batchId + "`;";
 	deleteSQL += "DROP TABLE IF EXISTS `transactioninerrors_" + batchId + "`;";
-
+	deleteSQL += "DROP TABLE IF EXISTS `transactioninmacrodroppedvalues_" + batchId + "`;";
+	deleteSQL += "DROP TABLE IF EXISTS `transactioninmacrokeptvalues_" + batchId + "`;";
+	
 	deleteQuery = sessionFactory.getCurrentSession().createSQLQuery(deleteSQL);
 	deleteQuery.executeUpdate();
 
@@ -1165,7 +1196,9 @@ public class transactionOutDAOImpl implements transactionOutDAO {
 	deleteSQL += "DROP TABLE IF EXISTS `transactionouterrors_" + batchId + "`;";
 	deleteSQL += "DROP TABLE IF EXISTS `transactionoutjsontable_" + batchId + "`;";
 	deleteSQL += "DROP TABLE IF EXISTS `transactiontranslatedout_" + batchId + "`;";
-
+	deleteSQL += "DROP TABLE IF EXISTS `transactionoutmacrodroppedvalues_" + batchId + "`;";
+	deleteSQL += "DROP TABLE IF EXISTS `transactionoutmacrokeptvalues_" + batchId + "`;";
+	
 	deleteQuery = sessionFactory.getCurrentSession().createSQLQuery(deleteSQL);
 	deleteQuery.executeUpdate();
 
@@ -1189,6 +1222,9 @@ public class transactionOutDAOImpl implements transactionOutDAO {
 		    deleteSQL += "DROP TABLE IF EXISTS `transactionouterrors_" + batch.getId() + "`;";
 		    deleteSQL += "DROP TABLE IF EXISTS `transactionoutjsontable_" + batch.getId() + "`;";
 		    deleteSQL += "DROP TABLE IF EXISTS `transactiontranslatedout_" + batch.getId() + "`;";
+		    deleteSQL += "DROP TABLE IF EXISTS `transactionoutmacrodroppedvalues_" + batch.getId() + "`;";
+			deleteSQL += "DROP TABLE IF EXISTS `transactionoutmacrokeptvalues_" + batch.getId() + "`;";
+			
 		}
 		
 		if(!"".equals(deleteSQL)) {

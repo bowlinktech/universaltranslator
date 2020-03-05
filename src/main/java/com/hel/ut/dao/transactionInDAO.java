@@ -288,4 +288,8 @@ public interface transactionInDAO {
     void updateRecordCountsFromAuditErrorTable(Integer batchUploadId) throws Exception;
     
     List<directmessagesin> getDirectMessagesInListPaged(Date fromDate, Date toDate, Integer displayStart, Integer displayRecords, String searchTerm, String sortColumnName, String sortDirection) throws Exception;
+    
+    void insertCWDroppedValues(Integer configId, Integer batchId, configurationFormFields cff, configurationDataTranslations cdt, boolean foroutboundProcessing) throws Exception;
+    
+    void populateDroppedValues(Integer batchUploadId, Integer configId, boolean foroutboundProcessing) throws Exception;
 }

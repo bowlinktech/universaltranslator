@@ -100,6 +100,20 @@ require(['./main'], function () {
 		}
 	    });
 	});
+        
+        $('#appendConfigurationFields').click(function(event) {
+            $.ajax({
+		url: '/administrator/configurations/appendConfigurationFields',
+		data: {
+		    'configId' : $(this).attr('rel'),
+                    'configTransportId': $(this).attr('rel2')
+		},
+		type: "GET",
+		success: function (data) {
+		    $("#appendNewFieldsModal").html(data);
+		}
+	    });
+        });
 
     });
 });

@@ -39,7 +39,13 @@ public class configurationconnectionfieldmappings {
     
     @Column(name="associatedFieldNo", nullable = false)
     private Integer associatedFieldNo = 0;
-
+    
+    @Column(name="populateErrorFieldNo", nullable = false)
+    private Integer populateErrorFieldNo = 0;
+    
+    @Column(name = "defaultValue", nullable = true)
+    private String defaultValue;
+    
     public int getId() {
 	return id;
     }
@@ -102,6 +108,22 @@ public class configurationconnectionfieldmappings {
 
     public void setAssociatedFieldNo(Integer associatedFieldNo) {
 	this.associatedFieldNo = associatedFieldNo;
+    }
+
+    public Integer getPopulateErrorFieldNo() {
+	return populateErrorFieldNo;
+    }
+
+    public void setPopulateErrorFieldNo(Integer populateErrorFieldNo) {
+	this.populateErrorFieldNo = populateErrorFieldNo;
+    }
+
+    public String getDefaultValue() {
+	return defaultValue;
+    }
+
+    public void setDefaultValue(String defaultValue) {
+	this.defaultValue = defaultValue;
     }
 
 }

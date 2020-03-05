@@ -18,6 +18,9 @@ public class configurationTransport {
 
     @Transient
     private List<configurationFormFields> fields = null;
+    
+    @Transient
+    private List<appenedNewconfigurationFormFields> newfields = null;
 
     @Transient
     private List<configurationFTPFields> FTPfields = null;
@@ -535,5 +538,14 @@ public class configurationTransport {
     public void setPopulateInboundAuditReport(boolean populateInboundAuditReport) {
 	this.populateInboundAuditReport = populateInboundAuditReport;
     }
+
+    public List<appenedNewconfigurationFormFields> getNewfields() {
+	return newfields;
+    }
+
+    public void setNewfields(List<appenedNewconfigurationFormFields> newfields) {
+	this.newfields = newfields;
+    }
+    
     
 }
