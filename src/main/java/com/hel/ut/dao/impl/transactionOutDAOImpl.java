@@ -1007,7 +1007,22 @@ public class transactionOutDAOImpl implements transactionOutDAO {
 	    query = sessionFactory.getCurrentSession().createSQLQuery(transactionoutdetailauditerrorsTable);
 	    query.executeUpdate();
 	    
-
+	    // create tables to track dropped values from macros
+	    String transactionoutmacrodroppedvalues = ""
+	    		+ "drop table if exists transactionoutmacrodroppedvalues_" + batchDownloadId + ";"
+	    		+ "CREATE TABLE transactionoutmacrodroppedvalues_" + batchDownloadId + " ( id int(11) NOT NULL AUTO_INCREMENT, batchDownloadId int(11) not null, transactionOutRecordsId int(11) NOT NULL, configId int(11) not null, fieldNo int(11) NOT NULL, fieldValue text, matchId varchar(255) NULL, PRIMARY KEY (id), KEY outDrop (matchId));"
+	    		;
+	    query = sessionFactory.getCurrentSession().createSQLQuery(transactionoutmacrodroppedvalues);
+	    query.executeUpdate();
+	    
+	    String transactionoutmacrokeptvalues = ""
+	    		+ "drop table if exists transactionoutmacrokeptvalues_" + batchDownloadId + ";"
+	    		+ "CREATE TABLE transactionoutmacrokeptvalues_" + batchDownloadId + " ( id int(11) NOT NULL AUTO_INCREMENT, batchDownloadId int(11) not null, transactionOutRecordsId int(11) NOT NULL, configId int(11) not null, fieldNo int(11) NOT NULL, fieldValue text, matchId varchar(255) NULL, PRIMARY KEY (id), KEY inkept (matchId));"
+	    		;
+	    query = sessionFactory.getCurrentSession().createSQLQuery(transactionoutmacrokeptvalues);
+	    query.executeUpdate();
+	    
+	    
 	} catch (Exception ex) {
 	    System.err.println("Create Batch Download tables for batch (Id: " + batchDownloadId +") "+ ex.getCause());
 	}
@@ -1134,10 +1149,13 @@ public class transactionOutDAOImpl implements transactionOutDAO {
 	String deleteSQL = "";
 	Query deleteQuery;
 	deleteSQL += "DROP TABLE IF EXISTS `transactionindetailauditerrors_" + batchId + "`;";
-	deleteSQL += "DROP TABLE IF EXISTS `transactiontranslatedlistin_" + batchId + "`;";
+	// need transactiontranslatedlistin_to populate some dropped values
+	//deleteSQL += "DROP TABLE IF EXISTS `transactiontranslatedlistin_" + batchId + "`;";
 	//deleteSQL += "DROP TABLE IF EXISTS `transactioninrecords_" + batchId + "`;";
 	deleteSQL += "DROP TABLE IF EXISTS `transactioninerrors_" + batchId + "`;";
-
+	deleteSQL += "DROP TABLE IF EXISTS `transactioninmacrodroppedvalues_" + batchId + "`;";
+	deleteSQL += "DROP TABLE IF EXISTS `transactioninmacrokeptvalues_" + batchId + "`;";
+	
 	deleteQuery = sessionFactory.getCurrentSession().createSQLQuery(deleteSQL);
 	deleteQuery.executeUpdate();
 
@@ -1178,7 +1196,9 @@ public class transactionOutDAOImpl implements transactionOutDAO {
 	deleteSQL += "DROP TABLE IF EXISTS `transactionouterrors_" + batchId + "`;";
 	deleteSQL += "DROP TABLE IF EXISTS `transactionoutjsontable_" + batchId + "`;";
 	deleteSQL += "DROP TABLE IF EXISTS `transactiontranslatedout_" + batchId + "`;";
-
+	deleteSQL += "DROP TABLE IF EXISTS `transactionoutmacrodroppedvalues_" + batchId + "`;";
+	deleteSQL += "DROP TABLE IF EXISTS `transactionoutmacrokeptvalues_" + batchId + "`;";
+	
 	deleteQuery = sessionFactory.getCurrentSession().createSQLQuery(deleteSQL);
 	deleteQuery.executeUpdate();
 
@@ -1202,6 +1222,9 @@ public class transactionOutDAOImpl implements transactionOutDAO {
 		    deleteSQL += "DROP TABLE IF EXISTS `transactionouterrors_" + batch.getId() + "`;";
 		    deleteSQL += "DROP TABLE IF EXISTS `transactionoutjsontable_" + batch.getId() + "`;";
 		    deleteSQL += "DROP TABLE IF EXISTS `transactiontranslatedout_" + batch.getId() + "`;";
+		    deleteSQL += "DROP TABLE IF EXISTS `transactionoutmacrodroppedvalues_" + batch.getId() + "`;";
+			deleteSQL += "DROP TABLE IF EXISTS `transactionoutmacrokeptvalues_" + batch.getId() + "`;";
+			
 		}
 		
 		if(!"".equals(deleteSQL)) {
