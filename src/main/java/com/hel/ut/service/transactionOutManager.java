@@ -7,6 +7,7 @@ package com.hel.ut.service;
 
 import com.hel.ut.model.Transaction;
 import com.hel.ut.model.batchDLRetry;
+import com.hel.ut.model.batchDownloadDroppedValues;
 import com.hel.ut.model.batchDownloads;
 import com.hel.ut.model.batchUploads;
 import com.hel.ut.model.batchdownloadactivity;
@@ -120,5 +121,7 @@ public interface transactionOutManager {
     directmessagesout getDirectAPIMessagesById(Integer directMessageId);
     
     List getErrorReportField(Integer batchDownloadId) throws Exception;
+    
+    List<batchDownloadDroppedValues> getBatchDroppedValues(Integer batchDownoadId) throws Exception;
     
 }

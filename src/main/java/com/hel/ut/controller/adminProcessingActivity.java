@@ -13,6 +13,7 @@ import com.hel.ut.model.Organization;
 import com.hel.ut.model.RestAPIMessagesIn;
 import com.hel.ut.model.RestAPIMessagesOut;
 import com.hel.ut.model.TransportMethod;
+import com.hel.ut.model.batchDownloadDroppedValues;
 import com.hel.ut.model.utUser;
 import com.hel.ut.model.utUserActivity;
 import com.hel.ut.model.batchDownloads;
@@ -830,7 +831,7 @@ public class adminProcessingActivity {
 	    
 	    //Check to see if we have any dropped values
 	    List<batchUploadDroppedValues> droppedValues = transactionInManager.getBatchDroppedValues(batchDetails.getId());
-            mav.addObject("batchUploadDroppedValues", droppedValues);
+            mav.addObject("batchDroppedValues", droppedValues);
 	    
 	    //If allowed to cancel check if the outbound targets have already been sent
 	    if(canCancel) {
@@ -2963,8 +2964,8 @@ public class adminProcessingActivity {
 	    }
 	    
 	    //Check to see if we have any dropped values
-	    List<batchUploadDroppedValues> droppedValues = transactionInManager.getBatchDroppedValues(batchDetails.getId());
-            mav.addObject("batchUploadDroppedValues", droppedValues);
+	    List<batchDownloadDroppedValues> droppedValues = transactionOutManager.getBatchDroppedValues(batchDetails.getId());
+            mav.addObject("batchDroppedValues", droppedValues);
 	   
 	    
         } else {
