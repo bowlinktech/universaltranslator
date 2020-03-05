@@ -972,3 +972,412 @@ ALTER TABLE `universaltranslator`.`batchdownloaddroppedvalues`
 ADD INDEX `batchUploadIdIdx` (`batchUploadId` ASC);
 
 
+ALTER TABLE `universaltranslator`.`batchdownloaddroppedvalues` 
+ADD COLUMN `transactionInRecordsId` INT Not NULL AFTER `configId`;
+
+/** new update 20200304 **/
+drop procedure if exists applyCWTranslatedList;
+DELIMITER $$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `applyCWTranslatedList`(in configId int, 
+in batchId int, in srcField varchar(10),
+in fieldA varchar(10), in fieldB varchar(10), in con1 varchar(255), 
+in con2 varchar(255), in macroId int, in foroutboundProcessing boolean, in passClear int, in transactionId int)
+proc_main:begin 
+
+call setInboundOutBoundTables (foroutboundProcessing,batchId);
+select @translatedTable, @transactionTable, @batchTable, @batchIdType , @errorTable, @batchIdColumn, @listTable, @translateCol
+into @translatedTable, @transactionTable, @batchTable, @batchIdType , @errorTable, @batchIdColumn, @listTable, @translateCol;
+
+call getFinalStatusIds;
+select @finalStatusIds into @finalStatusIds;
+
+
+if (transactionId = 0) then
+	set @whereString = concat(" and configId = ",configId," and ", @batchIdType," = ",batchId," and statusId not in (",@finalStatusIds ,");");
+end if;
+
+if (transactionId != 0) then
+	set @whereString = concat(" and ",	@transactionTable,".id = ", transactionId,";");
+end if;
+
+
+set @fcol = replace(lcase(fieldA), 'f', '');
+set @stmt = concat("delete from ", @listTable," where fcol = ",@fcol," and ",@batchIdType," = ", batchId ,";");
+
+
+PREPARE stmt from @stmt;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+	set @stmt = concat("
+    insert into ", @listTable," (",@batchIdType,", ",@translateCol,", invalue, fcol)
+    SELECT ",@batchIdType,", ",@translateCol,", trim(SUBSTRING_INDEX(SUBSTRING_INDEX(t.",fieldA,", ',', n.n), ',', -1)) value, ",@fcol,"
+	FROM ",@translatedTable ," t CROSS JOIN (
+    SELECT a.N + b.N * 10 + 1 n FROM  
+   (select id N from ref_numbers where id <=50) a
+   ,(select id N from ref_numbers where id <=50) b
+    ORDER BY n) n  WHERE n.n <= 1 + (LENGTH(t.",fieldA,") - LENGTH(REPLACE(t.",fieldA,", ',', ''))) ", @whereString);
+   
+    PREPARE stmt from @stmt;
+	EXECUTE stmt;
+    DEALLOCATE PREPARE stmt;
+
+    
+    
+    set @stmt2 = "";
+	set @stmt1 = concat("update ",@listTable," join (select id, sourcevalue, targetvalue from rel_crosswalkdata where crosswalkid = ", con1 ,") cwdata
+	on invalue = sourcevalue set translatedvalue = targetvalue where ",@batchIdType," = ", batchId);
+    if (transactionId != 0) then
+		set @stmt2 = concat(" and ", @translateCol , " = ", transactionId);
+	END if;
+    
+    
+	
+    set @stmt = concat(@stmt1, @stmt2);
+   
+    PREPARE stmt from @stmt;
+	EXECUTE stmt;
+    DEALLOCATE PREPARE stmt;
+    
+    
+  
+	set @selDistinct = ' distinct ';
+    
+    if (con2 = 'N') then
+		begin
+			set @selDistinct = '';
+        end;
+    end if;
+  
+    set @stmt1 = concat("update ",@translatedTable," join  (select ",@translateCol," as matchId, 
+    group_concat(",@selDistinct," translatedValue order by translatedValue) label from  ",@listTable,"
+	where ",@batchIdType," = ",batchid, " and fcol = ",@fCol," group by ",@translateCol," ) cwmatch on ",@translateCol," = matchid set ",fieldB," = label ");
+	
+    set @stmt2="";
+	
+    if (passClear = 1) then
+		set @stmt2= " where label is not null";
+	end if;
+
+	
+    set @stmt = concat(@stmt1, @stmt2);
+    
+    PREPARE stmt from @stmt;
+	EXECUTE stmt;
+    DEALLOCATE PREPARE stmt;
+    
+    
+	/** track drop and kept values **/
+    set @colText = "in";
+    if (foroutboundProcessing) then
+		set @colText = "out";
+    end if;
+    
+
+    set @stmt = concat("
+		insert into transaction",@colText,"macrodroppedvalues_",batchId," (",@batchIdColumn ,", transaction",@colText,"RecordsId, fieldNo, fieldValue, matchId, configId) 
+		select distinct ",batchId,", transaction",@colText,"RecordsId, fcol, invalue,concat(",configId,", '_', fcol, '_', invalue), ",configId," from transactiontranslatedlist",@colText,"_",batchId," where translatedValue is null and length(invalue) > 0;
+	");
+
+	PREPARE stmt from @stmt;
+	EXECUTE stmt;
+    DEALLOCATE PREPARE stmt;
+
+
+	set @stmt = concat("
+		insert into transaction",@colText,"macrokeptvalues_",batchId," (",@batchIdColumn ,", transaction",@colText,"RecordsId, fieldNo, fieldValue, matchId, configId) 
+		select distinct ",batchId,", transaction",@colText,"RecordsId, fcol, invalue, concat(",configId,", '_', fcol, '_', invalue), ",configId," from transactiontranslatedlist",@colText,"_",batchId," where translatedValue is not null;
+	");
+ 
+	PREPARE stmt from @stmt;
+	EXECUTE stmt;
+    DEALLOCATE PREPARE stmt;
+
+    
+	/**
+    set @stmt = concat("delete from ", @listTable, " where ",@batchIdType," = ",batchId," and fcol = ",@fcol);
+	
+    PREPARE stmt from @stmt;
+	EXECUTE stmt;
+    DEALLOCATE PREPARE stmt;
+    **/
+   
+
+
+select '';
+end proc_main$$
+DELIMITER ;
+
+
+drop procedure if exists populateDroppedValues;
+
+DELIMITER $$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `populateDroppedValues`(in inConfigId int, in inBatchId int, in foroutboundProcessing boolean)
+proc_main:begin
+
+set @dvTableName = "batchuploaddroppedvalues";
+set @recordName = "transactioninrecords";
+set @batchIdCol = "batchUploadId";
+set @colDirection = "in";
+
+if (foroutboundProcessing)  then
+		set @dvTableName = "batchdownloaddroppedvalues";
+		set @recordName = "transactionoutrecords";
+        set @batchIdCol = "batchDownloadId";
+        set @colDirection = "out";
+end if;
+
+-- clean up first
+SET @stmt = CONCAT("
+delete dropv from transaction",@colDirection,"macrodroppedvalues_",inBatchId," dropv join (
+select matchid from transaction",@colDirection,"macrokeptvalues_",inBatchId,") keptv
+on keptv.matchId = dropv.matchId;
+");
+
+
+PREPARE stmt from @stmt;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+
+SET @stmt = CONCAT("
+insert into ",@dvTableName ," (",@batchIdCol,", transaction",@colDirection,"recordsId, fieldNo, configId, fieldName, fieldValue)
+select distinct ",inBatchId,", t1.transaction",@colDirection,"recordsId, t1.fieldNo, t1.configId, fieldDesc, 
+t1.fieldValue from transaction",@colDirection,"macrodroppedvalues_",inBatchId," t1 
+join (select * from configurationformfields) t2
+on t1.configId = t2.configId
+and t1.fieldNo = t2.fieldno;
+");
+
+
+PREPARE stmt from @stmt;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+
+if (foroutboundProcessing) then
+	begin
+		
+         select batchuploadid into @batchUploadId from batchdownloads where id = inBatchId;
+        delete from   batchdownloaddroppedvalues where batchuploadId = @batchUploadId;
+    
+        
+        SET @stmt = CONCAT("
+			update  batchdownloaddroppedvalues t1 join (select transactionInRecordsId, batchUploadId, batchDownloadId from transactionoutrecords_",inBatchId," t1 
+            join (select distinct batchUploadId, id from batchdownloads where id = ",inBatchId,")  t2
+			on t1.batchDownloadId = t2.id) t2
+			on t1.batchdownloadId = t2.batchDownloadId
+			set t1.batchuploadId = t2.batchuploadid,
+            t1.transactionInRecordsId = t2.transactionInRecordsId
+            where t1.batchdownloadId = ",inBatchId,";
+		");
+
+
+PREPARE stmt from @stmt;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+        
+        
+	end;
+end if;
+
+select concat('F', fieldNo) into @entity3IdField from configurationformfields where configId = inConfigId and fieldDesc = 'rrEntity3' limit 1;
+
+
+SELECT concat('F',rptField1),concat('F',rptField2),concat('F',rptField3),concat('F',rptField4) INTO @rptField1, @rptField2,@rptField3,@rptField4 
+FROM configurationmessagespecs where configId = inConfigId LIMIT 1;
+
+-- get rrEntity3Id field
+
+if(@rptField1 = 'F0') then 
+	set @rptField1 = "F1";
+end if;
+
+if(@rptField2 = 'F0') then 
+	set @rptField2 = "F2";
+end if;
+
+if(@rptField3 = 'F0') then 
+	set @rptField3 = "F3";
+end if;
+
+if(@rptField4 = 'F0') then 
+	set @rptField4 = "F4";
+end if;
+
+-- rr entity3 on the inbound is  from transactionTranslatedIn table as it is always populated by macros
+if(@entity3IdField is null) then 
+	set @entity3IdField = "F1";
+end if;
+
+
+SET @stmt = CONCAT("
+update  ",@dvTableName," t1 join 
+(Select transaction",@colDirection,"RecordsId, t1.",@rptField1," rptField1, t1.",@rptField2," rptField2, t1.",@rptField3," rptField3, t1.",@rptField4," rptField4, 
+rrEntity3Id from transaction",@colDirection,"records_",inBatchId," t1 join
+(select ",@entity3IdField," rrEntity3Id, transaction",@colDirection,"RecordsId from transactiontranslated",@colDirection,"_",inBatchId,") t2
+on t1.id = t2.transaction",@colDirection,"RecordsId) t2
+on t1.",@recordName ,"Id = t2.",@recordName,"Id 
+set reportField1Data = rptField1,
+reportField2Data = rptField2,
+reportField3Data = rptField3,
+reportField4Data = rptField4,
+entity3Id = rrEntity3Id 
+where t1.",@batchIdCol," = ",inBatchId," and configId = ",inConfigId,";
+");
+
+
+PREPARE stmt from @stmt;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+
+
+
+
+
+select '';
+
+end proc_main$$
+DELIMITER ;
+
+
+drop table if exists batchdownloaddroppedvalues;
+
+CREATE TABLE `batchdownloaddroppedvalues` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `fieldNo` int(11) NOT NULL,
+  `batchUploadId` int(11) DEFAULT NULL,
+  `batchDownloadId` int(11) NOT NULL,
+  `configId` int(11) NOT NULL,
+  `transactionInRecordsId` int(11) DEFAULT NULL,
+  `transactionOutRecordsId` int(11) DEFAULT NULL,
+  `fieldName` varchar(255) DEFAULT NULL,
+  `fieldValue` text,
+  `reportField1Data` varchar(45) DEFAULT NULL,
+  `reportField2Data` varchar(45) DEFAULT NULL,
+  `reportField3Data` varchar(45) DEFAULT NULL,
+  `reportField4Data` varchar(45) DEFAULT NULL,
+  `entity3Id` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `fk_batchDownload_idx` (`batchDownloadId`),
+  KEY `batchUploadIdIdx` (`batchUploadId`),
+  CONSTRAINT `fk_batchDownload` FOREIGN KEY (`batchDownloadId`) REFERENCES `batchdownloads` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+drop table if exists batchuploaddroppedvalues;
+CREATE TABLE `batchuploaddroppedvalues` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `transactionInRecordsId` varchar(45) DEFAULT NULL,
+  `fieldNo` int(11) NOT NULL,
+  `batchUploadId` int(11) NOT NULL,
+  `configId` int(11) NOT NULL,
+  `fieldName` varchar(255) DEFAULT NULL,
+  `fieldValue` text,
+  `reportField1Data` varchar(45) DEFAULT NULL,
+  `reportField2Data` varchar(45) DEFAULT NULL,
+  `reportField3Data` varchar(45) DEFAULT NULL,
+  `reportField4Data` varchar(45) DEFAULT NULL,
+  `entity3Id` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `fk_batchUpload_idx` (`batchUploadId`),
+  CONSTRAINT `fk_batchUpload` FOREIGN KEY (`batchUploadId`) REFERENCES `batchuploads` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+
+USE `universaltranslator`;
+DROP procedure IF EXISTS `ifFieldANotInListValuesSetToCon2`;
+
+DELIMITER $$
+USE `universaltranslator`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `ifFieldANotInListValuesSetToCon2`(in configId int, 
+in batchId int, in srcField varchar(10),
+in fieldA varchar(10), in fieldB varchar(10), in con1 varchar(255), 
+in con2 varchar(255), in macroId int, in foroutboundProcessing boolean, in passClear int, in transactionId int)
+proc_main:begin
+
+-- if there is a value in the field that is not in the cw, it should be defaulted to con2
+
+call setInboundOutBoundTables (foroutboundProcessing,batchId);
+select @translatedTable, @transactionTable, @batchTable, @batchIdType , @errorTable
+into @translatedTable, @transactionTable, @batchTable, @batchIdType , @errorTable;
+
+call getFinalStatusIds;
+select @finalStatusIds into @finalStatusIds;
+
+	set @leaveBlanks = "";
+
+
+set @dropTable = "batchuploaddroppedvalues";
+set @colDirection = "in";
+
+if (foroutboundProcessing) then
+
+	set @dropTable = "batchdownloaddroppedvalues";
+	set @colDirection = "out";
+    
+end if;
+
+ set @stmt = concat("select fieldDesc into @fieldName from configurationformfields where configId = ",configId," and fieldNo = replace('",fieldA,"', 'F', '') limit 1;");
+
+
+    PREPARE stmt from @stmt;
+	EXECUTE stmt;
+    DEALLOCATE PREPARE stmt;
+
+
+if (transactionId = 0) then
+	BEGIN
+    
+    set @stmt1 = concat("
+    insert into ",@dropTable,"
+    (transaction",@colDirection,"RecordsId, fieldNo, ",@batchIdType ,", configId, fieldName, fieldValue) 
+     select transaction",@colDirection,"RecordsId, replace('",fieldA,"', 'F', ''), ",@batchIdType,", configId, '",@fieldName,"', ",fieldA,"
+     from ",@translatedTable," where   ",fieldA," is not null and length(",fieldA,") != 0 and 
+    ",fieldA ," not in (select sourcevalue from rel_crosswalkdata where crosswalkId = ",con1,")  ",@leaveBlanks,"
+    and  configId = ",configId," and ", @batchIdType," = ",batchId," and statusId not in (",@finalStatusIds ,");");
+    
+	set @stmt = concat("update ",@translatedTable, " set ", fieldB, " = '",con2,"' where   ",fieldA," is not null and length(",fieldA,") != 0 and 
+    ",fieldA ," not in (select sourcevalue from rel_crosswalkdata where crosswalkId = ",con1,")  ",@leaveBlanks,"
+    and  configId = ",configId," and ", @batchIdType," = ",batchId," and statusId not in (",@finalStatusIds ,");");
+	
+	END;
+	END if;
+
+if (transactionId != 0) then
+	BEGIN
+    
+        set @stmt1 = concat("
+    insert into ",@dropTable,"
+    (transaction",@colDirection,"RecordsId, fieldNo, ",@batchIdType ,", configId, fieldName, fieldValue) 
+     select transaction",@colDirection,"RecordsId, replace('",fieldA,"', 'F', ''), ",@batchIdType,", configId, '",@fieldName,"', ",fieldA,"
+     from ",@translatedTable," where  ",fieldA," is not null and length(",fieldA,") != 0 and  ",FieldA," 
+    not in (select sourcevalue from rel_crosswalkdata where crosswalkId = ", con1 ,")",
+				 " and ",@transactionTable,"Id = ", transactionId, ";");
+    
+	set @stmt = concat("update ",@translatedTable, " set ",fieldB, " = '",con2," where  ",fieldA," is not null and length(",fieldA,") != 0 and  ",FieldA," 
+    not in (select sourcevalue from rel_crosswalkdata where crosswalkId = ", con1 ,")",
+				 " and ",@transactionTable,"Id = ", transactionId, ";");
+	
+    END;
+	END if;
+   
+	PREPARE stmt1 from @stmt1;
+	EXECUTE stmt1;
+    DEALLOCATE PREPARE stmt1;
+   
+   
+
+    PREPARE stmt from @stmt;
+	EXECUTE stmt;
+    DEALLOCATE PREPARE stmt;
+
+
+
+
+select '';
+end proc_main$$
+
+DELIMITER ;
+
+
