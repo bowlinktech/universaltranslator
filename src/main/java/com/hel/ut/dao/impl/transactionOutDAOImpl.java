@@ -8,6 +8,7 @@ package com.hel.ut.dao.impl;
 import com.hel.ut.dao.transactionOutDAO;
 import com.hel.ut.model.RestAPIMessagesOut;
 import com.hel.ut.model.batchDLRetry;
+import com.hel.ut.model.batchDownloadDroppedValues;
 import com.hel.ut.model.batchDownloads;
 import com.hel.ut.model.batchdownloadactivity;
 import com.hel.ut.model.utConfiguration;
@@ -1683,6 +1684,15 @@ public class transactionOutDAOImpl implements transactionOutDAO {
 	Query query = sessionFactory.getCurrentSession().createSQLQuery(sql);
 	query.setParameter("batchDownloadId", batchDownloadId);
 
+	return query.list();
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public List<batchDownloadDroppedValues> getBatchDroppedValues(Integer batchDownloadId) throws Exception {
+	Query query = sessionFactory.getCurrentSession().createQuery("from batchDownloadDroppedValues where batchDownloadId = :batchDownloadId");
+	query.setParameter("batchDownloadId", batchDownloadId);
+	
 	return query.list();
     }
 }

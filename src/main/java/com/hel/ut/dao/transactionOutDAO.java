@@ -7,6 +7,7 @@ package com.hel.ut.dao;
 
 import com.hel.ut.model.RestAPIMessagesOut;
 import com.hel.ut.model.batchDLRetry;
+import com.hel.ut.model.batchDownloadDroppedValues;
 import com.hel.ut.model.batchDownloads;
 import com.hel.ut.model.batchdownloadactivity;
 import com.hel.ut.model.configurationFormFields;
@@ -135,4 +136,6 @@ public interface transactionOutDAO {
     directmessagesout getDirectAPIMessagesById(Integer directMessageId);
     
     List getErrorReportField(Integer batchDownloadId) throws Exception;
+    
+    List<batchDownloadDroppedValues> getBatchDroppedValues(Integer batchDownloadId) throws Exception;
 }

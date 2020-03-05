@@ -16,6 +16,7 @@ import com.hel.ut.model.HL7Segments;
 import com.hel.ut.model.Organization;
 import com.hel.ut.model.Transaction;
 import com.hel.ut.model.batchDLRetry;
+import com.hel.ut.model.batchDownloadDroppedValues;
 import com.hel.ut.model.batchDownloads;
 import com.hel.ut.model.batchUploads;
 import com.hel.ut.model.batchdownloadactivity;
@@ -2407,5 +2408,10 @@ public class transactionOutManagerImpl implements transactionOutManager {
     @Override
     public List getErrorReportField(Integer batchDownloadId) throws Exception {
 	return transactionOutDAO.getErrorReportField(batchDownloadId);
+    }
+    
+    @Override
+    public List<batchDownloadDroppedValues> getBatchDroppedValues(Integer batchDownloadId) throws Exception {
+	return transactionOutDAO.getBatchDroppedValues(batchDownloadId);
     }
 }
