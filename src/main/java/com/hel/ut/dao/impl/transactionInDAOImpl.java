@@ -2645,6 +2645,8 @@ public class transactionInDAOImpl implements transactionInDAO {
 	deleteSQL += "DROP TABLE IF EXISTS `transactiontranslatedin_" + batchId + "`;";
 	deleteSQL += "DROP TABLE IF EXISTS `transactioninrecords_" + batchId + "`;";
 	deleteSQL += "DROP TABLE IF EXISTS `transactioninerrors_" + batchId + "`;";
+	deleteSQL += "DROP TABLE IF EXISTS `transactioninmacrodroppedvalues_" + batchId + "`;";
+	deleteSQL += "DROP TABLE IF EXISTS `transactioninmacrokeptvalues_" + batchId + "`;";
 	deleteSQL += "delete from restapimessagesin where batchUploadId = " + batchId + ";";
 	deleteSQL += "delete from wsmessagesin where batchUploadId = " + batchId + ";";
 	deleteSQL += "delete from useractivity where batchUploadId = " + batchId + ";";
@@ -2836,6 +2838,20 @@ public class transactionInDAOImpl implements transactionInDAO {
 	    query = sessionFactory.getCurrentSession().createSQLQuery(transactionindetailauditerrorsTable);
 	    query.executeUpdate();
 	    
+	    // create tables to track dropped values from macros
+	    String transactioninmacrodroppedvalues = ""
+	    		+ "drop table if exists transactioninmacrodroppedvalues_" + batchUploadId + ";"
+	    		+ "CREATE TABLE transactioninmacrodroppedvalues_" + batchUploadId + " ( id int(11) NOT NULL AUTO_INCREMENT, batchUploadId int(11) not null, transactionInRecordsId int(11) NOT NULL, configId int(11) not null, fieldNo int(11) NOT NULL, fieldValue text, matchId varchar(255) NULL, PRIMARY KEY (id), KEY inDrop (matchId));"
+	    		;
+	    query = sessionFactory.getCurrentSession().createSQLQuery(transactioninmacrodroppedvalues);
+	    query.executeUpdate();
+	    
+	    String transactioninmacrokeptvalues = ""
+	    		+ "drop table if exists transactioninmacrokeptvalues_" + batchUploadId + ";"
+	    		+ "CREATE TABLE transactioninmacrokeptvalues_" + batchUploadId + " ( id int(11) NOT NULL AUTO_INCREMENT, batchUploadId int(11) not null, transactionInRecordsId int(11) NOT NULL, configId int(11) not null, fieldNo int(11) NOT NULL, fieldValue text, matchId varchar(255) NULL, PRIMARY KEY (id), KEY inkept (matchId));"
+	    		;
+	    query = sessionFactory.getCurrentSession().createSQLQuery(transactioninmacrokeptvalues);
+	    query.executeUpdate();
 
 	} catch (Exception ex) {
 	    System.err.println("Create Batch Upload tables for batch (Id: " + batchUploadId +") "+ ex.getCause());
@@ -2854,6 +2870,9 @@ public class transactionInDAOImpl implements transactionInDAO {
 	deleteSQL += "DROP TABLE IF EXISTS `transactiontranslatedin_" + batchId + "`;";
 	//deleteSQL += "DROP TABLE IF EXISTS `transactioninrecords_" + batchId + "`;";
 	deleteSQL += "DROP TABLE IF EXISTS `transactioninerrors_" + batchId + "`;";
+	deleteSQL += "DROP TABLE IF EXISTS `transactioninmacrodroppedvalues_" + batchId + "`;";
+	deleteSQL += "DROP TABLE IF EXISTS `transactioninmacrokeptvalues_" + batchId + "`;";
+	
 	
 	deleteQuery = sessionFactory.getCurrentSession().createSQLQuery(deleteSQL);
 	deleteQuery.executeUpdate();
@@ -2901,6 +2920,8 @@ public class transactionInDAOImpl implements transactionInDAO {
 			deleteSQL += "DROP TABLE IF EXISTS `transactiontranslatedlistin_" + batch.getBatchUploadId() + "`;";
 			deleteSQL += "DROP TABLE IF EXISTS `transactioninrecords_" + batch.getBatchUploadId() + "`;";
 			deleteSQL += "DROP TABLE IF EXISTS `transactioninerrors_" + batch.getBatchUploadId() + "`;";
+			deleteSQL += "DROP TABLE IF EXISTS `transactioninmacrodroppedvalues_" + batch.getBatchUploadId() + "`;";
+			deleteSQL += "DROP TABLE IF EXISTS `transactioninmacrokeptvalues_" + batch.getBatchUploadId() + "`;";
 		    }
 		}
 		
