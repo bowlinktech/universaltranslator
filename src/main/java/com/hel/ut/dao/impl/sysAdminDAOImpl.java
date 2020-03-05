@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.hel.ut.dao.sysAdminDAO;
 import com.hel.ut.dao.UtilitiesDAO;
+import com.hel.ut.model.Crosswalks;
 import com.hel.ut.model.Macros;
 import com.hel.ut.model.custom.LookUpTable;
 import com.hel.ut.model.custom.TableData;
@@ -527,8 +528,20 @@ public class sysAdminDAOImpl implements sysAdminDAO {
         deleteFields.setParameter("moveFilePathId", moveFileLog.getId());
         deleteFields.executeUpdate();
 	
-	}
+    }
     
+    @Override
+    @Transactional(readOnly = true)
+    public Long findTotalStandardCrosswalks() {
+        Query query = sessionFactory.getCurrentSession().createQuery("select count(id) as totalCrosswalks from crosswalks where orgId = 0");
+        Long totalCrosswalks = (Long) query.uniqueResult();
+        return totalCrosswalks;
+    }
     
-
+    @Override
+    @Transactional(readOnly = true)
+    public List<Crosswalks> getStandardCrosswalks() throws Exception {
+        Query query = sessionFactory.getCurrentSession().createQuery("from Crosswalks where orgId = 0 order by dateCreated desc");
+        return query.list();
+    }
 }

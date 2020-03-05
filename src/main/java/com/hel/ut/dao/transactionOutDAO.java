@@ -7,6 +7,7 @@ package com.hel.ut.dao;
 
 import com.hel.ut.model.RestAPIMessagesOut;
 import com.hel.ut.model.batchDLRetry;
+import com.hel.ut.model.batchDownloadDroppedValues;
 import com.hel.ut.model.batchDownloads;
 import com.hel.ut.model.batchdownloadactivity;
 import com.hel.ut.model.configurationFormFields;
@@ -133,4 +134,8 @@ public interface transactionOutDAO {
     List<directmessagesout> getDirectMessagesOutListPaged(Date fromDate, Date toDate, Integer displayStart, Integer displayRecords, String searchTerm, String sortColumnName, String sortDirection) throws Exception;
     
     directmessagesout getDirectAPIMessagesById(Integer directMessageId);
+    
+    List getErrorReportField(Integer batchDownloadId) throws Exception;
+    
+    List<batchDownloadDroppedValues> getBatchDroppedValues(Integer batchDownloadId) throws Exception;
 }

@@ -1,5 +1,6 @@
 package com.hel.ut.dao;
 
+import com.hel.ut.model.Crosswalks;
 import java.util.List;
 
 import com.hel.ut.model.custom.LookUpTable;
@@ -79,5 +80,8 @@ public interface sysAdminDAO {
     List <MoveFilesLog> getMoveFilesLog (Integer statusId) throws Exception;
     
     void deleteMoveFilesLog(MoveFilesLog moveFilesLog) throws Exception;
-
+    
+    Long findTotalStandardCrosswalks() throws Exception;
+    
+    List<Crosswalks> getStandardCrosswalks() throws Exception;
 }

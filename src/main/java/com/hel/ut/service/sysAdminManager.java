@@ -1,5 +1,6 @@
 package com.hel.ut.service;
 
+import com.hel.ut.model.Crosswalks;
 import java.io.InputStream;
 import java.util.List;
 
@@ -95,4 +96,7 @@ public interface sysAdminManager {
     
     void deleteMoveFilesLog(MoveFilesLog moveFilesLog) throws Exception;
 
+    Long findTotalStandardCrosswalks() throws Exception;
+    
+    List<Crosswalks> getStandardCrosswalks() throws Exception;
 }

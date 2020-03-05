@@ -200,62 +200,76 @@
 					<form:hidden path="excelskiprows" />
 				    </c:otherwise>
 				</c:choose>
-				
-				<c:if test="${not empty availableFields}">
-				    <spring:bind path="rptField1">
-					<div class="form-group rtpField ${status.error ? 'has-error' : '' }">
-					    <span id="rptFieldMsg" class="control-label"></span>
-					    <label class="control-label" for="rptField1">Reportable Field 1 *</label>
-					    <form:select path="rptField1" id="rptField1" class="form-control half">
-						<option value="0">- Select -</option>
-						<c:forEach items="${availableFields}" var="field" varStatus="fStatus">
-						      <option value="${availableFields[fStatus.index].fieldNo}" <c:if test="${messageSpecs.rptField1 == availableFields[fStatus.index].fieldNo}">selected</c:if>>${availableFields[fStatus.index].fieldDesc} </option>
-						 </c:forEach>
-					    </form:select>
-					    <form:errors path="rptField1" cssClass="control-label" element="label" />
-					</div>
-				    </spring:bind>
-				    <spring:bind path="rptField2">
-					<div class="form-group rtpField ${status.error ? 'has-error' : '' }">
-					    <label class="control-label" for="rptField2">Reportable Field 2 *</label>
-					    <form:select path="rptField2" id="rptField2" class="form-control half">
-						<option value="0">- Select -</option>
-						<c:forEach items="${availableFields}" var="field" varStatus="fStatus">
-						    <option value="${availableFields[fStatus.index].fieldNo}" <c:if test="${messageSpecs.rptField2 == availableFields[fStatus.index].fieldNo}">selected</c:if>>${availableFields[fStatus.index].fieldDesc} </option>
-						</c:forEach>
-					    </form:select>
-					    <form:errors path="rptField2" cssClass="control-label" element="label" />
-					</div>
-				    </spring:bind>
-				    <spring:bind path="rptField3">
-					<div class="form-group rtpField ${status.error ? 'has-error' : '' }">
-					    <label class="control-label" for="rptField3">Reportable Field 3 *</label>
-					    <form:select path="rptField3" id="rptField3" class="form-control half">
-						<option value="0">- Select -</option>
-						<c:forEach items="${availableFields}" var="field" varStatus="fStatus">
-						    <option value="${availableFields[fStatus.index].fieldNo}" <c:if test="${messageSpecs.rptField3 == availableFields[fStatus.index].fieldNo}">selected</c:if>>${availableFields[fStatus.index].fieldDesc} </option>
-						</c:forEach>
-					    </form:select>
-					    <form:errors path="rptField3" cssClass="control-label" element="label" />
-					</div>
-				    </spring:bind>
-				    <spring:bind path="rptField4">
-					<div class="form-group rtpField ${status.error ? 'has-error' : '' }">
-					    <label class="control-label" for="rptField4">Reportable Field 4 *</label>
-					    <form:select path="rptField4" id="rptField4" class="form-control half">
-						<option value="0">- Select -</option>
-						<c:forEach items="${availableFields}" var="field" varStatus="fStatus">
-						    <option value="${availableFields[fStatus.index].fieldNo}" <c:if test="${messageSpecs.rptField4 == availableFields[fStatus.index].fieldNo}">selected</c:if>>${availableFields[fStatus.index].fieldDesc} </option>
-						</c:forEach>
-					    </form:select>
-					    <form:errors path="rptField4" cssClass="control-label" element="label" />
-					</div>
-				    </spring:bind>
-				</c:if>
                             </c:if>
                         </div>
                     </div>
-                </section>   
+                </section>  
+                <c:if test="${not empty availableFields}">            
+                    <section class="panel panel-default">
+                        <div class="panel-heading">
+                            <h3 class="panel-title">Audit Report Reportable Fields</h3>
+                        </div>
+                        <div class="panel-body">
+                            <div class="form-container">  
+                                <div class="row col-lg-12">
+                                    <div class="col-lg-6">
+                                        <spring:bind path="rptField1">
+                                            <div class="form-group rtpField ${status.error ? 'has-error' : '' }">
+                                                <span id="rptFieldMsg" class="control-label"></span>
+                                                <label class="control-label" for="rptField1">Field 1 *</label>
+                                                <form:select path="rptField1" id="rptField1" class="form-control">
+                                                    <option value="0">- Select -</option>
+                                                    <c:forEach items="${availableFields}" var="field" varStatus="fStatus">
+                                                          <option value="${availableFields[fStatus.index].fieldNo}" <c:if test="${messageSpecs.rptField1 == availableFields[fStatus.index].fieldNo}">selected</c:if>>${availableFields[fStatus.index].fieldDesc} </option>
+                                                     </c:forEach>
+                                                </form:select>
+                                                <form:errors path="rptField1" cssClass="control-label" element="label" />
+                                            </div>
+                                        </spring:bind>
+                                        <spring:bind path="rptField2">
+                                            <div class="form-group rtpField ${status.error ? 'has-error' : '' }">
+                                                <label class="control-label" for="rptField2">Field 2 *</label>
+                                                <form:select path="rptField2" id="rptField2" class="form-control">
+                                                    <option value="0">- Select -</option>
+                                                    <c:forEach items="${availableFields}" var="field" varStatus="fStatus">
+                                                        <option value="${availableFields[fStatus.index].fieldNo}" <c:if test="${messageSpecs.rptField2 == availableFields[fStatus.index].fieldNo}">selected</c:if>>${availableFields[fStatus.index].fieldDesc} </option>
+                                                    </c:forEach>
+                                                </form:select>
+                                                <form:errors path="rptField2" cssClass="control-label" element="label" />
+                                            </div>
+                                        </spring:bind>
+                                    </div>
+                                    <div class="col-lg-6">
+                                        <spring:bind path="rptField3">
+                                            <div class="form-group rtpField ${status.error ? 'has-error' : '' }">
+                                                <label class="control-label" for="rptField3">Field 3 *</label>
+                                                <form:select path="rptField3" id="rptField3" class="form-control">
+                                                    <option value="0">- Select -</option>
+                                                    <c:forEach items="${availableFields}" var="field" varStatus="fStatus">
+                                                        <option value="${availableFields[fStatus.index].fieldNo}" <c:if test="${messageSpecs.rptField3 == availableFields[fStatus.index].fieldNo}">selected</c:if>>${availableFields[fStatus.index].fieldDesc} </option>
+                                                    </c:forEach>
+                                                </form:select>
+                                                <form:errors path="rptField3" cssClass="control-label" element="label" />
+                                            </div>
+                                        </spring:bind>
+                                        <spring:bind path="rptField4">
+                                            <div class="form-group rtpField ${status.error ? 'has-error' : '' }">
+                                                <label class="control-label" for="rptField4">Field 4 *</label>
+                                                <form:select path="rptField4" id="rptField4" class="form-control">
+                                                    <option value="0">- Select -</option>
+                                                    <c:forEach items="${availableFields}" var="field" varStatus="fStatus">
+                                                        <option value="${availableFields[fStatus.index].fieldNo}" <c:if test="${messageSpecs.rptField4 == availableFields[fStatus.index].fieldNo}">selected</c:if>>${availableFields[fStatus.index].fieldDesc} </option>
+                                                    </c:forEach>
+                                                </form:select>
+                                                <form:errors path="rptField4" cssClass="control-label" element="label" />
+                                            </div>
+                                        </spring:bind>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                 </c:if>
             </form:form>
         </div>     
     </div>
