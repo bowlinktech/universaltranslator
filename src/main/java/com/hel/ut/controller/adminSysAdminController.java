@@ -1,5 +1,6 @@
 package com.hel.ut.controller;
 
+import com.hel.ut.model.Crosswalks;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
@@ -85,6 +86,7 @@ public class adminSysAdminController {
         Long totalUsers = sysAdminManager.findTotalUsers();
         Integer filePaths = sysAdminManager.getMoveFilesLog(1).size();
 	Integer totalHisps = hispsmanager.getAllActiveHisps().size();
+	Long totalStandardCrosswalks = sysAdminManager.findTotalStandardCrosswalks();
 	
 	//Get a list of system admin users
 	List<utUser> systemAdmins = usermanager.getAllUsersByOrganization(1);
@@ -95,6 +97,7 @@ public class adminSysAdminController {
         mav.addObject("totalUsers", totalUsers);
         mav.addObject("filePaths", filePaths);
 	mav.addObject("totalHisps", totalHisps);
+	mav.addObject("totalStandardCrosswalks", totalStandardCrosswalks);
         
         return mav;
     }
@@ -803,6 +806,22 @@ public class adminSysAdminController {
 	mav.addObject("success", "hispUpdated");
         mav.addObject("hispDetails", hispDetails);
         mav.addObject("btnValue", "Update");
+        return mav;
+    }
+    
+    /**
+     * Standard Crosswalks *
+     */
+    @RequestMapping(value = "/crosswalks", method = RequestMethod.GET)
+    public ModelAndView listCrosswalks() throws Exception {
+
+        ModelAndView mav = new ModelAndView();
+        mav.setViewName("/administrator/sysadmin/crosswalks");
+
+        //Return a list of available standard crosswalks
+        List<Crosswalks> crosswalkList = sysAdminManager.getStandardCrosswalks();
+        mav.addObject("crosswalkList", crosswalkList);
+
         return mav;
     }
 }

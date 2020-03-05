@@ -29,6 +29,16 @@
         <div class="col-md-3 col-sm-3 col-xs-6">
             <section class="panel panel-default panel-stats">
                 <div class="panel-body">
+                    <span class="stat-number"><a href="crosswalks" title="Total number of macros">${totalStandardCrosswalks}</a></span>
+                    <h3>Standard Crosswalks</h3>
+                    <a href="crosswalks" title="Standard Crosswalks" class="btn btn-primary btn-small" role="button">View all</a>
+                </div>
+            </section>
+        </div>
+        
+        <div class="col-md-3 col-sm-3 col-xs-6">
+            <section class="panel panel-default panel-stats">
+                <div class="panel-body">
                     <span class="stat-number"><a href="macros" title="Total number of macros">${totalMacroRows}</a></span>
                     <h3>Macros</h3>
                     <a href="macros" title="Macros" class="btn btn-primary btn-small" role="button">View all</a>
@@ -55,27 +65,8 @@
                         View System Admin Profiles</a>               
                 </div>
             </section>
-        </div>     
-	<%-- <div class="col-md-3 col-sm-3 col-xs-6">
-	   <section class="panel panel-default panel-stats">
-	       <div class="panel-body">
-		   <span class="stat-number"><a href="loginAs" class="loginAs" title="Login As">${totalUsers}</a></span>
-		   <h3>Total Users</h3>
-		   <a href="loginAs" id="loginAs" class="btn btn-primary btn-small" class="loginAs" title="Login As User">
-		       Login As</a>               
-	       </div>
-	   </section>
-       </div>--%>
-	<div class="col-md-3 col-sm-3 col-xs-3">
-            <section class="panel panel-default panel-stats">
-                <div class="panel-body">
-                    <span class="stat-number"><a href="getLog" class="getLog" title="Download Latest Tomcat Log">1</a></span>
-                    <h3>Log</h3>
-                         <a href="getLog" id="getLog" class="btn btn-primary btn-small" class="getLog" title="Download Latest Tomcat Log">
-                         Download Latest Tomcat Log</a>               
-                </div>
-            </section>
-        </div> 
+        </div>  
+	
         
         <div class="col-md-3 col-sm-3 col-xs-3">
             <section class="panel panel-default panel-stats">
@@ -96,6 +87,17 @@
                 </div>
             </section>
         </div>
+                    
+         <div class="col-md-3 col-sm-3 col-xs-3">
+            <section class="panel panel-default panel-stats">
+                <div class="panel-body">
+                    <span class="stat-number"><a href="getLog" class="getLog" title="Download Latest Tomcat Log">1</a></span>
+                    <h3>Log</h3>
+                         <a href="getLog" id="getLog" class="btn btn-primary btn-small" class="getLog" title="Download Latest Tomcat Log">
+                         Download Latest Tomcat Log</a>               
+                </div>
+            </section>
+        </div> 
 
 
     </div>

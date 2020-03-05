@@ -19,6 +19,7 @@ import com.hel.ut.model.utUser;
 import com.hel.ut.model.WSMessagesIn;
 import com.hel.ut.model.batchDownloads;
 import com.hel.ut.model.batchRetry;
+import com.hel.ut.model.batchUploadDroppedValues;
 import com.hel.ut.model.batchUploads;
 import com.hel.ut.model.batchuploadactivity;
 import com.hel.ut.model.utConfiguration;
@@ -4547,4 +4548,8 @@ public class transactionInManagerImpl implements transactionInManager {
     	transactionInDAO.populateDroppedValues(batchUploadId, configId, foroutboundProcessing);
     }
     
+    @Override
+    public List<batchUploadDroppedValues> getBatchDroppedValues(Integer batchUploadId) throws Exception {
+	return transactionInDAO.getBatchDroppedValues(batchUploadId);
+    }
 }

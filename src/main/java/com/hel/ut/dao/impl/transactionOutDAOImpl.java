@@ -8,6 +8,7 @@ package com.hel.ut.dao.impl;
 import com.hel.ut.dao.transactionOutDAO;
 import com.hel.ut.model.RestAPIMessagesOut;
 import com.hel.ut.model.batchDLRetry;
+import com.hel.ut.model.batchDownloadDroppedValues;
 import com.hel.ut.model.batchDownloads;
 import com.hel.ut.model.batchdownloadactivity;
 import com.hel.ut.model.utConfiguration;
@@ -1652,5 +1653,46 @@ public class transactionOutDAOImpl implements transactionOutDAO {
 	    return null;
 	}
 	return null;
+    }
+    
+    @SuppressWarnings("unchecked")
+    @Override
+    @Transactional(readOnly = true)
+    public List getErrorReportField(Integer batchDownloadId)
+	    throws Exception {
+	String sql = "select rptField1.rptLabel1 ,rptField2.rptLabel2,rptField3.rptLabel3,rptField4.rptLabel4 "
+		+ "from batchdownloadauditerrors e inner join "
+		+ "configurationmessagespecs cs on e.configId = cs.configId inner join "
+		+ "("
+		+ "select fieldDesc as rptLabel1, fieldNo, configId "
+		+ "from configurationformfields"
+		+ ") rptField1 on rptField1.fieldNo = cs.rptField1 and rptField1.configId = e.configId inner join "
+		+ "("
+		+ "select fieldDesc as rptLabel2, fieldNo, configId "
+		+ "from configurationformfields"
+		+ ") rptField2 on rptField2.fieldNo = cs.rptField2 and rptField2.configId = e.configId inner join "
+		+ "("
+		+ "select fieldDesc as rptLabel3, fieldNo, configId "
+		+ "from configurationformfields"
+		+ ") rptField3 on rptField3.fieldNo = cs.rptField3 and rptField3.configId = e.configId inner join "
+		+ "("
+		+ "select fieldDesc as rptLabel4, fieldNo, configId "
+		+ "from configurationformfields"
+		+ ") rptField4 on rptField4.fieldNo = cs.rptField4 and rptField4.configId = e.configId "
+		+ "where e.batchDownloadId = :batchDownloadId limit 1";
+	
+	Query query = sessionFactory.getCurrentSession().createSQLQuery(sql);
+	query.setParameter("batchDownloadId", batchDownloadId);
+
+	return query.list();
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public List<batchDownloadDroppedValues> getBatchDroppedValues(Integer batchDownloadId) throws Exception {
+	Query query = sessionFactory.getCurrentSession().createQuery("from batchDownloadDroppedValues where batchDownloadId = :batchDownloadId");
+	query.setParameter("batchDownloadId", batchDownloadId);
+	
+	return query.list();
     }
 }

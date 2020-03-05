@@ -15,6 +15,7 @@ import com.hel.ut.model.utUser;
 import com.hel.ut.model.WSMessagesIn;
 import com.hel.ut.model.batchDownloads;
 import com.hel.ut.model.batchRetry;
+import com.hel.ut.model.batchUploadDroppedValues;
 import com.hel.ut.model.batchUploads;
 import com.hel.ut.model.batchuploadactivity;
 import com.hel.ut.model.configurationConnection;
@@ -292,4 +293,6 @@ public interface transactionInDAO {
     void insertCWDroppedValues(Integer configId, Integer batchId, configurationFormFields cff, configurationDataTranslations cdt, boolean foroutboundProcessing) throws Exception;
     
     void populateDroppedValues(Integer batchUploadId, Integer configId, boolean foroutboundProcessing) throws Exception;
+    
+    List<batchUploadDroppedValues> getBatchDroppedValues(Integer batchUploadId) throws Exception;
 }
