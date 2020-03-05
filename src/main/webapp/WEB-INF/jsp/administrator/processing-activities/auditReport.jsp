@@ -273,7 +273,46 @@
             </section>
         </div>
     </div>
-    <c:if test="${not empty batchErrorSummary || not empty batchDroppedValues}">
+    <c:if test="${not empty batchDroppedValues}">
+	<div class="row-fluid">
+	    <div class="col-md-12">
+		<section class="panel panel-default">
+		    <div class="panel-heading">
+			<h3 class="panel-title">Dropped Values</h3>
+		    </div>
+		    <div class="panel-body">
+                        <div class="col-md-12">
+                            <section class="panel panel-default">
+                                <div class="panel-heading">
+                                    <a data-toggle="collapse" rel="${batchDetails.id}" total="${fn:length(batchDroppedValues)}" rel3="${batchDownload ? 'outbound' : 'inbound'}" class="droppedValueCollapse" href="#collapse-droppedValues">
+                                       <div class="clearfix">
+                                            <div class="pull-left">
+                                                <h3 class="panel-title">Error: Dropped Values</h3>
+                                            </div>
+                                            <div class="pull-right">
+                                                <h3 class="panel-title" style="color:red">Total Found: <fmt:formatNumber value = "${fn:length(batchDroppedValues)}" type = "number"/></h3>
+                                            </div>
+                                        </div>
+                                    </a>	
+                                </div>
+                                <div id="collapse-droppedValues" class="panel-collapse collapse">       
+                                    <div class="panel-body clearfix" style="height:300px;">
+                                        <div class="col-md-12 clearfix">
+                                            <div class="col-md-6 col-md-offset-6 spinner-droppedValues">
+                                                <i class="fa fa-spinner fa-spin fa-4x"></i>
+                                            </div>
+                                            <div class="errorList-droppedValues" style=" overflow: auto; height:250px;"></div>
+                                        </div>
+                                    </div>
+                                </div>            
+                            </section>
+                        </div>
+		    </div>
+		</section>
+	    </div>
+	</div>
+    </c:if>                        
+    <c:if test="${not empty batchErrorSummary}">
 	<div class="row-fluid">
 	    <div class="col-md-12">
 		<section class="panel panel-default">
@@ -281,66 +320,34 @@
 			<h3 class="panel-title">Transaction Errors</h3>
 		    </div>
 		    <div class="panel-body">
-                        
-                        <c:if test="${not empty batchDroppedValues}">
+                        <c:forEach varStatus="i" var="batchError" items="${batchErrorSummary}">
                             <div class="col-md-12">
                                 <section class="panel panel-default">
                                     <div class="panel-heading">
-                                        <a data-toggle="collapse" rel="${batchDetails.id}" total="${fn:length(batchDroppedValues)}" rel3="${batchDownload ? 'outbound' : 'inbound'}" class="droppedValueCollapse" href="#collapse-droppedValues">
-					   <div class="clearfix">
-						<div class="pull-left">
-						    <h3 class="panel-title">Error: Dropped Values</h3>
-						</div>
-						<div class="pull-right">
-						    <h3 class="panel-title" style="color:red">Total Found: <fmt:formatNumber value = "${fn:length(batchDroppedValues)}" type = "number"/></h3>
-						</div>
-					    </div>
-					</a>	
-                                    </div>
-                                    <div id="collapse-droppedValues" class="panel-collapse collapse">       
-					<div class="panel-body clearfix" style="height:300px;">
-					    <div class="col-md-12 clearfix">
-						<div class="col-md-6 col-md-offset-6 spinner-droppedValues">
-						    <i class="fa fa-spinner fa-spin fa-4x"></i>
-						</div>
-						<div class="errorList-droppedValues" style=" overflow: auto; height:250px;"></div>
-					    </div>
-					</div>
-				    </div>            
-                                </section>
-                            </div>
-                        </c:if>
-                        
-                        <c:if test="${not empty batchErrorSummary}">
-                            <c:forEach varStatus="i" var="batchError" items="${batchErrorSummary}">
-                                <div class="col-md-12">
-                                    <section class="panel panel-default">
-                                        <div class="panel-heading">
-                                            <a data-toggle="collapse" rel="${batchDetails.id}" error="${batchError.errorId}" total="${batchError.totalErrors}" rel2="${i.index}" rel3="${batchDownload ? 'outbound' : 'inbound'}" class="errorCollapse" href="#collapse-${i.index}">
-                                               <div class="clearfix">
-                                                    <div class="pull-left">
-                                                        <h3 class="panel-title">Error: ${batchError.errorDisplayText} <c:if test="${batchError.fromOutboundConfig}"><span class="text-info">(From Outbound Config)</span></c:if></h3>
-                                                    </div>
-                                                    <div class="pull-right">
-                                                        <h3 class="panel-title" style="color:red">Total Found: <fmt:formatNumber value = "${batchError.totalErrors}" type = "number"/></h3>
-                                                    </div>
+                                        <a data-toggle="collapse" rel="${batchDetails.id}" error="${batchError.errorId}" total="${batchError.totalErrors}" rel2="${i.index}" rel3="${batchDownload ? 'outbound' : 'inbound'}" class="errorCollapse" href="#collapse-${i.index}">
+                                           <div class="clearfix">
+                                                <div class="pull-left">
+                                                    <h3 class="panel-title">Error: ${batchError.errorDisplayText} <c:if test="${batchError.fromOutboundConfig}"><span class="text-info">(From Outbound Config)</span></c:if></h3>
                                                 </div>
-                                            </a>	
-                                       </div>     
-                                        <div id="collapse-${i.index}" class="panel-collapse collapse">       
-                                            <div class="panel-body clearfix" style="height:300px;">
-                                                <div class="col-md-12 clearfix">
-                                                    <div class="col-md-6 col-md-offset-6 spinner-${i.index}">
-                                                        <i class="fa fa-spinner fa-spin fa-4x"></i>
-                                                    </div>
-                                                    <div class="errorList-${i.index}" style=" overflow: auto; height:250px;"></div>
+                                                <div class="pull-right">
+                                                    <h3 class="panel-title" style="color:red">Total Found: <fmt:formatNumber value = "${batchError.totalErrors}" type = "number"/></h3>
                                                 </div>
                                             </div>
+                                        </a>	
+                                   </div>     
+                                    <div id="collapse-${i.index}" class="panel-collapse collapse">       
+                                        <div class="panel-body clearfix" style="height:300px;">
+                                            <div class="col-md-12 clearfix">
+                                                <div class="col-md-6 col-md-offset-6 spinner-${i.index}">
+                                                    <i class="fa fa-spinner fa-spin fa-4x"></i>
+                                                </div>
+                                                <div class="errorList-${i.index}" style=" overflow: auto; height:250px;"></div>
+                                            </div>
                                         </div>
-                                    </section>
-                                </div>
-                            </c:forEach>
-                         </c:if>
+                                    </div>
+                                </section>
+                            </div>
+                        </c:forEach>
 		    </div>
 		</section>
 	    </div>
