@@ -13,6 +13,9 @@
                     <c:when test="${param['page'] == 'macros'}">
                         <a href="javascript:void(0);" title="Macros" class="unstyled-link">Manage System Macros</a>
                     </c:when>
+                    <c:when test="${param['page'] == 'crosswalks'}">
+                        <a href="javascript:void(0);" title="Standard Crosswalks" class="unstyled-link">Manage Standard Crosswalks</a>
+                    </c:when>
                     <c:when test="${param['page'] == 'logos'}">
                         <a href="javascript:void(0);" title="Logos" class="unstyled-link">Manage Logos</a>
                     </c:when> 
