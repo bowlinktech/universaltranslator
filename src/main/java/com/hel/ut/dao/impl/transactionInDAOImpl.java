@@ -3310,7 +3310,7 @@ public class transactionInDAOImpl implements transactionInDAO {
 			+ "a.configId = :configId "
 			+ "and (a.F" + cdt.getFieldNo() + " is not null and length(a.F" + cdt.getFieldNo() + ") != 0  and a.forcw is null)"
 			+ "and a.transactionInRecordsId in (select id from transactioninrecords_"+batchId+ " "
-			+ "where configId = :configId and (statusId is null or statusId not in (:transRELId)));";
+			+ "where configId = :configId and F"+cdt.getFieldNo()+" is not null and length(F"+cdt.getFieldNo()+") > 0 and (statusId is null or statusId not in (:transRELId)));";
 		    
 		} 
 		else {
@@ -3323,10 +3323,9 @@ public class transactionInDAOImpl implements transactionInDAO {
 			+ "a.configId = :configId "
 			+ "and (a.F" + cdt.getFieldNo() + " is not null and length(a.F" + cdt.getFieldNo() + ") != 0  and a.forcw is null)"
 			+ "and a.transactionOutRecordsId in (select id from transactionoutrecords_"+batchId+ " "
-			+ "where configId = :configId and (statusId is null or statusId not in (:transRELId)));";
+			+ "where configId = :configId and F"+cdt.getFieldNo()+" is not null and length(F"+cdt.getFieldNo()+") > 0 and (statusId is null or statusId not in (:transRELId)));";
 		} 
 
-		
 		Query updateData = sessionFactory.getCurrentSession().createSQLQuery(sql)
 		    .setParameter("configId", configId)
 		    .setParameterList("transRELId", transRELId);
