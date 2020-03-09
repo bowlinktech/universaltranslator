@@ -376,8 +376,6 @@ public class adminProcessingActivity {
         return jsonResponse.toString();
     }
     
-
-
     /**
      * The '/outbound' GET request will serve up the existing list of generated referrals and feedback reports to for the target
      *
@@ -751,6 +749,8 @@ public class adminProcessingActivity {
         boolean canEdit = false;
         boolean canSend = false;
 	boolean showButtons = true;
+	
+	Integer totalErroredRows = 0;
 
         /* Get the details of the batch */
         batchUploads batchDetails = transactionInManager.getBatchDetailsByBatchName(batchName);
@@ -824,9 +824,11 @@ public class adminProcessingActivity {
             }
             mav.addObject("batchDetails", batchDetails);
 	    
-            if (batchDetails.getErrorRecordCount()> 0) {
+            if (batchDetails.getErrorRecordCount() > 0) {
 		List<batchErrorSummary> batchErrorSummary = transactionInManager.getBatchErrorSummary(batchDetails.getId(),"inbound");
 		mav.addObject("batchErrorSummary", batchErrorSummary);
+		
+		totalErroredRows = transactionInManager.getTotalErroredRows(batchDetails.getId());
 	    }
 	    
 	    //Check to see if we have any dropped values
@@ -856,6 +858,7 @@ public class adminProcessingActivity {
         mav.addObject("canEdit", canEdit);
         mav.addObject("canSend", canSend);
 	mav.addObject("batchDownload",false);
+	mav.addObject("totalErroredRows", totalErroredRows);
 	
 	
 	if(canReset || canCancel || canEdit || canSend || batchDetails.getStatusId() == 2 || batchDetails.getStatusId() == 3 || batchDetails.getStatusId() == 36) {

@@ -4552,4 +4552,9 @@ public class transactionInManagerImpl implements transactionInManager {
     public List<batchUploadDroppedValues> getBatchDroppedValues(Integer batchUploadId) throws Exception {
 	return transactionInDAO.getBatchDroppedValues(batchUploadId);
     }
+    
+    @Override
+    public Integer getTotalErroredRows(Integer batchUploadId) throws Exception {
+	return transactionInDAO.getTotalErroredRows(batchUploadId);
+    }
 }

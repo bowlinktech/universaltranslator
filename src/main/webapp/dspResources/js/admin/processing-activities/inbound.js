@@ -188,6 +188,9 @@ function populateMessages(fromDate,toDate) {
 		    var returnData = 'Total Transactions: <strong>';
 		    returnData += commaSeparateNumber(data) + '</strong><br />';
 		    returnData += 'Total Errors: <strong>'+ commaSeparateNumber(row.errorRecordCount) + '</strong>';
+                    if((row.totalErrorRows*1) > 0) {
+                        returnData += '<br />Total Rows with Errors: <strong>'+ commaSeparateNumber(row.totalErrorRows) + '</strong>';
+                    }
 		   return returnData;
 		}
 	    },
