@@ -9,17 +9,19 @@
 <%@ taglib prefix="s" uri="http://www.springframework.org/tags" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
 
+<c:set var="hasOutboundError" value="0" />
+
 <div class="pull-right" style="margin-bottom:10px;">
    ${i.index} <button class="btn btn-minier btn-grey print" rel2="${batchId}" rel="${indexVal}"><i class="fa fa-print"> Print</i></button>
 </div>
 <span><strong>Showing ${fn:length(errors)} out of <fmt:formatNumber value = "${totalErrors}" type = "number"/></strong></span>
 <div id="errorTable-${indexVal}">
-<table border="1" class="table table-striped table-hover table-bordered">
+<table border="1" class="table table-bordered">
     <thead>
 	<tr>
 	    <c:if test="${not empty customCols}">
 		<c:forEach var="colValue" items="${customCols}">
-		    <th scope="col">${colValue}</th>
+                    <c:if test="${colValue != 'From Outbound'}"><th scope="col">${colValue}</th></c:if>
 		</c:forEach>
 	    </c:if>
 	</tr>
@@ -28,17 +30,23 @@
 	<c:choose>
 	    <c:when test="${not empty errors}">
 		<c:forEach var="errorRow" items="${errors}">
-		    <tr>
+                    <c:if test="${errorRow[0] == 'true'}"><c:set var="hasOutboundError" value="1" /></c:if>
+                    <tr <c:if test="${errorRow[0] == 'true'}">bgcolor="#ffe3a4"</c:if>>
 			<c:forEach varStatus="i" var="colValue" items="${customCols}">
-			     <td scope="row">${errorRow[i.index]}</td>
+                            <c:if test="${i.index > 0}">
+                                 <td scope="row">${errorRow[i.index]}</td>
+                            </c:if>
 			</c:forEach>
 		    </tr>
 		</c:forEach>     
 	    </c:when>   
 	    <c:otherwise>
-		<tr><td colspan="${fn:length(customCols)+2}" class="center-text">There are currently no submitted batches.</td></tr>
+		<tr><td colspan="${fn:length(customCols-1)}" class="center-text">There are currently no submitted batches.</td></tr>
 	    </c:otherwise>
 	</c:choose>           
     </tbody>
 </table>
+<c:if test="${hasOutboundError == 1}">
+<span><span style="color:#ffe3a4;font-weight: bold">Rows</span> = errors found from processing the outbound target file.</span>
+</c:if>
 </div>
