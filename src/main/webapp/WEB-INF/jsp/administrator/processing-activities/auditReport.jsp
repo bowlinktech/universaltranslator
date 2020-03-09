@@ -133,7 +133,7 @@
                 <div class="panel-body">
                     <div class="row">
 			<div class="col-md-12">
-			    <div class="col-md-6">
+			    <div class="${!batchDownload ? 'col-md-4' : 'col-md-6'}">
 				<section class="panel panel-default panel-stats" role="widget" aria-labelleby="Messages Received">
 				    <div class="panel-body">
 					<span class="stat-number"><a href="javascript:void(0);"><c:choose><c:when test="${batchDetails.totalRecordCount >= 0}"><fmt:formatNumber value = "${batchDetails.totalRecordCount}" type = "number"/></c:when><c:otherwise>0</c:otherwise></c:choose></a></span>
@@ -141,7 +141,7 @@
 				    </div>
 				</section>
 			    </div>
-			    <div class="col-md-6">
+			    <div class="${!batchDownload ? 'col-md-4' : 'col-md-6'}">
 				<section class="panel panel-default panel-stats" role="widget" aria-labelleby="Messages Delivered">
 				    <div class="panel-body">
 					<span class="stat-number">
@@ -161,6 +161,20 @@
 				    </div>
 				</section>
 			    </div>
+                            <c:if test="${!batchDownload}">
+                                <div class="col-md-4">
+                                    <section class="panel panel-default panel-stats" role="widget" aria-labelleby="Messages Delivered">
+                                        <div class="panel-body">
+                                            <span class="stat-number">
+                                                <a href="javascript:void(0);">
+                                                    <fmt:formatNumber value = "${totalErroredRows}" type = "number"/>
+                                                </a>
+                                            </span>
+                                            <h3>Total Rows with Errors</h3>
+                                        </div>
+                                    </section>
+                                </div>
+                            </c:if>
 			</div>	
 			<div class="col-md-12 printHeading">
 			    <div class="col-md-6">
