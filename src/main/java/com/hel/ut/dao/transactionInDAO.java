@@ -295,4 +295,6 @@ public interface transactionInDAO {
     void populateDroppedValues(Integer batchUploadId, Integer configId, boolean foroutboundProcessing) throws Exception;
     
     List<batchUploadDroppedValues> getBatchDroppedValues(Integer batchUploadId) throws Exception;
+    
+    Integer getTotalErroredRows(Integer batchUploadId) throws Exception;
 }

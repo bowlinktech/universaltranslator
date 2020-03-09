@@ -25,7 +25,8 @@ import org.springframework.format.annotation.DateTimeFormat;
 public class batchUploads {
 
     @Transient
-    private Integer totalTransactions = 0,transTotalNotFinal = 10, totalOpen = 0, totalClosed = 0, threshold = 100, watchListEntryId = 0, inboundBatchConfigurationType = 1, totalMessages = 0;
+    private Integer totalTransactions = 0,transTotalNotFinal = 10, totalOpen = 0, totalClosed = 0, threshold = 100, watchListEntryId = 0, 
+	    inboundBatchConfigurationType = 1, totalMessages = 0, totalErrorRows = 0;
 
     @Transient
     private String statusValue, usersName, endUserDisplayText = "",
@@ -472,5 +473,12 @@ public class batchUploads {
 	this.associatedBatchId = associatedBatchId;
     }
 
-    
+    public Integer getTotalErrorRows() {
+	return totalErrorRows;
+    }
+
+    public void setTotalErrorRows(Integer totalErrorRows) {
+	this.totalErrorRows = totalErrorRows;
+    }
+
 }

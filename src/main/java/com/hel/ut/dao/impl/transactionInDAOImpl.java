@@ -2658,6 +2658,8 @@ public class transactionInDAOImpl implements transactionInDAO {
 	deleteSQL += "delete a.* from restapimessagesout a inner join batchdownloads b on a.batchDownloadId = b.id where b.batchUploadId = " + batchId + ";";
 	deleteSQL += "delete a.* from wsmessagesout a inner join batchdownloads b on a.batchDownloadId = b.id where b.batchUploadId = " + batchId + ";";
 	deleteSQL += "delete from batchuploadauditerrors where batchUploadId = " + batchId + ";";
+	deleteSQL += "delete from batchuploaddroppedvalues where batchUploadId = " + batchId + ";";
+	deleteSQL += "delete from batchuploadactivity where batchUploadId = " + batchId + ";";
 	deleteSQL += "delete from batchUploads where id = " + batchId + ";";
 	
 	deleteQuery = sessionFactory.getCurrentSession().createSQLQuery(deleteSQL);
@@ -3140,12 +3142,14 @@ public class transactionInDAOImpl implements transactionInDAO {
 	    dateSQLStringTotal = "utBatchName = '" + searchTerm + "'";
 	}
 	
-	String sqlQuery = "select id, orgId, utBatchName, transportMethodId, originalFileName, totalRecordCount, errorRecordCount, configName, threshold, inboundBatchConfigurationType, statusId, dateSubmitted,"
+	String sqlQuery = "select id, orgId, utBatchName, transportMethodId, originalFileName, totalRecordCount, errorRecordCount, totalErrorRows, configName, threshold, inboundBatchConfigurationType, statusId, dateSubmitted,"
 		+ "statusValue, endUserDisplayText, orgName, case when dmConfigKeyWord != '' then 'File Drop (Direct)' when transportMethod != 'Online Form' && restAPIUsername != '' then 'File Drop (Rest)' else transportMethod end as transportMethod, totalMessages, 'On Demand' as uploadType, dmConfigKeyWord "
 		+ "FROM ("
 		+ "select a.id, a.orgId, a.utBatchName, a.transportMethodId, a.originalFileName, a.totalRecordCount, a.errorRecordCount, b.configName, b.threshold, b.configurationType as inboundBatchConfigurationType,"
 		+ "a.statusId, a.dateSubmitted, c.displayCode as statusValue, c.endUserDisplayText as endUserDisplayText,d.orgName, e.transportMethod,"
-		+ "(select count(id) as total from batchuploads where "+dateSQLStringTotal+") as totalMessages, f.dmConfigKeyWord, f.restAPIUsername "
+		+ "(select count(id) as total from batchuploads where "+dateSQLStringTotal+") as totalMessages, "
+		+ "(select count(distinct rowNumber) as totalRows from batchuploadauditerrors where batchUploadId = a.id) as totalErrorRows, "
+		+ "f.dmConfigKeyWord, f.restAPIUsername "
 		+ "FROM batchuploads a inner join "
 		+ "configurations b on b.id = a.configId inner join "
 		+ "lu_processstatus c on c.id = a.statusId inner join "
@@ -3176,6 +3180,7 @@ public class transactionInDAOImpl implements transactionInDAO {
 	    .addScalar("originalFileName", StandardBasicTypes.STRING)
 	    .addScalar("totalRecordCount", StandardBasicTypes.INTEGER)
 	    .addScalar("errorRecordCount", StandardBasicTypes.INTEGER)
+	    .addScalar("totalErrorRows", StandardBasicTypes.INTEGER)
 	    .addScalar("configName", StandardBasicTypes.STRING)
 	    .addScalar("threshold", StandardBasicTypes.INTEGER)
 	    .addScalar("inboundBatchConfigurationType", StandardBasicTypes.INTEGER)
@@ -3351,5 +3356,16 @@ public class transactionInDAOImpl implements transactionInDAO {
 	query.setParameter("batchUploadId", batchUploadId);
 	
 	return query.list();
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public Integer getTotalErroredRows(Integer batchUploadId) throws Exception {
+	String sql = "select count(distinct rowNumber) as totalRows from batchuploadauditerrors where batchUploadId = :batchUploadId";
+	
+	Query query = sessionFactory.getCurrentSession().createSQLQuery(sql).addScalar("totalRows", StandardBasicTypes.INTEGER);
+	query.setParameter("batchUploadId", batchUploadId);
+	return (Integer) query.list().get(0);
+
     }
 }
