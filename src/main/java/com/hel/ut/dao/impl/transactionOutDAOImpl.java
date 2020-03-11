@@ -621,16 +621,14 @@ public class transactionOutDAOImpl implements transactionOutDAO {
 	    sql = ("call getJSONForConfig(:batchConfigId, :batchDownloadId, :filePathAndName, :jsonWrapperElement);");
 	} 
 	else {
-	    
-	    List<configurationTransport> handlingDetails = transactionInManager.getHandlingDetailsByBatch(batchUploadId);
-           
+	   
 	    //we use utConfiguration info 
 	    //build this sql
 	    sql = "SELECT " + fieldNos + " "
 		+ "FROM transactionTranslatedOut_" + batchDownloadId + " "
 		+ "where configId = " + transportDetails.getconfigId() + " and ";
 	    
-	    if(handlingDetails.get(0).geterrorHandling() == 4) {
+	    if(transportDetails.geterrorHandling() == 4) {
 		sql += "statusId in (9,14) ";
 	    }
 	    else {
@@ -742,13 +740,11 @@ public class transactionOutDAOImpl implements transactionOutDAO {
     @Transactional(readOnly = true)
     public List getOutputForCustomTargetFile(configurationTransport transportDetails, Integer batchDownloadId, String fieldNos, Integer batchUploadId) {
 	
-	List<configurationTransport> handlingDetails = transactionInManager.getHandlingDetailsByBatch(batchUploadId);
-	
 	String sql = "SELECT " + fieldNos
 	    + " FROM transactiontranslatedout_"+batchDownloadId + " "
 	    + "where configId = :configId and ";
 	
-	if(handlingDetails.get(0).geterrorHandling() == 4) {
+	if(transportDetails.geterrorHandling() == 4) {
 	    sql += "statusId in (9,14)";
 	}
 	else {
@@ -1119,7 +1115,6 @@ public class transactionOutDAOImpl implements transactionOutDAO {
 	    
 	    query = sessionFactory.getCurrentSession().createSQLQuery(sql);
 	    query.executeUpdate();
-	    
 	    
 	    sql = "insert into transactiontranslatedout_"+batchDownloadId+" "
 	    + "(statusId, configId, transactionOutRecordsId," + insertFields;
