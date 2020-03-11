@@ -1214,8 +1214,8 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
 
 		Row row = sheet.getRow(startRow);
 		
-		if(row.getLastCellNum() > 3) {
-		    throw new Exception("The uploaded template file had more than 3 columns, please choose horizontal layout or check your uploaded template file.");
+		if(row.getLastCellNum() > 5) {
+		    throw new Exception("The uploaded template file had more than 5 columns, please choose horizontal layout or check your uploaded template file.");
 		}
 		else if(row.getLastCellNum() < 2) {
 		    throw new Exception("The uploaded template file had only 1 column, please check your uploaded template file.");
@@ -1239,8 +1239,13 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
 			String requiredAsString = "";
 			String defaultValue = "";
 			String fieldDesc = "";
+			String useNotUse = "";
+			String validationVal = "";
 			boolean useField = true;
 			boolean hasDefault = false;
+			
+			//1 = none, 2 = Email, 3 = Phone, 4 = Date, 5 = Numeric, 6 = URL
+			Integer validationId = 1; 
 
 			//Increase the field number by 1
 			fieldNo++;
@@ -1269,10 +1274,10 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
 						hasDefault = true;
 						required = false;
 					    }
-					    else if("r".equals(requiredAsString.toLowerCase()) || "true".equals(requiredAsString.toLowerCase())) {
+					    else if("r".equals(requiredAsString.toLowerCase()) || "true".equals(requiredAsString.toLowerCase()) || "t".equals(requiredAsString.toLowerCase())) {
 						required = true;
 					    }
-					    else if("o".equals(requiredAsString.toLowerCase()) || "false".equals(requiredAsString.toLowerCase())) {
+					    else if("o".equals(requiredAsString.toLowerCase()) || "false".equals(requiredAsString.toLowerCase()) || "f".equals(requiredAsString.toLowerCase())) {
 						required = false;
 					    }
 					    else {
@@ -1284,7 +1289,7 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
 					}
 				    }
 				    break;
-				case 2:
+				case 2: // Default Value
 				    try {
 					 defaultValue = cell.getStringCellValue();
 				    }
@@ -1302,6 +1307,46 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
 				    }
 				    break;
 
+				case 3: // Use/Not Column (U/u=use, N/n=Not)
+				    try {
+					 useNotUse = cell.getStringCellValue();
+					 if("use".equals(useNotUse.toLowerCase()) || "u".equals(useNotUse.toLowerCase()) || "yes".equals(useNotUse.toLowerCase()) || "y".equals(useNotUse.toLowerCase()) || "".equals(useNotUse.toLowerCase())) {
+					     useField = true;
+					 }
+					 else if("not use".equals(useNotUse.toLowerCase()) || "n".equals(useNotUse.toLowerCase()) || "no".equals(useNotUse.toLowerCase())) {
+					     useField = false;
+					 }
+				    }
+				    catch (Exception ex) {}
+				    
+				case 4: // Validation column
+				    try {
+					 validationVal = cell.getStringCellValue();
+					 if("none".equals(validationVal.toLowerCase()) || "no".equals(validationVal.toLowerCase()) || "n".equals(validationVal.toLowerCase()) || "".equals(validationVal.toLowerCase())) {
+					     validationId = 1;
+					 }
+					 else if("email".equals(validationVal.toLowerCase()) || "e".equals(validationVal.toLowerCase())) {
+					     validationId = 2;
+					 }
+					 else if("phone number".equals(validationVal.toLowerCase()) || "phone".equals(validationVal.toLowerCase()) || "p".equals(validationVal.toLowerCase())) {
+					     validationId = 3;
+					 }
+					 else if("date".equals(validationVal.toLowerCase()) || "d".equals(validationVal.toLowerCase())) {
+					     validationId = 4;
+					 }
+					 else if("numeric".equals(validationVal.toLowerCase()) || "number".equals(validationVal.toLowerCase()) || "integer".equals(validationVal.toLowerCase()) || "i".equals(validationVal.toLowerCase()) || "n".equals(validationVal.toLowerCase())) {
+					     validationId = 5;
+					 }
+					 else if("url".equals(validationVal.toLowerCase()) || "web".equals(validationVal.toLowerCase()) || "website".equals(validationVal.toLowerCase()) || "web site".equals(validationVal.toLowerCase()) || "w".equals(validationVal.toLowerCase()) || "u".equals(validationVal.toLowerCase())) {
+					     validationId = 6;
+					 }
+					 else {
+					     validationId = 1;
+					 }
+				    }
+				    catch (Exception ex) {
+					 validationId = 1;
+				    }    
 				default:
 				    break;
 			    }
@@ -1309,11 +1354,12 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
 
 			//Need to insert all the fields into the message type Form Fields table
 			Query query = sessionFactory.getCurrentSession().createSQLQuery("INSERT INTO configurationFormFields (configId, transportDetailId, fieldNo, fieldDesc, validationType, required, useField, defaultValue)"
-			    + "VALUES (:configId, :transportDetailId, :fieldNo, :fieldDesc, 1, :required, :useField, :defaultValue)")
+			    + "VALUES (:configId, :transportDetailId, :fieldNo, :fieldDesc, :validationId, :required, :useField, :defaultValue)")
 			    .setParameter("configId", messageSpecs.getconfigId())
 			    .setParameter("transportDetailId", transportDetailId)
 			    .setParameter("fieldNo", fieldNo)
 			    .setParameter("fieldDesc", fieldDesc)
+			    .setParameter("validationId", validationId)
 			    .setParameter("required", required)
 			    .setParameter("useField", useField)
 			    .setParameter("defaultValue", defaultValue);
@@ -1324,8 +1370,8 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
 	    }
 	    else if(fileLayout == 1) {
 		
-		if(sheet.getLastRowNum() > 3) {
-		    throw new Exception("The uploaded template file had more than 3 rows, please choose vertical layout or check your uploaded template file.");
+		if(sheet.getLastRowNum() > 5) {
+		    throw new Exception("The uploaded template file had more than 5 rows, please choose vertical layout or check your uploaded template file.");
 		}
 		else if(sheet.getLastRowNum() < 2) {
 		    throw new Exception("The uploaded template file had less than 3 rows, please choose horizontal layout or check your uploaded template file.");
@@ -1350,6 +1396,9 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
 		    boolean required = false;
 		    String requiredAsString = "";
 		    boolean useField = true;
+		    String useNotUse = "";
+		    String validationVal = "";
+		    Integer validationId = 1;
 
 		    for(int colNumber = 0; colNumber<totalCols; colNumber++) {
 			fieldDesc = "";
@@ -1400,11 +1449,11 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
 				if("default".equals(requiredAsString.toLowerCase()) || "d".equals(requiredAsString.toLowerCase())) {
 				    required = false;
 				}
-				else if("r".equals(requiredAsString.toLowerCase()) || "true".equals(requiredAsString.toLowerCase())) {
+				else if("r".equals(requiredAsString.toLowerCase()) || "true".equals(requiredAsString.toLowerCase()) || "t".equals(requiredAsString.toLowerCase())) {
 				    required = true;
 				    defaultValue = "";
 				}
-				else if("o".equals(requiredAsString.toLowerCase()) || "false".equals(requiredAsString.toLowerCase())) {
+				else if("o".equals(requiredAsString.toLowerCase()) || "false".equals(requiredAsString.toLowerCase()) || "f".equals(requiredAsString.toLowerCase())) {
 				    required = false;
 				    defaultValue = "";
 				}
@@ -1417,14 +1466,64 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
 				required = false;
 			    }
 			}
+			
+			//Get the Use/Not Use Row
+			rowNumber = rowNumber+1;
+			row = sheet.getRow(rowNumber);
+			cell = row.getCell(colNumber);
+			
+			try {
+			    useNotUse = cell.getStringCellValue();
+			    if("use".equals(useNotUse.toLowerCase()) || "u".equals(useNotUse.toLowerCase()) || "yes".equals(useNotUse.toLowerCase()) || "y".equals(useNotUse.toLowerCase()) || "".equals(useNotUse.toLowerCase())) {
+				useField = true;
+			    }
+			    else if("not use".equals(useNotUse.toLowerCase()) || "n".equals(useNotUse.toLowerCase()) || "no".equals(useNotUse.toLowerCase())) {
+				useField = false;
+			    }
+			}
+			catch (Exception ex) {}
+			
+			//Get the validation Id
+			rowNumber = rowNumber + 1;
+			row = sheet.getRow(rowNumber);
+			cell = row.getCell(colNumber);
+			
+			try {
+			    validationVal = cell.getStringCellValue();
+			    if("none".equals(validationVal.toLowerCase()) || "no".equals(validationVal.toLowerCase()) || "n".equals(validationVal.toLowerCase()) || "".equals(validationVal.toLowerCase())) {
+				validationId = 1;
+			    }
+			    else if("email".equals(validationVal.toLowerCase()) || "e".equals(validationVal.toLowerCase())) {
+				validationId = 2;
+			    }
+			    else if("phone number".equals(validationVal.toLowerCase()) || "phone".equals(validationVal.toLowerCase()) || "p".equals(validationVal.toLowerCase())) {
+				validationId = 3;
+			    }
+			    else if("date".equals(validationVal.toLowerCase()) || "d".equals(validationVal.toLowerCase())) {
+				validationId = 4;
+			    }
+			    else if("numeric".equals(validationVal.toLowerCase()) || "number".equals(validationVal.toLowerCase()) || "integer".equals(validationVal.toLowerCase()) || "i".equals(validationVal.toLowerCase()) || "n".equals(validationVal.toLowerCase())) {
+				validationId = 5;
+			    }
+			    else if("url".equals(validationVal.toLowerCase()) || "web".equals(validationVal.toLowerCase()) || "website".equals(validationVal.toLowerCase()) || "web site".equals(validationVal.toLowerCase()) || "w".equals(validationVal.toLowerCase()) || "u".equals(validationVal.toLowerCase())) {
+				validationId = 6;
+			    }
+			    else {
+				validationId = 1;
+			    }
+		       }
+		       catch (Exception ex) {
+			    validationId = 1;
+		       }      
 
 			//Need to insert all the fields into the message type Form Fields table
 			Query query = sessionFactory.getCurrentSession().createSQLQuery("INSERT INTO configurationFormFields (configId, transportDetailId, fieldNo, fieldDesc, validationType, required, useField, defaultValue)"
-				+ "VALUES (:configId, :transportDetailId, :fieldNo, :fieldDesc, 1, :required, :useField, :defaultValue)")
+				+ "VALUES (:configId, :transportDetailId, :fieldNo, :fieldDesc, :validationId, :required, :useField, :defaultValue)")
 				.setParameter("configId", messageSpecs.getconfigId())
 				.setParameter("transportDetailId", transportDetailId)
 				.setParameter("fieldNo", fieldNo)
 				.setParameter("fieldDesc", fieldDesc)
+				.setParameter("validationId", validationId)
 				.setParameter("required", required)
 				.setParameter("useField", useField)
 				.setParameter("defaultValue", defaultValue);
