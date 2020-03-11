@@ -20,7 +20,6 @@
     <form:hidden path="helSchemaName" id="helSchemaName" />
     <form:hidden path="mergeBatches" />
     <form:hidden path="restAPIType" value = "0" />
-    <form:hidden path="errorHandling" />
 
     <section class="panel panel-default">
 	<div class="panel-heading">
@@ -497,8 +496,27 @@
 	</div>
 	<div class="panel-body"> 
 	    <div class="form-container">
-		<spring:bind path="populateInboundAuditReport">
+                <spring:bind path="errorHandling">
 		    <div class="form-group">
+			<label class="control-label" for="errorHandling">Error Handling *</label>
+			<div>
+			    <label class="radio-inline">
+				<form:radiobutton id="errorHandling" path="errorHandling" value="2" disabled="${transportDetails.copiedTransportId > 0 ? 'true' : 'false'}" /> Reject individual transactions on error
+			    </label>
+			    <label class="radio-inline">
+				<form:radiobutton id="errorHandling" path="errorHandling" value="3" disabled="${transportDetails.copiedTransportId > 0 ? 'true' : 'false'}" /> Reject entire file on a single transaction error
+			    </label>
+			    <label class="radio-inline">
+				<form:radiobutton id="errorHandling" path="errorHandling" value="4" disabled="${transportDetails.copiedTransportId > 0 ? 'true' : 'false'}" /> Send transactions with errors through to the final generated target file
+			    </label>
+			</div>
+			<c:if test="${transportDetails.copiedTransportId > 0}">
+			    <form:hidden path="errorHandling" />
+			</c:if>      
+		    </div>
+		</spring:bind>
+		<spring:bind path="populateInboundAuditReport">
+		    <div class="form-group" style="padding-top:10px;">
 			<label class="control-label" for="populateInboundAuditReport">Do you want to populate the inbound audit report with errors found while processing this target file? *</label>
 			<div>
 			    <label class="radio-inline">
