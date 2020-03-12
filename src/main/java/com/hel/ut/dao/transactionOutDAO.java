@@ -138,4 +138,6 @@ public interface transactionOutDAO {
     List getErrorReportField(Integer batchDownloadId) throws Exception;
     
     List<batchDownloadDroppedValues> getBatchDroppedValues(Integer batchDownloadId) throws Exception;
+    
+    void updateMissingRequiredFieldStatus(Integer batchDownloadId) throws Exception;
 }
