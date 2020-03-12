@@ -124,4 +124,6 @@ public interface transactionOutManager {
     
     List<batchDownloadDroppedValues> getBatchDroppedValues(Integer batchDownoadId) throws Exception;
     
+    void updateMissingRequiredFieldStatus(Integer batchDownloadId) throws Exception;
+    
 }
