@@ -1449,16 +1449,18 @@ public class transactionInManagerImpl implements transactionInManager {
 
 					//Need to check the schedule to see if this is an automatic process or manual process
 					configurationSchedules configurationSchedule = configurationManager.getScheduleDetails(batchDetails.getConfigId());
+					
+					if(configurationSchedule != null) {
+					    //If manual change the status of the batch so it does not process (Setting batch status to "Manual Processing Required" Id: 64)
+					    if(configurationSchedule.gettype() == 1) {
+						updateBatchStatus(batchId, 64, "endDateTime");
 
-					//If manual change the status of the batch so it does not process (Setting batch status to "Manual Processing Required" Id: 64)
-					if(configurationSchedule.gettype() == 1) {
-					    updateBatchStatus(batchId, 64, "endDateTime");
-					    
-					    //log batch activity
-					    ba = new batchuploadactivity();
-					    ba.setActivity("Uploaded batchId:"+batchId+" configuration (configId:"+batchDetails.getConfigId()+") is set to manual process and is ready to be processed.");
-					    ba.setBatchUploadId(batchId);
-					    transactionInDAO.submitBatchActivityLog(ba);
+						//log batch activity
+						ba = new batchuploadactivity();
+						ba.setActivity("Uploaded batchId:"+batchId+" configuration (configId:"+batchDetails.getConfigId()+") is set to manual process and is ready to be processed.");
+						ba.setBatchUploadId(batchId);
+						transactionInDAO.submitBatchActivityLog(ba);
+					    }
 					}
 				    }
 				}
