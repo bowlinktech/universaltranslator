@@ -1388,10 +1388,12 @@ public class transactionOutManagerImpl implements transactionOutManager {
 	List<configurationFormFields> reqFields = transactionInManager.getRequiredFieldsForConfig(batchDownload.getConfigId());
 
 	Integer missingReqFields = 0;
+	Integer totalMissingReqFields = 0;
 	for (configurationFormFields cff : reqFields) {
 	    missingReqFields = insertFailedRequiredFields(cff, batchDownload.getId());
 	    
 	    if(missingReqFields > 0) {
+		totalMissingReqFields++;
 		ba = new batchdownloadactivity();
 		ba.setActivity("The required field " + cff.getFieldDesc() + " for configId:"+cff.getconfigId() + " is required but did not have a value.");
 		ba.setBatchDownloadId(batchDownload.getId());
@@ -1399,6 +1401,11 @@ public class transactionOutManagerImpl implements transactionOutManager {
 		
 		totalErrorCount++;
 	    }
+	}
+	
+	//Update all outbound records with missing required fields to have a status id of 14
+	if(totalMissingReqFields > 0) {
+	    updateMissingRequiredFieldStatus(batchDownload.getId());
 	}
 	
 	//run validation
@@ -2413,5 +2420,10 @@ public class transactionOutManagerImpl implements transactionOutManager {
     @Override
     public List<batchDownloadDroppedValues> getBatchDroppedValues(Integer batchDownloadId) throws Exception {
 	return transactionOutDAO.getBatchDroppedValues(batchDownloadId);
+    }
+    
+    @Override
+    public void updateMissingRequiredFieldStatus(Integer batchDownloadId) throws Exception {
+	transactionOutDAO.updateMissingRequiredFieldStatus(batchDownloadId);
     }
 }
