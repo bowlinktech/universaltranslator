@@ -22,12 +22,11 @@ require.config({
 var datatable;
 
 define(['jquery', 'moment', 'bootstrap', 'mediaModal', 'overlay', 'daterangepicker', 'dataTables'], function ($, moment) {
-
-
+    
     $.ajaxSetup({
         cache: false
     });
-
+    
     // tooltip demo
     $(document).tooltip({
         selector: "[data-toggle=tooltip]",
@@ -212,5 +211,6 @@ define(['jquery', 'moment', 'bootstrap', 'mediaModal', 'overlay', 'daterangepick
                     '</select>'
         }
     });
+    
 
 });
