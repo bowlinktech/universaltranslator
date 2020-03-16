@@ -8,6 +8,7 @@ import com.hel.ut.model.HL7ElementComponents;
 import com.hel.ut.model.HL7Elements;
 import com.hel.ut.model.HL7Segments;
 import com.hel.ut.model.Macros;
+import com.hel.ut.model.Organization;
 import com.hel.ut.model.utConfiguration;
 import com.hel.ut.model.configurationCCDElements;
 import com.hel.ut.model.configurationConnection;
@@ -199,4 +200,11 @@ public interface utConfigurationManager {
     List getDataTranslationsForDownload (Integer configId) throws Exception;
   
     List getCrosswalksForDownload (Integer configId) throws Exception;
+    
+    StringBuffer printDetailsSection(utConfiguration configDetails, Organization orgDetails) throws Exception;
+    
+    StringBuffer printTransportMethodSection(utConfiguration configDetails) throws Exception;
+    
+    StringBuffer printMessageSpecsSection(utConfiguration configDetails) throws Exception;
+    
 }
