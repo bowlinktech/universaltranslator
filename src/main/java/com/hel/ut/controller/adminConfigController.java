@@ -3275,6 +3275,7 @@ public class adminConfigController {
 	reportBody.append(utconfigurationmanager.printMessageSpecsSection(configDetails));
 	reportBody.append(utconfigurationmanager.printFieldSettingsSection(configDetails));
 	reportBody.append(utconfigurationmanager.printDataTranslationsSection(configDetails));
+	reportBody.append(utconfigurationmanager.printConfigurationConnections(configDetails));
 	
 	out.println(reportBody.toString());
 	
