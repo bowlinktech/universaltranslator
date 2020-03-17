@@ -1694,8 +1694,9 @@ public class transactionOutDAOImpl implements transactionOutDAO {
     @Override
     @Transactional(readOnly = false)
     public void updateMissingRequiredFieldStatus(Integer batchDownloadId) throws Exception {
-	String sql = "update transactiontranslatedout_"+batchDownloadId + " set statusId = 14 where transactionOutRecordsId in (select transactionOutRecordsId "
-		+ "from transactionouterrors_"+batchDownloadId + " where errorId = 1";
+	String sql = "update transactiontranslatedout_"+batchDownloadId + " set statusId = 14 where transactionOutRecordsId "
+			+ "in (select transactionOutRecordsId "
+		+ " from transactionouterrors_"+batchDownloadId + " where errorId = 1)";
 	
 	Query updateData = sessionFactory.getCurrentSession().createSQLQuery(sql);
 	try {
