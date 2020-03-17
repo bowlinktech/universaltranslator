@@ -65,6 +65,9 @@
                 </c:when>    
                 <c:otherwise>
                     <li>
+			<a href="javascript:void(0);" class="printConfig" title="Print this Configuration" rel="${configurationDetails.id}" role="button"><span class="glyphicon glyphicon-print icon-stacked"></span> Print </a>
+		    </li>
+                    <li>
 			<a href="javascript:void(0);" id="saveDetails" title="Save this Configuration initial setup" role="button"><span class="glyphicon glyphicon-ok icon-stacked"></span> Save </a>
 		    </li>
 		    <c:if test="${configurationDetails.configurationType == 1 || (configurationDetails.configurationType == 2 && param['page'] != 'schedule')}">

@@ -207,4 +207,8 @@ public interface utConfigurationManager {
     
     StringBuffer printMessageSpecsSection(utConfiguration configDetails) throws Exception;
     
+    StringBuffer printFieldSettingsSection(utConfiguration configDetails) throws Exception;
+    
+    StringBuffer printDataTranslationsSection(utConfiguration configDetails) throws Exception;
+    
 }

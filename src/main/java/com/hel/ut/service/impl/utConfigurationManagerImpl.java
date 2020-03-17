@@ -1,5 +1,6 @@
 package com.hel.ut.service.impl;
 
+import com.hel.ut.dao.messageTypeDAO;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,12 +38,14 @@ import org.springframework.web.multipart.MultipartFile;
 import com.hel.ut.service.utConfigurationManager;
 import com.hel.ut.dao.utConfigurationDAO;
 import com.hel.ut.dao.utConfigurationTransportDAO;
+import com.hel.ut.model.Crosswalks;
 import com.hel.ut.model.configurationFTPFields;
 import com.hel.ut.model.configurationFileDropFields;
 import com.hel.ut.model.configurationFormFields;
 import com.hel.ut.model.configurationTransport;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Iterator;
 import java.util.Properties;
 import javax.annotation.Resource;
 
@@ -60,6 +63,9 @@ public class utConfigurationManagerImpl implements utConfigurationManager {
 
     @Autowired
     private organizationDAO organizationDAO;
+    
+    @Autowired
+    private messageTypeDAO messageTypeDAO;
     
     @Resource(name = "myProps")
     private Properties myProps;
@@ -729,6 +735,8 @@ public class utConfigurationManagerImpl implements utConfigurationManager {
     @Override 
     public StringBuffer printDetailsSection(utConfiguration configDetails, Organization orgDetails) throws Exception {
 	
+	configurationSchedules scheduleDetails = utConfigurationDAO.getScheduleDetails(configDetails.getId());
+	
 	DateFormat df = new SimpleDateFormat("MM/dd/yyyy");
 	Date today = Calendar.getInstance().getTime();
 	
@@ -763,6 +771,69 @@ public class utConfigurationManagerImpl implements utConfigurationManager {
 	reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'><strong>Status: </strong>").append(status).append("</span><br /><br />");
 	reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'><strong>Configuration Type: </strong>").append(configType).append("</span><br /><br />");
 	reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'><strong>Message Type: </strong>").append(messageType).append("</span><br /><br />");
+	reportBody.append("</div>");
+	
+	String scheduleType = "Automatically";
+	String processingType = "";
+	
+	if(scheduleDetails.gettype() == 1) {
+	    scheduleType = "Manually";
+	}
+	else if(scheduleDetails.gettype() == 2) {
+	    scheduleType = "Daily";
+	}
+	else if(scheduleDetails.gettype() == 2) {
+	    scheduleType = "Weekly";
+	}
+	else if(scheduleDetails.gettype() == 2) {
+	    scheduleType = "Monthly";
+	}
+	
+	if(scheduleDetails.getprocessingType() > 0) {
+	    if(scheduleDetails.getprocessingType() == 1) {
+		processingType = "Scheduled";
+	    }
+	    else if (scheduleDetails.getprocessingType() == 2) {
+		processingType = "Continuous";
+	    }
+	}
+	
+	reportBody.append("<div>");
+	reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 16px;'><strong>SCHEDULE</strong></span><br />");
+	reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'><strong>Schedule Type: </strong>").append(scheduleType).append("</span><br /><br />");
+	if(!"".equals(processingType)) {
+	    reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'><strong>Type of Processing: </strong>").append(processingType).append("</span><br /><br />");
+	}
+	if(scheduleDetails.getnewfileCheck() > 0) {
+	    reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'><strong>How often to check for a new file: </strong>").append(scheduleDetails.getnewfileCheck()).append("</span><br /><br />");
+	}
+	if(scheduleDetails.getprocessingDay()> 0) {
+	    reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'><strong>Process on what Day: </strong>");
+	    if(scheduleDetails.getprocessingDay() == 1) {
+		reportBody.append("Sunday").append("</span><br /><br />");
+	    }
+	    else if(scheduleDetails.getprocessingDay() == 2) {
+		reportBody.append("Monday").append("</span><br /><br />");
+	    }  
+	    else if(scheduleDetails.getprocessingDay() == 3) {
+		reportBody.append("Tuesday").append("</span><br /><br />");
+	    } 
+	    else if(scheduleDetails.getprocessingDay() == 4) {
+		reportBody.append("Wednesday").append("</span><br /><br />");
+	    } 
+	    else if(scheduleDetails.getprocessingDay() == 5) {
+		reportBody.append("Thursday").append("</span><br /><br />");
+	    } 
+	    else if(scheduleDetails.getprocessingDay() == 6) {
+		reportBody.append("Friday").append("</span><br /><br />");
+	    } 
+	    else if(scheduleDetails.getprocessingDay() == 7) {
+		reportBody.append("Saturday").append("</span><br /><br />");
+	    } 
+	}
+	if(scheduleDetails.getprocessingTime() > 0) {
+	    reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'><strong>Time of Day to process files: </strong>").append(scheduleDetails.getprocessingTime()).append("</span><br /><br />");
+	}
 	reportBody.append("</div>");
 
 	return reportBody;
@@ -979,13 +1050,36 @@ public class utConfigurationManagerImpl implements utConfigurationManager {
 		}
 	    }
 	    
+	    if(configDetails.getType() == 2) {
+		reportBody.append("<div>");
+		reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 14px;'><strong>Target File Name</strong></span><br />");
+		reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>").append(transportDetails.gettargetFileName()).append("</span><br /><br />");
+		reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 14px;'><strong>Append Date and Time to file Name?</strong></span><br />");
+		if(transportDetails.getappendDateTime()) {
+		    reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Yes</span><br /><br />");
+		}
+		else {
+		    reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>No</span><br /><br />");
+		}
+		reportBody.append("</div>");
+	    }
+	    
 	    if(!"".equals(errorHandling)) {
 		reportBody.append("<div>");
 		reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 14px;'><strong>Error Handling</strong></span><br />");
 		reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>").append(errorHandling).append("</span><br /><br />");
-		if(transportDetails.getThreshold() > 0) {
+		if(configDetails.getType() == 1 && transportDetails.getThreshold() > 0) {
 		    reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'><strong>Error Threshold %</strong></span><br />");
 		    reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>").append(transportDetails.getThreshold()).append("</span><br /><br />");
+		}
+		if(configDetails.getType() == 2) {
+		    reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 14px;'><strong>Do you want to populate the inbound audit report with errors found while processing this target file?</strong></span><br />");
+		    if(transportDetails.isPopulateInboundAuditReport()) {
+			reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Yes</span><br /><br />");
+		    }
+		    else {
+			reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>No</span><br /><br />");
+		    }
 		}
 		reportBody.append("</div>");
 	    }
@@ -1108,6 +1202,196 @@ public class utConfigurationManagerImpl implements utConfigurationManager {
 	return reportBody;
 	
     }
+    
+    @Override 
+    public StringBuffer printFieldSettingsSection(utConfiguration configDetails) throws Exception {
+	
+	configurationTransport transportDetails = configurationTransportDAO.getTransportDetails(configDetails.getId());
+	
+	List<configurationFormFields> fields = configurationTransportDAO.getConfigurationFields(configDetails.getId(), transportDetails.getId());
+	
+	StringBuffer reportBody = new StringBuffer();
+	reportBody.append("<div style='padding-top:10px;'>");
+	reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 16px;'><strong>FIELD SETTINGS</strong></span><br /><br />");
+	
+	if(fields != null) {
+	    if(!fields.isEmpty()) {
+		reportBody.append("</div>");
+		reportBody.append("<div><table border='1' cellpadding='1' cellspacing='1' width='100%'>");
+		reportBody.append("<thead><tr><th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Field No</th><th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Field Name</th><th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Use Field</th><th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Required</th><th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Validation</th>");
+		if(configDetails.getType() == 2) {
+		    reportBody.append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Default Value</th>");
+		}	
+		reportBody.append("</tr></thead><tbody>");
+		for(configurationFormFields field : fields) {
+		    reportBody.append("<tr><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>").append(field.getFieldNo()).append("</td><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>").append(field.getFieldDesc()).append("</td>");
+		    if(field.getUseField()) {
+			reportBody.append("<td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Yes</td>");
+		    }
+		    else {
+			reportBody.append("<td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>No</td>");
+		    }
+		    if(field.getRequired()) {
+			reportBody.append("<td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Yes</td>");
+		    }
+		    else {
+			reportBody.append("<td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>No</td>");
+		    }
+		    if(field.getValidationType() == 1) {
+			reportBody.append("<td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>None</td>");
+		    }
+		    else if(field.getValidationType() == 2) {
+			reportBody.append("<td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Email</td>");
+		    }
+		    else if(field.getValidationType() == 3) {
+			reportBody.append("<td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Phone Number</td>");
+		    }
+		    else if(field.getValidationType() == 4) {
+			reportBody.append("<td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Date</td>");
+		    }
+		    else if(field.getValidationType() == 5) {
+			reportBody.append("<td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Numeric</td>");
+		    }
+		    else if(field.getValidationType() == 6) {
+			reportBody.append("<td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>URL</td>");
+		    }
+		    if(configDetails.getType() == 2) {
+			reportBody.append("<td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>").append(field.getDefaultValue()).append("</td>");
+		    }
+		    reportBody.append("</tr>");
+		}
+		reportBody.append("</tbody></table></div>");
+	    }
+	}
+	else {
+	   reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 16px;'>No fields have been uploaded for this configuration.</span><br />");
+	   reportBody.append("</div>");
+	}
+	
+	return reportBody;
+    }
 
+    @Override 
+    public StringBuffer printDataTranslationsSection(utConfiguration configDetails) throws Exception {
+	
+	configurationTransport transportDetails = configurationTransportDAO.getTransportDetails(configDetails.getId());
+	
+	List<configurationDataTranslations> existingTranslations = utConfigurationDAO.getDataTranslationsWithFieldNo(configDetails.getId(), 1);
+	
+	List<configurationFormFields> fields = configurationTransportDAO.getConfigurationFields(configDetails.getId(), transportDetails.getId());
+	
+	List<Macros> macros = utConfigurationDAO.getMacros();
+	
+	List<Crosswalks> crosswalks = messageTypeDAO.getCrosswalks(1, 0, configDetails.getorgId());
+	
+	List crosswalksWithData = messageTypeDAO.getCrosswalksWithData(configDetails.getorgId());
+	
+	StringBuffer reportBody = new StringBuffer();
+	reportBody.append("<div style='padding-top:10px;'>");
+	reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 16px;'><strong>DATA TRANSLATIONS</strong></span><br /><br />");
+	
+	String fieldName = "";
+	Integer fieldNo = 1;
+	String macroName = "";
+	String crosswalkName = "";
+	
+	if(existingTranslations != null) {
+	    if(!existingTranslations.isEmpty()) {
+		reportBody.append("</div>");
+		reportBody.append("<div><table border='1' cellpadding='1' cellspacing='1' width='100%'>");
+		reportBody.append("<thead><tr><th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Field</th><th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Macro Name</th><th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Crosswalk Name</th><th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Pass/Clear</th>");
+		reportBody.append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Field A</th>");
+		reportBody.append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Field B</th>");
+		reportBody.append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Constant 1</th>");
+		reportBody.append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Constant 2</th>");
+		reportBody.append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Process Order</th>");
+		reportBody.append("</tr></thead><tbody>");
+		for(configurationDataTranslations dt : existingTranslations) {
+		    
+		    for(configurationFormFields field : fields) {
+			if(field.getId() == dt.getFieldId()) { fieldName = field.getFieldDesc(); fieldNo = field.getFieldNo(); }
+		    }
+		    
+		    if(dt.getMacroId() > 0) {
+			for(Macros macro : macros) {
+			    if(macro.getId() == dt.getMacroId()) { macroName = macro.getMacroName(); }
+			}
+		    }
+		    
+		    if(dt.getCrosswalkId() > 0) {
+			for(Crosswalks crosswalk : crosswalks) {
+			    if(crosswalk.getId() == dt.getCrosswalkId()) { crosswalkName = crosswalk.getName(); }
+			}
+		    }
+		    
+		    reportBody.append("<tr><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>").append(fieldName).append("F").append(fieldNo).append("</td>");
+		    reportBody.append("<td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>").append(macroName).append("</td>");
+		    reportBody.append("<td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>").append(crosswalkName).append("</td>");
+
+		    if(dt.getPassClear() == 1) {
+			reportBody.append("<td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Pass</td>");
+		    }
+		    else {
+			reportBody.append("<td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Clear</td>");
+		    }
+		    reportBody.append("<td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>").append(dt.getFieldA()).append("</td>");
+		    reportBody.append("<td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>").append(dt.getFieldB()).append("</td>");
+		    reportBody.append("<td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>").append(dt.getConstant1()).append("</td>");
+		    reportBody.append("<td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>").append(dt.getConstant2()).append("</td>");
+		    reportBody.append("<td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>").append(dt.getProcessOrder()).append("</td>");
+		    reportBody.append("</tr>");
+		}
+		reportBody.append("</tbody></table></div>");
+	    }
+	    else {
+		reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 16px;'>No fields have been uploaded for this configuration.</span><br />");
+		reportBody.append("</div>");
+	    }
+	}
+	else {
+	   reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 16px;'>No fields have been uploaded for this configuration.</span><br />");
+	   reportBody.append("</div>");
+	}
+	
+	reportBody.append("<div style='padding-top:10px;'>");
+	reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 16px;'><strong>ORGANIZATION CROSSWALKS</strong></span><br /><br />");
+	
+	if(crosswalksWithData != null) {
+	    if(!crosswalksWithData.isEmpty()) {
+		reportBody.append("</div>");
+		Iterator<Object[]> cwIterator = crosswalksWithData.iterator();
+		String cwname = "";
+		while(cwIterator.hasNext()) {
+		    Object[] cwData = cwIterator.next();
+		    
+		    if("".equals(cwname) || !cwname.equals(cwData[0])) {
+			if(!"".equals(cwname)) {
+			     reportBody.append("</tbody></table></div><br />");
+			}
+			cwname = (String) cwData[0];
+			reportBody.append("<div><span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 14px;'><strong>CW Name: "+cwname+"</strong></span><br /><table border='1' cellpadding='1' cellspacing='1' width='100%'>");
+			reportBody.append("<thead><tr><th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Source Value</th><th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Target Value</th><th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Desc</th>");
+			reportBody.append("</tr></thead><tbody>");
+		    }
+		    
+		    reportBody.append("<tr><td>").append(cwData[1]).append("</td><td>").append(cwData[2]).append("</td><td>").append(cwData[3]).append("</td></tr>");
+		    
+		}
+		
+		reportBody.append("</tbody></table></div>");
+	    }
+	    else {
+		reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 16px;'>No crosswalks have been uploaded for this organization.</span><br />");
+		reportBody.append("</div>");
+	    }
+	}
+	else {
+	   reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 16px;'>No crosswalks have been uploaded for this organization.</span><br />");
+	   reportBody.append("</div>");
+	}
+	
+	return reportBody;
+	
+    }
 }
 

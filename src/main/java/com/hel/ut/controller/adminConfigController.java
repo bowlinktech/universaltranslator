@@ -3273,11 +3273,8 @@ public class adminConfigController {
 	reportBody.append(utconfigurationmanager.printDetailsSection(configDetails,orgDetails));
 	reportBody.append(utconfigurationmanager.printTransportMethodSection(configDetails));
 	reportBody.append(utconfigurationmanager.printMessageSpecsSection(configDetails));
-	
-	
-	//reportBody.append(utconfigurationmanager.printFieldSettingsSection(configDetails));
-	//reportBody.append(utconfigurationmanager.printDataTranslationsSection(configDetails));
-	//reportBody.append(utconfigurationmanager.printCrosswalksSection(configDetails));
+	reportBody.append(utconfigurationmanager.printFieldSettingsSection(configDetails));
+	reportBody.append(utconfigurationmanager.printDataTranslationsSection(configDetails));
 	
 	out.println(reportBody.toString());
 	
