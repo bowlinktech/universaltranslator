@@ -1388,5 +1388,153 @@ public class utConfigurationManagerImpl implements utConfigurationManager {
 	return reportBody;
 	
     }
+    
+    @Override 
+    public StringBuffer printConfigurationConnections(utConfiguration configDetails) throws Exception {
+	
+	List<configurationConnection> configurationConnections = null;
+	
+	utConfiguration otherConfigDetails = null;
+	
+	if(configDetails.getType() == 1) {
+	   configurationConnections = utConfigurationDAO.getConnectionsByConfiguration(configDetails.getId(), 0);
+	   
+	   if(configurationConnections != null) {
+	       if(!configurationConnections.isEmpty()) {
+		   
+		   
+		   
+	       }
+	   }
+	   
+	   
+	   
+	}
+	else {
+	   configurationConnections = utConfigurationDAO.getConnectionsByTargetConfiguration(configDetails.getId());
+	}
+	
+	
+	
+	
+	configurationTransport transportDetails = configurationTransportDAO.getTransportDetails(configDetails.getId());
+	
+	List<configurationDataTranslations> existingTranslations = utConfigurationDAO.getDataTranslationsWithFieldNo(configDetails.getId(), 1);
+	
+	List<configurationFormFields> fields = configurationTransportDAO.getConfigurationFields(configDetails.getId(), transportDetails.getId());
+	
+	List<Macros> macros = utConfigurationDAO.getMacros();
+	
+	List<Crosswalks> crosswalks = messageTypeDAO.getCrosswalks(1, 0, configDetails.getorgId());
+	
+	List crosswalksWithData = messageTypeDAO.getCrosswalksWithData(configDetails.getorgId());
+	
+	StringBuffer reportBody = new StringBuffer();
+	reportBody.append("<div style='padding-top:10px;'>");
+	reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 16px;'><strong>DATA TRANSLATIONS</strong></span><br /><br />");
+	
+	String fieldName = "";
+	Integer fieldNo = 1;
+	String macroName = "";
+	String crosswalkName = "";
+	
+	if(existingTranslations != null) {
+	    if(!existingTranslations.isEmpty()) {
+		reportBody.append("</div>");
+		reportBody.append("<div><table border='1' cellpadding='1' cellspacing='1' width='100%'>");
+		reportBody.append("<thead><tr><th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Field</th><th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Macro Name</th><th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Crosswalk Name</th><th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Pass/Clear</th>");
+		reportBody.append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Field A</th>");
+		reportBody.append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Field B</th>");
+		reportBody.append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Constant 1</th>");
+		reportBody.append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Constant 2</th>");
+		reportBody.append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Process Order</th>");
+		reportBody.append("</tr></thead><tbody>");
+		for(configurationDataTranslations dt : existingTranslations) {
+		    
+		    for(configurationFormFields field : fields) {
+			if(field.getId() == dt.getFieldId()) { fieldName = field.getFieldDesc(); fieldNo = field.getFieldNo(); }
+		    }
+		    
+		    if(dt.getMacroId() > 0) {
+			for(Macros macro : macros) {
+			    if(macro.getId() == dt.getMacroId()) { macroName = macro.getMacroName(); }
+			}
+		    }
+		    
+		    if(dt.getCrosswalkId() > 0) {
+			for(Crosswalks crosswalk : crosswalks) {
+			    if(crosswalk.getId() == dt.getCrosswalkId()) { crosswalkName = crosswalk.getName(); }
+			}
+		    }
+		    
+		    reportBody.append("<tr><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>").append(fieldName).append("F").append(fieldNo).append("</td>");
+		    reportBody.append("<td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>").append(macroName).append("</td>");
+		    reportBody.append("<td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>").append(crosswalkName).append("</td>");
+
+		    if(dt.getPassClear() == 1) {
+			reportBody.append("<td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Pass</td>");
+		    }
+		    else {
+			reportBody.append("<td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Clear</td>");
+		    }
+		    reportBody.append("<td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>").append(dt.getFieldA()).append("</td>");
+		    reportBody.append("<td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>").append(dt.getFieldB()).append("</td>");
+		    reportBody.append("<td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>").append(dt.getConstant1()).append("</td>");
+		    reportBody.append("<td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>").append(dt.getConstant2()).append("</td>");
+		    reportBody.append("<td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>").append(dt.getProcessOrder()).append("</td>");
+		    reportBody.append("</tr>");
+		}
+		reportBody.append("</tbody></table></div>");
+	    }
+	    else {
+		reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 16px;'>No fields have been uploaded for this configuration.</span><br />");
+		reportBody.append("</div>");
+	    }
+	}
+	else {
+	   reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 16px;'>No fields have been uploaded for this configuration.</span><br />");
+	   reportBody.append("</div>");
+	}
+	
+	reportBody.append("<div style='padding-top:10px;'>");
+	reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 16px;'><strong>ORGANIZATION CROSSWALKS</strong></span><br /><br />");
+	
+	if(crosswalksWithData != null) {
+	    if(!crosswalksWithData.isEmpty()) {
+		reportBody.append("</div>");
+		Iterator<Object[]> cwIterator = crosswalksWithData.iterator();
+		String cwname = "";
+		while(cwIterator.hasNext()) {
+		    Object[] cwData = cwIterator.next();
+		    
+		    if("".equals(cwname) || !cwname.equals(cwData[0])) {
+			if(!"".equals(cwname)) {
+			     reportBody.append("</tbody></table></div><br />");
+			}
+			cwname = (String) cwData[0];
+			reportBody.append("<div><span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 14px;'><strong>CW Name: "+cwname+"</strong></span><br /><table border='1' cellpadding='1' cellspacing='1' width='100%'>");
+			reportBody.append("<thead><tr><th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Source Value</th><th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Target Value</th><th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Desc</th>");
+			reportBody.append("</tr></thead><tbody>");
+		    }
+		    
+		    reportBody.append("<tr><td>").append(cwData[1]).append("</td><td>").append(cwData[2]).append("</td><td>").append(cwData[3]).append("</td></tr>");
+		    
+		}
+		
+		reportBody.append("</tbody></table></div>");
+	    }
+	    else {
+		reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 16px;'>No crosswalks have been uploaded for this organization.</span><br />");
+		reportBody.append("</div>");
+	    }
+	}
+	else {
+	   reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 16px;'>No crosswalks have been uploaded for this organization.</span><br />");
+	   reportBody.append("</div>");
+	}
+	
+	return reportBody;
+	
+    }
 }
 
