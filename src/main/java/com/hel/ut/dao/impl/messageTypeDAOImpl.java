@@ -5,7 +5,6 @@ import java.util.Properties;
 import javax.annotation.Resource;
 import org.hibernate.Criteria;
 import org.hibernate.Query;
-import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
 import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,19 +12,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import com.hel.ut.dao.messageTypeDAO;
 import com.hel.ut.model.Crosswalks;
-import com.hel.ut.model.utConfiguration;
 import com.hel.ut.model.validationType;
-import com.hel.ut.reference.fileSystem;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.Iterator;
-import org.apache.poi.openxml4j.opc.OPCPackage;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.hibernate.criterion.Disjunction;
 
 /**
@@ -391,4 +378,13 @@ public class messageTypeDAOImpl implements messageTypeDAO {
         sessionFactory.getCurrentSession().update(crosswalkDetails);
     }
 
+    
+    @Override
+    @Transactional(readOnly = true)
+    public List getCrosswalksWithData(Integer orgId) {
+        Query query = sessionFactory.getCurrentSession().createSQLQuery("select a.name,  b.sourceValue, b.targetValue, b.descValue from crosswalks a inner join rel_crosswalkdata b on b.crosswalkId = a.id where a.orgId = :orgId order by a.id asc");
+        query.setParameter("orgId", orgId);
+
+        return query.list();
+    }
 }

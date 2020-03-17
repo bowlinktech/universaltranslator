@@ -3241,4 +3241,79 @@ public class adminConfigController {
         return mav;
 
     }
+    
+    /**
+     * The 'createConfigPrintPDF.do' method will copy the selected utConfiguration.
+     * @param configId
+     * @return 
+     * @throws java.lang.Exception
+     */
+    @RequestMapping(value = "/createConfigPrintPDF.do", method = RequestMethod.GET)
+    @ResponseBody
+    public String printConfiguration(@RequestParam int configId) throws Exception {
+
+        utConfiguration configDetails = utconfigurationmanager.getConfigurationById(configId);
+	Organization orgDetails = organizationmanager.getOrganizationById(configDetails.getorgId());
+	
+	String configDetailFile = "/tmp/configDetails-" + configId + ".txt";
+	String configPrintFile = "/tmp/UT-configuration-" + configId + ".pdf";
+	
+	Document document = new Document(PageSize.A4);
+	
+	StringBuffer reportBody = new StringBuffer();
+	
+	PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(configDetailFile, true)));
+	out.println("<html><body>");
+	
+	reportBody.append(utconfigurationmanager.printDetailsSection(configDetails,orgDetails));
+	reportBody.append(utconfigurationmanager.printTransportMethodSection(configDetails));
+	reportBody.append(utconfigurationmanager.printMessageSpecsSection(configDetails));
+	reportBody.append(utconfigurationmanager.printFieldSettingsSection(configDetails));
+	reportBody.append(utconfigurationmanager.printDataTranslationsSection(configDetails));
+	
+	out.println(reportBody.toString());
+	
+	out.println("</body></html>");
+	
+	out.close();
+	
+	PdfWriter pdfWriter = PdfWriter.getInstance(document, new FileOutputStream(configPrintFile));
+			  
+	document.open();
+			    
+	XMLWorkerHelper worker = XMLWorkerHelper.getInstance();
+
+	//replace with actual code to generate html info
+	//we get image location here 
+	FileInputStream fis = new FileInputStream(configDetailFile);
+	worker.parseXHtml(pdfWriter, document, fis);
+;
+	fis.close();
+	document.close();
+	pdfWriter.close();
+	
+	File configDetailsFile = new File(configDetailFile);
+	configDetailsFile.delete();
+
+	return "UT-configuration-" + configId;
+    }
+
+    
+    @RequestMapping(value = "/printConfig/{file}", method = RequestMethod.GET)
+    public void printConfig(@PathVariable("file") String file,HttpServletResponse response
+    ) throws Exception {
+	
+	File configPrintFile = new File ("/tmp/" + file + ".pdf");
+	InputStream is = new FileInputStream(configPrintFile);
+
+	response.setHeader("Content-Disposition", "attachment; filename=\"" + file + ".pdf\"");
+	FileCopyUtils.copy(is, response.getOutputStream());
+
+	//Delete the file
+	configPrintFile.delete();
+
+
+	 // close stream and return to view
+	response.flushBuffer();
+    } 
 }

@@ -199,4 +199,15 @@ public interface utConfigurationManager {
     List getDataTranslationsForDownload (Integer configId) throws Exception;
   
     List getCrosswalksForDownload (Integer configId) throws Exception;
+    
+    StringBuffer printDetailsSection(utConfiguration configDetails, Organization orgDetails) throws Exception;
+    
+    StringBuffer printTransportMethodSection(utConfiguration configDetails) throws Exception;
+    
+    StringBuffer printMessageSpecsSection(utConfiguration configDetails) throws Exception;
+    
+    StringBuffer printFieldSettingsSection(utConfiguration configDetails) throws Exception;
+    
+    StringBuffer printDataTranslationsSection(utConfiguration configDetails) throws Exception;
+    
 }
