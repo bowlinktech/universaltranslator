@@ -53,4 +53,6 @@ public interface messageTypeDAO {
     
     void updateCrosswalk(Crosswalks crosswalkDetails);
     
+    List getCrosswalksWithData(Integer orgId);
+    
 }

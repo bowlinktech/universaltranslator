@@ -3,6 +3,35 @@
 require(['./main'], function () {
     require(['jquery'], function ($) {
         $("input:text,form").attr("autocomplete", "off");
+        
+        $(document).on('click','.printConfig',function() {
+           /* $('body').overlay({
+                glyphicon : 'print',
+                message : 'Gathering Details...'
+            });*/
+            
+            var configId = $(this).attr('rel');
+            
+            $.ajax({
+                url: 'createConfigPrintPDF.do',
+                data: {
+                    'configId': configId
+                },
+                type: "GET",
+                dataType : 'text',
+                contentType : 'application/json;charset=UTF-8',
+                success: function(data) {
+                    if(data !== '') {
+                        window.location.href = '/administrator/configurations/printConfig/'+ data;
+                        $('#successMsg').show();
+                        //$('#dtDownloadModal').modal('toggle');
+                    }
+                    else {
+                        $('#errorMsg').show();
+                    }
+                }
+            });
+        });
 
         //Fade out the updated/created message after being displayed.
         if ($('.alert-success').length > 0) {
