@@ -56,6 +56,9 @@ public class utConfigurationManagerImpl implements utConfigurationManager {
 
     @Autowired
     private utConfigurationDAO utConfigurationDAO;
+    
+    @Autowired
+    private utConfigurationTransportDAO configurationTransportDAO;
 
     @Autowired
     private organizationDAO organizationDAO;

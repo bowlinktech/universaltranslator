@@ -89,6 +89,12 @@
 								 </li>
 								 <li class="divider"></li>
 							     </c:if>
+                                                             <li>
+                                                                <a href="javascript:void(0);" class="printConfig" rel="${config.id}" title="Print this Configuration">
+                                                                    <span class="glyphicon glyphicon-print"></span>
+                                                                    Print
+                                                                </a>
+                                                             </li>
 							     <li>
 								 <a href="javascript:void(0);" class="editConfig" rel="${config.id}" title="Edit this configuration">
 								     <span class="glyphicon glyphicon-edit"></span>
