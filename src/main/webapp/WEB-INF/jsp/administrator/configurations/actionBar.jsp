@@ -57,6 +57,9 @@
                     <li><a href="/administrator/configurations/connections/details" data-toggle="modal" role="button" title="Create Configuration Connection"><span class="glyphicon icon-stacked glyphicon glyphicon-plus"></span>Create New</a></li>
                 </c:when>  
 		<c:when test="${param['page'] == 'connectiondetails'}">
+                    <li role="menuitem">
+			<a href="javascript:void(0);" class="printConfig" title="Print this Connection" rel="${connectionId}" role="button"><span class="glyphicon glyphicon-print icon-stacked"></span> Print </a>
+		    </li>
                     <li role="menuitem"><a href="javascript:void(0);" id="saveDetails" title="Save this Connection" role="button"><span class="glyphicon glyphicon-ok icon-stacked"></span> Save </a></li>
                     <li role="menuitem"><a href="javascript:void(0);" id="saveCloseDetails" title="Save &amp; Close" role="button"><span class="glyphicon glyphicon-floppy-disk icon-stacked"></span> Save &amp; Close</a></li>
                 </c:when>     

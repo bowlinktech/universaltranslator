@@ -67,6 +67,13 @@
 							<i class="fa fa-cog"></i>
 						    </button>
 						    <ul class="dropdown-menu pull-right">
+                                                        <li>
+                                                            <a href="javascript:void(0);" class="printConfig" rel="${connection.id}" title="Print this Connection">
+                                                                <span class="glyphicon glyphicon-print"></span>
+                                                                Print
+                                                            </a>
+                                                        </li>  
+                                                        <li class="divider"></li> 
 							<li>
 							    <a href="/administrator/configurations/connections/details?i=${connection.id}" data-toggle="modal" rel="${connection.id}" class="connectionEdit" title="Edit this connection">
 								<span class="glyphicon glyphicon-edit"></span>
