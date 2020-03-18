@@ -38,6 +38,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.hel.ut.service.utConfigurationManager;
 import com.hel.ut.dao.utConfigurationDAO;
 import com.hel.ut.dao.utConfigurationTransportDAO;
+import com.hel.ut.model.Crosswalks;
 import com.hel.ut.model.configurationFTPFields;
 import com.hel.ut.model.configurationFileDropFields;
 import com.hel.ut.model.configurationFormFields;
@@ -45,6 +46,7 @@ import com.hel.ut.model.configurationTransport;
 import com.hel.ut.model.configurationconnectionfieldmappings;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Iterator;
 import java.util.Properties;
 import javax.annotation.Resource;
 
