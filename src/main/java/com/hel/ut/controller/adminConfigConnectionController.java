@@ -41,9 +41,23 @@ import com.hel.ut.service.hispManager;
 import javax.servlet.http.HttpSession;
 import com.hel.ut.service.utConfigurationManager;
 import com.hel.ut.service.utConfigurationTransportManager;
+import com.itextpdf.text.Document;
+import com.itextpdf.text.PageSize;
+import com.itextpdf.text.pdf.PdfWriter;
+import com.itextpdf.tool.xml.XMLWorkerHelper;
 import com.registryKit.registry.configurations.configurationManager;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.InputStream;
+import java.io.PrintWriter;
 import java.util.Properties;
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletResponse;
+import org.springframework.util.FileCopyUtils;
+import org.springframework.web.bind.annotation.PathVariable;
 
 @Controller
 @RequestMapping("/administrator/configurations/connections")
@@ -659,4 +673,82 @@ public class adminConfigConnectionController {
 
         return 1;
     }
+    
+    /**
+     * The 'createConnectionPrintPDF.do' method will print the selected connection.
+     * @param connectionId
+     * @return 
+     * @throws java.lang.Exception
+     */
+    @RequestMapping(value = "/createConnectionPrintPDF.do", method = RequestMethod.GET)
+    @ResponseBody
+    public String printConfiguration(@RequestParam int connectionId) throws Exception {
+	
+	configurationConnection connectionDetails = utconfigurationmanager.getConnection(connectionId);
+
+        utConfiguration srcconfigDetails = utconfigurationmanager.getConfigurationById(connectionDetails.getsourceConfigId());
+        utConfiguration tgtconfigDetails = utconfigurationmanager.getConfigurationById(connectionDetails.gettargetConfigId());
+        
+	String connectionDetailFile = "/tmp/connectionId-" + connectionId + ".txt";
+	String connectionPrintFile = "/tmp/UT-connection-" + connectionId + ".pdf";
+	
+	File detailsFile = new File(connectionDetailFile);
+	detailsFile.delete();
+	
+	File printFile = new File(connectionPrintFile);
+	printFile.delete();
+	
+	Document document = new Document(PageSize.A4);
+	
+	StringBuffer reportBody = new StringBuffer();
+	
+	PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(connectionDetailFile, true)));
+	out.println("<html><body>");
+	
+	reportBody.append(utconfigurationmanager.printConnectionDetails(srcconfigDetails,tgtconfigDetails));
+	
+	out.println(reportBody.toString());
+	
+	out.println("</body></html>");
+	
+	out.close();
+	
+	PdfWriter pdfWriter = PdfWriter.getInstance(document, new FileOutputStream(connectionPrintFile));
+			  
+	document.open();
+			    
+	XMLWorkerHelper worker = XMLWorkerHelper.getInstance();
+
+	//replace with actual code to generate html info
+	//we get image location here 
+	FileInputStream fis = new FileInputStream(connectionDetailFile);
+	worker.parseXHtml(pdfWriter, document, fis);
+;
+	fis.close();
+	document.close();
+	pdfWriter.close();
+	
+	File connectionDetailsFile = new File(connectionDetailFile);
+	connectionDetailsFile.delete();
+
+	return "UT-connection-" + connectionId;
+    }
+
+    
+    @RequestMapping(value = "/printConfig/{file}", method = RequestMethod.GET)
+    public void printConfig(@PathVariable("file") String file,HttpServletResponse response
+    ) throws Exception {
+	
+	File connectionPrintFile = new File ("/tmp/" + file + ".pdf");
+	InputStream is = new FileInputStream(connectionPrintFile);
+
+	response.setHeader("Content-Disposition", "attachment; filename=\"" + file + ".pdf\"");
+	FileCopyUtils.copy(is, response.getOutputStream());
+
+	//Delete the file
+	connectionPrintFile.delete();
+
+	 // close stream and return to view
+	response.flushBuffer();
+    } 
 }
