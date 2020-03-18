@@ -2,6 +2,35 @@
 
 require(['./main'], function () {
     require(['jquery'], function ($) {
+        
+        $(document).on('click','.printConfig',function() {
+           /* $('body').overlay({
+                glyphicon : 'print',
+                message : 'Gathering Details...'
+            });*/
+            
+            var connectionId = $(this).attr('rel');
+            
+            $.ajax({
+                url: '/administrator/configurations/connections/createConnectionPrintPDF.do',
+                data: {
+                    'connectionId': connectionId
+                },
+                type: "GET",
+                dataType : 'text',
+                contentType : 'application/json;charset=UTF-8',
+                success: function(data) {
+                    if(data !== '') {
+                        window.location.href = '/administrator/configurations/connections/printConfig/'+ data;
+                        $('#successMsg').show();
+                        //$('#dtDownloadModal').modal('toggle');
+                    }
+                    else {
+                        $('#errorMsg').show();
+                    }
+                }
+            });
+        });
 
         //Fade out the updated/created message after being displayed.
         if ($('.alert').length > 0) {

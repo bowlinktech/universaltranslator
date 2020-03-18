@@ -3263,6 +3263,12 @@ public class adminConfigController {
 	String configDetailFile = "/tmp/configDetails-" + configId + ".txt";
 	String configPrintFile = "/tmp/UT-configuration-" + configId + ".pdf";
 	
+	File detailsFile = new File(configDetailFile);
+	detailsFile.delete();
+	
+	File printFile = new File(configPrintFile);
+	printFile.delete();
+	
 	Document document = new Document(PageSize.A4);
 	
 	StringBuffer reportBody = new StringBuffer();
@@ -3275,7 +3281,6 @@ public class adminConfigController {
 	reportBody.append(utconfigurationmanager.printMessageSpecsSection(configDetails));
 	reportBody.append(utconfigurationmanager.printFieldSettingsSection(configDetails));
 	reportBody.append(utconfigurationmanager.printDataTranslationsSection(configDetails));
-	reportBody.append(utconfigurationmanager.printConfigurationConnections(configDetails));
 	
 	out.println(reportBody.toString());
 	

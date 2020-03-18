@@ -1038,6 +1038,7 @@ public class transactionInManagerImpl implements transactionInManager {
 				if(batchDetails != null) {
 				    
 				    if(batchDetails.getStatusId() == 35) {
+					newBatchRecord = false;
 					
 					batchId = batchDetails.getId();
 					
@@ -1066,13 +1067,8 @@ public class transactionInManagerImpl implements transactionInManager {
 					transactionInDAO.submitBatchUploadChanges(batchDetails);
 					
 				    }
-				    else {
-					return 0;
-				    }
 				}
-				else {
-				    
-				    newBatchRecord = true;
+				if(newBatchRecord) {
 				    
 				    batchUploads batchInfo = new batchUploads();
 				    batchInfo.setOrgId(orgId);

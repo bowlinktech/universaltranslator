@@ -211,6 +211,6 @@ public interface utConfigurationManager {
     
     StringBuffer printDataTranslationsSection(utConfiguration configDetails) throws Exception;
     
-    StringBuffer printConfigurationConnections(utConfiguration configDetails) throws Exception;
+    StringBuffer printConnectionDetails(utConfiguration srcconfigDetails,utConfiguration tgtconfigDetails) throws Exception;
     
 }
