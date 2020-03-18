@@ -463,9 +463,8 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
     @Transactional(readOnly = true)
     @SuppressWarnings("unchecked")
     public List<configurationConnection> getConnectionsByConfiguration(int configId, int userId) {
-        Query query = sessionFactory.getCurrentSession().createQuery("from configurationConnection where sourceConfigId = :configId and id in (select connectionId from configurationConnectionSenders where userId = :userId)");
+        Query query = sessionFactory.getCurrentSession().createQuery("from configurationConnection where sourceConfigId = :configId");
         query.setParameter("configId", configId);
-        query.setParameter("userId", userId);
 
         List<configurationConnection> connections = query.list();
         return connections;
