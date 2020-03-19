@@ -138,7 +138,7 @@ require(['./main'], function () {
 		
 		var selRegistry = $('#helRegistry').val();
 	   
-		if(selRegistry != 0) {
+		if(typeof selRegistry !== "undefined" && selRegistry != 0) {
 		
 		    var selRegistrySchemaName = selRegistry.split("-")[1];
 		
