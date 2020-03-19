@@ -73,23 +73,29 @@
                                                     <c:set var="text" value="${fn:split(batch.originalFileName,'.')}" />
                                                     <c:set var="ext" value="${text[fn:length(text)-1]}" />
                                                     <br />
-                                                    <c:set var="hrefLink" value="/FileDownload/downloadFile.do?filename=archive_${batch.utBatchName}.${ext}&foldername=archivesIn"/>
+                                                    <c:set var="hrefLink" value="/FileDownload/downloadFile.do?filename=encoded_${batch.utBatchName}.${ext}&foldername=input files&orgId=${batch.orgId}"/>
 
                                                     <c:if test="${batch.transportMethodId == 6}">
                                                         <c:set var="hrefLink" value="/FileDownload/downloadFile.do?filename=${batch.utBatchName}_dec.${ext}&foldername=archivesIn"/>
                                                     </c:if>
-						    <c:if test="${batch.transportMethodId == 10 || batch.transportMethodId == 6 || batch.transportMethodId == 9}">
-							<c:set var="hrefPipeLink" value="/FileDownload/downloadFile.do?filename=${batch.utBatchName}_dec.txt&foldername=archivesIn"/>
+						    <c:if test="${batch.transportMethodId == 12 || batch.transportMethodId == 9}">
+							<c:set var="hrefPipeLink" value="/FileDownload/downloadFile.do?filename=${batch.utBatchName}.${ext}&foldername=archivesIn"/>
 						    </c:if>
 
                                                     <a href="${hrefLink}" title="View Original File">
                                                         ${batch.originalFileName}
                                                     </a>
 						    <br/>
-						    <c:if test="${(batch.transportMethodId == 10 || batch.transportMethodId == 6 || batch.transportMethodId == 9) && batch.statusId != 42}">
-							<a href="${hrefPipeLink}" title="View Pipe File">
-							    Translated File - ${batch.utBatchName}
-							</a>
+                                                    
+						    <c:if test="${batch.inboundBatchConfigurationType == 1 && (batch.transportMethodId == 10 || batch.transportMethodId == 13)}">
+                                                        <c:choose>
+                                                            <c:when test="${batch.transportMethod == 'Direct Message' || batch.transportMethod == 'File Drop'}">
+                                                                <a href="/FileDownload/downloadFile.do?filename=${batch.utBatchName}.txt&foldername=loadFiles" title="View Pipe File">Translated File - ${batch.utBatchName}.txt</a>
+                                                            </c:when>
+                                                            <c:otherwise>
+                                                                <a href="/FileDownload/downloadFile.do?filename=archive_${batch.utBatchName}.${ext}&foldername=archivesIn" title="View Pipe File"> Translated File - ${batch.utBatchName}</a>
+                                                            </c:otherwise>
+                                                        </c:choose>
 						    </c:if>
                                                 </c:if>
                                             </td>
@@ -97,6 +103,9 @@
 						<c:choose>
 						    <c:when test="${batch.transportMethod == 'Rest API'}">
 							<a href="/administrator/processing-activity/apimessages/${batch.utBatchName}" title="View Rest API Message">${batch.transportMethod}</a>
+						    </c:when>
+                                                    <c:when test="${batch.transportMethod == 'Direct Message'}">
+							<a href="#directModal" data-toggle="modal" class="viewDirectDetails" rel="${batch.id}" title="View Direct Message Details">File Drop (Direct)</a>
 						    </c:when>
 						    <c:otherwise>
 							${batch.transportMethod}
@@ -160,3 +169,4 @@
     </div>
 </div>
 <div class="modal fade" id="payloadModal" role="dialog" tabindex="-1" aria-labeledby="Status Details" aria-hidden="true" aria-describedby="Status Details"></div>
+<div class="modal fade" id="directModal" role="dialog" tabindex="-1" aria-labeledby="Direct Message Details" aria-hidden="true" aria-describedby="Direct Message Details"></div>
