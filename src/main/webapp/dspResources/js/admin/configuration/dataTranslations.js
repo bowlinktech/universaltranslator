@@ -245,6 +245,10 @@ require(['./main'], function () {
                 }
             });
         });
+        
+        $(document).on('click', '.cwClose', function() {
+          window.location.reload();
+        });
 
         //This function will launch the crosswalk overlay with the selected
         //crosswalk details
@@ -356,6 +360,7 @@ require(['./main'], function () {
                             url: 'viewCrosswalk?i=' + data,
 			    type: "GET",
 			    success: function(data) {
+                                data = data.replace('close', 'close cwClose');
 				$("#crosswalkModal").html(data);
 			    }
 			});
