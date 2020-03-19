@@ -777,25 +777,28 @@ public class utConfigurationManagerImpl implements utConfigurationManager {
 	String scheduleType = "Automatically";
 	String processingType = "";
 	
-	if(scheduleDetails.gettype() == 1) {
-	    scheduleType = "Manually";
-	}
-	else if(scheduleDetails.gettype() == 2) {
-	    scheduleType = "Daily";
-	}
-	else if(scheduleDetails.gettype() == 2) {
-	    scheduleType = "Weekly";
-	}
-	else if(scheduleDetails.gettype() == 2) {
-	    scheduleType = "Monthly";
-	}
+	if(scheduleDetails != null) {
 	
-	if(scheduleDetails.getprocessingType() > 0) {
-	    if(scheduleDetails.getprocessingType() == 1) {
-		processingType = "Scheduled";
+	    if(scheduleDetails.gettype() == 1) {
+		scheduleType = "Manually";
 	    }
-	    else if (scheduleDetails.getprocessingType() == 2) {
-		processingType = "Continuous";
+	    else if(scheduleDetails.gettype() == 2) {
+		scheduleType = "Daily";
+	    }
+	    else if(scheduleDetails.gettype() == 2) {
+		scheduleType = "Weekly";
+	    }
+	    else if(scheduleDetails.gettype() == 2) {
+		scheduleType = "Monthly";
+	    }
+	
+	    if(scheduleDetails.getprocessingType() > 0) {
+		if(scheduleDetails.getprocessingType() == 1) {
+		    processingType = "Scheduled";
+		}
+		else if (scheduleDetails.getprocessingType() == 2) {
+		    processingType = "Continuous";
+		}
 	    }
 	}
 	
@@ -805,35 +808,37 @@ public class utConfigurationManagerImpl implements utConfigurationManager {
 	if(!"".equals(processingType)) {
 	    reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'><strong>Type of Processing: </strong>").append(processingType).append("</span><br /><br />");
 	}
-	if(scheduleDetails.getnewfileCheck() > 0) {
-	    reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'><strong>How often to check for a new file: </strong>").append(scheduleDetails.getnewfileCheck()).append("</span><br /><br />");
-	}
-	if(scheduleDetails.getprocessingDay()> 0) {
-	    reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'><strong>Process on what Day: </strong>");
-	    if(scheduleDetails.getprocessingDay() == 1) {
-		reportBody.append("Sunday").append("</span><br /><br />");
+	if(scheduleDetails != null) {
+	    if(scheduleDetails.getnewfileCheck() > 0) {
+		reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'><strong>How often to check for a new file: </strong>").append(scheduleDetails.getnewfileCheck()).append("</span><br /><br />");
 	    }
-	    else if(scheduleDetails.getprocessingDay() == 2) {
-		reportBody.append("Monday").append("</span><br /><br />");
-	    }  
-	    else if(scheduleDetails.getprocessingDay() == 3) {
-		reportBody.append("Tuesday").append("</span><br /><br />");
-	    } 
-	    else if(scheduleDetails.getprocessingDay() == 4) {
-		reportBody.append("Wednesday").append("</span><br /><br />");
-	    } 
-	    else if(scheduleDetails.getprocessingDay() == 5) {
-		reportBody.append("Thursday").append("</span><br /><br />");
-	    } 
-	    else if(scheduleDetails.getprocessingDay() == 6) {
-		reportBody.append("Friday").append("</span><br /><br />");
-	    } 
-	    else if(scheduleDetails.getprocessingDay() == 7) {
-		reportBody.append("Saturday").append("</span><br /><br />");
-	    } 
-	}
-	if(scheduleDetails.getprocessingTime() > 0) {
-	    reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'><strong>Time of Day to process files: </strong>").append(scheduleDetails.getprocessingTime()).append("</span><br /><br />");
+	    if(scheduleDetails.getprocessingDay()> 0) {
+		reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'><strong>Process on what Day: </strong>");
+		if(scheduleDetails.getprocessingDay() == 1) {
+		    reportBody.append("Sunday").append("</span><br /><br />");
+		}
+		else if(scheduleDetails.getprocessingDay() == 2) {
+		    reportBody.append("Monday").append("</span><br /><br />");
+		}  
+		else if(scheduleDetails.getprocessingDay() == 3) {
+		    reportBody.append("Tuesday").append("</span><br /><br />");
+		} 
+		else if(scheduleDetails.getprocessingDay() == 4) {
+		    reportBody.append("Wednesday").append("</span><br /><br />");
+		} 
+		else if(scheduleDetails.getprocessingDay() == 5) {
+		    reportBody.append("Thursday").append("</span><br /><br />");
+		} 
+		else if(scheduleDetails.getprocessingDay() == 6) {
+		    reportBody.append("Friday").append("</span><br /><br />");
+		} 
+		else if(scheduleDetails.getprocessingDay() == 7) {
+		    reportBody.append("Saturday").append("</span><br /><br />");
+		} 
+	    }
+	    if(scheduleDetails.getprocessingTime() > 0) {
+		reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'><strong>Time of Day to process files: </strong>").append(scheduleDetails.getprocessingTime()).append("</span><br /><br />");
+	    }
 	}
 	reportBody.append("</div>");
 
@@ -846,131 +851,132 @@ public class utConfigurationManagerImpl implements utConfigurationManager {
 	
 	configurationTransport transportDetails = configurationTransportDAO.getTransportDetails(configDetails.getId());
 	
-	List<configurationFileDropFields> fileDropFields = configurationTransportDAO.getTransFileDropDetails(transportDetails.getId());
-	
-	List<configurationFTPFields> ftpFields = configurationTransportDAO.getTransportFTPDetails(transportDetails.getId());
-	
-	String transportMethod = "File Drop";
-	
-	if(transportDetails.gettransportMethodId() == 1) {
-	    transportMethod = "File Upload";
-	}
-	else if(transportDetails.gettransportMethodId() == 3) {
-	    transportMethod = "Secure FTP";
-	}
-	else if(transportDetails.gettransportMethodId() == 6) {
-	    transportMethod = "Web Service";
-	}
-	else if(transportDetails.gettransportMethodId() == 8) {
-	    transportMethod = "To a eReferral Registry";
-	}
-	else if(transportDetails.gettransportMethodId() == 9) {
-	    transportMethod = "Rest API";
-	}
-	else if(transportDetails.gettransportMethodId() == 10) {
-	    transportMethod = "Online Form";
-	}
-	else if(transportDetails.gettransportMethodId() == 11) {
-	    transportMethod = "From a eReferral Registry (File Upload)";
-	}
-	else if(transportDetails.gettransportMethodId() == 12) {
-	    transportMethod = "Direct Message";
-	}
-	
-	String isZipped = "No";
-	String zipType = "";
-	
-	if(transportDetails.isZipped()) {
-	    isZipped = "Yes";
-	}
-	
-	if(transportDetails.getZipType() == 1) {
-	    zipType = "GZIP";
-	}
-	
-	String fileType = "Text File";
-	
-	if(transportDetails.getfileType() == 1) {
-	    fileType = "Does not apply";
-	}
-	else if(transportDetails.getfileType() == 3) {
-	    fileType = "CSV";
-	}
-	else if(transportDetails.getfileType() == 4) {
-	    fileType = "HL7";
-	}
-	else if(transportDetails.getfileType() == 5) {
-	    fileType = "MS Access DB File (MDB)";
-	}
-	else if(transportDetails.getfileType() == 6) {
-	    fileType = "PDF";
-	}
-	else if(transportDetails.getfileType() == 8) {
-	    fileType = "Excel (XLS)";
-	}
-	else if(transportDetails.getfileType() == 9) {
-	    fileType = "CCD";
-	}
-	else if(transportDetails.getfileType() == 10) {
-	    fileType = "MS Word Document";
-	}
-	else if(transportDetails.getfileType() == 11) {
-	    fileType = "Excel (XLSX)";
-	}
-	else if(transportDetails.getfileType() == 12) {
-	    fileType = "JSON";
-	}
-	
-	String delim = "comma";
-	
-	if(transportDetails.getfileDelimiter() == 2) {
-	    delim = "pipe (|)";
-	}
-	else if(transportDetails.getfileType() == 3) {
-	    delim = "colon (:)";
-	}
-	else if(transportDetails.getfileType() == 11) {
-	    delim = "semi-colon (;)";
-	}
-	else if(transportDetails.getfileType() == 12) {
-	    delim = "tab";
-	}
-	
-	String encoding = "none";
-	
-	if(transportDetails.getEncodingId() == 2) {
-	    encoding = "Base64";
-	}
-	
-	String apiType = "";
-	
-	if(transportDetails.getRestAPIType() == 1) {
-	    apiType = "Receive Payload and process";
-	}
-	else if(transportDetails.getRestAPIType() == 2) {
-	    apiType = "Receive ACK to modify status";
-	}
-	else if(transportDetails.getRestAPIType() == 3) {
-	    apiType = "Receive Payload and passthru";
-	}
-	
-	String errorHandling = "";
-	
-	if(transportDetails.geterrorHandling() == 2) {
-	    errorHandling = "Reject individual transactions on error";
-	}
-	else if(transportDetails.geterrorHandling() == 3) {
-	    errorHandling = "Reject entire file on a single transaction error";
-	}
-	else if(transportDetails.geterrorHandling() == 4) {
-	    errorHandling = "Send errors through to the target file";
-	}
-	
 	StringBuffer reportBody = new StringBuffer();
 	reportBody.append("<div>");
 	reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 16px;'><strong>TRANSPORT METHOD</strong></span><br />");
 	
 	if(transportDetails != null) {
+	    
+	    List<configurationFileDropFields> fileDropFields = configurationTransportDAO.getTransFileDropDetails(transportDetails.getId());
+	
+	    List<configurationFTPFields> ftpFields = configurationTransportDAO.getTransportFTPDetails(transportDetails.getId());
+
+	    String transportMethod = "File Drop";
+
+	    if(transportDetails.gettransportMethodId() == 1) {
+		transportMethod = "File Upload";
+	    }
+	    else if(transportDetails.gettransportMethodId() == 3) {
+		transportMethod = "Secure FTP";
+	    }
+	    else if(transportDetails.gettransportMethodId() == 6) {
+		transportMethod = "Web Service";
+	    }
+	    else if(transportDetails.gettransportMethodId() == 8) {
+		transportMethod = "To a eReferral Registry";
+	    }
+	    else if(transportDetails.gettransportMethodId() == 9) {
+		transportMethod = "Rest API";
+	    }
+	    else if(transportDetails.gettransportMethodId() == 10) {
+		transportMethod = "Online Form";
+	    }
+	    else if(transportDetails.gettransportMethodId() == 11) {
+		transportMethod = "From a eReferral Registry (File Upload)";
+	    }
+	    else if(transportDetails.gettransportMethodId() == 12) {
+		transportMethod = "Direct Message";
+	    }
+
+	    String isZipped = "No";
+	    String zipType = "";
+
+	    if(transportDetails.isZipped()) {
+		isZipped = "Yes";
+	    }
+
+	    if(transportDetails.getZipType() == 1) {
+		zipType = "GZIP";
+	    }
+
+	    String fileType = "Text File";
+
+	    if(transportDetails.getfileType() == 1) {
+		fileType = "Does not apply";
+	    }
+	    else if(transportDetails.getfileType() == 3) {
+		fileType = "CSV";
+	    }
+	    else if(transportDetails.getfileType() == 4) {
+		fileType = "HL7";
+	    }
+	    else if(transportDetails.getfileType() == 5) {
+		fileType = "MS Access DB File (MDB)";
+	    }
+	    else if(transportDetails.getfileType() == 6) {
+		fileType = "PDF";
+	    }
+	    else if(transportDetails.getfileType() == 8) {
+		fileType = "Excel (XLS)";
+	    }
+	    else if(transportDetails.getfileType() == 9) {
+		fileType = "CCD";
+	    }
+	    else if(transportDetails.getfileType() == 10) {
+		fileType = "MS Word Document";
+	    }
+	    else if(transportDetails.getfileType() == 11) {
+		fileType = "Excel (XLSX)";
+	    }
+	    else if(transportDetails.getfileType() == 12) {
+		fileType = "JSON";
+	    }
+
+	    String delim = "comma";
+
+	    if(transportDetails.getfileDelimiter() == 2) {
+		delim = "pipe (|)";
+	    }
+	    else if(transportDetails.getfileType() == 3) {
+		delim = "colon (:)";
+	    }
+	    else if(transportDetails.getfileType() == 11) {
+		delim = "semi-colon (;)";
+	    }
+	    else if(transportDetails.getfileType() == 12) {
+		delim = "tab";
+	    }
+
+	    String encoding = "none";
+
+	    if(transportDetails.getEncodingId() == 2) {
+		encoding = "Base64";
+	    }
+
+	    String apiType = "";
+
+	    if(transportDetails.getRestAPIType() == 1) {
+		apiType = "Receive Payload and process";
+	    }
+	    else if(transportDetails.getRestAPIType() == 2) {
+		apiType = "Receive ACK to modify status";
+	    }
+	    else if(transportDetails.getRestAPIType() == 3) {
+		apiType = "Receive Payload and passthru";
+	    }
+
+	    String errorHandling = "";
+
+	    if(transportDetails.geterrorHandling() == 2) {
+		errorHandling = "Reject individual transactions on error";
+	    }
+	    else if(transportDetails.geterrorHandling() == 3) {
+		errorHandling = "Reject entire file on a single transaction error";
+	    }
+	    else if(transportDetails.geterrorHandling() == 4) {
+		errorHandling = "Send errors through to the target file";
+	    }
+	    
 	    reportBody.append("</div>");
 	    reportBody.append("<div>");
 	    reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'><strong>How is the file getting to the UT?</strong></span><br />");
@@ -1099,68 +1105,66 @@ public class utConfigurationManagerImpl implements utConfigurationManager {
 	
 	configurationMessageSpecs messageSpecs = utConfigurationDAO.getMessageSpecs(configDetails.getId());
 	
-	configurationTransport transportDetails = configurationTransportDAO.getTransportDetails(configDetails.getId());
-	
-	List<configurationFormFields> fields = configurationTransportDAO.getConfigurationFields(configDetails.getId(), transportDetails.getId());
-	
-	String hasHeaderRow = "Yes";
-	
-	if(!messageSpecs.isHasHeader()) {
-	    hasHeaderRow = "No";
-	}
-	
-	String submissionHeaderRow = "Yes";
-	
-	if(!messageSpecs.getcontainsHeaderRow()) {
-	    submissionHeaderRow = "No";
-	}
-	
-	String fileLayout = "Horiztonal";
-	
-	if(messageSpecs.getFileLayout() == 2) {
-	    fileLayout = "Vertical";
-	}
-	
-	String errorField1 = "N/A";
-	String errorField2 = "N/A";
-	String errorField3 = "N/A";
-	String errorField4 = "N/A";
-	
-	if(messageSpecs.getrptField1() > 0) {
-	    for(configurationFormFields field : fields) {
-		if(field.getFieldNo()== messageSpecs.getrptField1()) {
-		    errorField1 = field.getFieldDesc();
-		}
-	    }
-	}
-	if(messageSpecs.getrptField2() > 0) {
-	    for(configurationFormFields field : fields) {
-		if(field.getFieldNo() == messageSpecs.getrptField2()) {
-		    errorField2 = field.getFieldDesc();
-		}
-	    }
-	}
-	if(messageSpecs.getrptField3() > 0) {
-	    for(configurationFormFields field : fields) {
-		if(field.getFieldNo() == messageSpecs.getrptField3()) {
-		    errorField3 = field.getFieldDesc();
-		}
-	    }
-	}
-	if(messageSpecs.getrptField4() > 0) {
-	    for(configurationFormFields field : fields) {
-		if(field.getFieldNo() == messageSpecs.getrptField4()) {
-		    errorField4 = field.getFieldDesc();
-		}
-	    }
-	}
-
-	
 	StringBuffer reportBody = new StringBuffer();
 	reportBody.append("<div style='padding-top:10px;'>");
 	reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 16px;'><strong>MESSAGE SPECS</strong></span><br />");
 	
 	if(messageSpecs != null) {
+	    configurationTransport transportDetails = configurationTransportDAO.getTransportDetails(configDetails.getId());
+	
+	    List<configurationFormFields> fields = configurationTransportDAO.getConfigurationFields(configDetails.getId(), transportDetails.getId());
+
+	    String hasHeaderRow = "Yes";
+
+	    if(!messageSpecs.isHasHeader()) {
+		hasHeaderRow = "No";
+	    }
+
+	    String submissionHeaderRow = "Yes";
+
+	    if(!messageSpecs.getcontainsHeaderRow()) {
+		submissionHeaderRow = "No";
+	    }
+
+	    String fileLayout = "Horiztonal";
+
+	    if(messageSpecs.getFileLayout() == 2) {
+		fileLayout = "Vertical";
+	    }
+
+	    String errorField1 = "N/A";
+	    String errorField2 = "N/A";
+	    String errorField3 = "N/A";
+	    String errorField4 = "N/A";
+
+	    if(messageSpecs.getrptField1() > 0) {
+		for(configurationFormFields field : fields) {
+		    if(field.getFieldNo()== messageSpecs.getrptField1()) {
+			errorField1 = field.getFieldDesc();
+		    }
+		}
+	    }
+	    if(messageSpecs.getrptField2() > 0) {
+		for(configurationFormFields field : fields) {
+		    if(field.getFieldNo() == messageSpecs.getrptField2()) {
+			errorField2 = field.getFieldDesc();
+		    }
+		}
+	    }
+	    if(messageSpecs.getrptField3() > 0) {
+		for(configurationFormFields field : fields) {
+		    if(field.getFieldNo() == messageSpecs.getrptField3()) {
+			errorField3 = field.getFieldDesc();
+		    }
+		}
+	    }
+	    if(messageSpecs.getrptField4() > 0) {
+		for(configurationFormFields field : fields) {
+		    if(field.getFieldNo() == messageSpecs.getrptField4()) {
+			errorField4 = field.getFieldDesc();
+		    }
+		}
+	    }
 	    reportBody.append("</div>");
 	    reportBody.append("<div>");
 	    reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'><strong>Current Template File?</strong></span><br />");
