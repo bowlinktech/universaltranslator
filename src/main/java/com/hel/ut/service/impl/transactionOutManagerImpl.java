@@ -1631,7 +1631,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
 		ba.setBatchDownloadId(batchDownload.getId());
 		transactionOutDAO.submitBatchActivityLog(ba);
 		
-		Integer writeOutCome = writeOutputToTextFile(transportDetails, batchDownload.getId(), myProps.getProperty("ut.directory.massOutputPath") + batchDownload.getUtBatchName() + "." + fileExt, configFields,batchDownload.getBatchUploadId());
+		Integer writeOutCome = writeOutputToTextFile(transportDetails, batchDownload.getId(), myProps.getProperty("ut.directory.massOutputMySQLPath") + batchDownload.getUtBatchName() + "." + fileExt, configFields,batchDownload.getBatchUploadId());
 	    }
 
 	    if (!massOutFile.exists()) {
