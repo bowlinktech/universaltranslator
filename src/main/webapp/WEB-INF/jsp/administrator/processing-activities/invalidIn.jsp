@@ -69,7 +69,7 @@
                                             <td>
 						<strong><c:choose><c:when test="${not empty batch.configName}">${batch.configName}</c:when><c:otherwise>Invalid File</c:otherwise></c:choose></strong><br />
                                                 ${batch.utBatchName}
-                                                <c:if test="${batch.transportMethodId != 2}">
+                                                <c:if test="${batch.transportMethodId != 2 && batch.statusValue != 'SRJ'}">
                                                     <c:set var="text" value="${fn:split(batch.originalFileName,'.')}" />
                                                     <c:set var="ext" value="${text[fn:length(text)-1]}" />
                                                     <br />
