@@ -2084,7 +2084,7 @@ public class adminProcessingActivity {
 		    sql = "select fromOutboundConfig, case when b.containsHeaderRow = 1 then a.rownumber+1 else a.rownumber end as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name,a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
 			+ "from batchuploadauditerrors a left outer  join "
 			+ "configurationmessagespecs b on a.configId = b.configId "
-			+ "where a.batchUploadId = " + batchId + " and a.errorId = " + errorId + " order by a.id asc limit 50 ";
+			+ "where a.batchUploadId = " + batchId + " and a.errorId = " + errorId + " order by a.id asc";
 		}
 		else {
 		    customCols.add("Field Value");
@@ -2092,7 +2092,7 @@ public class adminProcessingActivity {
 		    sql = "select 'false' as fromOutboundConfig,case when b.containsHeaderRow = 1 then a.rownumber+1 else a.rownumber end as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name,a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
 			+ "from batchdownloadauditerrors a left outer  join "
 			+ "configurationmessagespecs b on a.configId = b.configId "
-			+ "where a.batchDownloadId = " + batchId + " and a.errorId = " + errorId + " order by a.id asc limit 50 ";
+			+ "where a.batchDownloadId = " + batchId + " and a.errorId = " + errorId + " order by a.id asc";
 		}
 		
 		break;
@@ -2106,7 +2106,7 @@ public class adminProcessingActivity {
 		    sql = "select fromOutboundConfig, case when b.containsHeaderRow = 1 then a.rownumber+1 else a.rownumber end as rownumber, a.fieldNo as fieldNumber, a.fieldName as column_name, a.errorDetails as validation_type, a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
 			+ "from batchuploadauditerrors a left outer  join "
 			+ "configurationmessagespecs b on a.configId = b.configId "
-			+ "where a.batchUploadId = " + batchId + " and a.errorId = " + errorId + " order by a.id asc limit 50 ";
+			+ "where a.batchUploadId = " + batchId + " and a.errorId = " + errorId + " order by a.id asc";
 		}
 		else {
 		    customCols.add("Field Value");
@@ -2114,7 +2114,7 @@ public class adminProcessingActivity {
 		    sql = "select 'false' as fromOutboundConfig,case when b.containsHeaderRow = 1 then a.rownumber+1 else a.rownumber end as rownumber, a.fieldNo as fieldNumber, a.fieldName as column_name, a.errorDetails as validation_type, a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
 			+ "from batchdownloadauditerrors a left outer  join "
 			+ "configurationmessagespecs b on a.configId = b.configId "
-			+ "where a.batchDownloadId = " + batchId + " and a.errorId = " + errorId + " order by a.id asc limit 50 ";
+			+ "where a.batchDownloadId = " + batchId + " and a.errorId = " + errorId + " order by a.id asc";
 		}
 		
 		break;
@@ -2128,13 +2128,13 @@ public class adminProcessingActivity {
 		    sql = "select fromOutboundConfig, case when b.containsHeaderRow = 1 then a.rownumber+1 else a.rownumber end as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name, a.errorDetails as crosswalk, a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
 			+ "from batchuploadauditerrors a left outer join "
 			+ "configurationmessagespecs b on a.configId = b.configId "
-			+ "where a.batchUploadId = " + batchId + " and a.errorId = " + errorId + " order by a.id asc limit 50 ";
+			+ "where a.batchUploadId = " + batchId + " and a.errorId = " + errorId + " order by a.id asc";
 		}
 		else {
 		    sql = "select 'false' as fromOutboundConfig,case when b.containsHeaderRow = 1 then a.rownumber+1 else a.rownumber end as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name, a.errorDetails as crosswalk, a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
 			+ "from batchdownloadauditerrors a left outer join "
 			+ "configurationmessagespecs b on a.configId = b.configId "
-			+ "where a.batchDownloadId = " + batchId + " and a.errorId = " + errorId + " order by a.id asc limit 50 ";
+			+ "where a.batchDownloadId = " + batchId + " and a.errorId = " + errorId + " order by a.id asc";
 		}
 		break;
 		
@@ -2147,7 +2147,7 @@ public class adminProcessingActivity {
 		    sql = "select fromOutboundConfig, case when b.containsHeaderRow = 1 then a.rownumber+1 else a.rownumber end as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name,a.errorDetails as macro, a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
 			+ "from batchuploadauditerrors a left outer  join "
 			+ "configurationmessagespecs b on a.configId = b.configId "
-			+ "where a.batchUploadId = " + batchId + " and a.errorId = " + errorId + " order by a.id asc limit 50 ";
+			+ "where a.batchUploadId = " + batchId + " and a.errorId = " + errorId + " order by a.id asc";
 		}
 		else {
 		    customCols.add("Field Value");
@@ -2155,7 +2155,7 @@ public class adminProcessingActivity {
 		    sql = "select 'false' as fromOutboundConfig,case when b.containsHeaderRow = 1 then a.rownumber+1 else a.rownumber end as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name,a.errorDetails as macro, a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
 			+ "from batchdownloadauditerrors a left outer  join "
 			+ "configurationmessagespecs b on a.configId = b.configId "
-			+ "where a.batchDownloadId = " + batchId + " and a.errorId = " + errorId + " order by a.id asc limit 50 ";
+			+ "where a.batchDownloadId = " + batchId + " and a.errorId = " + errorId + " order by a.id asc";
 		}
 		
 		break;
@@ -2167,7 +2167,7 @@ public class adminProcessingActivity {
 		    sql = "select fromOutboundConfig, case when b.containsHeaderRow = 1 then a.rownumber+1 else a.rownumber end as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name,a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
 			+ "from batchuploadauditerrors a left outer  join "
 			+ "configurationmessagespecs b on a.configId = b.configId "
-			+ "where a.batchUploadId = " + batchId + " and a.errorId = " + errorId + " order by a.id asc limit 50 ";
+			+ "where a.batchUploadId = " + batchId + " and a.errorId = " + errorId + " order by a.id asc";
 		}
 		else {
 		    customCols.add("Field Value");
@@ -2175,7 +2175,7 @@ public class adminProcessingActivity {
 		    sql = "select 'false' as fromOutboundConfig,case when b.containsHeaderRow = 1 then a.rownumber+1 else a.rownumber end as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name,a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
 			+ "from batchdownloadauditerrors a left outer  join "
 			+ "configurationmessagespecs b on a.configId = b.configId "
-			+ "where a.batchDownloadId = " + batchId + " and a.errorId = " + errorId + " order by a.id asc limit 50 ";
+			+ "where a.batchDownloadId = " + batchId + " and a.errorId = " + errorId + " order by a.id asc";
 		}
 		
 		break;
