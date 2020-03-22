@@ -786,7 +786,8 @@ public class adminProcessingActivity {
             }
 
             List<Integer> resetStatusList = Arrays.asList(2, 22, 23, 1, 8, 35, 28); //DNP (21) is not a final status for admin
-            if (!resetStatusList.contains(batchDetails.getStatusId()) && configDetails.getMessageTypeId() != 2) {
+	    //if (!resetStatusList.contains(batchDetails.getStatusId()) && configDetails.getMessageTypeId() != 2) {
+            if (!resetStatusList.contains(batchDetails.getStatusId())) {
                 canReset = true;
             }
 
