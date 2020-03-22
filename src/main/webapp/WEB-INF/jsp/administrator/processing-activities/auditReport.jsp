@@ -107,7 +107,7 @@
 					    </c:otherwise>
 					</c:choose>
 				    </c:if>
-				    <c:if test="${!canRest && configDetails.messageTypeId == 2}">
+				    <%--<c:if test="${!canRest && configDetails.messageTypeId == 2}">
 					<li class="divider"></li> 
 					<li>
 					    <a href="#!">
@@ -115,7 +115,7 @@
 						<strong>Please Reset batch from the family planning system.</strong>
 					    </a>
 					</li>
-				    </c:if>
+				    </c:if>--%>
 				    <c:if test="${!batchDownload && sessionScope.userDetails.roleId == 1 && canReset}">
 					<li class="divider"></li>
 					<li>
