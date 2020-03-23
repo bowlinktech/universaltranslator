@@ -1468,10 +1468,10 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
 			
 			//Get the Use/Not Use Row
 			rowNumber = rowNumber+1;
-			row = sheet.getRow(rowNumber);
-			cell = row.getCell(colNumber);
-			
 			try {
+			    row = sheet.getRow(rowNumber);
+			    cell = row.getCell(colNumber);
+			
 			    useNotUse = cell.getStringCellValue();
 			    if("use".equals(useNotUse.toLowerCase()) || "u".equals(useNotUse.toLowerCase()) || "yes".equals(useNotUse.toLowerCase()) || "y".equals(useNotUse.toLowerCase()) || "".equals(useNotUse.toLowerCase())) {
 				useField = true;
@@ -1484,10 +1484,10 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
 			
 			//Get the validation Id
 			rowNumber = rowNumber + 1;
-			row = sheet.getRow(rowNumber);
-			cell = row.getCell(colNumber);
-			
 			try {
+			    row = sheet.getRow(rowNumber);
+			    cell = row.getCell(colNumber);
+			
 			    validationVal = cell.getStringCellValue();
 			    if("none".equals(validationVal.toLowerCase()) || "no".equals(validationVal.toLowerCase()) || "n".equals(validationVal.toLowerCase()) || "".equals(validationVal.toLowerCase())) {
 				validationId = 1;
