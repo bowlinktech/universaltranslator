@@ -4,6 +4,83 @@
 require(['./main'], function () {
     require(['jquery'], function ($) {
         
+       $(document).on('click', '.uploadFile', function() {
+           var fileDropLocation = $(this).attr('rel2');
+           var configId = $(this).attr('rel');
+           
+           $.ajax({
+                url: '/administrator/configurations/configFileUpload',
+                data: {
+                   'configId':configId,
+		   'fileDropLocation':fileDropLocation
+		},
+                type: "GET",
+                success: function(data) {
+                    $("#configFileUploadModal").html(data);
+                }
+            });
+       });
+       
+       //The function to submit the uploaded file
+        $(document).on('click', '#submitFileButton', function (event) {
+            var errorFound = 0;
+
+            $('#configFileDiv').removeClass("has-error");
+            $('#configFileMsg').removeClass("has-error");
+            $('#configFileMsg').html('');
+            $('#successMsg').hide();
+            $('#errorMsg').hide();
+            
+            var expectedExtension = "."+$('#expectedExt').val();
+
+            //Make sure a file is selected and is a text file
+            if ($('#configFile').val() === '') {
+                $('#configFileDiv').addClass("has-error");
+                $('#configFileMsg').addClass("has-error");
+                $('#configFileMsg').html('The file is a required field.');
+                errorFound = 1;
+            }
+            else if ($('#configFile').val().indexOf(expectedExtension) == -1) {
+                $('#configFileDiv').addClass("has-error");
+                $('#configFileMsg').addClass("has-error");
+                $('#configFileMsg').html('The selected file must have a ' + $('#expectedExt').val() + ' extension.');
+                errorFound = 1;
+            }
+
+            if (errorFound == 1) {
+                event.preventDefault();
+                return false;
+            }
+            else {
+               
+                //check and submit form
+		var form = $('#configFileForm')[0];
+		var formData = new FormData(form);
+		$.ajax({
+		    url: '/administrator/configurations/submitConfigFileForProcessing',
+		    type: "POST",
+		    enctype: 'multipart/form-data',
+		    processData: false,  // Important!
+		    contentType: false,
+		    cache: false,
+		    data: formData,
+		    success: function(data) {
+                       if(data == 1) {
+                           $('#configFile').val("");
+                           $('#submitFileButton').hide();
+                           $('#successMsg').show();
+                       }
+                       else {
+                           $('#configFile').val("");
+                           $('#errorMsg').show();
+                       }
+		    }
+		});
+            }
+
+
+        });
+        
        $(document).on('click','.printConfig',function() {
            /* $('body').overlay({
                 glyphicon : 'print',
