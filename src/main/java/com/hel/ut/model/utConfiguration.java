@@ -19,7 +19,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 public class utConfiguration {
 
     @Transient
-    private String orgName = null, messageTypeName = null, transportMethod = null;
+    private String orgName = null, messageTypeName = null, transportMethod = null, fileDropLocation = null;
 
     @Transient
     private Integer transportDetailId = 0, scheduleType = 5;
@@ -202,4 +202,13 @@ public class utConfiguration {
 	this.deleted = deleted;
     }
 
+    public String getFileDropLocation() {
+	return fileDropLocation;
+    }
+
+    public void setFileDropLocation(String fileDropLocation) {
+	this.fileDropLocation = fileDropLocation;
+    }
+
+    
 }
