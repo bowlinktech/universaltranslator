@@ -87,7 +87,15 @@
 									 Copy
 								     </a>
 								 </li>
-								 <li class="divider"></li>
+                                                                 <c:if test="${not empty config.fileDropLocation}">
+                                                                    <li>
+                                                                        <a href="#configFileUploadModal" data-toggle="modal" class="uploadFile" rel="${config.id}" rel2="${config.fileDropLocation}" title="Upload File">
+                                                                            <span class="glyphicon glyphicon-upload"></span>
+                                                                            Upload File
+                                                                        </a>
+                                                                    </li>
+                                                                </c:if>
+                                                                    <li class="divider"></li>
 							     </c:if>
                                                              <li>
                                                                 <a href="javascript:void(0);" class="printConfig" rel="${config.id}" title="Print this Configuration">
@@ -211,3 +219,4 @@
 	</div>
     </div>		
 </div>
+<div class="modal fade" id="configFileUploadModal" role="dialog" tabindex="-1" aria-labeledby="Configuration File Upload" aria-hidden="true" aria-describedby="Configuration File Upload"></div>

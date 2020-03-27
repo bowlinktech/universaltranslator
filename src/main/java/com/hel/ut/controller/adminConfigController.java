@@ -37,6 +37,7 @@ import com.hel.ut.model.Organization;
 import com.hel.ut.model.appenedNewconfigurationFormFields;
 import com.hel.ut.model.utUser;
 import com.hel.ut.model.configurationCCDElements;
+import com.hel.ut.model.configurationConnection;
 import com.hel.ut.model.configurationFTPFields;
 import com.hel.ut.model.configurationMessageSpecs;
 import com.hel.ut.model.configurationSchedules;
@@ -78,7 +79,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -89,6 +92,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import org.springframework.util.FileCopyUtils;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.multipart.MultipartFile;
 
 @Controller
 @RequestMapping("/administrator/configurations")
@@ -167,8 +171,19 @@ public class adminConfigController {
             transportDetails = utconfigurationTransportManager.getTransportDetails(config.getId());
             if (transportDetails != null) {
                 config.settransportMethod(utconfigurationTransportManager.getTransportMethodById(transportDetails.gettransportMethodId()));
+		
+		configurationFileDropFields fileDropLocation = utconfigurationTransportManager.getTransFileDropDetailsPull(transportDetails.getId());
+		
+		if(fileDropLocation != null) {
+		    //Make sure the configuration has at least 1 connection before we allow file upload
+		    List<configurationConnection> getConectionsByConfiguration = utconfigurationmanager.getConnectionsByConfiguration(config.getId(), 0);
+		    if(!getConectionsByConfiguration.isEmpty()) {
+			config.setFileDropLocation(fileDropLocation.getDirectory());
+		    }
+		    
+		}
             }
-
+	    
         }
 	mav.addObject("sourceconfigurations", sourceconfigurations);
 	
@@ -3327,4 +3342,84 @@ public class adminConfigController {
 	 // close stream and return to view
 	response.flushBuffer();
     } 
+    
+    /**
+     * The 'configFileUpload' GET request will return modal for downloading the crosswalks.
+     *
+     * @param configId
+     * @param fileDropLocation 
+     * @param session
+     * @return
+     * @throws Exception
+     */
+    @RequestMapping(value = "/configFileUpload", method = RequestMethod.GET)
+    @ResponseBody
+    public ModelAndView configFileUpload(@RequestParam(value = "configId", required = true) Integer configId,
+	    @RequestParam(value = "fileDropLocation", required = true) String fileDropLocation,HttpSession session) throws Exception {
+	
+	configurationTransport transportDetails = utconfigurationTransportManager.getTransportDetails(configId);
+
+        ModelAndView mav = new ModelAndView();
+        mav.setViewName("/administrator/configurations/configUploadFile");
+        mav.addObject("fileDropLocation", fileDropLocation);
+	mav.addObject("expectedExt", transportDetails.getfileExt());
+        return mav;
+    }
+    
+    /**
+     * The '/submitConfigFileForProcessing' function will be used to upload a new file for an existing crosswalk.
+     *
+     * @param configFile
+     * @param fileDropLocation
+     * @return 
+     * @throws java.lang.Exception 
+     * @Return The function will either return the crosswalk form on error or redirect to the data translation page.
+     */
+    @RequestMapping(value = "/submitConfigFileForProcessing", method = RequestMethod.POST)
+    public @ResponseBody 
+    int submitConfigFileForProcessing(@RequestParam(value = "fileDropLocation", required = true) String fileDropLocation, 
+	@RequestParam(value = "configFile", required = true)  MultipartFile configFile) throws Exception {
+
+	Integer returnVal = 1;
+	
+	if(fileDropLocation != null) {
+	    if(!"".equals(fileDropLocation)) {
+		MultipartFile file = configFile;
+		String fileName = file.getOriginalFilename();
+
+		InputStream inputStream = null;
+		OutputStream outputStream = null;
+
+		try {
+		    inputStream = file.getInputStream();
+		    File newFile = null;
+
+		    newFile = new File(myProps.getProperty("ut.directory.utRootDir") + fileDropLocation.replace("/HELProductSuite/universalTranslator/", "") + fileName);
+		    newFile.createNewFile();
+
+		    outputStream = new FileOutputStream(newFile);
+		    int read = 0;
+		    byte[] bytes = new byte[1024];
+
+		    while ((read = inputStream.read(bytes)) != -1) {
+			outputStream.write(bytes, 0, read);
+		    }
+		    outputStream.close();
+
+		    //Save the attachment
+		} catch (IOException e) {
+		    returnVal = 0;
+		    e.printStackTrace();
+		}
+	    }
+	    else {
+		returnVal = 0;
+	    }
+	}
+	else {
+	    returnVal = 0;
+	}
+	
+	return returnVal;
+    }
 }
