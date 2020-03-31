@@ -1,6 +1,6 @@
 package com.hel.ut.controller;
 
-import java.io.ByteArrayInputStream;
+
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -32,6 +32,9 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FilenameUtils;
+import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.servlet.view.RedirectView;
 
 @Controller
 @RequestMapping("/FileDownload")
@@ -55,12 +58,14 @@ public class fileDownloadController {
     private static final int BUFFER_SIZE = 4096;
 
     @RequestMapping(value = "/downloadFile.do", method = RequestMethod.GET)
-    public void downloadFile(HttpServletRequest request, Authentication authentication,
+    public ModelAndView downloadFile(HttpServletRequest request, Authentication authentication,
 	    @RequestParam String filename,
 	    @RequestParam String foldername,
 	    @RequestParam(value = "orgId", required = false) Integer orgId,
 	    @RequestParam(value = "utBatchName", required = false) String utBatchName,
-	    HttpServletResponse response) throws Exception {
+	    @RequestParam(value = "fromPage", required = false) String fromPage,
+	    @RequestParam(value = "utBatchId", required = false) String utBatchId,
+	    HttpServletResponse response, RedirectAttributes redirectAttr) throws Exception {
 	
 	String desc = "";
 	try {
@@ -90,13 +95,18 @@ public class fileDownloadController {
 	InputStream in = null;
 	ServletContext context = request.getServletContext();
 	String errorMessage = "";
+	
+	boolean fileExists = false;
 
 	try {
 	    String directory;
+	    
+	    Organization organization = null;
+	    String cleanURL = "";
 
 	    if (orgId != null && orgId > 0) {
-		Organization organization = organizationManager.getOrganizationById(orgId);
-		String cleanURL = organization.getcleanURL();
+		organization = organizationManager.getOrganizationById(orgId);
+		cleanURL = organization.getcleanURL();
 		
 		if("archivesOut".equals(foldername)) {
 		    directory = myProps.getProperty("ut.directory.utRootDir") + cleanURL + "/output files/";
@@ -116,108 +126,149 @@ public class fileDownloadController {
 
 	    File f = new File(directory + filename);
 	    
+	    if(!f.exists() && "archivesIn".equals(foldername) && !"".equals(cleanURL)) {
+		directory = myProps.getProperty("ut.directory.utRootDir") + cleanURL + "/input files/";
+		filename = filename.replace("archive_","encoded_");
+		f = new File(directory + filename);
+	    }
+	    
 	    if (utBatchName != null) {
 
 		if (!f.exists() && !"".equals(utBatchName)) {
+		   
 		    f = new File(directory + utBatchName);
 
 		    if (f.exists()) {
+			fileExists = true;
 			mimeType = context.getMimeType(directory + utBatchName);
 			//we don't know when a file is encoding or decoding without having to do queries, it will be easy to try to decode first
 			in = new FileInputStream(directory + utBatchName);
-			try {
-			    byte[] fileAsBytes = filemanager.loadFileAsBytesArray(directory + utBatchName);
-			    if (fileAsBytes != null) {
-				byte[] decodedBytes = Base64.decodeBase64(fileAsBytes);
-				in = new ByteArrayInputStream(decodedBytes);
-			    }
-			} catch (Exception ex) {
-			    // no need to do anything
-			}
+			
 			actualFileName = utBatchName;
 		    } else if (!f.exists() && "txt".equals(FilenameUtils.getExtension(utBatchName))) {
 			utBatchName = utBatchName.replace("txt", FilenameUtils.getExtension(filename));
 
 			f = new File(directory + utBatchName);
 			if (f.exists()) {
+			    fileExists = true;
 			    mimeType = context.getMimeType(directory + utBatchName);
 			    in = new FileInputStream(directory + utBatchName);
-			    try {
-				byte[] fileAsBytes = filemanager.loadFileAsBytesArray(directory + utBatchName);
-				if (fileAsBytes != null) {
-				    byte[] decodedBytes = Base64.decodeBase64(fileAsBytes);
-				    in = new ByteArrayInputStream(decodedBytes);
-				}
-			    } catch (Exception ex) {
-				// no need to do anything
-			    }
+			    
 			    actualFileName = utBatchName;
 			}
 		    }
 		} else {
+		    if(f.exists()) {
+			fileExists = true;
+			mimeType = context.getMimeType(directory + filename);
+			in = new FileInputStream(directory + filename);
+		    
+			actualFileName = filename;
+		    }
+		}
+	    } 
+	    else {
+		if(f.exists()) {
+		    fileExists = true;
 		    mimeType = context.getMimeType(directory + filename);
 		    in = new FileInputStream(directory + filename);
-		    try {
-			byte[] fileAsBytes = filemanager.loadFileAsBytesArray(directory + utBatchName);
-			if (fileAsBytes != null) {
-			    byte[] decodedBytes = Base64.decodeBase64(fileAsBytes);
-			    in = new ByteArrayInputStream(decodedBytes);
-			}
-		    } catch (Exception ex) {
-			// no need to do anything
-		    }
+
 		    actualFileName = filename;
 		}
-	    } else {
-		mimeType = context.getMimeType(directory + filename);
-		in = new FileInputStream(directory + filename);
-		try {
-		    byte[] fileAsBytes = filemanager.loadFileAsBytesArray(directory + utBatchName);
-		    if (fileAsBytes != null) {
-			byte[] decodedBytes = Base64.decodeBase64(fileAsBytes);
-			in = new ByteArrayInputStream(decodedBytes);
-		    }
-		} catch (Exception ex) {
-		    // no need to do anything
+	    }
+	    
+	    if(fileExists) {
+		if (mimeType == null) {
+		    // set to binary type if MIME mapping not found
+		    mimeType = "application/octet-stream";
 		}
-		actualFileName = filename;
+		response.setContentType(mimeType);
+		
+		byte[] buffer = new byte[BUFFER_SIZE];
+		int bytesRead = 0;
+
+		response.setHeader("Content-Transfer-Encoding", "binary");
+		response.setHeader("Content-Disposition", "attachment;filename=\"" + actualFileName + "\"");
+
+		outputStream = response.getOutputStream();
+
+		try {
+		    byte[] fileAsBytes = filemanager.loadFileAsBytesArray(directory + actualFileName);
+		    if(Base64.isBase64(new String(fileAsBytes))) {
+			byte[] decodedBytes = Base64.decodeBase64(fileAsBytes);
+			String decodedString = new String(decodedBytes);
+			response.setContentLength((int) decodedString.length());
+			outputStream.write(decodedString.getBytes());
+			in.close();
+			outputStream.close();
+		    }
+		    else {
+			response.setContentLength((int) f.length());
+			while (0 < (bytesRead = in.read(buffer))) {
+			    outputStream.write(buffer, 0, bytesRead);
+			}
+			in.close();
+			outputStream.close();
+		    }
+		}
+		catch (Exception ex) {
+		    response.setContentLength((int) f.length());
+		    while (0 < (bytesRead = in.read(buffer))) {
+			outputStream.write(buffer, 0, bytesRead);
+		    }
+		    in.close();
+		    outputStream.close();
+		}
+		
+		return null;
+
 	    }
-
-	    if (mimeType == null) {
-		// set to binary type if MIME mapping not found
-		mimeType = "application/octet-stream";
+	    else {
+		
+		redirectAttr.addFlashAttribute("error", "missing");
+		ModelAndView mav = null;
+		if(fromPage != null) {
+		    if(!"".equals(fromPage)) {
+			if("inbound".equals(fromPage)) {
+			   mav = new ModelAndView(new RedirectView("/administrator/processing-activity/inbound")); 
+			}
+			else if("outbound".equals(fromPage)) {
+			   mav = new ModelAndView(new RedirectView("/administrator/processing-activity/outbound")); 
+			}
+			else if("invalidin".equals(fromPage)) {
+			   mav = new ModelAndView(new RedirectView("/administrator/processing-activity/invalidIn")); 
+			}
+			else if("rejected".equals(fromPage)) {
+			   mav = new ModelAndView(new RedirectView("/administrator/processing-activity/rejected")); 
+			}
+			else if("invalidOut".equals(fromPage)) {
+			   mav = new ModelAndView(new RedirectView("/administrator/processing-activity/invalidOut")); 
+			}
+			else if("inboundAudit".equals(fromPage)) {
+			   mav = new ModelAndView(new RedirectView("/administrator/processing-activity/inbound/auditReport/"+utBatchId)); 
+			}
+			else if("outboundAudit".equals(fromPage)) {
+			   mav = new ModelAndView(new RedirectView("/administrator/processing-activity/outbound/auditReport/"+utBatchId)); 
+			}
+		    }
+		}
+		
+		if(mav == null) {
+		    mav = new ModelAndView(new RedirectView("/administrator/processing-activity/inbound/"));
+		}
+		return mav;
 	    }
-	    response.setContentType(mimeType);
-
-	    byte[] buffer = new byte[BUFFER_SIZE];
-	    int bytesRead = 0;
-
-	    response.setContentLength((int) f.length());
-	    response.setHeader("Content-Transfer-Encoding", "binary");
-	    response.setHeader("Content-Disposition", "attachment;filename=\"" + actualFileName + "\"");
-
-	    outputStream = response.getOutputStream();
-	    while (0 < (bytesRead = in.read(buffer))) {
-		outputStream.write(buffer, 0, bytesRead);
-	    }
-
-	    in.close();
-	    outputStream.close();
-
 	} catch (FileNotFoundException e) {
 	    errorMessage = errorMessage + "<br/>" + e.getMessage();
-	    e.printStackTrace();
 
 	} catch (IOException e) {
 	    errorMessage = e.getMessage();
-	    e.printStackTrace();
 	} finally {
 	    if (null != in) {
 		try {
 		    in.close();
 		} catch (IOException e) {
 		    errorMessage = errorMessage + "<br/>" + e.getMessage();
-		    e.printStackTrace();
 		}
 	    }
 	}
@@ -228,6 +279,8 @@ public class fileDownloadController {
 	if (!errorMessage.equalsIgnoreCase("")) {
 	    throw new Exception(errorMessage);
 	}
+	
+	return null;
     }
 
 }

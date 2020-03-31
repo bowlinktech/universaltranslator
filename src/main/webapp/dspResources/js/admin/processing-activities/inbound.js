@@ -128,22 +128,25 @@ function populateMessages(fromDate,toDate) {
 		    
 		    if(row.transportMethodId != 2) {
 		    
-			if(row.transportMethodId == 9 || row.transportMethodId == 12) {
-			   returnData += '<br /><a href="/FileDownload/downloadFile.do?filename='+row.utBatchName+'.'+row.originalFileName.split('.')[1].toString().toLowerCase()+'&foldername=archivesIn" title="View Original File">'+row.originalFileName+'</a>';
+			if(row.transportMethodId == 9 || row.transportMethodId == 12 ) {
+			   returnData += '<br /><a href="/FileDownload/downloadFile.do?fromPage=inbound&filename='+row.utBatchName+'.'+row.originalFileName.split('.')[1].toString().toLowerCase()+'&foldername=archivesIn" title="View Original File">'+row.originalFileName+'</a>';
 			}
 			else if (row.transportMethodId == 6) {
-			    returnData += '<br /><a href="/FileDownload/downloadFile.do?filename='+row.utBatchName+'_dec.'+row.originalFileName.split('.')[1].toString().toLowerCase()+'&foldername=archivesIn" title="View Original File">'+row.originalFileName+'</a>';
+			    returnData += '<br /><a href="/FileDownload/downloadFile.do?fromPage=inbound&filename='+row.utBatchName+'_dec.'+row.originalFileName.split('.')[1].toString().toLowerCase()+'&foldername=archivesIn" title="View Original File">'+row.originalFileName+'</a>';
+			}
+                        else if(row.transportMethodId == 13 ) {
+			   returnData += '<br /><a href="/FileDownload/downloadFile.do?fromPage=inbound&filename=archive_'+row.utBatchName+'.'+row.originalFileName.split('.')[1].toString().toLowerCase()+'&foldername=archivesIn&orgId='+row.orgId+'" title="View Original File">'+row.originalFileName+'</a>';
 			}
 			else {
-			   returnData += '<br /><a href="/FileDownload/downloadFile.do?filename=encoded_'+row.utBatchName+'.'+row.originalFileName.split('.')[1].toString().toLowerCase()+'&foldername=input files&orgId='+row.orgId+'" title="View Original File">'+row.originalFileName+'</a>'; 
+			   returnData += '<br /><a href="/FileDownload/downloadFile.do?fromPage=inbound&filename=encoded_'+row.utBatchName+'.'+row.originalFileName.split('.')[1].toString().toLowerCase()+'&foldername=input files&orgId='+row.orgId+'" title="View Original File">'+row.originalFileName+'</a>'; 
 			}
 			
 			if(row.inboundBatchConfigurationType == 1 && (row.transportMethodId == 10 || row.transportMethodId == 13)) {
 			   if(row.transportMethod.indexOf("Direct") > 0 || row.transportMethod === 'File Drop') {
-			       returnData += '<br /><a href="/FileDownload/downloadFile.do?filename='+row.utBatchName+'.txt&foldername=loadFiles" title="View Pipe File">Translated File - '+row.utBatchName+'.txt</a>';
+			       returnData += '<br /><a href="/FileDownload/downloadFile.do?fromPage=inbound&filename='+row.utBatchName+'.txt&foldername=loadFiles" title="View Pipe File">Translated File - '+row.utBatchName+'.txt</a>';
 			   }
 			   else {
-			       returnData += '<br /><a href="/FileDownload/downloadFile.do?filename=archive_'+row.utBatchName+'.'+row.originalFileName.split('.')[1].toString().toLowerCase()+'&foldername=archivesIn" title="View Pipe File">Translated File - '+row.utBatchName+'</a>';
+			       returnData += '<br /><a href="/FileDownload/downloadFile.do?fromPage=inbound&filename=archive_'+row.utBatchName+'.'+row.originalFileName.split('.')[1].toString().toLowerCase()+'&foldername=archivesIn" title="View Pipe File">Translated File - '+row.utBatchName+'</a>';
 			   }
 			}
 		    }
