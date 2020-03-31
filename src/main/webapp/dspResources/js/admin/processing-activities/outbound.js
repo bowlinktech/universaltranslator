@@ -110,7 +110,7 @@ function populateMessages(fromDate,toDate) {
 		    returnData += row.utBatchName;
 		    
 		    if(row.outputFileName !== '' && (row.statusId == 28 || row.statusId == 58 || row.statusId == 30)) {
-			returnData += '<br /><a href="/FileDownload/downloadFile.do?filename='+row.outputFileName+'&utBatchName='+row.utBatchName+'&foldername=archivesOut&orgId='+row.orgId+'" title="View Original File">Download Outbound File</a>';
+			returnData += '<br /><a href="/FileDownload/downloadFile.do?fromPage=outbound&filename='+row.outputFileName+'&utBatchName='+row.utBatchName+'&foldername=archivesOut&orgId='+row.orgId+'" title="View Original File">Download Outbound File</a>';
 		    }
 		    
 		   return returnData;
@@ -125,7 +125,7 @@ function populateMessages(fromDate,toDate) {
 		    var returnData = '<a href="/administrator/processing-activity/inbound/'+data+'" title="View Inbound Batch" role="button">'+data+'</a>';
 		    
 		    if(row.fromBatchFile !== '') {
-			returnData += '<br /><a href="/FileDownload/downloadFile.do?filename='+row.fromBatchFile+'&foldername=archivesIn&orgId=0" title="View Uploaded Source File">Download Uploaded File</a>';
+			returnData += '<br /><a href="/FileDownload/downloadFile.do?fromPage=outbound&filename='+row.fromBatchFile+'&foldername=archivesIn&orgId=0" title="View Uploaded Source File">Download Uploaded File</a>';
 		    }
 		    
 		   return returnData;

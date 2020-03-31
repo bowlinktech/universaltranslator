@@ -36,6 +36,11 @@
                         </form:form>
                     </div>
                 </div>
+                <c:if test="${not empty error}" >
+                    <div class="alert alert-danger" role="alert">
+                        The selected file was not found.
+                    </div>
+                </c:if>
 
                 <div class="form-container scrollable">
                     <div class="date-range-picker-trigger form-control pull-right daterange" style="width:285px; margin-left: 10px;">

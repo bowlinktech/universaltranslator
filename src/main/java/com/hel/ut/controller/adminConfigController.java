@@ -2815,8 +2815,11 @@ public class adminConfigController {
 
     
     /**
-     * The '/viewCrosswalk{params}' function will return the details of the selected crosswalk. The results will be displayed in the overlay.
+     * The '/viewCrosswalk{params}' function will return the details of the selected crosswalk.The results will be displayed in the overlay.
      *
+     * @param cwId
+     * @return 
+     * @throws java.lang.Exception
      * @Param	i	This will hold the id of the selected crosswalk
      *
      * @Return	This function will return the crosswalk details view.
