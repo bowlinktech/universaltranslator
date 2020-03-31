@@ -1897,6 +1897,8 @@ public class transactionInManagerImpl implements transactionInManager {
 	List<String> ccAddresses = new ArrayList<String>();
 	ccAddresses.add(myProps.getProperty("admin.email"));
 	
+	Organization orgDetails = organizationmanager.getOrganizationById(batch.getOrgId());
+	
 	//build message
 	String message = "Uploaded File (Batch Id:" + batch.getUtBatchName() + ") contains " + batch.getErrorRecordCount() + " error(s).";
 
@@ -1904,7 +1906,7 @@ public class transactionInManagerImpl implements transactionInManager {
 	message = message + "<br/><br/>Batch Id: " + batch.getUtBatchName();
 	message = message + "<br/><br/>Total Transactions: " + batch.getTotalRecordCount();
 	message = message + "<br/>Total Errors: " + batch.getErrorRecordCount();
-	message += "<br /><br />Sending Organization: " + batch.getOrgName();
+	message += "<br /><br />Sending Organization: " + orgDetails.getOrgName();
 
 	List<Transaction> transactions = getTransactionsByStatusId(batch.getId(), rejectIds, 5);
 	

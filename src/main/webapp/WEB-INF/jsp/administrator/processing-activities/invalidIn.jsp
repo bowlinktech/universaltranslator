@@ -41,6 +41,11 @@
                         <br/><br/>
                     </div>
                 </c:if>
+                <c:if test="${not empty error}" >
+                    <div class="alert alert-danger" role="alert">
+                        The selected file was not found.
+                    </div>
+                </c:if>
                 <div class="form-container scrollable">
                     <div class="date-range-picker-trigger form-control pull-right daterange" style="width:285px; margin-left: 10px;">
                         <i class="glyphicon glyphicon-calendar"></i>
@@ -73,13 +78,13 @@
                                                     <c:set var="text" value="${fn:split(batch.originalFileName,'.')}" />
                                                     <c:set var="ext" value="${text[fn:length(text)-1]}" />
                                                     <br />
-                                                    <c:set var="hrefLink" value="/FileDownload/downloadFile.do?filename=encoded_${batch.utBatchName}.${ext}&foldername=input files&orgId=${batch.orgId}"/>
+                                                    <c:set var="hrefLink" value="/FileDownload/downloadFile.do?fromPage=invalidin&filename=encoded_${batch.utBatchName}.${ext}&foldername=input files&orgId=${batch.orgId}"/>
 
                                                     <c:if test="${batch.transportMethodId == 6}">
-                                                        <c:set var="hrefLink" value="/FileDownload/downloadFile.do?filename=${batch.utBatchName}_dec.${ext}&foldername=archivesIn"/>
+                                                        <c:set var="hrefLink" value="/FileDownload/downloadFile.do?fromPage=invalidin&filename=${batch.utBatchName}_dec.${ext}&foldername=archivesIn"/>
                                                     </c:if>
 						    <c:if test="${batch.transportMethodId == 12 || batch.transportMethodId == 9}">
-							<c:set var="hrefPipeLink" value="/FileDownload/downloadFile.do?filename=${batch.utBatchName}.${ext}&foldername=archivesIn"/>
+							<c:set var="hrefPipeLink" value="/FileDownload/downloadFile.do?fromPage=invalidin&filename=${batch.utBatchName}.${ext}&foldername=archivesIn"/>
 						    </c:if>
 
                                                     <a href="${hrefLink}" title="View Original File">
@@ -90,10 +95,10 @@
 						    <c:if test="${batch.inboundBatchConfigurationType == 1 && (batch.transportMethodId == 10 || batch.transportMethodId == 13)}">
                                                         <c:choose>
                                                             <c:when test="${batch.transportMethod == 'Direct Message' || batch.transportMethod == 'File Drop'}">
-                                                                <a href="/FileDownload/downloadFile.do?filename=${batch.utBatchName}.txt&foldername=loadFiles" title="View Pipe File">Translated File - ${batch.utBatchName}.txt</a>
+                                                                <a href="/FileDownload/downloadFile.do?fromPage=invalidin&filename=${batch.utBatchName}.txt&foldername=loadFiles" title="View Pipe File">Translated File - ${batch.utBatchName}.txt</a>
                                                             </c:when>
                                                             <c:otherwise>
-                                                                <a href="/FileDownload/downloadFile.do?filename=archive_${batch.utBatchName}.${ext}&foldername=archivesIn" title="View Pipe File"> Translated File - ${batch.utBatchName}</a>
+                                                                <a href="/FileDownload/downloadFile.do?fromPage=invalidin&filename=archive_${batch.utBatchName}.${ext}&foldername=archivesIn" title="View Pipe File"> Translated File - ${batch.utBatchName}</a>
                                                             </c:otherwise>
                                                         </c:choose>
 						    </c:if>
