@@ -41,6 +41,11 @@
                         <br/><br/>
                     </div>
                 </c:if>
+                <c:if test="${not empty error}" >
+                    <div class="alert alert-danger" role="alert">
+                        The selected file was not found.
+                    </div>
+                </c:if>
                
                 <div class="form-container scrollable">
                 
@@ -79,7 +84,7 @@
 						    batch.statusId == 59 || 
 						    batch.statusId == 30)}">
                                                     <br />
-                                                    <a href="/FileDownload/downloadFile.do?filename=${batch.outputFileName}&utBatchName=${batch.outputFileName}&foldername=archivesOut&orgId=0" title="View Original File">
+                                                    <a href="/FileDownload/downloadFile.do?fromPage=invalidOut&filename=${batch.outputFileName}&utBatchName=${batch.outputFileName}&foldername=archivesOut&orgId=0" title="View Original File">
                                                         Download Outbound File
                                                     </a>
                                                 </c:if>
@@ -88,7 +93,7 @@
 						<a href="<c:url value='/administrator/processing-activity/inbound/${batch.fromBatchName}' />" title="View Inbound Batch" role="button">${batch.fromBatchName}</a>
                                                 <c:if test="${not empty batch.fromBatchFile}">
                                                     <br />
-                                                    <a href="/FileDownload/downloadFile.do?filename=${batch.fromBatchFile}&foldername=archivesIn&orgId=0" title="View Uploaded Source File">
+                                                    <a href="/FileDownload/downloadFile.do?fromPage=invalidOut&filename=${batch.fromBatchFile}&foldername=archivesIn&orgId=0" title="View Uploaded Source File">
                                                         Download Uploaded File
                                                     </a>
                                                 </c:if>
