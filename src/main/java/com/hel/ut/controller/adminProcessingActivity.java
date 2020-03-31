@@ -760,6 +760,18 @@ public class adminProcessingActivity {
 	    utConfiguration configDetails = configurationManager.getConfigurationById(batchDetails.getConfigId());
 	    mav.addObject("configDetails",configDetails);
 	    
+	    configurationTransport transportDetails = configurationTransportManager.getTransportDetails(batchDetails.getConfigId());
+	    
+	    String transportMethod = "";
+	    if(!"".equals(transportDetails.getDmConfigKeyword())) {
+		transportMethod = "File Drop (Direct)";
+	    }
+	    
+	    if(!"".equals(transportDetails.getRestAPIUsername())) {
+		transportMethod = "File Drop (Rest)";
+	    }
+	    mav.addObject("transportMethod",transportMethod);
+	    
 	    Organization orgDetails = organizationmanager.getOrganizationById(batchDetails.getOrgId());
             batchDetails.setOrgName(orgDetails.getOrgName());
 	    

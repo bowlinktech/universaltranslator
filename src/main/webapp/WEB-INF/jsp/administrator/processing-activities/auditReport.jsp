@@ -5,8 +5,15 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
 
 <div class="main clearfix" role="main">
+    
     <div class="row-fluid">
+        
         <div class="col-md-12">
+            <c:if test="${not empty error}" >
+                    <div class="alert alert-danger" role="alert">
+                        The selected file was not found.
+                    </div>
+                </c:if>
             <section class="panel panel-default">
 		<div class="panel-heading clearfix" style="height: 50px">
 		    <h3 class="panel-title pull-left" style="padding-top: 7.5px;">Audit Summary</h3>
@@ -208,7 +215,7 @@
 					<c:if test="${not empty batchDetails.utBatchName}">
 					    <c:set var="text" value="${fn:split(batchDetails.outputFileName,'.')}" />
 					    <c:set var="ext" value="${text[fn:length(text)-1]}" />
-					    <c:set var="hrefLink" value="/FileDownload/downloadFile.do?filename=${batchDetails.utBatchName}.${ext}&foldername=archivesOut"/>
+					    <c:set var="hrefLink" value="/FileDownload/downloadFile.do?fromPage=outboundAudit&filename=${batchDetails.utBatchName}.${ext}&foldername=archivesOut&utBatchId=${batchDetails.utBatchName}"/>
 					    <p><strong>Generated Target File (Located in archivesOut):</strong>
 					    <br />
 					    <c:choose>
@@ -251,21 +258,30 @@
 					<c:if test="${not empty batchDetails.originalFileName}">
 					    <c:set var="text" value="${fn:split(batchDetails.originalFileName,'.')}" />
 					    <c:set var="ext" value="${text[fn:length(text)-1]}" />
-					    
+                                            
+                                            <c:if test="${configDetails.configurationType == 1 && (batchDetails.transportMethodId == 10 || batchDetails.transportMethodId == 13)}">
+                                                <c:choose>
+                                                    <c:when test="${fn:contains(transportMethod,'direct') || batchDetails.transportMethodId == 13}">
+                                                        <c:set var="hreftranslateLink" value="/FileDownload/downloadFile.do?fromPage=inboundAudit&filename=${batchDetails.utBatchName}.txt&foldername=loadFiles&utBatchId=${batchDetails.utBatchName}"/>
+                                                    </c:when>
+                                                    <c:otherwise>
+                                                        <c:set var="hreftranslateLink" value="/FileDownload/downloadFile.do?fromPage=inboundAudit&filename=archive_${batchDetails.utBatchName}.${fn:toLowerCase(ext)}&foldername=archivesIn&utBatchId=${batchDetails.utBatchName}"/>
+                                                    </c:otherwise>
+                                                </c:choose>
+
+                                            </c:if>
 					    <c:choose>
-						<c:when test="${batchDetails.transportMethodId == 9 || batchDetails.transportMethodId == 13}">
-						     <c:set var="hreftranslateLink" value="/FileDownload/downloadFile.do?filename=${batchDetails.utBatchName}.txt&foldername=loadFiles"/>
-						     <c:choose>
-							 <c:when test="${fn:contains(batchDetails.utBatchName,'direct')}">
-							     <c:set var="hrefLink" value="/FileDownload/downloadFile.do?filename=${batchDetails.utBatchName}.${fn:toLowerCase(ext)}&foldername=archivesIn"/>
-							 </c:when>
-							 <c:otherwise>
-							     <c:set var="hrefLink" value="/FileDownload/downloadFile.do?filename=archive_${batchDetails.utBatchName}.${fn:toLowerCase(ext)}&foldername=archivesIn"/>
-							 </c:otherwise>
-						    </c:choose>
+						<c:when test="${batchDetails.transportMethodId == 9 || batchDetails.transportMethodId == 12}">
+						     <c:set var="hrefLink" value="/FileDownload/downloadFile.do?fromPage=inboundAudit&filename=${batchDetails.utBatchName}.${fn:toLowerCase(ext)}&foldername=archivesIn&utBatchId=${batchDetails.utBatchName}"/>
+						</c:when>
+                                                <c:when test="${batchDetails.transportMethodId == 6}">
+						     <c:set var="hrefLink" value="/FileDownload/downloadFile.do?fromPage=inboundAudit&filename=${batchDetails.utBatchName}_dec.${fn:toLowerCase(ext)}&foldername=archivesIn&utBatchId=${batchDetails.utBatchName}"/>
+						</c:when>
+                                                <c:when test="${batchDetails.transportMethodId == 13}">
+						     <c:set var="hrefLink" value="/FileDownload/downloadFile.do?fromPage=inboundAudit&filename=archive_${batchDetails.utBatchName}.${fn:toLowerCase(ext)}&foldername=archivesIn&orgId=${batchDetails.orgId}&utBatchId=${batchDetails.utBatchName}"/>
 						</c:when>
 						<c:otherwise>
-						    <c:set var="hrefLink" value="/FileDownload/downloadFile.do?filename=archive_${batchDetails.utBatchName}.${fn:toLowerCase(ext)}&foldername=archivesIn"/>
+						    <c:set var="hrefLink" value="/FileDownload/downloadFile.do?fromPage=inboundAudit&filename=encoded_${batchDetails.utBatchName}.${fn:toLowerCase(ext)}&foldername=input files&orgId=${batchDetails.orgId}&utBatchId=${batchDetails.utBatchName}"/>
 						</c:otherwise>
 					    </c:choose>
 					    <p>
