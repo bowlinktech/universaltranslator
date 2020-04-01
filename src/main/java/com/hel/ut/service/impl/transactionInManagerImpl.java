@@ -3238,20 +3238,24 @@ public class transactionInManagerImpl implements transactionInManager {
 		targetsInserted = true;
 		noTargetsFound = assignBatchDLId(batchUploadId, batch.getConfigId());
 	    }
-
-	    //If errors are found and the error handling is set to send only non errored transactions
-	    //and there are successful tranasctions to send create the batch download entries
-	    else if(handlingDetails.get(0).geterrorHandling() == 2 && (updatedBatchDetails.getErrorRecordCount() < updatedBatchDetails.getTotalRecordCount())) {
-		targetsInserted = true;
-		noTargetsFound = assignBatchDLId(batchUploadId, batch.getConfigId());
-	    }
-	    //If the error handling is set to send all transactions errored or not
-	    else if(handlingDetails.get(0).geterrorHandling() == 4) {
-		targetsInserted = true;
-		noTargetsFound = assignBatchDLId(batchUploadId, batch.getConfigId());
+	    else {
+		//if errors are found and the configuration is not set to "Reject entire file on a single transaction error" then create the batch download entry.
+		if(handlingDetails.get(0).geterrorHandling() != 3) {
+		    targetsInserted = true;
+		    noTargetsFound = assignBatchDLId(batchUploadId, batch.getConfigId());
+		}
+		else {
+		    batchStatusId = 7;
+		    updateBatchStatus(batchUploadId, batchStatusId, "endDateTime");
+		    
+		    //log batch activity
+		    batchuploadactivity ba = new batchuploadactivity();
+		    ba.setActivity("BatchId:" + batchUploadId + " was rejected because error handling is set to 'Reject entire file on a single transaction error' and has a total of " + updatedBatchDetails.getErrorRecordCount() + " errors.");
+		    ba.setBatchUploadId(batchUploadId);
+		    transactionInDAO.submitBatchActivityLog(ba);
+		}
 	    }
 	}
-	
 	
 	//clean
 	cleanAuditErrorTable(batch.getId());
@@ -3261,14 +3265,12 @@ public class transactionInManagerImpl implements transactionInManager {
 	ba.setActivity("Clean Audit Error table for batchId:" + batchUploadId);
 	ba.setBatchUploadId(batchUploadId);
 	transactionInDAO.submitBatchActivityLog(ba);
-
 	
 	//populate
 	populateAuditReport(batch.getId(), configurationManager.getMessageSpecs(batch.getConfigId()));
 	
 	//populate dropped values
 	populateDroppedValues(batch.getId(), batch.getConfigId(), false);
-	
 	
 	//log batch activity
 	ba = new batchuploadactivity();
