@@ -6,46 +6,43 @@
 
 
 require(['./main'], function () {
-    require(['jquery'], function ($) {
 
-        $("input:text,form").attr("autocomplete", "off");
+    $("input:text,form").attr("autocomplete", "off");
 
-        //This function will launch the status detail overlay with the selected
-        //status
-        $(document).on('click', '.viewPayload', function (event) {
-            var wsId = $(this).attr('rel');
-            $.ajax({
-                url: '/administrator/processing-activity/apimessage/viewPayload.do',
-                type: "POST",
-                data: {'messageId': wsId},
-                success: function (data) {
-                    $("#payloadModal").html(data);
-                }
-            });
+    //This function will launch the status detail overlay with the selected
+    //status
+    $(document).on('click', '.viewPayload', function (event) {
+        var wsId = $(this).attr('rel');
+        $.ajax({
+            url: '/administrator/processing-activity/apimessage/viewPayload.do',
+            type: "POST",
+            data: {'messageId': wsId},
+            success: function (data) {
+                $("#payloadModal").html(data);
+            }
         });
-	
-	//This function will launch the status detail overlay with the selected
-        //status
-        $(document).on('click', '.viewHeader', function (event) {
-            var apiMessageId = $(this).attr('rel');
-            $.ajax({
-                url: '/administrator/processing-activity/apimessageOut/viewHeader.do',
-                type: "POST",
-                data: {'messageId': apiMessageId},
-                success: function (data) {
-                    $("#HeaderModal").html(data);
-                }
-            });
+    });
+
+    //This function will launch the status detail overlay with the selected
+    //status
+    $(document).on('click', '.viewHeader', function (event) {
+        var apiMessageId = $(this).attr('rel');
+        $.ajax({
+            url: '/administrator/processing-activity/apimessageOut/viewHeader.do',
+            type: "POST",
+            data: {'messageId': apiMessageId},
+            success: function (data) {
+                $("#HeaderModal").html(data);
+            }
         });
-	
-	$(document).ready(function() {
-	   
-	    var fromDate = $('#fromDate').attr('rel');
-	    var toDate = $('#toDate').attr('rel');
-	    
-	    populateMessages(fromDate,toDate);
-	    
-	});
+    });
+
+    $(document).ready(function() {
+
+        var fromDate = $('#fromDate').attr('rel');
+        var toDate = $('#toDate').attr('rel');
+
+        populateMessages(fromDate,toDate);
 
     });
 });

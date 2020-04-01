@@ -1,26 +1,73 @@
 
 require(['./main'], function () {
-    require(['jquery'], function ($) {
         
-        $(document).on('click','.printConfig',function() {
-           /* $('body').overlay({
-                glyphicon : 'print',
-                message : 'Gathering Details...'
-            });*/
-            
-            var configId = $(this).attr('rel');
-            
-            $.ajax({
-                url: 'createConfigPrintPDF.do',
+    $(document).on('click','.printConfig',function() {
+       /* $('body').overlay({
+            glyphicon : 'print',
+            message : 'Gathering Details...'
+        });*/
+
+        var configId = $(this).attr('rel');
+
+        $.ajax({
+            url: 'createConfigPrintPDF.do',
+            data: {
+                'configId': configId
+            },
+            type: "GET",
+            dataType : 'text',
+            contentType : 'application/json;charset=UTF-8',
+            success: function(data) {
+                if(data !== '') {
+                    window.location.href = '/administrator/configurations/printConfig/'+ data;
+                    $('#successMsg').show();
+                    //$('#dtDownloadModal').modal('toggle');
+                }
+                else {
+                    $('#errorMsg').show();
+                }
+            }
+        });
+    });
+
+    $("input:text,form").attr("autocomplete", "off");
+
+    $(document).on('click', '.createDataTranslationDownload', function() {
+       $.ajax({
+            url: '/administrator/configurations/createDataTranslationDownload',
+            data: {
+               'configId':$(this).attr('rel')
+            },
+            type: "GET",
+            success: function(data) {
+                $("#dtDownloadModal").html(data);
+            }
+        });
+    });
+
+    $(document).on('click', '#generateDTButton', function() {
+
+        var errorFound = 0;
+
+       //Makes sure name is entered and entity is selected
+       if($('#fileName').val() === "") {
+           $('#dtnameDiv').addClass("has-error");
+           errorFound = 1;
+       }
+
+       if(errorFound == 0) {
+           $.ajax({
+                url: '/administrator/configurations/dataTranslationsDownload',
                 data: {
-                    'configId': configId
+                    'configId':$(this).attr('rel'),
+                    'fileName': $('#fileName').val()
                 },
                 type: "GET",
                 dataType : 'text',
                 contentType : 'application/json;charset=UTF-8',
                 success: function(data) {
                     if(data !== '') {
-                        window.location.href = '/administrator/configurations/printConfig/'+ data;
+                        window.location.href = '/administrator/configurations/downloadDTCWFile/'+ data;
                         $('#successMsg').show();
                         //$('#dtDownloadModal').modal('toggle');
                     }
@@ -29,81 +76,32 @@ require(['./main'], function () {
                     }
                 }
             });
-        });
+       }
 
-        $("input:text,form").attr("autocomplete", "off");
-	
-	$(document).on('click', '.createDataTranslationDownload', function() {
-           $.ajax({
-                url: '/administrator/configurations/createDataTranslationDownload',
-                data: {
-		   'configId':$(this).attr('rel')
-		},
-                type: "GET",
-                success: function(data) {
-                    $("#dtDownloadModal").html(data);
-                }
-            });
-        });
-	
-	$(document).on('click', '#generateDTButton', function() {
-	    
-	    var errorFound = 0;
-	    
-	   //Makes sure name is entered and entity is selected
-	   if($('#fileName').val() === "") {
-	       $('#dtnameDiv').addClass("has-error");
-	       errorFound = 1;
-	   }
-	   
-	   if(errorFound == 0) {
-	       $.ajax({
-		    url: '/administrator/configurations/dataTranslationsDownload',
-		    data: {
-			'configId':$(this).attr('rel'),
-			'fileName': $('#fileName').val()
-		    },
-		    type: "GET",
-		    dataType : 'text',
-		    contentType : 'application/json;charset=UTF-8',
-		    success: function(data) {
-			if(data !== '') {
-			    window.location.href = '/administrator/configurations/downloadDTCWFile/'+ data;
-			    $('#successMsg').show();
-			    //$('#dtDownloadModal').modal('toggle');
-			}
-			else {
-			    $('#errorMsg').show();
-			}
-		    }
-		});
-	   }
-           
-        });
+    });
 
-        //This function will save the messgae type field mappings
-        $('#saveDetails').click(function () {
-            $('#action').val('save');
+    //This function will save the messgae type field mappings
+    $('#saveDetails').click(function () {
+        $('#action').val('save');
 
-            //Need to make sure all required fields are marked if empty.
-            var hasErrors = 0;
-            hasErrors = checkFormFields();
+        //Need to make sure all required fields are marked if empty.
+        var hasErrors = 0;
+        hasErrors = checkFormFields();
 
-            if (hasErrors == 0) {
-                $('#messageSpecs').submit();
-            }
-        });
+        if (hasErrors == 0) {
+            $('#messageSpecs').submit();
+        }
+    });
 
-        $('#next').click(function (event) {
-            $('#action').val('next');
+    $('#next').click(function (event) {
+        $('#action').val('next');
 
-            var hasErrors = 0;
-            hasErrors = checkFormFields();
+        var hasErrors = 0;
+        hasErrors = checkFormFields();
 
-            if (hasErrors == 0) {
-                $('#messageSpecs').submit();
-            }
-        });
+        if (hasErrors == 0) {
+            $('#messageSpecs').submit();
+        }
     });
 });
 

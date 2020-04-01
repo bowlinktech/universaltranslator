@@ -6,7 +6,6 @@
 
 
 require(['./main'], function () {
-    require(['jquery'], function ($) {
 
         if (document.cookie.indexOf('js=true') == -1) {
             document.cookie = 'js=true';
@@ -15,5 +14,4 @@ require(['./main'], function () {
 
         $("input:text,form").attr("autocomplete", "off");
 
-    });
 });
