@@ -1,23 +1,20 @@
 
 require(['./main'], function () {
-    require(['jquery'], function ($) {
 
-        $("input:text,form").attr("autocomplete", "off");
+    $("input:text,form").attr("autocomplete", "off");
 
-        //Fade out the updated/created message after being displayed.
-        if ($('.alert').length > 0) {
-            $('.alert').delay(2000).fadeOut(1000);
+    //Fade out the updated/created message after being displayed.
+    if ($('.alert').length > 0) {
+        $('.alert').delay(2000).fadeOut(1000);
+    }
+
+    $('#saveDetails').click(function (event) {
+        $('#action').val('save');
+        var hasErrors = 0;
+        hasErrors = checkFileUploaded();
+        if (hasErrors == 0) {
+            $("#logoForm").submit();
         }
-
-        $('#saveDetails').click(function (event) {
-            $('#action').val('save');
-            var hasErrors = 0;
-            hasErrors = checkFileUploaded();
-            if (hasErrors == 0) {
-                $("#logoForm").submit();
-            }
-
-        });
 
     });
 });

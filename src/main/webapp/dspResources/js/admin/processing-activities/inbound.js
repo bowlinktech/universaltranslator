@@ -6,69 +6,66 @@
 
 
 require(['./main'], function () {
-    require(['jquery'], function ($) {
 	
-	//setInterval(function(){searchByDateRange()}, 30000);
+    //setInterval(function(){searchByDateRange()}, 30000);
 
-        $("input:text,form").attr("autocomplete", "off");
+    $("input:text,form").attr("autocomplete", "off");
 
-        //This function will launch the status detail overlay with the selected
-        //status
-        $(document).on('click', '.viewStatus', function () {
-            $.ajax({
-                url: '/administrator/processing-activity/viewStatus' + $(this).attr('rel'),
-                type: "GET",
-                success: function (data) {
-                    $("#statusModal").html(data);
-                }
-            });
-        });
-	
-	//Function to display the details of the selected batch received from a direct HISP
-	$(document).on('click', '.viewDirectDetails', function () {
-            $.ajax({
-                url: '/administrator/processing-activity/viewDirectDetails' + $(this).attr('rel'),
-                type: "GET",
-                success: function (data) {
-                    $("#directModal").html(data);
-                }
-            });
-        });
-
-        $(document).on('click', '.deleteTransactions', function() {
-            
-            var batchName = $(this).attr('rel');
-           
-            if(confirm("Are you sure you want to remove this batch?")) {
-                
-                $('body').overlay({
-                    glyphicon : 'floppy-disk',
-                    message : 'Deleting...'
-                });
-                
-                $.ajax({
-                    url: 'deleteBatch.do',
-                    data: {
-                        'batchName': batchName
-                    },
-                    type: 'POST',
-                    success: function(data) {
-                       location.reload();
-                    }
-                });
-                
+    //This function will launch the status detail overlay with the selected
+    //status
+    $(document).on('click', '.viewStatus', function () {
+        $.ajax({
+            url: '/administrator/processing-activity/viewStatus' + $(this).attr('rel'),
+            type: "GET",
+            success: function (data) {
+                $("#statusModal").html(data);
             }
-            
         });
-	
-	$(document).ready(function() {
-	   
-	    var fromDate = $('#fromDate').attr('rel');
-	    var toDate = $('#toDate').attr('rel');
-	    
-	    populateMessages(fromDate,toDate);
-	    
-	});
+    });
+
+    //Function to display the details of the selected batch received from a direct HISP
+    $(document).on('click', '.viewDirectDetails', function () {
+        $.ajax({
+            url: '/administrator/processing-activity/viewDirectDetails' + $(this).attr('rel'),
+            type: "GET",
+            success: function (data) {
+                $("#directModal").html(data);
+            }
+        });
+    });
+
+    $(document).on('click', '.deleteTransactions', function() {
+
+        var batchName = $(this).attr('rel');
+
+        if(confirm("Are you sure you want to remove this batch?")) {
+
+            $('body').overlay({
+                glyphicon : 'floppy-disk',
+                message : 'Deleting...'
+            });
+
+            $.ajax({
+                url: 'deleteBatch.do',
+                data: {
+                    'batchName': batchName
+                },
+                type: 'POST',
+                success: function(data) {
+                   location.reload();
+                }
+            });
+
+        }
+
+    });
+
+    $(document).ready(function() {
+
+        var fromDate = $('#fromDate').attr('rel');
+        var toDate = $('#toDate').attr('rel');
+
+        populateMessages(fromDate,toDate);
 
     });
 });

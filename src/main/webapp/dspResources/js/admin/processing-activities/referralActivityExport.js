@@ -7,22 +7,20 @@
 
 
 require(['./main'], function () {
-    require(['jquery'], function ($) {
 
-        $("input:text,form").attr("autocomplete", "off");
+    $("input:text,form").attr("autocomplete", "off");
 
-        $(document).on('click', '.createExport', function () {
-            $('body').overlay({
-                glyphicon: 'floppy-disk',
-                message: 'Creating Export...'
-            });
-            $('#searchForm').submit();
+    $(document).on('click', '.createExport', function () {
+        $('body').overlay({
+            glyphicon: 'floppy-disk',
+            message: 'Creating Export...'
         });
-
-        var oSettings = datatable.fnSettings();
-
-        //datatable.fnSort( [ [0,'desc'] ] );
+        $('#searchForm').submit();
     });
+
+    var oSettings = datatable.fnSettings();
+
+    //datatable.fnSort( [ [0,'desc'] ] );
 });
 
 

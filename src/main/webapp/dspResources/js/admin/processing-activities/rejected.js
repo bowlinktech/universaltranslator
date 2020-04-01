@@ -6,27 +6,24 @@
 
 
 require(['./main'], function () {
-    require(['jquery'], function ($) {
 
-        $("input:text,form").attr("autocomplete", "off");
+    $("input:text,form").attr("autocomplete", "off");
 
-        //This function will launch the status detail overlay with the selected
-        //status
-        $(document).on('click', '.viewStatus', function () {
-            $.ajax({
-                url: 'viewStatus' + $(this).attr('rel'),
-                type: "GET",
-                success: function (data) {
-                    $("#statusModal").html(data);
-                }
-            });
+    //This function will launch the status detail overlay with the selected
+    //status
+    $(document).on('click', '.viewStatus', function () {
+        $.ajax({
+            url: 'viewStatus' + $(this).attr('rel'),
+            type: "GET",
+            success: function (data) {
+                $("#statusModal").html(data);
+            }
         });
-
-        var oSettings = datatable.fnSettings();
-
-        datatable.fnSort([[5, 'desc']]);
-
     });
+
+    var oSettings = datatable.fnSettings();
+
+    datatable.fnSort([[5, 'desc']]);
 });
 
 
