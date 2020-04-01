@@ -3244,9 +3244,18 @@ public class transactionInManagerImpl implements transactionInManager {
 		    targetsInserted = true;
 		    noTargetsFound = assignBatchDLId(batchUploadId, batch.getConfigId());
 		}
+		else {
+		    batchStatusId = 7;
+		    updateBatchStatus(batchUploadId, batchStatusId, "endDateTime");
+		    
+		    //log batch activity
+		    batchuploadactivity ba = new batchuploadactivity();
+		    ba.setActivity("BatchId:" + batchUploadId + " was rejected because error handling is set to 'Reject entire file on a single transaction error' and has a total of " + updatedBatchDetails.getErrorRecordCount() + " errors.");
+		    ba.setBatchUploadId(batchUploadId);
+		    transactionInDAO.submitBatchActivityLog(ba);
+		}
 	    }
 	}
-	
 	
 	//clean
 	cleanAuditErrorTable(batch.getId());
@@ -3256,14 +3265,12 @@ public class transactionInManagerImpl implements transactionInManager {
 	ba.setActivity("Clean Audit Error table for batchId:" + batchUploadId);
 	ba.setBatchUploadId(batchUploadId);
 	transactionInDAO.submitBatchActivityLog(ba);
-
 	
 	//populate
 	populateAuditReport(batch.getId(), configurationManager.getMessageSpecs(batch.getConfigId()));
 	
 	//populate dropped values
 	populateDroppedValues(batch.getId(), batch.getConfigId(), false);
-	
 	
 	//log batch activity
 	ba = new batchuploadactivity();
