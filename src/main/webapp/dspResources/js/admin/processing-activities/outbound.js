@@ -6,53 +6,50 @@
 
 
 require(['./main'], function () {
-    require(['jquery'], function ($) {
 
-        $("input:text,form").attr("autocomplete", "off");
+    $("input:text,form").attr("autocomplete", "off");
 
-        //This function will launch the status detail overlay with the selected
-        //status
-        $(document).on('click', '.viewStatus', function () {
-            $.ajax({
-                url: '/administrator/processing-activity/viewStatus' + $(this).attr('rel'),
-                type: "GET",
-                success: function (data) {
-                    $("#statusModal").html(data);
-                }
-            });
-        });
-
-        $(document).ready(function() {
-	   
-	    var fromDate = $('#fromDate').attr('rel');
-	    var toDate = $('#toDate').attr('rel');
-	    
-	    populateMessages(fromDate,toDate);
-	    
-	});
-	
-	//This function will release the batch
-        $(document).on('click', '.releaseOutboundBatch', function () {
-
-            var confirmed = confirm("Are you sure you want to release this outbound batch?");
-
-            if (confirmed) {
-                $("#actionRowBottom").hide();
-                $("#actionRowTop").hide();
-                $.ajax({
-                    url: '/administrator/processing-activity/outboundBatchOptions',
-                    data: {
-			'batchOption': $(this).attr('rel'), 
-			'batchId': $(this).attr('rel2')
-		    },
-                    type: "POST",
-                    success: function (data) {
-                        window.location.href = '/administrator/processing-activity/outbound';
-                    }
-                });
+    //This function will launch the status detail overlay with the selected
+    //status
+    $(document).on('click', '.viewStatus', function () {
+        $.ajax({
+            url: '/administrator/processing-activity/viewStatus' + $(this).attr('rel'),
+            type: "GET",
+            success: function (data) {
+                $("#statusModal").html(data);
             }
         });
+    });
 
+    $(document).ready(function() {
+
+        var fromDate = $('#fromDate').attr('rel');
+        var toDate = $('#toDate').attr('rel');
+
+        populateMessages(fromDate,toDate);
+
+    });
+
+    //This function will release the batch
+    $(document).on('click', '.releaseOutboundBatch', function () {
+
+        var confirmed = confirm("Are you sure you want to release this outbound batch?");
+
+        if (confirmed) {
+            $("#actionRowBottom").hide();
+            $("#actionRowTop").hide();
+            $.ajax({
+                url: '/administrator/processing-activity/outboundBatchOptions',
+                data: {
+                    'batchOption': $(this).attr('rel'), 
+                    'batchId': $(this).attr('rel2')
+                },
+                type: "POST",
+                success: function (data) {
+                    window.location.href = '/administrator/processing-activity/outbound';
+                }
+            });
+        }
     });
 });
 
