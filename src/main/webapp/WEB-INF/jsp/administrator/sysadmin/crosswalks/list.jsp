@@ -14,6 +14,11 @@
                 </c:choose>
             </div>
         </c:if>
+        <c:if test="${not empty error}" >
+                <div class="alert alert-danger" role="alert">
+                    The selected file was not found.
+                </div>
+            </c:if>
         <section class="panel panel-default">
             <div class="panel-heading">
                 <h3 class="panel-title">Standard Crosswalks</h3>

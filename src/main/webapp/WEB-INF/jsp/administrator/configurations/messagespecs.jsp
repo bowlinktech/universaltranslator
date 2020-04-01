@@ -28,6 +28,11 @@
                     </dt>
                 </div>
             </section>
+            <c:if test="${not empty error}" >
+                <div class="alert alert-danger" role="alert">
+                    The selected file was not found.
+                </div>
+            </c:if>
 	</div>
 	<div class="col-md-12">
             <form:form id="messageSpecs" commandName="messageSpecs" modelAttribute="messageSpecs" enctype="multipart/form-data" method="post" role="form">
@@ -52,7 +57,7 @@
 				<c:otherwise>
 				    <c:if test="${not empty messageSpecs.templateFile}">
 					<div class="form-group">
-					    <label class="control-label" for="templateFile">Current File</label>
+                                            <label class="control-label" for="templateFile">Current File <a href="/FileDownload/downloadFile.do?fromPage=messagespec&filename=${messageSpecs.templateFile}&foldername=${cleanOrgURL}/templates">Download Template</a></label>
 					    <input type="text" disabled class="form-control" value="${messageSpecs.templateFile}" />
 					    <form:hidden path="templateFile" />
 					</div>

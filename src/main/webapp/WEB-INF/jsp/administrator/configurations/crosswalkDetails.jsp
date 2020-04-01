@@ -45,7 +45,14 @@
 		    <c:if test="${crosswalkDetails.id > 0 }">
                         <c:choose>
 			    <c:when test="${not empty cleanOrgURL}">
-				<c:set var="hrefLink" value="/FileDownload/downloadFile.do?filename=${crosswalkDetails.fileName}&foldername=${cleanOrgURL}/crosswalks"/>
+				<c:set var="hrefLink" value="/FileDownload/downloadFile.do?fromPage=config&filename=${crosswalkDetails.fileName}&foldername=${cleanOrgURL}/crosswalks"/>
+				<div class="form-group">
+				    <label class="control-label" >Existing Crosswalk File</label>
+				    <p><a href="${hrefLink}" title="Download Crosswalk File">${crosswalkDetails.fileName}</a></p>
+				</div>
+			    </c:when>
+                            <c:when test="${crosswalkDetails.orgId == 0}">
+				<c:set var="hrefLink" value="/FileDownload/downloadFile.do?fromPage=crosswalks&filename=${crosswalkDetails.fileName}&foldername=libraryFiles"/>
 				<div class="form-group">
 				    <label class="control-label" >Existing Crosswalk File</label>
 				    <p><a href="${hrefLink}" title="Download Crosswalk File">${crosswalkDetails.fileName}</a></p>
