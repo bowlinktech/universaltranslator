@@ -1,163 +1,159 @@
 
 
 require(['./main'], function () {
-    require(['jquery'], function ($) {
+    $("input:text,form").attr("autocomplete", "off");
 
-        $("input:text,form").attr("autocomplete", "off");
+    //Fade out the updated/created message after being displayed.
+    if ($('.alert').length > 0) {
+        $('.alert').delay(2000).fadeOut(1000);
+    }
 
-        //Fade out the updated/created message after being displayed.
-        if ($('.alert').length > 0) {
-            $('.alert').delay(2000).fadeOut(1000);
+    var isHELRegistry = $('#isHELRegistry').val();
+
+    if(isHELRegistry == 1) {
+        populateHELRegistries(1);
+    }
+    else if(isHELRegistry == 0) {
+        $('#orgDetails').show();
+    }
+
+    //Check to see if the organization is a HEL Registry or not
+    $(document).on('change','#isHELRegistry', function() {
+       populateHELRegistries($(this).val());
+    });
+
+    var helRegistry = $('#helRegistry').attr('rel');
+
+    if(helRegistry != 0 && helRegistry !== "0-") {
+        populateHELRegistryOrgs(helRegistry);
+    }
+
+    //Registry is selected we need to go get the organizations set up for that organization
+    $(document).on('change','#helRegistry', function() {
+        populateHELRegistryOrgs($(this).val());
+    });
+
+
+    //A registry organization was selected need to get the details to populate the fields
+    $(document).on('change','#helRegistryOrgId', function() {
+
+        var selRegistryOrg = $(this).val();
+        var selRegistrySchemaName = $(this).attr('schema');
+
+        if(selRegistryOrg != 0) {
+
+            $.ajax({
+                url: 'getHELRegistryOrganizationDetails?tenantId='+selRegistrySchemaName,
+                type: "GET",
+                data: {
+                    'selRegistryOrgId': selRegistryOrg
+                },
+                dataType: 'json',
+                success: function (data) {
+                    $('#orgDetails').show();
+
+                    var data = $(data);
+
+                    //set the org name
+                    $('#orgName').val(data[0].name);
+
+                    var strippedorgName = data[0].name.replace(/ +/g, '');
+                    $('#cleanURL').val(strippedorgName);
+
+                    //set the org address
+                    $('#address').val(data[0].address);
+
+                    //set the org address 2
+                    $('#address2').val(data[0].address2);
+
+                    //set the org city
+                    $('#city').val(data[0].city);
+
+                    //set the org state
+                    $('#state').val(data[0].state);
+
+                    //set the org postal code
+                    $('#postalCode').val(data[0].zipCode);
+
+                    //set the org phone Number
+                    $('#phone').val(data[0].phoneNumber);
+
+                    //set the org website
+                    $('#infoURL').val(data[0].website);
+
+                    //set the org pirmary contact email
+                    $('#infoURL').val(data[0].primaryContactEmail);
+
+
+                }
+            });
         }
-	
-	var isHELRegistry = $('#isHELRegistry').val();
-	
-	if(isHELRegistry == 1) {
-	    populateHELRegistries(1);
-	}
-	else if(isHELRegistry == 0) {
-	    $('#orgDetails').show();
-	}
-	
-	//Check to see if the organization is a HEL Registry or not
-	$(document).on('change','#isHELRegistry', function() {
-	   populateHELRegistries($(this).val());
-	});
-	
-	var helRegistry = $('#helRegistry').attr('rel');
-	
-	if(helRegistry != 0 && helRegistry !== "0-") {
-	    populateHELRegistryOrgs(helRegistry);
-	}
-	
-	//Registry is selected we need to go get the organizations set up for that organization
-	$(document).on('change','#helRegistry', function() {
-	    populateHELRegistryOrgs($(this).val());
-	});
-	
-	
-	//A registry organization was selected need to get the details to populate the fields
-	$(document).on('change','#helRegistryOrgId', function() {
-	    
-	    var selRegistryOrg = $(this).val();
-	    var selRegistrySchemaName = $(this).attr('schema');
-	    
-	    if(selRegistryOrg != 0) {
-		
-		$.ajax({
-		    url: 'getHELRegistryOrganizationDetails?tenantId='+selRegistrySchemaName,
-		    type: "GET",
-		    data: {
-			'selRegistryOrgId': selRegistryOrg
-		    },
-		    dataType: 'json',
-		    success: function (data) {
-			$('#orgDetails').show();
-			
-			var data = $(data);
-			
-			//set the org name
-			$('#orgName').val(data[0].name);
-			
-			var strippedorgName = data[0].name.replace(/ +/g, '');
-			$('#cleanURL').val(strippedorgName);
-			
-			//set the org address
-			$('#address').val(data[0].address);
-			
-			//set the org address 2
-			$('#address2').val(data[0].address2);
-			
-			//set the org city
-			$('#city').val(data[0].city);
-			
-			//set the org state
-			$('#state').val(data[0].state);
-			
-			//set the org postal code
-			$('#postalCode').val(data[0].zipCode);
-			
-			//set the org phone Number
-			$('#phone').val(data[0].phoneNumber);
-			
-			//set the org website
-			$('#infoURL').val(data[0].website);
-			
-			//set the org pirmary contact email
-			$('#infoURL').val(data[0].primaryContactEmail);
-			
-			
-		    }
-		});
-	    }
-	    else {
-		$('#orgDetails').show();
-	    }
-	});
-	
+        else {
+            $('#orgDetails').show();
+        }
+    });
 
-        //Make sure the two values equal before the delete function is allowed
-        $('#submitButton').click(function (event) {
-            if ($('#realUsername').val() != $('#username').val()) {
-                $('#confirmDiv').addClass("has-error");
-                $('#confirmMsg').html('That is not correct!');
-            } else {
-                $('#confirmOrgDelete').submit();
+
+    //Make sure the two values equal before the delete function is allowed
+    $('#submitButton').click(function (event) {
+        if ($('#realUsername').val() != $('#username').val()) {
+            $('#confirmDiv').addClass("has-error");
+            $('#confirmMsg').html('That is not correct!');
+        } else {
+            $('#confirmOrgDelete').submit();
+        }
+    });
+
+    $('#saveDetails').click(function (event) {
+        $('#action').val('save');
+
+        //Need to make sure all required fields are marked if empty.
+        var hasErrors = 0;
+        hasErrors = checkFormFields();
+
+        if (hasErrors == 0) {
+            var selRegistry = $('#helRegistry').val();
+
+            if(selRegistry != 0) {
+
+                var selRegistrySchemaName = selRegistry.split("-")[1];
+
+                //Set the schema name
+                $('#helRegistrySchemaName').val(selRegistrySchemaName);
+                $('#helRegistryId').val(selRegistry.split("-")[0]);
             }
-        });
+            $("#organization").submit();
+        }
+    });
 
-        $('#saveDetails').click(function (event) {
-            $('#action').val('save');
+    $('#saveCloseDetails').click(function (event) {
+        $('#action').val('close');
 
-            //Need to make sure all required fields are marked if empty.
-            var hasErrors = 0;
-            hasErrors = checkFormFields();
+        var hasErrors = 0;
+        hasErrors = checkFormFields();
 
-            if (hasErrors == 0) {
-		var selRegistry = $('#helRegistry').val();
-	   
-		if(selRegistry != 0) {
-		
-		    var selRegistrySchemaName = selRegistry.split("-")[1];
-		
-		    //Set the schema name
-		    $('#helRegistrySchemaName').val(selRegistrySchemaName);
-		    $('#helRegistryId').val(selRegistry.split("-")[0]);
-		}
-		$("#organization").submit();
+        if (hasErrors == 0) {
+
+            var selRegistry = $('#helRegistry').val();
+
+            if(typeof selRegistry !== "undefined" && selRegistry != 0) {
+
+                var selRegistrySchemaName = selRegistry.split("-")[1];
+
+                //Set the schema name
+                $('#helRegistrySchemaName').val(selRegistrySchemaName);
+                $('#helRegistryId').val(selRegistry.split("-")[0]);
             }
-        });
+            $("#organization").submit();
+        }
+    });
 
-        $('#saveCloseDetails').click(function (event) {
-            $('#action').val('close');
-
-            var hasErrors = 0;
-            hasErrors = checkFormFields();
-
-            if (hasErrors == 0) {
-		
-		var selRegistry = $('#helRegistry').val();
-	   
-		if(typeof selRegistry !== "undefined" && selRegistry != 0) {
-		
-		    var selRegistrySchemaName = selRegistry.split("-")[1];
-		
-		    //Set the schema name
-		    $('#helRegistrySchemaName').val(selRegistrySchemaName);
-		    $('#helRegistryId').val(selRegistry.split("-")[0]);
-		}
-                $("#organization").submit();
-            }
-        });
-
-        //Need to set the organization clean url based off of the organization name
-        $('#orgName').keyup(function (event) {
-            var orgName = $(this).val();
-            var strippedorgName = orgName.replace(/ +/g, '');
-            $('#cleanURL').val(strippedorgName);
-            $('#nameChange').val(1);
-        });
-	
+    //Need to set the organization clean url based off of the organization name
+    $('#orgName').keyup(function (event) {
+        var orgName = $(this).val();
+        var strippedorgName = orgName.replace(/ +/g, '');
+        $('#cleanURL').val(strippedorgName);
+        $('#nameChange').val(1);
     });
 });
 

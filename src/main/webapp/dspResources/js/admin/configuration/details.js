@@ -1,75 +1,72 @@
 
 require(['./main'], function () {
-    require(['jquery'], function ($) {
         
-         $(document).on('click','.printConfig',function() {
-           /* $('body').overlay({
-                glyphicon : 'print',
-                message : 'Gathering Details...'
-            });*/
-            
-            var configId = $(this).attr('rel');
-            
-            $.ajax({
-                url: 'createConfigPrintPDF.do',
-                data: {
-                    'configId': configId
-                },
-                type: "GET",
-                dataType : 'text',
-                contentType : 'application/json;charset=UTF-8',
-                success: function(data) {
-                    if(data !== '') {
-                        window.location.href = '/administrator/configurations/printConfig/'+ data;
-                        $('#successMsg').show();
-                        //$('#dtDownloadModal').modal('toggle');
-                    }
-                    else {
-                        $('#errorMsg').show();
-                    }
-                }
-            });
-        });
+    $(document).on('click','.printConfig',function() {
+      /* $('body').overlay({
+           glyphicon : 'print',
+           message : 'Gathering Details...'
+       });*/
 
-        $("input:text,form").attr("autocomplete", "off");
+       var configId = $(this).attr('rel');
 
-        //Fade out the updated/created message after being displayed.
-        if ($('.alert').length > 0) {
-            $('.alert').delay(2000).fadeOut(1000);
-        }
-	
-	//Hide the Configuration Type if a target configuration type
-	$('.type').change(function(event) {
-	   
-	   if($(this).val() == 2) {
-	       $('#configurationTypeDiv').hide();
-	   } 
-	   else {
-	       $('#configurationTypeDiv').show();
-	   }
-	});
-	
-	
-        $('#saveDetails').click(function (event) {
-            $('#action').val('save');
-            var hasErrors = 0;
-            hasErrors = checkform();
-            if (hasErrors == 0) {
-                $("#configuration").submit();
-            }
+       $.ajax({
+           url: 'createConfigPrintPDF.do',
+           data: {
+               'configId': configId
+           },
+           type: "GET",
+           dataType : 'text',
+           contentType : 'application/json;charset=UTF-8',
+           success: function(data) {
+               if(data !== '') {
+                   window.location.href = '/administrator/configurations/printConfig/'+ data;
+                   $('#successMsg').show();
+                   //$('#dtDownloadModal').modal('toggle');
+               }
+               else {
+                   $('#errorMsg').show();
+               }
+           }
+       });
+   });
 
-        });
+   $("input:text,form").attr("autocomplete", "off");
 
-        $('#next').click(function (event) {
-            $('#action').val('next');
-            var hasErrors = 0;
-            hasErrors = checkform();
-            if (hasErrors == 0) {
-                $("#configuration").submit();
-            }
-        });
+   //Fade out the updated/created message after being displayed.
+   if ($('.alert').length > 0) {
+       $('.alert').delay(2000).fadeOut(1000);
+   }
 
-    });
+   //Hide the Configuration Type if a target configuration type
+   $('.type').change(function(event) {
+
+      if($(this).val() == 2) {
+          $('#configurationTypeDiv').hide();
+      } 
+      else {
+          $('#configurationTypeDiv').show();
+      }
+   });
+
+
+   $('#saveDetails').click(function (event) {
+       $('#action').val('save');
+       var hasErrors = 0;
+       hasErrors = checkform();
+       if (hasErrors == 0) {
+           $("#configuration").submit();
+       }
+
+   });
+
+   $('#next').click(function (event) {
+       $('#action').val('next');
+       var hasErrors = 0;
+       hasErrors = checkform();
+       if (hasErrors == 0) {
+           $("#configuration").submit();
+       }
+   });
 });
 
 function populateHELRegistryConfigs(helRegistryId,helRegistrySchemaName) {
