@@ -3238,17 +3238,12 @@ public class transactionInManagerImpl implements transactionInManager {
 		targetsInserted = true;
 		noTargetsFound = assignBatchDLId(batchUploadId, batch.getConfigId());
 	    }
-
-	    //If errors are found and the error handling is set to send only non errored transactions
-	    //and there are successful tranasctions to send create the batch download entries
-	    else if(handlingDetails.get(0).geterrorHandling() == 2 && (updatedBatchDetails.getErrorRecordCount() < updatedBatchDetails.getTotalRecordCount())) {
-		targetsInserted = true;
-		noTargetsFound = assignBatchDLId(batchUploadId, batch.getConfigId());
-	    }
-	    //If the error handling is set to send all transactions errored or not
-	    else if(handlingDetails.get(0).geterrorHandling() == 4) {
-		targetsInserted = true;
-		noTargetsFound = assignBatchDLId(batchUploadId, batch.getConfigId());
+	    else {
+		//if errors are found and the configuration is not set to "Reject entire file on a single transaction error" then create the batch download entry.
+		if(handlingDetails.get(0).geterrorHandling() != 3) {
+		    targetsInserted = true;
+		    noTargetsFound = assignBatchDLId(batchUploadId, batch.getConfigId());
+		}
 	    }
 	}
 	
