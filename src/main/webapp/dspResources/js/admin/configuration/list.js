@@ -2,7 +2,6 @@
 
 
 require(['./main'], function () {
-    require(['jquery'], function ($) {
         
        $(document).on('click', '.uploadFile', function() {
            var fileDropLocation = $(this).attr('rel2');
@@ -227,8 +226,6 @@ require(['./main'], function () {
         $('#searchConfigBtn').click(function () {
             $('#searchForm').submit();
         });
-
-    });
 });
 
 

@@ -1,9 +1,7 @@
 
 
 require(['./main'], function () {
-    require(['jquery'], function ($) {
-
-        $("input:text,form").attr("autocomplete", "off");
+    $("input:text,form").attr("autocomplete", "off");
 
         //Fade out the updated/created message after being displayed.
         if ($('.alert').length > 0) {
@@ -96,22 +94,22 @@ require(['./main'], function () {
 	});
 	
 
-        //Make sure the two values equal before the delete function is allowed
-        $('#submitButton').click(function (event) {
-            if ($('#realUsername').val() != $('#username').val()) {
-                $('#confirmDiv').addClass("has-error");
-                $('#confirmMsg').html('That is not correct!');
-            } else {
-                $('#confirmOrgDelete').submit();
-            }
-        });
+    //Make sure the two values equal before the delete function is allowed
+    $('#submitButton').click(function (event) {
+        if ($('#realUsername').val() != $('#username').val()) {
+            $('#confirmDiv').addClass("has-error");
+            $('#confirmMsg').html('That is not correct!');
+        } else {
+            $('#confirmOrgDelete').submit();
+        }
+    });
 
-        $('#saveDetails').click(function (event) {
-            $('#action').val('save');
+    $('#saveDetails').click(function (event) {
+        $('#action').val('save');
 
-            //Need to make sure all required fields are marked if empty.
-            var hasErrors = 0;
-            hasErrors = checkFormFields();
+        //Need to make sure all required fields are marked if empty.
+        var hasErrors = 0;
+        hasErrors = checkFormFields();
 
             if (hasErrors == 0) {
 		var selRegistry = $('#helRegistry').val();
@@ -128,36 +126,34 @@ require(['./main'], function () {
             }
         });
 
-        $('#saveCloseDetails').click(function (event) {
-            $('#action').val('close');
+    $('#saveCloseDetails').click(function (event) {
+        $('#action').val('close');
 
-            var hasErrors = 0;
-            hasErrors = checkFormFields();
+        var hasErrors = 0;
+        hasErrors = checkFormFields();
 
-            if (hasErrors == 0) {
-		
-		var selRegistry = $('#helRegistry').val();
-	   
-		if(typeof selRegistry !== "undefined" && selRegistry != 0) {
-		
-		    var selRegistrySchemaName = selRegistry.split("-")[1];
-		
-		    //Set the schema name
-		    $('#helRegistrySchemaName').val(selRegistrySchemaName);
-		    $('#helRegistryId').val(selRegistry.split("-")[0]);
-		}
-                $("#organization").submit();
+        if (hasErrors == 0) {
+
+            var selRegistry = $('#helRegistry').val();
+
+            if(typeof selRegistry !== "undefined" && selRegistry != 0) {
+
+                var selRegistrySchemaName = selRegistry.split("-")[1];
+
+                //Set the schema name
+                $('#helRegistrySchemaName').val(selRegistrySchemaName);
+                $('#helRegistryId').val(selRegistry.split("-")[0]);
             }
-        });
+            $("#organization").submit();
+        }
+    });
 
-        //Need to set the organization clean url based off of the organization name
-        $('#orgName').keyup(function (event) {
-            var orgName = $(this).val();
-            var strippedorgName = orgName.replace(/ +/g, '');
-            $('#cleanURL').val(strippedorgName);
-            $('#nameChange').val(1);
-        });
-	
+    //Need to set the organization clean url based off of the organization name
+    $('#orgName').keyup(function (event) {
+        var orgName = $(this).val();
+        var strippedorgName = orgName.replace(/ +/g, '');
+        $('#cleanURL').val(strippedorgName);
+        $('#nameChange').val(1);
     });
 });
 
