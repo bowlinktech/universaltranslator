@@ -7,42 +7,39 @@
 
 
 require(['./main'], function () {
-    require(['jquery'], function ($) {
 	
-	getGenericMessages();
-	getInboundMessages();
-	getOutboundMessages();
-	setInterval(function(){getGenericMessages()}, 50000);
-	setInterval(function(){getInboundMessages()}, 50000);
-	setInterval(function(){getOutboundMessages()}, 50000);
+    getGenericMessages();
+    getInboundMessages();
+    getOutboundMessages();
+    setInterval(function(){getGenericMessages()}, 50000);
+    setInterval(function(){getInboundMessages()}, 50000);
+    setInterval(function(){getOutboundMessages()}, 50000);
 
-        $("input:text,form").attr("autocomplete", "off");
-	
-	$('.date-range-picker-trigger').daterangepicker(
-            {
-                ranges: {
-                    'See All': [$('#fromDate').attr('rel2'), moment()],
-                    'Today': [moment(), moment()],
-                    'Yesterday': [moment().subtract('days', 1), moment().subtract('days', 1)],
-                    'Last 7 Days': [moment().subtract('days', 6), moment()],
-                    'Last 30 Days': [moment().subtract('days', 29), moment()],
-                    'This Month': [moment().startOf('month'), moment().endOf('month')],
-                    'Last Month': [moment().subtract('month', 1).startOf('month'), moment().subtract('month', 1).endOf('month')]
-                },
-                startDate: $('#fromDate').attr('rel'),
-                endDate: $('#toDate').attr('rel')
+    $("input:text,form").attr("autocomplete", "off");
+
+    $('.date-range-picker-trigger').daterangepicker(
+        {
+            ranges: {
+                'See All': [$('#fromDate').attr('rel2'), moment()],
+                'Today': [moment(), moment()],
+                'Yesterday': [moment().subtract('days', 1), moment().subtract('days', 1)],
+                'Last 7 Days': [moment().subtract('days', 6), moment()],
+                'Last 30 Days': [moment().subtract('days', 29), moment()],
+                'This Month': [moment().startOf('month'), moment().endOf('month')],
+                'Last Month': [moment().subtract('month', 1).startOf('month'), moment().subtract('month', 1).endOf('month')]
             },
-            function (start, end) {
-                $('.daterange span').html(start.format('MMMM D, YYYY') + ' - ' + end.format('MMMM D, YYYY'));
-                $('.daterange span').attr('rel', start.format('MM/DD/YYYY'));
-                $('.daterange span').attr('rel2', end.format('MM/DD/YYYY'));
-		getGenericMessages();
-		getInboundMessages();
-		getOutboundMessages();
-            }
-	);
-
-    });
+            startDate: $('#fromDate').attr('rel'),
+            endDate: $('#toDate').attr('rel')
+        },
+        function (start, end) {
+            $('.daterange span').html(start.format('MMMM D, YYYY') + ' - ' + end.format('MMMM D, YYYY'));
+            $('.daterange span').attr('rel', start.format('MM/DD/YYYY'));
+            $('.daterange span').attr('rel2', end.format('MM/DD/YYYY'));
+            getGenericMessages();
+            getInboundMessages();
+            getOutboundMessages();
+        }
+    );
 });
 
 function getGenericMessages() {
