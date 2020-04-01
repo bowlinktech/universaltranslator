@@ -1,228 +1,225 @@
 
 
 require(['./main'], function () {
-    require(['jquery'], function ($) {
         
-        $(document).on('click','.printConfig',function() {
-           /* $('body').overlay({
-                glyphicon : 'print',
-                message : 'Gathering Details...'
-            });*/
-            
-            var configId = $(this).attr('rel');
-            
-            $.ajax({
-                url: 'createConfigPrintPDF.do',
-                data: {
-                    'configId': configId
-                },
-                type: "GET",
-                dataType : 'text',
-                contentType : 'application/json;charset=UTF-8',
-                success: function(data) {
-                    if(data !== '') {
-                        window.location.href = '/administrator/configurations/printConfig/'+ data;
-                        $('#successMsg').show();
-                        //$('#dtDownloadModal').modal('toggle');
-                    }
-                    else {
-                        $('#errorMsg').show();
-                    }
+    $(document).on('click','.printConfig',function() {
+       /* $('body').overlay({
+            glyphicon : 'print',
+            message : 'Gathering Details...'
+        });*/
+
+        var configId = $(this).attr('rel');
+
+        $.ajax({
+            url: 'createConfigPrintPDF.do',
+            data: {
+                'configId': configId
+            },
+            type: "GET",
+            dataType : 'text',
+            contentType : 'application/json;charset=UTF-8',
+            success: function(data) {
+                if(data !== '') {
+                    window.location.href = '/administrator/configurations/printConfig/'+ data;
+                    $('#successMsg').show();
+                    //$('#dtDownloadModal').modal('toggle');
                 }
-            });
+                else {
+                    $('#errorMsg').show();
+                }
+            }
         });
-	
-        $("input:text,form").attr("autocomplete", "off");
-	
-	//Fade out the updated/created message after being displayed.
-        if ($('.alert').length > 0) {
-            $('.alert').delay(2000).fadeOut(1000);
+    });
+
+    $("input:text,form").attr("autocomplete", "off");
+
+    //Fade out the updated/created message after being displayed.
+    if ($('.alert').length > 0) {
+        $('.alert').delay(2000).fadeOut(1000);
+    }
+
+    //Selected transport method
+    var transportMethod = $('#transportMethod').val();
+    var helRegistryId = $('#helRegistryId').val();
+    var helSchemaName = $('#helSchemaName').val();
+    var messageTypeId = $('#messageTypeId').val();
+
+    showCorrectFieldsByTransportMethod(transportMethod);
+
+    //if the selected transport method is From a Health-e-Link Registry or going to a Health-e-Link registry
+    //show the conifguration box
+    if(messageTypeId == 1 && helRegistryId > 0 && helSchemaName !== "") {
+        populateHELRegistryConfigs(helRegistryId,helSchemaName);
+    }
+
+    $('#transportMethod').change(function () {
+        var methodId = $(this).val();
+
+        if(helRegistryId > 0 && helSchemaName !== "") {
+            populateHELRegistryConfigs(helRegistryId,helSchemaName);
+
+            //If method == 10 (Coming from a HEL Registry online form preset the values
+            $('#fileType').val(2);
+            $('#fileExt').val('txt');
         }
-	
-	//Selected transport method
-	var transportMethod = $('#transportMethod').val();
-	var helRegistryId = $('#helRegistryId').val();
-	var helSchemaName = $('#helSchemaName').val();
-	var messageTypeId = $('#messageTypeId').val();
-	
-        showCorrectFieldsByTransportMethod(transportMethod);
-	
-	//if the selected transport method is From a Health-e-Link Registry or going to a Health-e-Link registry
-	//show the conifguration box
-	if(messageTypeId == 1 && helRegistryId > 0 && helSchemaName !== "") {
-	    populateHELRegistryConfigs(helRegistryId,helSchemaName);
-	}
-	
-	$('#transportMethod').change(function () {
-            var methodId = $(this).val();
-	    
-	    if(helRegistryId > 0 && helSchemaName !== "") {
-		populateHELRegistryConfigs(helRegistryId,helSchemaName);
-		
-		//If method == 10 (Coming from a HEL Registry online form preset the values
-		$('#fileType').val(2);
-		$('#fileExt').val('txt');
-	    }
-	    else {
-		$('#helRegistryConfigDiv').hide();
-		$('#helRegistryConfigId').find('option').remove().end().append('<option value="">- Select Registry Configuration -</option>').val('');
-	    }
-	    
-	    showCorrectFieldsByTransportMethod(methodId);
-        });
-	
-	$(document).on('change','#enableDirect', function() {
-	    if($(this).is(':checked')) {
-		$('.directDetails').removeClass('collapse');
-	    }
-	    else {
-		$('.directDetails').addClass('collapse');
-	    }
-	});
-	
-	$(document).on('change','#enableRest', function() {
-	    if($(this).is(':checked')) {
-		$('.restDetails').removeClass('collapse');
-	    }
-	    else {
-		$('.restDetails').addClass('collapse');
-	    }
-	});
-	
-	$(document).on('change','#enableFTP', function() {
-	    if($(this).is(':checked')) {
-		$('.ftpDetails').removeClass('collapse');
-	    }
-	    else {
-		$('.ftpDetails').addClass('collapse');
-	    }
-	});
-	
-        $(document).on('change','#dmFindConfig',function() {
-            if($(this).val() == 1) {
-                $('.dmConfigKeywordDiv').show();
-            }
-            else {
-                $('#dmConfigKeyword').val("");
-                $('.dmConfigKeywordDiv').hide();
-            }
-        });
+        else {
+            $('#helRegistryConfigDiv').hide();
+            $('#helRegistryConfigId').find('option').remove().end().append('<option value="">- Select Registry Configuration -</option>').val('');
+        }
 
-        //This function will save the messgae type field mappings
-        $('#saveDetails').click(function () {
-            $('#action').val('save');
+        showCorrectFieldsByTransportMethod(methodId);
+    });
 
-            //Need to make sure all required fields are marked if empty.
-            var hasErrors = 0;
-            hasErrors = checkFormFields();
-	    
-            if (hasErrors == 0) {
-                $('#transportDetails').submit();
-            }
-        });
+    $(document).on('change','#enableDirect', function() {
+        if($(this).is(':checked')) {
+            $('.directDetails').removeClass('collapse');
+        }
+        else {
+            $('.directDetails').addClass('collapse');
+        }
+    });
 
-        $('#next').click(function (event) {
-            $('#action').val('next');
+    $(document).on('change','#enableRest', function() {
+        if($(this).is(':checked')) {
+            $('.restDetails').removeClass('collapse');
+        }
+        else {
+            $('.restDetails').addClass('collapse');
+        }
+    });
 
-            var hasErrors = 0;
-            hasErrors = checkFormFields();
-	    
-            if (hasErrors == 0) {
-                $('#transportDetails').submit();
-            }
-        });
+    $(document).on('change','#enableFTP', function() {
+        if($(this).is(':checked')) {
+            $('.ftpDetails').removeClass('collapse');
+        }
+        else {
+            $('.ftpDetails').addClass('collapse');
+        }
+    });
 
-        //Set the default file extension when the file type is selected
-        $('#fileType').change(function () {
-            $('#ccdSampleDiv').hide();
-            $('#hl7PDFSampleDiv').hide();
-	    $('#jsonWrapperElementDiv').hide();
-	    $('#fileDelimiterDiv').hide();
-	    $('#lineTerminatortDiv').hide();
-	    $('#encodingDiv').hide();
-	    
-            var fileType = $(this).val();
+    $(document).on('change','#dmFindConfig',function() {
+        if($(this).val() == 1) {
+            $('.dmConfigKeywordDiv').show();
+        }
+        else {
+            $('#dmConfigKeyword').val("");
+            $('.dmConfigKeywordDiv').hide();
+        }
+    });
+
+    //This function will save the messgae type field mappings
+    $('#saveDetails').click(function () {
+        $('#action').val('save');
+
+        //Need to make sure all required fields are marked if empty.
+        var hasErrors = 0;
+        hasErrors = checkFormFields();
+
+        if (hasErrors == 0) {
+            $('#transportDetails').submit();
+        }
+    });
+
+    $('#next').click(function (event) {
+        $('#action').val('next');
+
+        var hasErrors = 0;
+        hasErrors = checkFormFields();
+
+        if (hasErrors == 0) {
+            $('#transportDetails').submit();
+        }
+    });
+
+    //Set the default file extension when the file type is selected
+    $('#fileType').change(function () {
+        $('#ccdSampleDiv').hide();
+        $('#hl7PDFSampleDiv').hide();
+        $('#jsonWrapperElementDiv').hide();
+        $('#fileDelimiterDiv').hide();
+        $('#lineTerminatortDiv').hide();
+        $('#encodingDiv').hide();
+
+        var fileType = $(this).val();
+        $('#fileDelimiterDiv').show();
+        $('#lineTerminatortDiv').show();
+
+        if (fileType == 2) {
+            $('#fileExt').val('txt');
             $('#fileDelimiterDiv').show();
-	    $('#lineTerminatortDiv').show();
+            $('#lineTerminatortDiv').show();
+            $('#encodingDiv').show();
+        } 
+        else if (fileType == 3) {
+            $('#fileExt').val('csv');
+            $('#fileDelimiterDiv').show();
+            $('#lineTerminatortDiv').show();
+            $('#encodingDiv').show();
+        } 
+        else if (fileType == 4) {
+            $('#fileExt').val('hr');
+            $('#fileDelimiterDiv').show();
+            $('#lineTerminatortDiv').show();
+            $('#encodingDiv').show();
+        } 
+        else if (fileType == 5) {
+            $('#fileExt').val('mdb');
+            $('#fileDelimiterDiv').hide();
+            $('#lineTerminatortDiv').hide();
+            $('#encodingDiv').hide();
+        } 
+        else if (fileType == 6) {
+            $('#fileExt').val('pdf');
+            $('#fileDelimiterDiv').hide();
+            $('#lineTerminatortDiv').hide();
+            $('#encodingDiv').hide();
+        } 
+        else if (fileType == 7) {
+            $('#fileExt').val('odbc');
+            $('#fileDelimiterDiv').hide();
+            $('#lineTerminatortDiv').hide();
+            $('#encodingDiv').hide();
+        } 
+        else if (fileType == 8) {
+            $('#fileExt').val('xls');
+            $('#fileDelimiterDiv').show();
+            $('#lineTerminatortDiv').show();
+            $('#encodingDiv').show();
+        } 
+        else if (fileType == 9) {
+            $('#fileExt').val('xml');
+            $('#fileDelimiterDiv').hide();
+            $('#lineTerminatortDiv').hide();
 
-            if (fileType == 2) {
-                $('#fileExt').val('txt');
-		$('#fileDelimiterDiv').show();
-		$('#lineTerminatortDiv').show();
-		$('#encodingDiv').show();
-            } 
-	    else if (fileType == 3) {
-                $('#fileExt').val('csv');
-		$('#fileDelimiterDiv').show();
-		$('#lineTerminatortDiv').show();
-		$('#encodingDiv').show();
-            } 
-	    else if (fileType == 4) {
-                $('#fileExt').val('hr');
-		$('#fileDelimiterDiv').show();
-		$('#lineTerminatortDiv').show();
-		$('#encodingDiv').show();
-            } 
-	    else if (fileType == 5) {
-                $('#fileExt').val('mdb');
-		$('#fileDelimiterDiv').hide();
-		$('#lineTerminatortDiv').hide();
-		$('#encodingDiv').hide();
-            } 
-	    else if (fileType == 6) {
-                $('#fileExt').val('pdf');
-		$('#fileDelimiterDiv').hide();
-		$('#lineTerminatortDiv').hide();
-		$('#encodingDiv').hide();
-            } 
-	    else if (fileType == 7) {
-                $('#fileExt').val('odbc');
-		$('#fileDelimiterDiv').hide();
-		$('#lineTerminatortDiv').hide();
-		$('#encodingDiv').hide();
-            } 
-	    else if (fileType == 8) {
-                $('#fileExt').val('xls');
-		$('#fileDelimiterDiv').show();
-		$('#lineTerminatortDiv').show();
-		$('#encodingDiv').show();
-            } 
-	    else if (fileType == 9) {
-                $('#fileExt').val('xml');
-		$('#fileDelimiterDiv').hide();
-		$('#lineTerminatortDiv').hide();
+        } 
+        else if (fileType == 10) {
+            $('#fileExt').val('doc');
+            $('#fileDelimiterDiv').hide();
+            $('#lineTerminatortDiv').hide();
+            $('#encodingDiv').hide();
+        } 
+        else if (fileType == 11) {
+            $('#fileExt').val('xlsx');
+            $('#fileDelimiterDiv').show();
+            $('#lineTerminatortDiv').show();
+            $('#encodingDiv').show();
+        }
+        else if (fileType == 12) {
+            $('#jsonWrapperElementDiv').show();
+            $('#fileExt').val('json');
+            $('#fileDelimiterDiv').hide();
+            $('#lineTerminatortDiv').hide();
+            $('#encodingDiv').hide();
+        }
+    });
 
-            } 
-	    else if (fileType == 10) {
-                $('#fileExt').val('doc');
-		$('#fileDelimiterDiv').hide();
-		$('#lineTerminatortDiv').hide();
-		$('#encodingDiv').hide();
-	    } 
-	    else if (fileType == 11) {
-                $('#fileExt').val('xlsx');
-		$('#fileDelimiterDiv').show();
-		$('#lineTerminatortDiv').show();
-		$('#encodingDiv').show();
-            }
-	    else if (fileType == 12) {
-		$('#jsonWrapperElementDiv').show();
-                $('#fileExt').val('json');
-		$('#fileDelimiterDiv').hide();
-		$('#lineTerminatortDiv').hide();
-		$('#encodingDiv').hide();
-            }
-        });
-
-	$('.zipped').change(function () {
-	   if($(this).val() == 1) {
-	       $('#zipTypeTopDiv').show();
-	   }
-	   else {
-	       $('#zipTypeTopDiv').hide();
-	   }
-	});
-
+    $('.zipped').change(function () {
+       if($(this).val() == 1) {
+           $('#zipTypeTopDiv').show();
+       }
+       else {
+           $('#zipTypeTopDiv').hide();
+       }
     });
 });
 

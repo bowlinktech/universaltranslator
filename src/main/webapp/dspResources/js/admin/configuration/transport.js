@@ -1,7 +1,6 @@
 
 
 require(['./main'], function () {
-    require(['jquery'], function ($) {
         
         $(document).on('click','.printConfig',function() {
            /* $('body').overlay({
@@ -233,8 +232,6 @@ require(['./main'], function () {
 	       $('#zipTypeTopDiv').hide();
 	   }
 	});
-
-    });
 });
 
 
