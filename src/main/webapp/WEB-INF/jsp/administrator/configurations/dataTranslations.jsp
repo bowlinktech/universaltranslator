@@ -35,9 +35,16 @@
 		    </dt>
 		</div>
 	    </section>   
+            <c:if test="${not empty error}" >
+                <div class="alert alert-danger" role="alert">
+                    The selected file was not found.
+                </div>
+            </c:if>
 	</div>
     </div>
+    
     <div class="row-fluid">
+        
 	<div class="col-md-6">
 	    <section class="panel panel-default">
 		<div class="panel-heading">

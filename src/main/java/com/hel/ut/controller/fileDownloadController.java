@@ -250,6 +250,15 @@ public class fileDownloadController {
 			else if("outboundAudit".equals(fromPage)) {
 			   mav = new ModelAndView(new RedirectView("/administrator/processing-activity/outbound/auditReport/"+utBatchId)); 
 			}
+			else if("config".equals(fromPage)) {
+			   mav = new ModelAndView(new RedirectView("/administrator/configurations/translations")); 
+			}
+			else if("messagespec".equals(fromPage)) {
+			   mav = new ModelAndView(new RedirectView("/administrator/configurations/messagespecs")); 
+			}
+			else if("crosswalks".equals(fromPage)) {
+			   mav = new ModelAndView(new RedirectView("/administrator/sysadmin/crosswalks")); 
+			}
 		    }
 		}
 		
