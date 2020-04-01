@@ -855,6 +855,8 @@ public class adminConfigController {
 	    configId = (Integer) session.getAttribute("manageconfigId");
 	}
 	
+	
+	
         mav.setViewName("/administrator/configurations/messagespecs");
 
         configurationMessageSpecs messageSpecs = utconfigurationmanager.getMessageSpecs(configId);
@@ -883,6 +885,8 @@ public class adminConfigController {
 	
 	 // Get organization directory name
         Organization orgDetails = organizationmanager.getOrganizationById(configurationDetails.getorgId());
+	
+	mav.addObject("cleanOrgURL",orgDetails.getCleanURL());
 	
 	configurationDetails.setOrgName(orgDetails.getOrgName());
 	
