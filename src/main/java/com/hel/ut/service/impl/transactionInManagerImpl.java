@@ -3829,9 +3829,19 @@ public class transactionInManagerImpl implements transactionInManager {
 			    //Pull the first record for the batch
 			    String recordVal = transactionInDAO.getFieldValue("transactiontranslatedin_"+batchUploadId,"F"+messageSpec.gettargetOrgCol(), "batchUploadId", batchUploadId);
 			    
-			    if(recordVal.trim().toLowerCase().equals(String.valueOf(targetOrg.getId())) || recordVal.trim().toLowerCase().equals(String.valueOf(targetOrg.getHelRegistryOrgId()))) {
+			    if(recordVal.trim().toLowerCase().equals(String.valueOf(targetOrg.getId()))) {
 				useTarget = true;
 				useTargetOrgId = targetOrg.getId();
+			    }
+			    
+			    //Check the HEL Registry OrgId
+			    if(!useTarget) {
+				recordVal = transactionInDAO.getFieldValue("transactioninrecords_"+batchUploadId,"F"+messageSpec.gettargetOrgCol(), "batchUploadId", batchUploadId);
+				
+				if(recordVal.trim().toLowerCase().equals(String.valueOf(targetOrg.getHelRegistryOrgId()))) {
+				    useTarget = true;
+				    useTargetOrgId = targetOrg.getId();
+				}
 			    }
 			}
 			else {
