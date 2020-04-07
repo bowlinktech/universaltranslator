@@ -83,8 +83,8 @@ public class adminController {
         int day = 1;
         Date originalDate = new Date(year, month, day);
 
-        Date fromDate = getMonthDate("START-WEEK");
-        Date toDate = getMonthDate("END-WEEK");
+        Date fromDate = getMonthDate("START-MONTH");
+        Date toDate = getMonthDate("END-MONTH");
 	
 	/* Retrieve search parameters from session */
         searchParameters searchParameters = (searchParameters) session.getAttribute("searchParameters");
@@ -118,7 +118,16 @@ public class adminController {
 
         Calendar cal = GregorianCalendar.getInstance();
         int date = cal.getActualMinimum(Calendar.DATE);
-        if ("END".equalsIgnoreCase(filter)) {
+	
+	if("START-MONTH".equals(filter)) {
+	    cal.set(Calendar.DAY_OF_MONTH, 1);
+	}
+	else if("END-MONTH".equals(filter)) {
+	    cal.add(Calendar.MONTH, 1);  
+	    cal.set(Calendar.DAY_OF_MONTH, 1);  
+	    cal.add(Calendar.DATE, -1);  
+	}
+	else if ("END".equalsIgnoreCase(filter)) {
             date = cal.getActualMaximum(Calendar.DATE);
             cal.set(Calendar.DATE, date);
             cal.set(Calendar.HOUR_OF_DAY, 23);
