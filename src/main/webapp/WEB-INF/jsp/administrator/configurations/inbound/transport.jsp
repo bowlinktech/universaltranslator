@@ -232,7 +232,7 @@
     </section>
 
 
-    <%-- DIRECT MESSAGE Details --%>	
+    <%-- DIRECT MESSAGE Details 
     <section id="directMessageDetailsDiv" class="panel panel-default" style="display:none">
 	<div class="panel-heading">
 	    <h3 class="panel-title"><input type="checkbox" id="enableDirect" value="1" <c:if test="${transportDetails.directMessageFields[0].id > 0 && transportDetails.transportMethodId == 13}">checked</c:if>> Enable HISP</h3>
@@ -282,9 +282,9 @@
 	    </div>
 	</div>
     </section>
-
+    --%>	
     
-    <%-- REST Details --%>	
+    <%-- REST Details 	
     <section id="restDetailsDiv" class="panel panel-default" style="display:none">
 	<div class="panel-heading">
 	    <h3 class="panel-title"><input type="checkbox" id="enableRest" value="1" <c:if test="${not empty transportDetails.restAPIURL}">checked</c:if>> Enable API</h3>
@@ -368,7 +368,8 @@
 		</c:choose>
 	    </div>
 	</div>
-    </section>
+    </section>--%>
+    <form:hidden path="restAPIFunctionId" value = "0" />
 
     <%-- FTP Details --%>	
     <section id="ftpDetailsDiv" class="panel panel-default" style="display:none">

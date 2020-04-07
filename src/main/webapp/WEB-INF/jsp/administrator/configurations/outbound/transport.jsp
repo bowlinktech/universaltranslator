@@ -302,7 +302,7 @@
 	</div>
     </section>
 
-    <%-- DIRECT MESSAGE Details --%>	
+    <%-- DIRECT MESSAGE Details 	
     <section id="directMessageDetailsDiv" class="panel panel-default" style="display:none">
 	<div class="panel-heading">
 	    <h3 class="panel-title">Direct Message Details</h3>
@@ -327,7 +327,7 @@
 	       </div>
 	    </div>
 	</div>
-    </section>
+    </section>--%>
 
     <%-- FILE DROP Details --%>	
     <section id="fileDropDetailsDiv" class="panel panel-default" style="display:none">
@@ -356,7 +356,7 @@
 	</div>
     </section>
 
-    <%-- REST Details --%>	
+    <%-- REST Details 	
     <section id="restDetailsDiv" class="panel panel-default" style="display:none">
 	<div class="panel-heading">
 	    <h3 class="panel-title">REST API Details</h3>
@@ -414,7 +414,7 @@
 		</spring:bind>
 	    </div>
 	</div>
-    </section>
+    </section>--%>
 
     <%-- FTP Details --%>	
     <section id="ftpDetailsDiv" class="panel panel-default" style="display:none">
