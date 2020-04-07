@@ -482,7 +482,8 @@
 		</spring:bind>
 		 <spring:bind path="threshold">
 		    <div id="thresholdDiv" class="form-group">
-			<label class="control-label" for="errorHandling">Error Threshold %*</label>
+			<label class="control-label" for="errorHandling">Error Threshold *</label>
+                        <p>What % of errors should I accept before flagging the batch with an alert</p>
 			<form:input path="threshold" id="threshold" class="form-control sm-input" type="text" maxLength="3" disabled="${transportDetails.copiedTransportId > 0 ? 'true' : 'false'}" />
 			<span id="thresholdMsg" class="control-label"></span>
 		    </div>

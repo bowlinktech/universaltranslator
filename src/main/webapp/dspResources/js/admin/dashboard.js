@@ -4,7 +4,66 @@
  * and open the template in the editor.
  */
 
+/*var gaugeOptions = {
+    chart: {
+        type: 'solidgauge'
+    },
 
+    title: null,
+
+    pane: {
+        center: ['50%', '75%'],
+        size: '150%',
+        startAngle: -90,
+        endAngle: 90,
+        background: {
+            backgroundColor:
+                Highcharts.defaultOptions.legend.backgroundColor || '#EEE',
+            innerRadius: '60%',
+            outerRadius: '100%',
+            shape: 'arc'
+        }
+    },
+
+    exporting: {
+        enabled: false
+    },
+
+    tooltip: {
+        enabled: false
+    },
+
+    // the value axis
+    yAxis: {
+        stops: [
+            [0.1, '#55BF3B'], // green
+            [0.5, '#DDDF0D'], // yellow
+            [0.9, '#DF5353'] // red
+        ],
+        lineWidth: 0,
+        tickWidth: 0,
+        minorTickInterval: null,
+        tickAmount: 2,
+        title: {
+            y: -70
+        },
+        labels: {
+            y: 16
+        }
+    },
+
+    plotOptions: {
+        solidgauge: {
+            dataLabels: {
+                y: 5,
+                borderWidth: 0,
+                useHTML: true
+            }
+        }
+    }
+};
+
+var chartSpeed;*/
 
 require(['./main'], function () {
 	
@@ -94,6 +153,10 @@ function getInboundMessages() {
 	sPaginationType: "bootstrap", 
 	 drawCallback: function() {
 	    $('[data-toggle="popover"]').popover();
+            /*$('.inrecords').each(function() {
+                var percent = Math.round($(this).attr('rel2'));
+                calculateThreshold('threshold-chart-'+$(this).attr('rel1'), percent,$(this).attr('rel3'));
+            });*/
 	},
 	oLanguage: {
 	   sEmptyTable: "There were no files submitted for the selected date range.", 
@@ -128,20 +191,26 @@ function getInboundMessages() {
 			$(row).attr('data-content', data.endUserDisplayText + "<br />" + "<b>File Failed Threshold</b>");
 		    }
 		    else if(data.errorRecordCount > 0) {
-			var percent = (data.errorRecordCount * 100 / data.totalRecordCount);
-
-			if(percent > data.threshold) {
-			    $(row).addClass('table-danger');
-			    $(row).attr('data-content', data.endUserDisplayText + "<br />" + "<b>File Failed Threshold</b>");
+                        //< .5 green .5 | threshold = yellow | >= threshold = red
+			var percent = Math.round((data.errorRecordCount / data.totalRecordCount) * 100);
+                        var thresholdHalf = Math.round((data.threshold / 2));
+                        
+			if(percent < thresholdHalf) {
+			    $(row).addClass('table-success');
+			    $(row).attr('data-content', data.endUserDisplayText + "<br />" + "<b>File Processed Successfully with Errors</b>" + "<br />" + "<b>Error Percent: </b>" + percent + '%');
 			}
-			else {
+			else if(percent/data.threshold >= thresholdHalf && percent < data.threshold) {
 			    $(row).addClass('table-warning');
-			    $(row).attr('data-content', data.endUserDisplayText + "<br />" + "<b>File Contains Errors</b>");
+                            $(row).attr('data-content', data.endUserDisplayText + "<br />" + "<b>File Processed Successfully with Errors</b>" + "<br />" + "<b>Error Percent: </b>" + percent + '%');
 			}
+                        else {
+                            $(row).addClass('table-danger');
+			    $(row).attr('data-content', data.endUserDisplayText + "<br />" + "<b>File Processed Successfully with Errors</b>" + "<br />" + "<b>Error Percent: </b>" + percent + '%');
+                        }
 		    }
 		    else {
-		       $(row).addClass("table-success");  
-		       $(row).attr('data-content', data.endUserDisplayText + "<br />" + "<b>File Processed Successfully</b>");
+		       $(row).addClass("table-success"); 
+                       $(row).attr('data-content', data.endUserDisplayText + "<br />" + "<b>File Processed Successfully</b>" + "<br />" + "<b>Error Percent:</b> 0%");
 		    }
 		}
 		else if(data.statusId == 58 || data.statusId == 7|| data.statusId == 1 || data.statusId == 41 || data.statusId == 39 || data.statusId == 30 || data.statusId == 29) {
@@ -149,12 +218,22 @@ function getInboundMessages() {
 		    $(row).attr('data-content', data.endUserDisplayText + "<br />" + "<b>File Failed to Process</b>");
 		}
 		else if(data.errorRecordCount > 0) {
-		    var percent = (data.errorRecordCount * 100 / data.totalRecordCount);
+		     //< .5 green .5 | threshold = yellow | >= threshold = red
+                    var percent = Math.round((data.errorRecordCount / data.totalRecordCount) * 100);
+                    var thresholdHalf = Math.round((data.threshold / 2));
 
-		    if(percent > data.threshold) {
-			$(row).addClass('table-danger');
-			$(row).attr('data-content', data.endUserDisplayText + "<br />" + "<b>File Failed Threshold</b>");
-		    }
+		    if(percent < thresholdHalf) {
+                        $(row).addClass('table-success');
+                        $(row).attr('data-content', data.endUserDisplayText + "<br />" + "<b>File Processed Successfully with Errors</b>" + "<br />" + "<b>Error Percent: </b>" + percent + '%');
+                    }
+                    else if(percent/data.threshold >= thresholdHalf && percent < data.threshold) {
+                        $(row).addClass('table-warning');
+                        $(row).attr('data-content', data.endUserDisplayText + "<br />" + "<b>File Processed Successfully with Errors</b>" + "<br />" + "<b>Error Percent: </b>" + percent + '%');
+                    }
+                    else {
+                        $(row).addClass('table-danger');
+                        $(row).attr('data-content', data.endUserDisplayText + "<br />" + "<b>File Processed Successfully with Errors</b>" + "<br />" + "<b>Error Percent: </b>" + percent + '%');
+                    }
 		}
 	    }
 	},
@@ -226,7 +305,7 @@ function getInboundMessages() {
 		"mData": "transportMethod", 
 		"defaultContent": "",
 		"bSortable":true,
-		"sWidth": "20%",
+		"sWidth": "10%",
 		"render": function ( data, type, row, meta ) {
 		    return data;
 		}
@@ -235,7 +314,7 @@ function getInboundMessages() {
 		"mData": "uploadType", 
 		"defaultContent": "",
 		"bSortable":true,
-		"sWidth": "5%",
+		"sWidth": "10%",
 		"className": "center-text",
 		"render": function ( data, type, row, meta ) {
 		    var returnData = '';
@@ -253,7 +332,7 @@ function getInboundMessages() {
 		"mData": "uploadType", 
 		"defaultContent": "",
 		"bSortable":true,
-		"sWidth": "5%",
+		"sWidth": "10%",
 		"className": "center-text",
 		"render": function ( data, type, row, meta ) {
 		    var returnData = '';
@@ -274,20 +353,69 @@ function getInboundMessages() {
 		"sWidth": "5%",
 		"className": "center-text",
 		"render": function ( data, type, row, meta ) {
-		    var returnData = '';
+                    var returnData = ''
+                    if(data === 'Watch List Entry') {
+                        returnData = 'N/A';
+                    }
+                    else {
+                       /* var percent = (row.errorRecordCount * 100 / row.totalRecordCount);
+                        if(percent > 100) {
+                            percent = 100;
+                        }
+                        returnData = '<figure class="highcharts-figure"><div id="threshold-chart-'+row.id+'" rel1="'+row.id+'" rel2="'+percent+'" rel3="'+row.threshold+'" class="inrecords chart-container"></div></figure>'; */
+                        returnData = row.threshold + '%';
+                    }
 		    
-		    if(data === 'Watch List Entry') {
-			returnData = 'N/A';
-		    }
-		    else {
-			returnData = commaSeparateNumber(row.threshold) + '%';
-		    }
 		    return returnData;
 		}
 	    }
 	 ]
     }); 
 }
+
+/*function calculateThreshold(chartContainer,percent,threshold) {
+    
+    $("#"+chartContainer).unbind();
+   
+    chartSpeed = Highcharts.chart(chartContainer, Highcharts.merge(gaugeOptions, {
+        yAxis: {
+            min: 0,
+            max: threshold,
+            tickPositions: [0,threshold],
+            title: {
+                text: ''
+            }
+        },
+        credits: {
+            enabled: false
+        },
+        series: [{
+            name: 'Error ',
+            data: [percent],
+            dataLabels: {
+                format:
+                    '<div style="text-align:center">' +
+                    '<span style="font-size:11px">{y}%</span><br/>' +
+                    '</div>'
+            },
+            tooltip: {
+                valueSuffix: ' %'
+            }
+        }]
+
+    }));
+}
+
+(function(H) {
+  H.wrap(H.Axis.prototype, 'render', function(proceed) {
+
+    if (this.isRadial && this.isCircular && !this.isXAxis) {
+      this.options.labels.distance = -(this.center[2]) / 8;
+    }
+
+    return proceed.apply(this, Array.prototype.slice.call(arguments, 1));
+  });
+})(Highcharts);*/
 
 function getOutboundMessages() {
     
@@ -312,6 +440,10 @@ function getOutboundMessages() {
 	sPaginationType: "bootstrap", 
 	 drawCallback: function() {
 	    $('[data-toggle="popover"]').popover();
+            /*$('.outrecords').each(function() {
+                var percent = Math.round($(this).attr('rel2'));
+                calculateThreshold('out-threshold-chart-'+$(this).attr('rel1'), percent,$(this).attr('rel3'));
+            });*/
 	},
 	oLanguage: {
 	   sEmptyTable: "There were no files sent out for the selected date range.", 
@@ -341,17 +473,45 @@ function getOutboundMessages() {
 		    $(row).attr('data-content', data.endUserDisplayText + "<br />" + "<b>File Failed Threshold</b>");
 		}
 		else if(data.errorRecordCount > 0) {
-		    $(row).addClass('table-warning');
-		    $(row).attr('data-content', data.endUserDisplayText + "<br />" + "<b>File Contains Errors</b>");
+                   //< .5 green .5 | threshold = yellow | >= threshold = red
+                    var percent = Math.round((data.errorRecordCount / data.totalRecordCount) * 100);
+                    var thresholdHalf = Math.round((data.threshold / 2));
+
+                    if(percent < thresholdHalf) {
+                        $(row).addClass('table-success');
+                        $(row).attr('data-content', data.endUserDisplayText + "<br />" + "<b>File Processed Successfully with Errors</b>" + "<br />" + "<b>Error Percent: </b>" + percent + '%');
+                    }
+                    else if(percent/data.threshold >= thresholdHalf && percent < data.threshold) {
+                        $(row).addClass('table-warning');
+                        $(row).attr('data-content', data.endUserDisplayText + "<br />" + "<b>File Processed Successfully with Errors</b>" + "<br />" + "<b>Error Percent: </b>" + percent + '%');
+                    }
+                    else {
+                        $(row).addClass('table-danger');
+                        $(row).attr('data-content', data.endUserDisplayText + "<br />" + "<b>File Processed Successfully with Errors</b>" + "<br />" + "<b>Error Percent: </b>" + percent + '%');
+                    }
 		}
 		else {
-		   $(row).addClass("table-success");  
-		   $(row).attr('data-content', data.endUserDisplayText + "<br />" + "<b>File Processed Successfully</b>");
-		}
+                    $(row).addClass("table-success"); 
+                    $(row).attr('data-content', data.endUserDisplayText + "<br />" + "<b>File Processed Successfully</b>" + "<br />" + "<b>Error Percent:</b> 0%");
+                }
 	    }
 	    else if(data.statusId == 58 || data.statusId == 7|| data.statusId == 1 || data.statusId == 41 || data.statusId == 39 || data.statusId == 30 || data.statusId == 29) {
-		$(row).addClass('table-danger');
-		$(row).attr('data-content', data.endUserDisplayText + "<br />" + "<b>File Failed to Process</b>");
+		 //< .5 green .5 | threshold = yellow | >= threshold = red
+                var percent = Math.round((data.errorRecordCount / data.totalRecordCount) * 100);
+                var thresholdHalf = Math.round((data.threshold / 2));
+
+                if(percent < thresholdHalf) {
+                    $(row).addClass('table-success');
+                    $(row).attr('data-content', data.endUserDisplayText + "<br />" + "<b>File Processed Successfully with Errors</b>" + "<br />" + "<b>Error Percent: </b>" + percent + '%');
+                }
+                else if(percent/data.threshold >= thresholdHalf && percent < data.threshold) {
+                    $(row).addClass('table-warning');
+                    $(row).attr('data-content', data.endUserDisplayText + "<br />" + "<b>File Processed Successfully with Errors</b>" + "<br />" + "<b>Error Percent: </b>" + percent + '%');
+                }
+                else {
+                    $(row).addClass('table-danger');
+                    $(row).attr('data-content', data.endUserDisplayText + "<br />" + "<b>File Processed Successfully with Errors</b>" + "<br />" + "<b>Error Percent: </b>" + percent + '%');
+                }
 	    }
 	},
 	aoColumns: [
@@ -414,7 +574,7 @@ function getOutboundMessages() {
 		"mData": "transportMethod", 
 		"defaultContent": "",
 		"bSortable":true,
-		"sWidth": "20%",
+		"sWidth": "10%",
 		"render": function ( data, type, row, meta ) {
 		    return data;
 		}
@@ -423,7 +583,7 @@ function getOutboundMessages() {
 		"mData": "totalRecordCount", 
 		"defaultContent": "",
 		"bSortable":true,
-		"sWidth": "5%",
+		"sWidth": "10%",
 		"className": "center-text",
 		"render": function ( data, type, row, meta ) {
 		    return commaSeparateNumber(data);
@@ -433,20 +593,33 @@ function getOutboundMessages() {
 		"mData": "errorRecordCount", 
 		"defaultContent": "",
 		"bSortable":true,
-		"sWidth": "5%",
+		"sWidth": "10%",
 		"className": "center-text",
 		"render": function ( data, type, row, meta ) {
 		     return commaSeparateNumber(data);
 		}
 	    },
 	    {
-		"mData": "threshold", 
+		"mData": "uploadType", 
 		"defaultContent": "",
 		"bSortable":true,
 		"sWidth": "5%",
 		"className": "center-text",
 		"render": function ( data, type, row, meta ) {
-		   return commaSeparateNumber(data) + '%';
+                    var returnData = ''
+                    if(data === 'Watch List Entry') {
+                        returnData = 'N/A';
+                    }
+                    else {
+                        var percent = (row.errorRecordCount * 100 / row.totalRecordCount);
+                        if(percent > 100) {
+                            percent = 100;
+                        }
+                        //returnData = '<figure class="highcharts-figure"><div id="out-threshold-chart-'+row.id+'" rel1="'+row.id+'" rel2="'+percent+'" rel3="'+row.threshold+'" class="outrecords chart-container"></div></figure>'; 
+                        returnData = Math.round(percent) + '% of ' + row.threshold + '%';
+                    }
+		    
+		    return returnData;
 		}
 	    }
 	 ]

@@ -119,7 +119,8 @@ function populateMessages(fromDate,toDate) {
 		"bSortable":true,
 		"sWidth": "15%",
 		"render": function ( data, type, row, meta ) {
-		    var returnData = '<a href="/administrator/processing-activity/inbound/'+data+'" title="View Inbound Batch" role="button">'+data+'</a>';
+                    var returnData = row.srcOrgName + '</br>';
+		    returnData += '<a href="/administrator/processing-activity/inbound/'+data+'" title="View Inbound Batch" role="button">'+data+'</a>';
 		    
 		    if(row.fromBatchFile !== '') {
 			returnData += '<br /><a href="/FileDownload/downloadFile.do?fromPage=outbound&filename='+row.fromBatchFile+'&foldername=archivesIn&orgId=0" title="View Uploaded Source File">Download Uploaded File</a>';

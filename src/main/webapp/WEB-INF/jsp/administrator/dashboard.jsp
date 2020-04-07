@@ -11,6 +11,20 @@
 <%@ taglib prefix="s" uri="http://www.springframework.org/tags" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
 
+<style>
+.highcharts-figure .chart-container  {
+    width: 200px;
+    height: 100px;
+    float: left;
+}
+
+.highcharts-figure, .highcharts-data-table table {
+    width: 200px;
+    margin: 0 auto;
+}
+
+</style>
+
 
 <div class="main clearfix full-width" role="main">
     <div class="row-fluid contain basic-clearfix">
@@ -62,25 +76,25 @@
 		</div>
 		<div class="panel-body">
 		    <div class="row-fluid contain basic-clearfix">
-			<div class="col-md-12">
+                        <div class="col-md-12">
 			   <section class="panel panel-info container-fluid">
 				<div class="panel-heading">
 				    <h3 class="panel-title">Inbound Messages</h3>
 				</div>
 			       <div class="panel-body">
 				   <div class="form-container scrollable">
-				       <table class="table table-dash-bordered table-default" id="inbounddataTable">
+				       <table class="table table-bordered table-default" id="inbounddataTable">
 					    <thead class="thead-light">
 						<tr>
 						    <th scope="col" class="center-text">Type</th>
 						    <th scope="col" class="center-text">Date/Time</th>
 						    <th scope="col" class="center-text">Trans. ID</th>
 						    <th scope="col" class="center-text">Source</th>
-						    <th scope="col" class="center-text">Message Type</th>
+						    <th scope="col" class="center-text">Configuration</th>
 						    <th scope="col" class="center-text">Interface</th>
-						    <th scope="col" class="center-text">Total Trans.</th>
-						    <th scope="col" class="center-text">Total Errors</th>
-						    <th scope="col" class="center-text">Threshold</th>
+						    <th scope="col" class="center-text">Transactions (Rows)</th>
+						    <th scope="col" class="center-text">Errors</th>
+						    <th scope="col" class="center-text">Error Threshold</th>
 						</tr>
 					    </thead>
 				       </table>
@@ -98,18 +112,18 @@
 				</div>
 				<div class="panel-body">
 				    <div class="form-container scrollable">
-					<table class="table table-dash-bordered table-default" id="outbounddataTable">
+					<table class="table table-bordered table-default" id="outbounddataTable">
 					    <thead class="thead-light">
 						<tr>
 						    <th scope="col" class="center-text">Type</th>
 						    <th scope="col" class="center-text">Date/Time</th>
 						    <th scope="col" class="center-text">Trans. ID</th>
 						    <th scope="col" class="center-text">Target</th>
-						    <th scope="col" class="center-text">Message Type</th>
+						    <th scope="col" class="center-text">Configuration</th>
 						    <th scope="col" class="center-text">Interface</th>
-						    <th scope="col" class="center-text">Total Trans.</th>
-						    <th scope="col" class="center-text">Total Errors</th>
-						    <th scope="col" class="center-text">Threshold</th>
+						    <th scope="col" class="center-text">Transactions (Rows)</th>
+						    <th scope="col" class="center-text">Errors</th>
+                                                    <th scope="col" class="center-text">Error Threshold</th>
 						</tr>
 					    </thead>
 					 </table>
