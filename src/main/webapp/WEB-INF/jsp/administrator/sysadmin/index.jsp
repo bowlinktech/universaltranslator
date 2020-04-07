@@ -78,7 +78,7 @@
             </section>
         </div>
 		    
-	<div class="col-md-3 col-sm-3 col-xs-3">
+	<%--<div class="col-md-3 col-sm-3 col-xs-3">
             <section class="panel panel-default panel-stats">
                 <div class="panel-body">
                     <span class="stat-number"><a href="hisps" class="hisps" title="View HISPS">${totalHisps}&nbsp;</a></span>
@@ -86,7 +86,7 @@
 		    <a href="hisps" class="btn btn-primary btn-small" class="hisps" title="View HISPS">View HISPS</a>    
                 </div>
             </section>
-        </div>
+        </div>--%>
                     
          <div class="col-md-3 col-sm-3 col-xs-3">
             <section class="panel panel-default panel-stats">
