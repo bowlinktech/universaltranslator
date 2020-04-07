@@ -1335,20 +1335,21 @@ public class transactionOutDAOImpl implements transactionOutDAO {
 	
 	
 	String sqlQuery = "select id, orgId, utBatchName, transportMethodId, outputFileName, totalRecordCount, totalErrorCount, configName, threshold, statusId, dateCreated,"
-		+ "statusValue, endUserDisplayText, orgName, transportMethod, fromBatchName, fromBatchFile, totalMessages "
+		+ "statusValue, endUserDisplayText, orgName, transportMethod, fromBatchName, fromBatchFile, totalMessages, srcOrgName "
 		+ "FROM ("
 		+ "select a.id, a.orgId, a.utBatchName, a.transportMethodId, a.outputFileName, a.totalRecordCount, a.totalErrorCount, b.configName, b.threshold,"
 		+ "a.statusId, a.dateCreated, c.displayCode as statusValue, c.endUserDisplayText as endUserDisplayText, d.orgName, e.transportMethod, f.utBatchName as fromBatchName,"
 		+ "case when f.transportMethodId = 5 THEN CONCAT(f.utBatchName,'.',SUBSTRING_INDEX(f.originalFileName,'.',-1)) "
 		+ "when f.transportMethodId = 1 THEN CONCAT(f.utBatchName,'.',SUBSTRING_INDEX(f.originalFileName,'.',-1)) "
 		+ "else '' end as fromBatchFile,"
-		+ "(select count(id) as total from batchdownloads where "+dateSQLStringTotal+") as totalMessages "
+		+ "(select count(id) as total from batchdownloads where "+dateSQLStringTotal+") as totalMessages, g.orgName as srcOrgName "
 		+ "FROM batchdownloads a inner join "
 		+ "configurations b on b.id = a.configId inner join "
 		+ "lu_processstatus c on c.id = a.statusId inner join "
 		+ "organizations d on d.id = a.orgId inner join "
 		+ "ref_transportmethods e on e.id = a.transportMethodId inner join "
-		+ "batchuploads f on f.id = a.batchUploadId "
+		+ "batchuploads f on f.id = a.batchUploadId inner join "
+		+ "organizations g on g.id = f.orgId "
 		+ "where " + dateSQLString + ") as inboundBatches ";
 	
 	if(!"".equals(searchTerm)){
@@ -1384,6 +1385,7 @@ public class transactionOutDAOImpl implements transactionOutDAO {
 	    .addScalar("fromBatchName", StandardBasicTypes.STRING)
 	    .addScalar("fromBatchFile", StandardBasicTypes.STRING)
 	    .addScalar("totalMessages", StandardBasicTypes.INTEGER)
+	    .addScalar("srcOrgName", StandardBasicTypes.STRING)
 	    .setResultTransformer(Transformers.aliasToBean(batchDownloads.class));
 	
 	List<batchDownloads> batchSentMessages = query.list();
