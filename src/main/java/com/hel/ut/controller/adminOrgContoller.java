@@ -150,6 +150,9 @@ public class adminOrgContoller {
 
         //Get the object that will hold the countries
         mav.addObject("countryList", countryList.getCountries());
+	
+	List<Organization> organizations = organizationManager.getAllActiveOrganizations();
+	mav.addObject("organizationList",organizations);
 
         return mav;
     }
@@ -249,6 +252,8 @@ public class adminOrgContoller {
         //Get the object that will hold the countries
         mav.addObject("countryList", countryList.getCountries());
 
+	List<Organization> organizations = organizationManager.getAllActiveOrganizations();
+	mav.addObject("organizationList",organizations);
 	
         return mav;
 

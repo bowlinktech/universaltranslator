@@ -267,8 +267,10 @@ public class directMessaging {
 							    else {
 								responseObject.put("messageId","N/A");
 							    }
-							    responseObject.put("status","FAILED");
-							    responseObject.put("result","Failed to process your message.");
+							    //responseObject.put("status","FAILED");
+							    //responseObject.put("result","Failed to process your message.");
+							    responseObject.put("status","SUCCESS");
+							    responseObject.put("result","Successfully received message.");
 							    
 							    //Need to create an entry in the received Direct Messages table
 							    directMessageDetails.setConfigId(configId);
@@ -329,8 +331,10 @@ public class directMessaging {
 					    else {
 						responseObject.put("messageId","N/A");
 					    }
-					    responseObject.put("status","FAILED");
-					    responseObject.put("result","sending direct message is invalid - " + messageInfo.getFromDirectAddress());
+					    //responseObject.put("status","FAILED");
+					    //responseObject.put("result","sending direct message is invalid - " + messageInfo.getFromDirectAddress());
+					    responseObject.put("status","SUCCESS");
+					    responseObject.put("result","Successfully received message.");
 					    
 					    directMessageDetails.setSendingResponse("sending direct message is invalid - " + messageInfo.getFromDirectAddress());
 					    transactionInManager.updateDirectAPIMessage(directMessageDetails);
@@ -346,8 +350,10 @@ public class directMessaging {
 					else {
 					    responseObject.put("messageId","N/A");
 					}
-					responseObject.put("status","FAILED");
-					responseObject.put("result","sending direct message is invalid - " + messageInfo.getFromDirectAddress());
+					//responseObject.put("status","FAILED");
+					//responseObject.put("result","sending direct message is invalid - " + messageInfo.getFromDirectAddress());
+					responseObject.put("status","SUCCESS");
+					responseObject.put("result","Successfully received message.");
 					
 					directMessageDetails.setSendingResponse("sending direct message is invalid - " + messageInfo.getFromDirectAddress());
 					transactionInManager.updateDirectAPIMessage(directMessageDetails);
@@ -363,13 +369,15 @@ public class directMessaging {
 				    else {
 					responseObject.put("messageId","N/A");
 				    }
-				    responseObject.put("status","FAILED");
-				    responseObject.put("result","recipient direct message is invalid - " + messageInfo.getToDirectAddress());
+				    //responseObject.put("status","FAILED");
+				    //responseObject.put("result","recipient direct message is invalid - " + messageInfo.getToDirectAddress());
+				    responseObject.put("status","SUCCESS");
+				    responseObject.put("result","Successfully received message.");
 				    
 				    directMessageDetails.setSendingResponse("recipient direct message is invalid - " + messageInfo.getToDirectAddress());
 				    transactionInManager.updateDirectAPIMessage(directMessageDetails);
 				    
-                                    return new ResponseEntity("recipient direct message is invalid - " + messageInfo.getToDirectAddress(), HttpStatus.BAD_REQUEST);
+                                    return new ResponseEntity(responseObject, HttpStatus.BAD_REQUEST);
                                 }
                             }
                             else {

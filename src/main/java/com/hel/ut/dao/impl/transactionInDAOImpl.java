@@ -62,6 +62,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import com.hel.ut.service.utConfigurationTransportManager;
+import java.text.DateFormat;
 
 /**
  *
@@ -87,7 +88,7 @@ public class transactionInDAOImpl implements transactionInDAO {
 
     private int processingSysErrorId = 5;
 
-    private SimpleDateFormat mysqlDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    private SimpleDateFormat mysqlDateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
     /**
      * The 'getFieldValue' function will return the value saved for the passed in tableName, tableCol and idValue.
@@ -1762,7 +1763,7 @@ public class transactionInDAOImpl implements transactionInDAO {
 		sql += "and (statusId is null or statusId not in (:transRELId)) ";
 	    }
 	    
-	    sql += "and f" + bt.getSourceSubOrgCol() + " not in (select id from organizations where parentid = :parentOrg) "
+	    sql += "and f" + bt.getSourceSubOrgCol() + " not in (select id from organizations where parentOrgId = :parentOrg) "
 		+ "and f" + bt.getSourceSubOrgCol() + " is not null "
 		+ "and transactionInRecordsId not in (select transactionInRecordsId "
 		+ "from transactioninerrors_"+batch.getId()+" where errorId = 23);";
@@ -1798,7 +1799,7 @@ public class transactionInDAOImpl implements transactionInDAO {
     public List<Integer> geBatchesIdsForReport(String fromDate, String toDate) throws Exception {
 
 	String sql = "select id from batchUploads a "
-		+ "where (a.dateSubmitted >= '" + fromDate + "' and a.dateSubmitted < '" + toDate + "') "
+		+ "where (a.dateSubmitted >= '" + fromDate + " 00:00:00' and a.dateSubmitted < '" + toDate + " 23:59:59') "
 		+ "and statusId in (2,3,4,5,6,22,23,24,25,28,36,38,41,42,43,59,64) "
 		+ "order by dateSubmitted desc";
 
@@ -1817,7 +1818,7 @@ public class transactionInDAOImpl implements transactionInDAO {
 	String sql = "select count(a.id) as totalMessagesSent "
 		+ "from batchdownloads a inner join "
 		+ "batchUploads b on a.batchUploadId = b.id "
-		+ "where a.statusId = 28 and (b.dateSubmitted >= '" + fromDate + "' and b.dateSubmitted < '" + toDate + "')";
+		+ "where a.statusId = 28 and (b.dateSubmitted >= '" + fromDate + " 00:00:00' and b.dateSubmitted < '" + toDate + " 23:59:59')";
 
 	Query getMessagesSentCount = sessionFactory.getCurrentSession().createSQLQuery(sql);
 
@@ -1831,7 +1832,7 @@ public class transactionInDAOImpl implements transactionInDAO {
 	String sql = "select count(a.id) as totalErrors "
 		+ "from batchuploadauditerrors a inner join "
 		+ "batchUploads b on a.batchUploadId = b.id "
-		+ "where (b.dateSubmitted >= '" + fromDate + "' and b.dateSubmitted < '" + toDate + "')";
+		+ "where (b.dateSubmitted >= '" + fromDate + " 00:00:00' and b.dateSubmitted < '" + toDate + " 23:59:59')";
 	
 	Query getRejectedCount = sessionFactory.getCurrentSession().createSQLQuery(sql);
 
@@ -1844,7 +1845,7 @@ public class transactionInDAOImpl implements transactionInDAO {
 
 	String sql = "select count(id) as totalMessagesRejected "
 		+ "from batchUploads "
-		+ "where statusId = 7 and (dateSubmitted >= '" + fromDate + "' and dateSubmitted < '" + toDate + "')";
+		+ "where statusId = 7 and (dateSubmitted >= '" + fromDate + " 00:00:00' and dateSubmitted < '" + toDate + " 23:59:59')";
 	
 	Query getRejectedReceivedCount = sessionFactory.getCurrentSession().createSQLQuery(sql);
 
@@ -1856,11 +1857,11 @@ public class transactionInDAOImpl implements transactionInDAO {
     public List<activityReportList> getReferralList(String fromDate, String toDate) throws Exception {
 
 	String sql = ("select a.configId, c.orgname as orgName, b.configName as messageType,"
-		+ "(select count(Id) from batchuploads where configId = a.configId and dateSubmitted >= '" + fromDate + "' and dateSubmitted < '" + toDate + "') as total "
+		+ "(select count(Id) from batchuploads where configId = a.configId and dateSubmitted >= '" + fromDate + " 00:00:00' and dateSubmitted < '" + toDate + " 23:59:59') as total "
 		+ "from batchuploads a "
 		+ "inner join configurations b on b.id = a.configId "
 		+ "inner join organizations c on c.id = a.orgId "
-		+ "where a.dateSubmitted >= '" + fromDate + "' and a.dateSubmitted < '" + toDate + "' "
+		+ "where a.dateSubmitted >= '" + fromDate + " 00:00:00' and a.dateSubmitted < '" + toDate + " 23:59:59' "
 		+ "group by a.configId "
 		+ "order by orgName asc");
 	
@@ -2230,7 +2231,7 @@ public class transactionInDAOImpl implements transactionInDAO {
 
 	String sql = "select count(id) as totalReferrals "
 		+ "from batchUploads where "
-		+ "(dateSubmitted >= '" + fromDate + "' and dateSubmitted < '" + toDate + "') and "
+		+ "(dateSubmitted >= '" + fromDate + " 00:00:00' and dateSubmitted < '" + toDate + " 23:59:59') and "
 		+ "statusId in (1,7,29,30,33,39,41) and "
 		+ "orgId = " + orgId + " and ("
 		+ "configId in ("
@@ -3113,15 +3114,17 @@ public class transactionInDAOImpl implements transactionInDAO {
 	String dateSQLString = "";
 	String dateSQLStringTotal = "";
 	
+	
+	
 	if(fromDate !=  null && toDate != null) {
 	    
 	    if(!"".equals(fromDate)) {
-		dateSQLString += "a.dateSubmitted between '"+mysqlDateFormat.format(fromDate)+"' ";
-		dateSQLStringTotal += "dateSubmitted between '"+mysqlDateFormat.format(fromDate)+"' ";
+		dateSQLString += "a.dateSubmitted between '"+mysqlDateFormat.format(fromDate)+" 00:00:00' ";
+		dateSQLStringTotal += "dateSubmitted between '"+mysqlDateFormat.format(fromDate)+" 00:00:00' ";
 
 		if(!"".equals(toDate)) {
-		    dateSQLString += "AND '"+mysqlDateFormat.format(toDate).replace("00:00:00", "23:59:59")+"'";
-		    dateSQLStringTotal += "AND '"+mysqlDateFormat.format(toDate).replace("00:00:00", "23:59:59")+"'";
+		    dateSQLString += "AND '"+mysqlDateFormat.format(toDate)+" 23:59:59'";
+		    dateSQLStringTotal += "AND '"+mysqlDateFormat.format(toDate)+" 23:59:59'";
 		}
 		else {
 		    dateSQLString += "AND '"+mysqlDateFormat.format(fromDate)+" 23:59:59'";
@@ -3130,7 +3133,7 @@ public class transactionInDAOImpl implements transactionInDAO {
 	    }
 	    else {
 		if(!"".equals(toDate)) {
-		    dateSQLString += "a.dateSubmitted between '"+mysqlDateFormat.format(toDate).replace("00:00:00", "23:59:59")+"' ";
+		    dateSQLString += "a.dateSubmitted between '"+mysqlDateFormat.format(toDate)+" 00:00:00' ";
 		    dateSQLString += "AND '"+mysqlDateFormat.format(toDate)+" 23:59:59'";
 		}
 		else {
@@ -3237,12 +3240,13 @@ public class transactionInDAOImpl implements transactionInDAO {
 	String dateSQLStringTotal = "";
 	
 	if(!"".equals(fromDate)) {
+	   
 	    dateSQLString += "a.dateCreated between '"+mysqlDateFormat.format(fromDate)+" 00:00:00' ";
 	    dateSQLStringTotal += "dateCreated between '"+mysqlDateFormat.format(fromDate)+" 00:00:00' ";
 	    
 	    if(!"".equals(toDate)) {
-		dateSQLString += "AND '"+mysqlDateFormat.format(toDate)+" 00:00:00'";
-		dateSQLStringTotal += "AND '"+mysqlDateFormat.format(toDate)+" 00:00:00'";
+		dateSQLString += "AND '"+mysqlDateFormat.format(toDate)+" 23:59:59'";
+		dateSQLStringTotal += "AND '"+mysqlDateFormat.format(toDate)+" 23:59:59'";
 	    }
 	    else {
 		dateSQLString += "AND '"+mysqlDateFormat.format(fromDate)+" 23:59:59'";
@@ -3259,6 +3263,7 @@ public class transactionInDAOImpl implements transactionInDAO {
 	    }
 	}
 	
+	System.out.println(dateSQLString);
 	
 	String sqlQuery = "select id, statusName, orgName, dateCreated, configId, batchUploadId, batchName, totalMessages "
 		+ "from ("
