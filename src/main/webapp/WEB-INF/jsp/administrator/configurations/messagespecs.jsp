@@ -131,21 +131,21 @@
                                                     <form:errors path="messageTypeVal" cssClass="control-label" element="label" />
                                                 </div>
                                             </spring:bind>
+                                            <spring:bind path="sourceSubOrgCol">
+                                                <div class="form-group ${status.error ? 'has-error' : '' }">
+                                                    <label class="control-label" for="sourceSubOrgCol">Column containing the sending site (Enter 0 if not provided or not in use)</label>
+                                                    <form:input path="sourceSubOrgCol" id="sourceSubOrgCol" class="form-control sm-input" type="text" maxLength="3" />
+                                                    <form:errors path="sourceSubOrgCol" cssClass="control-label" element="label" />
+                                                </div>
+                                            </spring:bind>
+                                            <spring:bind path="targetOrgCol">
+                                                <div class="form-group ${status.error ? 'has-error' : '' }">
+                                                    <label class="control-label" for="targetOrgCol">Column containing the target organization (Enter 0 if not provided) *</label>
+                                                    <form:input path="targetOrgCol" id="targetOrgCol" class="form-control sm-input" type="text" maxLength="3" />
+                                                    <form:errors path="targetOrgCol" cssClass="control-label" element="label" />
+                                                </div>
+                                            </spring:bind>
                                         </c:if>
-					<spring:bind path="sourceSubOrgCol">
-					    <div class="form-group ${status.error ? 'has-error' : '' }">
-						<label class="control-label" for="sourceSubOrgCol">Column containing the sending site (Enter 0 if not provided or not in use)</label>
-						<form:input path="sourceSubOrgCol" id="sourceSubOrgCol" class="form-control sm-input" type="text" maxLength="3" />
-						<form:errors path="sourceSubOrgCol" cssClass="control-label" element="label" />
-					    </div>
-					</spring:bind>
-					<spring:bind path="targetOrgCol">
-					    <div class="form-group ${status.error ? 'has-error' : '' }">
-						<label class="control-label" for="targetOrgCol">Column containing the target organization (Enter 0 if not provided) *</label>
-						<form:input path="targetOrgCol" id="targetOrgCol" class="form-control sm-input" type="text" maxLength="3" />
-						<form:errors path="targetOrgCol" cssClass="control-label" element="label" />
-					    </div>
-					</spring:bind>
                                         <c:choose>
                                             <c:when test="${transportType != 10}">
                                                 <spring:bind path="containsHeaderRow">
@@ -183,6 +183,8 @@
                                                 <form:hidden path="parsingScriptFile" />
                                                 <form:hidden path="messageTypeCol" />
                                                 <form:hidden path="messageTypeVal" />
+                                                <form:hidden path="targetOrgCol" value="0" />
+                                                <form:hidden path="sourceSubOrgCol" value="0" />
                                             </c:otherwise>
                                         </c:choose>
 				    </c:when>
