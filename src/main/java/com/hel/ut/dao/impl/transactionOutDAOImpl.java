@@ -1570,8 +1570,8 @@ public class transactionOutDAOImpl implements transactionOutDAO {
 	    dateSQLStringTotal += "dateCreated between '"+mysqlDateFormat.format(fromDate)+" 00:00:00' ";
 	    
 	    if(!"".equals(toDate)) {
-		dateSQLString += "AND '"+mysqlDateFormat.format(toDate)+" 00:00:00'";
-		dateSQLStringTotal += "AND '"+mysqlDateFormat.format(toDate)+" 00:00:00'";
+		dateSQLString += "AND '"+mysqlDateFormat.format(toDate)+" 23:59:59'";
+		dateSQLStringTotal += "AND '"+mysqlDateFormat.format(toDate)+" 23:59:59'";
 	    }
 	    else {
 		dateSQLString += "AND '"+mysqlDateFormat.format(fromDate)+" 23:59:59'";
