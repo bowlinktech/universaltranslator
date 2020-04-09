@@ -34,7 +34,7 @@ public class RestAPIDAOImpl implements RestAPIDAO {
     @Autowired
     private SessionFactory sessionFactory;
     
-    private SimpleDateFormat mysqlDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    private SimpleDateFormat mysqlDateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
     @SuppressWarnings("unchecked")
     @Override
@@ -59,11 +59,11 @@ public class RestAPIDAOImpl implements RestAPIDAO {
 		    + "where id > 0";
 	
 	if(!"".equals(fromDate)) {
-	    sqlQuery += " and dateCreated >= '"+mysqlDateFormat.format(fromDate)+"'";
+	    sqlQuery += " and dateCreated >= '"+mysqlDateFormat.format(fromDate)+" 00:00:00'";
 	}
 	
 	 if (!"".equals(toDate)) {
-            sqlQuery += " and dateCreated < '"+mysqlDateFormat.format(toDate)+"'";
+            sqlQuery += " and dateCreated < '"+mysqlDateFormat.format(toDate)+" 23:59:59'";
         }
 	 
 	if(batchUploadId > 0) {
@@ -160,8 +160,8 @@ public class RestAPIDAOImpl implements RestAPIDAO {
 	    dateSQLStringTotal += "dateCreated between '"+mysqlDateFormat.format(fromDate)+" 00:00:00' ";
 	    
 	    if(!"".equals(toDate)) {
-		dateSQLString += "AND '"+mysqlDateFormat.format(toDate)+" 00:00:00'";
-		dateSQLStringTotal += "AND '"+mysqlDateFormat.format(toDate)+" 00:00:00'";
+		dateSQLString += "AND '"+mysqlDateFormat.format(toDate)+" 23:59:59'";
+		dateSQLStringTotal += "AND '"+mysqlDateFormat.format(toDate)+" 23:59:59'";
 	    }
 	    else {
 		dateSQLString += "AND '"+mysqlDateFormat.format(fromDate)+" 23:59:59'";
@@ -237,8 +237,8 @@ public class RestAPIDAOImpl implements RestAPIDAO {
 	    dateSQLStringTotal += "dateCreated between '"+mysqlDateFormat.format(fromDate)+" 00:00:00' ";
 	    
 	    if(!"".equals(toDate)) {
-		dateSQLString += "AND '"+mysqlDateFormat.format(toDate)+" 00:00:00'";
-		dateSQLStringTotal += "AND '"+mysqlDateFormat.format(toDate)+" 00:00:00'";
+		dateSQLString += "AND '"+mysqlDateFormat.format(toDate)+" 23:59:59'";
+		dateSQLStringTotal += "AND '"+mysqlDateFormat.format(toDate)+" 23:59:59'";
 	    }
 	    else {
 		dateSQLString += "AND '"+mysqlDateFormat.format(fromDate)+" 23:59:59'";

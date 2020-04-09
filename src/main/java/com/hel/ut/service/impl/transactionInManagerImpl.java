@@ -1817,7 +1817,7 @@ public class transactionInManagerImpl implements transactionInManager {
     @Override
     public List<Integer> getBatchesForReport(Date fromDate, Date toDate) throws Exception {
 
-	SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
 	String dateFrom = df.format(fromDate);
 	String dateTo = df.format(toDate);
 
@@ -1836,7 +1836,7 @@ public class transactionInManagerImpl implements transactionInManager {
 
     @Override
     public BigInteger getMessagesSent(Date fromDate, Date toDate) throws Exception {
-	SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
 	String dateFrom = df.format(fromDate);
 	String dateTo = df.format(toDate);
 
@@ -1847,7 +1847,7 @@ public class transactionInManagerImpl implements transactionInManager {
     @Override
     public BigInteger getRejectedCount(Date fromDate, Date toDate) throws Exception {
 
-	SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
 	String dateFrom = df.format(fromDate);
 	String dateTo = df.format(toDate);
 
@@ -1858,7 +1858,7 @@ public class transactionInManagerImpl implements transactionInManager {
     @Override
     public BigInteger getRejectedReceivedCount(Date fromDate, Date toDate) throws Exception {
 
-	SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
 	String dateFrom = df.format(fromDate);
 	String dateTo = df.format(toDate);
 	
@@ -1869,7 +1869,7 @@ public class transactionInManagerImpl implements transactionInManager {
     @Override
     public List<activityReportList> getReferralList(Date fromDate, Date toDate) throws Exception {
 
-	SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
 	String dateFrom = df.format(fromDate);
 	String dateTo = df.format(toDate);
 
@@ -3119,9 +3119,6 @@ public class transactionInManagerImpl implements transactionInManager {
 			    systemErrorCount = systemErrorCount + rejectInvalidTargetOrg(batchUploadId, bt);
 			}
 
-			if (bt.getSourceSubOrgCol() != 0) {
-			    systemErrorCount = systemErrorCount + rejectInvalidSourceSubOrg(batch, bt, true);
-			}
 		    }
 		}
 	    }

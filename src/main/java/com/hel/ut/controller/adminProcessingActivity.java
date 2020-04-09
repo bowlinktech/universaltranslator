@@ -160,8 +160,8 @@ public class adminProcessingActivity {
         int day = 1;
         Date originalDate = new Date(year, month, day);
 
-        Date fromDate = getMonthDate("START");
-        Date toDate = getMonthDate("END");
+        Date fromDate = getMonthDate("LAST30");
+        Date toDate = getMonthDate("END-TODAY");
 
         ModelAndView mav = new ModelAndView();
         mav.setViewName("/administrator/processing-activity/activityReport");
@@ -299,8 +299,8 @@ public class adminProcessingActivity {
         int day = 1;
         Date originalDate = new Date(year, month, day);
 
-        Date fromDate = getMonthDate("START");
-        Date toDate = getMonthDate("END");
+        Date fromDate = getMonthDate("LAST30");
+        Date toDate = getMonthDate("END-TODAY");
 
         /* Retrieve search parameters from session */
         searchParameters searchParameters = (searchParameters) session.getAttribute("searchParameters");
@@ -397,8 +397,8 @@ public class adminProcessingActivity {
         int day = 1;
         Date originalDate = new Date(year, month, day);
 
-        Date fromDate = getMonthDate("START");
-        Date toDate = getMonthDate("END");
+        Date fromDate = getMonthDate("LAST30");
+        Date toDate = getMonthDate("END-TODAY");
 
         /* Retrieve search parameters from session */
         searchParameters searchParameters = (searchParameters) session.getAttribute("searchParameters");
@@ -509,14 +509,46 @@ public class adminProcessingActivity {
 
         Calendar cal = GregorianCalendar.getInstance();
         int date = cal.getActualMinimum(Calendar.DATE);
-        if ("END".equalsIgnoreCase(filter)) {
+	
+	if("START-MONTH".equals(filter)) {
+	    cal.set(Calendar.DAY_OF_MONTH, 1);
+	}
+	else if("END-MONTH".equals(filter)) {
+	    cal.add(Calendar.MONTH, 1);  
+	    cal.set(Calendar.DAY_OF_MONTH, 1);  
+	    cal.add(Calendar.DATE, -1);  
+	}
+	else if ("END".equalsIgnoreCase(filter)) {
             date = cal.getActualMaximum(Calendar.DATE);
             cal.set(Calendar.DATE, date);
             cal.set(Calendar.HOUR_OF_DAY, 23);
             cal.set(Calendar.MINUTE, 59);
             cal.set(Calendar.SECOND, 59);
             cal.set(Calendar.MILLISECOND, 0);
-        } else {
+        } 
+	else if ("START-TODAY".equalsIgnoreCase(filter)) {
+	   cal.set(Calendar.HOUR_OF_DAY, 0); // same for minutes and seconds
+        } 
+	else if ("END-TODAY".equalsIgnoreCase(filter)) {
+	   cal.set(Calendar.HOUR_OF_DAY, 0); // same for minutes and seconds
+        } 
+	else if ("START-WEEK".equalsIgnoreCase(filter)) {
+	   cal.set(Calendar.DAY_OF_WEEK,cal.getActualMinimum(Calendar.DAY_OF_WEEK));
+        } 
+	else if ("END-WEEK".equalsIgnoreCase(filter)) {
+	   cal.set(Calendar.DAY_OF_WEEK,cal.getActualMaximum(Calendar.DAY_OF_WEEK));
+        }
+	else if(filter.contains("LAST30")) {
+	    Date today = new Date();
+	    cal.setTime(today);
+	    cal.add(Calendar.DAY_OF_MONTH, -30);
+	}
+	else if(filter.contains("END+")) {
+	    Integer howmanydaystoadd = Integer.parseInt(filter.split("\\+")[1]);
+	    cal.set(Calendar.HOUR_OF_DAY, 0);
+	    cal.add(Calendar.DATE, howmanydaystoadd);
+	}
+	else {
             cal.set(Calendar.DATE, date);
             cal.set(Calendar.HOUR_OF_DAY, 0);
             cal.set(Calendar.MINUTE, 0);
@@ -997,8 +1029,8 @@ public class adminProcessingActivity {
         int day = 1;
         Date originalDate = new Date(year, month, day);
 
-        Date fromDate = getMonthDate("START");
-        Date toDate = getMonthDate("END");
+        Date fromDate = getMonthDate("LAST30");
+        Date toDate = getMonthDate("END-TODAY");
 
         ModelAndView mav = new ModelAndView();
         mav.setViewName("/administrator/processing-activity/referralActivityExport");
@@ -1076,8 +1108,8 @@ public class adminProcessingActivity {
         int day = 1;
         Date originalDate = new Date(year, month, day);
 
-        Date fromDate = getMonthDate("START");
-        Date toDate = getMonthDate("END");
+        Date fromDate = getMonthDate("LAST30");
+        Date toDate = getMonthDate("END-TODAY");
 
         /* Retrieve search parameters from session */
         searchParameters searchParameters = (searchParameters) session.getAttribute("searchParameters");
@@ -1283,8 +1315,8 @@ public class adminProcessingActivity {
         int day = 1;
         Date originalDate = new Date(year, month, day);
 
-        Date fromDate = getMonthDate("START");
-        Date toDate = getMonthDate("END");
+        Date fromDate = getMonthDate("LAST30");
+        Date toDate = getMonthDate("END-TODAY");
 
         /* Retrieve search parameters from session */
         searchParameters searchParameters = (searchParameters) session.getAttribute("searchParameters");
@@ -1505,8 +1537,8 @@ public class adminProcessingActivity {
         int day = 1;
         Date originalDate = new Date(year, month, day);
 
-        Date fromDate = getMonthDate("START");
-        Date toDate = getMonthDate("END");
+        Date fromDate = getMonthDate("LAST30");
+        Date toDate = getMonthDate("END-TODAY");
 
         /* Retrieve search parameters from session */
         searchParameters searchParameters = (searchParameters) session.getAttribute("searchParameters");
@@ -1690,8 +1722,8 @@ public class adminProcessingActivity {
         int day = 1;
         Date originalDate = new Date(year, month, day);
 
-        Date fromDate = getMonthDate("START");
-        Date toDate = getMonthDate("END");
+        Date fromDate = getMonthDate("LAST30");
+        Date toDate = getMonthDate("END-TODAY");
 
         /* Retrieve search parameters from session */
         searchParameters searchParameters = (searchParameters) session.getAttribute("searchParameters");
@@ -1764,8 +1796,8 @@ public class adminProcessingActivity {
         int day = 1;
         Date originalDate = new Date(year, month, day);
 
-        Date fromDate = getMonthDate("START");
-        Date toDate = getMonthDate("END");
+        Date fromDate = getMonthDate("LAST30");
+        Date toDate = getMonthDate("END-TODAY");
 
         /* Retrieve search parameters from session */
         searchParameters searchParameters = (searchParameters) session.getAttribute("searchParameters");
@@ -2244,10 +2276,10 @@ public class adminProcessingActivity {
         searchParameters searchParameters = (searchParameters) session.getAttribute("searchParameters");
         searchParameters.setsection("inbound");
         if (fromDate == null) {
-        	fromDate = getMonthDate("START");
+        	fromDate = getMonthDate("LAST30");
         }
         if (toDate == null) {
-        	toDate = getMonthDate("END");
+        	toDate = getMonthDate("END-TODAY");
         } 
         searchParameters.setfromDate(fromDate);
         searchParameters.settoDate(toDate);
@@ -2364,10 +2396,10 @@ public class adminProcessingActivity {
         searchParameters searchParameters = (searchParameters) session.getAttribute("searchParameters");
         searchParameters.setsection("inbound");
         if (fromDate == null) {
-        	fromDate = getMonthDate("START");
+        	fromDate = getMonthDate("LAST30");
         }
         if (toDate == null) {
-        	toDate = getMonthDate("END");
+        	toDate = getMonthDate("END-TODAY");
         } 
         searchParameters.setfromDate(fromDate);
         searchParameters.settoDate(toDate);
@@ -2484,8 +2516,8 @@ public class adminProcessingActivity {
         int day = 1;
         Date originalDate = new Date(year, month, day);
 
-        Date fromDate = getMonthDate("START");
-        Date toDate = getMonthDate("END");
+        Date fromDate = getMonthDate("LAST30");
+        Date toDate = getMonthDate("END-TODAY");
 
         /* Retrieve search parameters from session */
         searchParameters searchParameters = (searchParameters) session.getAttribute("searchParameters");
@@ -2572,8 +2604,8 @@ public class adminProcessingActivity {
         int day = 1;
         Date originalDate = new Date(year, month, day);
 
-        Date fromDate = getMonthDate("START");
-        Date toDate = getMonthDate("END");
+        Date fromDate = getMonthDate("LAST30");
+        Date toDate = getMonthDate("END-TODAY");
 
         /* Retrieve search parameters from session */
         searchParameters searchParameters = (searchParameters) session.getAttribute("searchParameters");
@@ -3202,8 +3234,8 @@ public class adminProcessingActivity {
         int day = 1;
         Date originalDate = new Date(year, month, day);
 
-        Date fromDate = getMonthDate("START");
-        Date toDate = getMonthDate("END");
+        Date fromDate = getMonthDate("LAST30");
+        Date toDate = getMonthDate("END-TODAY");
 
         /* Retrieve search parameters from session */
         searchParameters searchParameters = (searchParameters) session.getAttribute("searchParameters");
@@ -3290,8 +3322,8 @@ public class adminProcessingActivity {
         int day = 1;
         Date originalDate = new Date(year, month, day);
 
-        Date fromDate = getMonthDate("START");
-        Date toDate = getMonthDate("END");
+        Date fromDate = getMonthDate("LAST30");
+        Date toDate = getMonthDate("END-TODAY");
 
         /* Retrieve search parameters from session */
         searchParameters searchParameters = (searchParameters) session.getAttribute("searchParameters");

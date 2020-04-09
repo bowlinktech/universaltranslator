@@ -71,7 +71,7 @@ public class transactionOutDAOImpl implements transactionOutDAO {
     //list of final status - these records we skip
     private List<Integer> transRELId = Arrays.asList(11, 12, 13, 16, 18, 20);
 
-    private SimpleDateFormat mysqlDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    private SimpleDateFormat mysqlDateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
     //list of final status - these batches are considered generated
     private List<Integer> batchFinalStatuses = Arrays.asList(28, 41, 59);
@@ -1306,12 +1306,12 @@ public class transactionOutDAOImpl implements transactionOutDAO {
 	
 	if(fromDate !=  null && toDate != null) {
 	    if(!"".equals(fromDate)) {
-		dateSQLString += "a.dateCreated between '"+mysqlDateFormat.format(fromDate)+"' ";
-		dateSQLStringTotal += "dateCreated between '"+mysqlDateFormat.format(fromDate)+"' ";
+		dateSQLString += "a.dateCreated between '"+mysqlDateFormat.format(fromDate)+" 00:00:00' ";
+		dateSQLStringTotal += "dateCreated between '"+mysqlDateFormat.format(fromDate)+" 00:00:00' ";
 
 		if(!"".equals(toDate)) {
-		    dateSQLString += "AND '"+mysqlDateFormat.format(toDate).replace("00:00:00", "23:59:59")+"'";
-		    dateSQLStringTotal += "AND '"+mysqlDateFormat.format(toDate).replace("00:00:00", "23:59:59")+"'";
+		    dateSQLString += "AND '"+mysqlDateFormat.format(toDate)+" 23:59:59'";
+		    dateSQLStringTotal += "AND '"+mysqlDateFormat.format(toDate)+" 23:59:59'";
 		}
 		else {
 		    dateSQLString += "AND '"+mysqlDateFormat.format(fromDate)+" 23:59:59'";
@@ -1320,7 +1320,7 @@ public class transactionOutDAOImpl implements transactionOutDAO {
 	    }
 	    else {
 		if(!"".equals(toDate)) {
-		    dateSQLString += "a.dateCreated between '"+mysqlDateFormat.format(toDate).replace("00:00:00", "23:59:59")+"' ";
+		    dateSQLString += "a.dateCreated between '"+mysqlDateFormat.format(toDate)+" 00:00:00' ";
 		    dateSQLString += "AND '"+mysqlDateFormat.format(toDate)+" 23:59:59'";
 		}
 		else {
