@@ -462,7 +462,7 @@ public class adminConfigController {
 	
 	String helRegistryFolderName = "";
 	
-	if(orgDetails.getHelRegistryOrgId() > 0) {
+	if(orgDetails.getHelRegistryOrgId() > 0 || (orgDetails.getHelRegistryOrgId() == 0 && orgDetails.getHelRegistryId() > 0)) {
 	    List<helRegistry> helRegistries = helregistrymanager.getAllActiveRegistries();
 	    
 	    if(!helRegistries.isEmpty()) {

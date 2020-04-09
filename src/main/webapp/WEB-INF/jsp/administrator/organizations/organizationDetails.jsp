@@ -42,6 +42,22 @@
                                 </label>
                             </div>
                         </div>
+                        <div id="parentOrgId">
+                            <spring:bind path="parentOrgId">
+                                <div id="parentOrgIdDiv" class="form-group ${status.error ? 'has-error' : '' }">
+                                    <label class="control-label" for="helRegistryOrgId">Parent Organization</label>
+                                    <form:select path="parentOrgId" class="form-control half">
+                                        <option value="0">- Select Parent Organization -</option>
+                                        <c:forEach var="parentOrg" items="${organizationList}">
+                                            <c:if test="${organization.id != parentOrg.id}">
+                                                 <option value="${parentOrg.id}" <c:if test="${organization.parentOrgId == parentOrg.id}">selected</c:if>>${parentOrg.orgName}</option>
+                                            </c:if>
+                                        </c:forEach>
+                                    </form:select>
+                                    <span id="parentOrgIdMsg" class="control-label"></span>
+                                </div>
+                            </spring:bind> 
+			</div>
                         <div class="form-group">
 			    <div class="form-group ${status.error ? 'has-error' : '' }">
 				<label class="control-label" for="orgType">Organization Type *</label>
