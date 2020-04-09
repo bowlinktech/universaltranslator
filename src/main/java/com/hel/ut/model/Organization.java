@@ -109,6 +109,9 @@ public class Organization {
     @Column(name = "primaryContactEmail", nullable = true)
     private String primaryContactEmail = "";
     
+    @Column(name = "parentOrgId", nullable = false)
+    private Integer parentOrgId = 0;
+    
     
     public int getId() {
         return id;
@@ -324,6 +327,14 @@ public class Organization {
 
     public void setOrganizationType(String organizationType) {
 	this.organizationType = organizationType;
+    }
+
+    public Integer getParentOrgId() {
+	return parentOrgId;
+    }
+
+    public void setParentOrgId(Integer parentOrgId) {
+	this.parentOrgId = parentOrgId;
     }
 
 }

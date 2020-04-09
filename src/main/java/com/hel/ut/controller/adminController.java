@@ -83,8 +83,8 @@ public class adminController {
         int day = 1;
         Date originalDate = new Date(year, month, day);
 
-        Date fromDate = getMonthDate("START-MONTH");
-        Date toDate = getMonthDate("END-MONTH");
+        Date fromDate = getMonthDate("LAST30");
+        Date toDate = getMonthDate("END-TODAY");
 	
 	/* Retrieve search parameters from session */
         searchParameters searchParameters = (searchParameters) session.getAttribute("searchParameters");
@@ -138,12 +138,20 @@ public class adminController {
 	else if ("START-TODAY".equalsIgnoreCase(filter)) {
 	   cal.set(Calendar.HOUR_OF_DAY, 0); // same for minutes and seconds
         } 
+	else if ("END-TODAY".equalsIgnoreCase(filter)) {
+	   cal.set(Calendar.HOUR_OF_DAY, 0); // same for minutes and seconds
+        } 
 	else if ("START-WEEK".equalsIgnoreCase(filter)) {
 	   cal.set(Calendar.DAY_OF_WEEK,cal.getActualMinimum(Calendar.DAY_OF_WEEK));
         } 
 	else if ("END-WEEK".equalsIgnoreCase(filter)) {
 	   cal.set(Calendar.DAY_OF_WEEK,cal.getActualMaximum(Calendar.DAY_OF_WEEK));
         }
+	else if(filter.contains("LAST30")) {
+	    Date today = new Date();
+	    cal.setTime(today);
+	    cal.add(Calendar.DAY_OF_MONTH, -30);
+	}
 	else if(filter.contains("END+")) {
 	    Integer howmanydaystoadd = Integer.parseInt(filter.split("\\+")[1]);
 	    cal.set(Calendar.HOUR_OF_DAY, 0);
