@@ -29,6 +29,7 @@ import com.hel.ut.model.configurationDataTranslations;
 import com.hel.ut.model.configurationFTPFields;
 import com.hel.ut.model.configurationFormFields;
 import com.hel.ut.model.configurationFileDropFields;
+import com.hel.ut.model.configurationMessageSpecs;
 import com.hel.ut.model.configurationSchedules;
 import com.hel.ut.model.configurationTransport;
 import com.hel.ut.service.emailMessageManager;
@@ -1727,8 +1728,28 @@ public class transactionOutManagerImpl implements transactionOutManager {
 			
 			if(createSubmittedMessage) {
 			    
+			    Integer sendingOrdId = 0;
+			    
 			    //Get the registery organization Id
 			    Organization organizationDetails = organizationManager.getOrganizationById(batchUploadDetails.getOrgId());
+			    
+			    sendingOrdId = organizationDetails.getHelRegistryOrgId();
+			    
+			    configurationMessageSpecs sourceConfigMessageSpecs = configurationManager.getMessageSpecs(batchUploadDetails.getConfigId());
+			    
+			    if(sourceConfigMessageSpecs != null) {
+				if(sourceConfigMessageSpecs.getSourceSubOrgCol() > 0) {
+				    //Pull the first record for the batch
+				    String recordVal = transactionInDAO.getFieldValue("transactiontranslatedin_"+batchUploadDetails.getId(),"F"+sourceConfigMessageSpecs.getSourceSubOrgCol(), "batchUploadId", batchUploadDetails.getId());
+
+				    try {
+					if(Integer.parseInt(recordVal.trim().toLowerCase()) > 0) {
+					    sendingOrdId = Integer.parseInt(recordVal.trim().toLowerCase());
+					}
+				    }
+				    catch (Exception ex) {}
+				} 
+			    }
 
 			    DateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmssS");
 			    Date date = new Date();
@@ -1749,7 +1770,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
 			    newSubmittedMessage.setTransportId(8);
 			    newSubmittedMessage.setSystemUserId(0);
 			    newSubmittedMessage.setTotalRows(batchUploadDetails.getTotalRecordCount());
-			    newSubmittedMessage.setSourceOrganizationId(organizationDetails.getHelRegistryOrgId());
+			    newSubmittedMessage.setSourceOrganizationId(sendingOrdId);
 			    newSubmittedMessage.setTargetOrganizationId(utOrgDetails.getHelRegistryOrgId());
 			    newSubmittedMessage.setReceivedFileName(batchDownload.getOutputFileName());
 			    newSubmittedMessage.setAssignedMessageNumber(messageName);
