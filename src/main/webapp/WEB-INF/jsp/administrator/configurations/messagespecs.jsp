@@ -115,7 +115,6 @@
 				</c:choose>
 				<c:choose>
 				    <c:when test="${transportType != 8}">
-					<form:hidden path="sourceSubOrgCol" />
                                         <c:if test="${transportType != 10}">
                                             <spring:bind path="messageTypeCol">
                                                 <div class="form-group ${status.error ? 'has-error' : '' }">
