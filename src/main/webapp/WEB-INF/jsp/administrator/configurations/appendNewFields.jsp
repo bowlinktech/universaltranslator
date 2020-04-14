@@ -2,7 +2,7 @@
 <%@ taglib prefix="spring" uri="http://www.springframework.org/tags" %> 
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 
-<div class="modal-dialog">
+<div class="modal-dialog modal-dialog-big">
     <div class="modal-content">
         <form:form id="newformFields" modelAttribute="transportDetails" action="saveNewConfigurationFields" method="post" role="form">
         <div class="modal-header">
@@ -16,6 +16,7 @@
                     <tr>
                         <th scope="col" class="center-text">Field No</th>
                         <th scope="col">Field Name</th>
+                        <th scope="col">Sample Data</th>
                         <th scope="col" class="center-text">Use Field</th>
                         <th scope="col" class="center-text">Required</th> 
                         <th scope="col" class="center-text">Validation</th> 
@@ -31,6 +32,7 @@
                                 ${mappings.fieldNo}
                             </td>
                             <td><input name="newfields[${field.index}].fieldDesc" class="form-control" type="text" maxLength="255" /></td>
+                            <td><input name="newfields[${field.index}].sampleData" class="form-control" type="text" maxLength="255" /></td>
                             <td class="center-text">
                                 <input type="checkbox" class="useField" fieldNo="${mappings.fieldNo}" name="newfields[${field.index}].useField" <c:if test="${mappings.useField == true}">checked</c:if> />
                             </td>

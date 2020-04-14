@@ -112,6 +112,14 @@ public class Organization {
     @Column(name = "parentOrgId", nullable = false)
     private Integer parentOrgId = 0;
     
+    @Column(name = "primaryContactName", nullable = true)
+    private String primaryContactName = "";
+    
+    @Column(name = "primaryTechContactEmail", nullable = true)
+    private String primaryTechContactEmail = "";
+    
+    @Column(name = "primaryTechContactName", nullable = true)
+    private String primaryTechContactName = "";
     
     public int getId() {
         return id;
@@ -337,4 +345,29 @@ public class Organization {
 	this.parentOrgId = parentOrgId;
     }
 
+    public String getPrimaryContactName() {
+	return primaryContactName;
+    }
+
+    public void setPrimaryContactName(String primaryContactName) {
+	this.primaryContactName = primaryContactName;
+    }
+
+    public String getPrimaryTechContactEmail() {
+	return primaryTechContactEmail;
+    }
+
+    public void setPrimaryTechContactEmail(String primaryTechContactEmail) {
+	this.primaryTechContactEmail = primaryTechContactEmail;
+    }
+
+    public String getPrimaryTechContactName() {
+	return primaryTechContactName;
+    }
+
+    public void setPrimaryTechContactName(String primaryTechContactName) {
+	this.primaryTechContactName = primaryTechContactName;
+    }
+
+    
 }

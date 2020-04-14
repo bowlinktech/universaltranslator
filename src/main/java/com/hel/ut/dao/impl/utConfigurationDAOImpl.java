@@ -46,12 +46,17 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import org.springframework.stereotype.Repository;
 import com.hel.ut.dao.utConfigurationDAO;
+import com.hel.ut.dao.utConfigurationTransportDAO;
+import com.hel.ut.model.configurationFormFields;
 
 @Repository
 public class utConfigurationDAOImpl implements utConfigurationDAO {
 
     @Autowired
     private SessionFactory sessionFactory;
+    
+    @Autowired
+    private utConfigurationTransportDAO configurationTransportDAO;
 
     /**
      * The 'createConfiguration' function will create a new utConfiguration
@@ -1175,6 +1180,9 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
     public void loadExcelContents(configurationMessageSpecs messageSpecs, int transportDetailId, String fileName, String dir, boolean hasHeader, Integer fileLayout) throws Exception {
         String errorMessage = "";
         try {
+	    
+	    //Check to see if form fields already exist
+	    List<configurationFormFields> existingFormFields = configurationTransportDAO.getConfigurationFields(messageSpecs.getconfigId(),transportDetailId);
            
             //Set the initial value of the field number (0);
             Integer fieldNo = new Integer(0);
@@ -1200,13 +1208,24 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
 	    Iterator<Row> rowIterator = sheet.iterator();
 	    
 	    Integer rowCounter = 0;
+	    
+	    String sqlStatement = "";
+	    
+	    Integer foundFieldId = 0;
+	    
+	    Query query = null;
+	    
+	    boolean fieldFound = false;
 
 	    //Parse Vertical template file layout
 	    if(fileLayout == 2) {
+		
+		//Field Desc  | R/0/D | Sample Data | Use/Not Use | Validation
+		
 		//Check to make sure the sheet has no more than 3 columns
 		Integer startRow = 0;
 		Integer rowNumber = 0;
-
+		
 		if(hasHeader) {
 		    startRow = 1;
 		}
@@ -1220,9 +1239,11 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
 		    throw new Exception("The uploaded template file had only 1 column, please check your uploaded template file.");
 		}
 		else {
+		    //update 4/14/2020 CM - No need to clear anything becauase we are looking for matches in the uploaded file
+		    //and existing fields, if a match then we update values else we insert
 		    
 		    //Clear existing fields
-		    clearMessageSpecFormFields(messageSpecs,transportDetailId);
+		    //clearMessageSpecFormFields(messageSpecs,transportDetailId);
 		    
 		    while (rowIterator.hasNext()) {
 			row = rowIterator.next();
@@ -1240,6 +1261,7 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
 			String fieldDesc = "";
 			String useNotUse = "";
 			String validationVal = "";
+			String sampleData = "";
 			boolean useField = true;
 			boolean hasDefault = false;
 			
@@ -1290,19 +1312,19 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
 				    break;
 				case 2: // Default Value
 				    try {
-					 defaultValue = cell.getStringCellValue();
+					 sampleData = cell.getStringCellValue();
 				    }
 				    catch (Exception ex) {
 					 try {
-					    defaultValue = String.valueOf((int) cell.getNumericCellValue());
+					    sampleData = String.valueOf((int) cell.getNumericCellValue());
 					 }
 					 catch(Exception e) {
-					     defaultValue = "";
+					     sampleData = "";
 					 } 
 				    }
 
-				    if(!hasDefault) {
-					defaultValue = "";
+				    if(hasDefault) {
+					defaultValue = sampleData;
 				    }
 				    break;
 
@@ -1350,20 +1372,52 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
 				    break;
 			    }
 			}
-
-			//Need to insert all the fields into the message type Form Fields table
-			Query query = sessionFactory.getCurrentSession().createSQLQuery("INSERT INTO configurationFormFields (configId, transportDetailId, fieldNo, fieldDesc, validationType, required, useField, defaultValue)"
-			    + "VALUES (:configId, :transportDetailId, :fieldNo, :fieldDesc, :validationId, :required, :useField, :defaultValue)")
-			    .setParameter("configId", messageSpecs.getconfigId())
-			    .setParameter("transportDetailId", transportDetailId)
-			    .setParameter("fieldNo", fieldNo)
-			    .setParameter("fieldDesc", fieldDesc)
-			    .setParameter("validationId", validationId)
-			    .setParameter("required", required)
-			    .setParameter("useField", useField)
-			    .setParameter("defaultValue", defaultValue);
-
+			
+			fieldFound = false;
+			foundFieldId = 0;
+			sqlStatement = "";
+			
+			if(existingFormFields != null) {
+			    if(!existingFormFields.isEmpty()) {
+				for(configurationFormFields field : existingFormFields) {
+				    if(field.getFieldDesc().toLowerCase().equals(fieldDesc.toLowerCase())) {
+					foundFieldId = field.getId();
+					fieldFound = true;
+					sqlStatement = "UPDATE configurationFormFields set fieldNo = :fieldNo, validationType = :validationId, required = :required, useField = :useField, defaultValue = :defaultValue, sampleData = :sampleData "
+					    + "where id = :fieldId";
+				    }
+				}
+			    }
+			}
+			
+			if(fieldFound && foundFieldId > 0) {
+			    query = sessionFactory.getCurrentSession().createSQLQuery(sqlStatement)
+				.setParameter("fieldNo", fieldNo) 
+				.setParameter("validationId", validationId)
+				.setParameter("required", required)
+				.setParameter("useField", useField)
+				.setParameter("defaultValue", defaultValue)
+				.setParameter("sampleData", sampleData)
+				.setParameter("fieldId", foundFieldId);
+			}
+			else {
+			    sqlStatement = "INSERT INTO configurationFormFields (configId, transportDetailId, fieldNo, fieldDesc, validationType, required, useField, defaultValue, sampleData)"
+				+ " VALUES (:configId, :transportDetailId, :fieldNo, :fieldDesc, :validationId, :required, :useField, :defaultValue, :sampleData)";
+			    
+			    query = sessionFactory.getCurrentSession().createSQLQuery(sqlStatement)
+				.setParameter("configId", messageSpecs.getconfigId())
+				.setParameter("transportDetailId", transportDetailId)
+				.setParameter("fieldNo", fieldNo)
+				.setParameter("fieldDesc", fieldDesc)
+				.setParameter("validationId", validationId)
+				.setParameter("required", required)
+				.setParameter("useField", useField)
+				.setParameter("defaultValue", defaultValue)
+				.setParameter("sampleData", sampleData);
+			}
+			
 			query.executeUpdate();
+
 		    }
 		}
 	    }
@@ -1376,9 +1430,11 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
 		    throw new Exception("The uploaded template file had less than 3 rows, please choose horizontal layout or check your uploaded template file.");
 		}
 		else {
+		    //update 4/14/2020 CM - No need to clear anything becauase we are looking for matches in the uploaded file
+		    //and existing fields, if a match then we update values else we insert
 		    
 		    //Clear existing fields
-		    clearMessageSpecFormFields(messageSpecs,transportDetailId);
+		    //clearMessageSpecFormFields(messageSpecs,transportDetailId);
 		    
 		    Integer startRow = 0;
 		    Integer rowNumber = 0;
@@ -1391,6 +1447,7 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
 		    int totalCols = row.getLastCellNum();
 
 		    String fieldDesc = "";
+		    String sampleData = "";
 		    String defaultValue = "";
 		    boolean required = false;
 		    String requiredAsString = "";
@@ -1423,14 +1480,14 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
 			row = sheet.getRow(rowNumber);
 			cell = row.getCell(colNumber);
 			try {
-			    defaultValue = cell.getStringCellValue();
+			    sampleData = cell.getStringCellValue();
 			}
 			catch (Exception ex) {
 			    try {
-			       defaultValue = String.valueOf((int) cell.getNumericCellValue());
+			       sampleData = String.valueOf((int) cell.getNumericCellValue());
 			    }
 			    catch(Exception e) {
-				defaultValue = "";
+				sampleData = "";
 			    } 
 			}
 
@@ -1446,6 +1503,7 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
 			    try {
 				requiredAsString = cell.getStringCellValue();
 				if("default".equals(requiredAsString.toLowerCase()) || "d".equals(requiredAsString.toLowerCase())) {
+				    defaultValue = sampleData;
 				    required = false;
 				}
 				else if("r".equals(requiredAsString.toLowerCase()) || "true".equals(requiredAsString.toLowerCase()) || "t".equals(requiredAsString.toLowerCase())) {
@@ -1515,9 +1573,38 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
 			    validationId = 1;
 		       }      
 
-			//Need to insert all the fields into the message type Form Fields table
-			Query query = sessionFactory.getCurrentSession().createSQLQuery("INSERT INTO configurationFormFields (configId, transportDetailId, fieldNo, fieldDesc, validationType, required, useField, defaultValue)"
-				+ "VALUES (:configId, :transportDetailId, :fieldNo, :fieldDesc, :validationId, :required, :useField, :defaultValue)")
+			fieldFound = false;
+			foundFieldId = 0;
+			sqlStatement = "";
+			
+			if(existingFormFields != null) {
+			    if(!existingFormFields.isEmpty()) {
+				for(configurationFormFields field : existingFormFields) {
+				    if(field.getFieldDesc().toLowerCase().equals(fieldDesc.toLowerCase())) {
+					foundFieldId = field.getId();
+					fieldFound = true;
+					sqlStatement = "UPDATE configurationFormFields set fieldNo = :fieldNo, validationType = :validationId, required = :required, useField = :useField, defaultValue = :defaultValue, sampleData = :sampleData "
+					    + "where id = :fieldId";
+				    }
+				}
+			    }
+			}
+			
+			if(fieldFound && foundFieldId > 0) {
+			    query = sessionFactory.getCurrentSession().createSQLQuery(sqlStatement)
+				.setParameter("fieldNo", fieldNo) 
+				.setParameter("validationId", validationId)
+				.setParameter("required", required)
+				.setParameter("useField", useField)
+				.setParameter("defaultValue", defaultValue)
+				.setParameter("sampleData", sampleData)
+				.setParameter("fieldId", foundFieldId);
+			}
+			else {
+			    sqlStatement = "INSERT INTO configurationFormFields (configId, transportDetailId, fieldNo, fieldDesc, validationType, required, useField, defaultValue, sampleData)"
+				+ " VALUES (:configId, :transportDetailId, :fieldNo, :fieldDesc, :validationId, :required, :useField, :defaultValue, :sampleData)";
+			    
+			    query = sessionFactory.getCurrentSession().createSQLQuery(sqlStatement)
 				.setParameter("configId", messageSpecs.getconfigId())
 				.setParameter("transportDetailId", transportDetailId)
 				.setParameter("fieldNo", fieldNo)
@@ -1525,8 +1612,10 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
 				.setParameter("validationId", validationId)
 				.setParameter("required", required)
 				.setParameter("useField", useField)
-				.setParameter("defaultValue", defaultValue);
-
+				.setParameter("defaultValue", defaultValue)
+				.setParameter("sampleData", sampleData);
+			}
+			
 			query.executeUpdate();
 		    }
 		}

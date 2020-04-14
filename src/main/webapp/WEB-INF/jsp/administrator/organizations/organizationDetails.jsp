@@ -172,11 +172,32 @@
 				    <form:errors path="fax" cssClass="control-label" element="label" />
 				</div>
 			    </spring:bind>
+                            <spring:bind path="primaryContactName">
+				<div class="form-group ${status.error ? 'has-error' : '' }">
+				    <label class="control-label" for="primaryContactName">Primary Contact</label>
+				    <form:input path="primaryContactName" id="primaryContactName" class="form-control sm-input" type="text" maxLength="255" />
+				    <form:errors path="primaryContactName" cssClass="control-label" element="label" />
+				</div>
+			    </spring:bind>
 			    <spring:bind path="primaryContactEmail">
 				<div class="form-group ${status.error ? 'has-error' : '' }">
-				    <label class="control-label" for="fax">Primary Contact Email Address</label>
+				    <label class="control-label" for="primaryContactEmail">Primary Contact Email Address</label>
 				    <form:input path="primaryContactEmail" id="primaryContactEmail" class="form-control sm-input" type="text" maxLength="255" />
 				    <form:errors path="primaryContactEmail" cssClass="control-label" element="label" />
+				</div>
+			    </spring:bind>
+                            <spring:bind path="primaryTechContactName">
+				<div class="form-group ${status.error ? 'has-error' : '' }">
+				    <label class="control-label" for="primaryTechContactName">Primary Technical Contact</label>
+				    <form:input path="primaryTechContactName" id="primaryTechContactName" class="form-control sm-input" type="text" maxLength="255" />
+				    <form:errors path="primaryTechContactName" cssClass="control-label" element="label" />
+				</div>
+			    </spring:bind>
+                            <spring:bind path="primaryTechContactEmail">
+				<div class="form-group ${status.error ? 'has-error' : '' }">
+				    <label class="control-label" for="primaryTechContactEmail">Primary Technical Contact Email Address</label>
+				    <form:input path="primaryTechContactEmail" id="primaryTechContactEmail" class="form-control sm-input" type="text" maxLength="255" />
+				    <form:errors path="primaryTechContactEmail" cssClass="control-label" element="label" />
 				</div>
 			    </spring:bind>
 			    <spring:bind path="infoURL">

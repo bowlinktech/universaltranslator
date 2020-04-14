@@ -54,6 +54,9 @@ public class configurationFormFields {
 
     @Column(name = "defaultValue", nullable = true)
     private String defaultValue;
+    
+    @Column(name = "sampleData", nullable = true)
+    private String sampleData;
 
     public int getId() {
         return id;
@@ -183,4 +186,13 @@ public class configurationFormFields {
 	this.defaultValue = defaultValue;
     }
 
+    public String getSampleData() {
+	return sampleData;
+    }
+
+    public void setSampleData(String sampleData) {
+	this.sampleData = sampleData;
+    }
+
+    
 }
