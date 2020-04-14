@@ -295,19 +295,15 @@ public class utConfigurationManagerImpl implements utConfigurationManager {
 
 			//Set the directory to save the uploaded message type template to
 			directory = myProps.getProperty("ut.directory.utRootDir") + cleanURL + "/templates/";
+			
+			DateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmm");
+			Date date = new Date();
+			
+			fileName = dateFormat.format(date) + "-" + fileName.replace(" ", "-");
 
 			newFile = new File(directory + fileName);
-
-			if (newFile.exists()) {
-			    int i = 1;
-			    while (newFile.exists()) {
-				int iDot = fileName.lastIndexOf(".");
-				newFile = new File(directory + fileName.substring(0, iDot) + "_(" + ++i + ")" + fileName.substring(iDot));
-			    }
-			    fileName = newFile.getName();
-			} else {
-			    newFile.createNewFile();
-			}
+			newFile.createNewFile();
+			
 			outputStream = new FileOutputStream(newFile);
 			int read = 0;
 			byte[] bytes = new byte[1024];
@@ -1223,13 +1219,22 @@ public class utConfigurationManagerImpl implements utConfigurationManager {
 	    if(!fields.isEmpty()) {
 		reportBody.append("</div>");
 		reportBody.append("<div><table border='1' cellpadding='1' cellspacing='1' width='100%'>");
-		reportBody.append("<thead><tr><th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Field No</th><th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Field Name</th><th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Use Field</th><th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Required</th><th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Validation</th>");
+		reportBody.append("<thead><tr><th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Field No</th><th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Field Name</th><th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Sample Data</th><th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Use Field</th><th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Required</th><th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Validation</th>");
 		if(configDetails.getType() == 2) {
 		    reportBody.append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Default Value</th>");
 		}	
 		reportBody.append("</tr></thead><tbody>");
 		for(configurationFormFields field : fields) {
 		    reportBody.append("<tr><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>").append(field.getFieldNo()).append("</td><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>").append(field.getFieldDesc()).append("</td>");
+		    
+		    
+		    if(field.getSampleData() == null) {
+			reportBody.append("<td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>").append("").append("</td>");
+		    }
+		    else {
+			reportBody.append("<td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>").append(field.getSampleData()).append("</td>");
+		    }
+		    
 		    if(field.getUseField()) {
 			reportBody.append("<td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Yes</td>");
 		    }
