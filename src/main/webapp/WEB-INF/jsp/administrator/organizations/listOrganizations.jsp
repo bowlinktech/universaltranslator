@@ -22,7 +22,7 @@
 		    <div class="col-md-12">
 		       <section class="panel panel-info container-fluid">
 			    <div class="panel-heading">
-				<h3 class="panel-title">Source Organizations</h3>
+				<h3 class="panel-title">Organizations</h3>
 			    </div>
 			   <div class="panel-body">
 			       <div class="form-container scrollable">

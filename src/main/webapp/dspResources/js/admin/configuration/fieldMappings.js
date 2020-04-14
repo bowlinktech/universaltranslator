@@ -2,6 +2,29 @@
 
 require(['./main'], function () {
     $("input:text,form").attr("autocomplete", "off");
+    
+    $(document).on('click','.createNewTemplate',function() {
+      
+        var configId = $(this).attr('rel');
+
+        $.ajax({
+            url: 'createNewFieldSettingsTemplate.do',
+            data: {
+                'configId': configId
+            },
+            type: "GET",
+            dataType : 'text',
+            contentType : 'application/json;charset=UTF-8',
+            success: function(data) {
+                if(data !== '') {
+                    window.location.href = '/administrator/configurations/printNewFieldSettingsTemplate/'+ data;
+                }
+                else {
+                    alert("An error occurred creating your template file. A Health-e-Link system administrator has been notified.");
+                }
+            }
+        });
+    });
 
     $(document).on('click','.printConfig',function() {
        /* $('body').overlay({

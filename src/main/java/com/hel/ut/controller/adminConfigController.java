@@ -58,7 +58,10 @@ import org.springframework.web.bind.annotation.InitBinder;
 
 import com.hel.ut.model.configurationWebServiceFields;
 import com.hel.ut.model.hisps;
+import com.hel.ut.model.mailMessage;
 import com.hel.ut.model.organizationDirectDetails;
+import com.hel.ut.model.validationType;
+import com.hel.ut.service.emailMessageManager;
 import com.hel.ut.service.hispManager;
 
 import java.util.HashMap;
@@ -90,6 +93,10 @@ import java.util.Properties;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.util.FileCopyUtils;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.multipart.MultipartFile;
@@ -125,6 +132,9 @@ public class adminConfigController {
     
     @Autowired
     private helRegistryManager helregistrymanager;
+    
+    @Autowired
+    private emailMessageManager emailMessageManager;
     
     @Resource(name = "myProps")
     private Properties myProps;
@@ -3239,7 +3249,7 @@ public class adminConfigController {
      * @throws java.lang.Exception
      */
     @RequestMapping(value = "/saveNewConfigurationFields", method = RequestMethod.POST)
-    public ModelAndView checkCrosswalkName(@ModelAttribute(value = "transportDetails") configurationTransport transportDetails) throws Exception {
+    public ModelAndView saveNewConfigurationFields(@ModelAttribute(value = "transportDetails") configurationTransport transportDetails) throws Exception {
 	
 	//Get the list of fields
         List<appenedNewconfigurationFormFields> fields = transportDetails.getNewfields();
@@ -3256,6 +3266,7 @@ public class adminConfigController {
 			newFormField.setFieldDesc(field.getFieldDesc());
 			newFormField.setValidationType(field.getValidationType());
 			newFormField.setRequired(field.isRequired());
+			newFormField.setSampleData(field.getSampleData());
 			newFormField.setUseField(true);
 			
 			utconfigurationTransportManager.saveConfigurationFormFields(newFormField);
@@ -3430,4 +3441,159 @@ public class adminConfigController {
 	
 	return returnVal;
     }
+    
+    /**
+     * The 'createNewFieldSettingsTemplate.do' method will create a new template file from fields that are saved.
+     * @param configId
+     * @return 
+     * @throws java.lang.Exception
+     */
+    @RequestMapping(value = "/createNewFieldSettingsTemplate.do", method = RequestMethod.GET)
+    @ResponseBody
+    public String createNewFieldSettingsTemplate(@RequestParam int configId) throws Exception {
+	
+	String fileName = "";
+	
+	try {
+	    utConfiguration configDetails = utconfigurationmanager.getConfigurationById(configId);
+	    Organization orgDetails = organizationmanager.getOrganizationById(configDetails.getorgId());
+
+	    DateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmm");
+	    Date date = new Date();
+
+	    fileName = dateFormat.format(date) + "-" + configDetails.getconfigName().replace(" ", "-");
+
+	    File file = new File("/tmp/" + fileName + ".xlsx");
+	    file.createNewFile();
+
+	    FileInputStream fileInput = null;
+	    fileInput = new FileInputStream(file);
+
+	    FileWriter fw = null;
+
+	    try {
+		fw = new FileWriter(file, true);
+	    } catch (IOException ex) {
+
+	    }
+
+	    configurationTransport transportDetails = utconfigurationTransportManager.getTransportDetails(configDetails.getId());
+
+	    List<configurationFormFields> fields = utconfigurationTransportManager.getConfigurationFields(configDetails.getId(), transportDetails.getId());
+
+	    List<validationType> validations = messagetypemanager.getValidationTypes1();
+
+	    StringBuilder exportRow = new StringBuilder();
+
+	    String required = "";
+	    String usefield = "Y";
+	    String validationValue = "None";
+
+	    Workbook wb = new XSSFWorkbook();
+	    Sheet sheet = wb.createSheet("sheet1");
+
+	    Integer rowNum = 0;
+	    Integer cellNum = 0;
+
+	    Row currentRow = sheet.createRow(rowNum);
+	    currentRow.createCell(cellNum).setCellValue("Field Description");
+	    cellNum++;
+	    currentRow.createCell(cellNum).setCellValue("R/O/D");
+	    cellNum++;
+	    currentRow.createCell(cellNum).setCellValue("Sample Data");
+	    cellNum++;
+	    currentRow.createCell(cellNum).setCellValue("Use Field");
+	    cellNum++;
+	    currentRow.createCell(cellNum).setCellValue("Field Validation");
+
+	    if(fields != null) {
+		if(!fields.isEmpty()) {
+		    for(configurationFormFields field : fields) {
+			rowNum++;
+			currentRow = sheet.createRow(rowNum);
+			cellNum = 0;
+
+			if(field.getDefaultValue() != null) {
+			    if(!field.getDefaultValue().isEmpty()) {
+				required = "D";
+			    }
+			}
+
+			if(!required.equals("D")) {
+			    if(field.getRequired()) {
+				required = "R";
+			    }
+			    else {
+				required = "O";
+			    }
+			}
+
+			if(field.getUseField()) {
+			    usefield = "Y";
+			}
+			else {
+			    usefield = "N";
+			}
+
+			if(!validations.isEmpty() && field.getValidationType() > 0) {
+			    for(validationType validation : validations) {
+				if(validation.equals(field.getValidationType())) {
+				    validationValue = validation.getValidationType();
+				}
+			    }
+			}
+
+			currentRow.createCell(cellNum).setCellValue(field.getFieldDesc());
+			cellNum++;
+			currentRow.createCell(cellNum).setCellValue(required);
+			cellNum++;
+			currentRow.createCell(cellNum).setCellValue(field.getSampleData());
+			cellNum++;
+			currentRow.createCell(cellNum).setCellValue(usefield);
+			cellNum++;
+			currentRow.createCell(cellNum).setCellValue(validationValue);
+
+		    }
+		}
+	    }
+
+	    try (OutputStream stream = new FileOutputStream(file)) {
+		wb.write(stream);
+	    }
+	}
+	catch (Exception ex) {
+	    //we notify admin
+	    mailMessage mail = new mailMessage();
+	    mail.settoEmailAddress(myProps.getProperty("admin.email"));
+	    mail.setfromEmailAddress("support@health-e-link.net");
+	    mail.setmessageSubject("Error creating template from config field settings - " + " " + myProps.getProperty("server.identity"));
+	    StringBuilder emailBody = new StringBuilder();
+	    emailBody.append("There was an error creating a template from the configuration field settings page.");
+	    emailBody.append("<br/>Configuration Id: " + configId);
+	    emailBody.append("<br/><br/>" + ex.getMessage());
+	    emailBody.append("<br/><br/>" + ex.getStackTrace());
+	    mail.setmessageBody(emailBody.toString());
+	    emailMessageManager.sendEmail(mail);
+	    fileName = "";
+	}
+
+	return fileName;
+    }
+    
+    @RequestMapping(value = "/printNewFieldSettingsTemplate/{file}", method = RequestMethod.GET)
+    public void printNewFieldSettingsTemplate(@PathVariable("file") String file,HttpServletResponse response
+    ) throws Exception {
+	
+	File templatePrintFile = new File ("/tmp/" + file + ".xlsx");
+	InputStream is = new FileInputStream(templatePrintFile);
+
+	response.setHeader("Content-Disposition", "attachment; filename=\"" + file + ".xlsx\"");
+	FileCopyUtils.copy(is, response.getOutputStream());
+
+	//Delete the file
+	templatePrintFile.delete();
+
+	 // close stream and return to view
+	response.flushBuffer();
+    } 
 }
