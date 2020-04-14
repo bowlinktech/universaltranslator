@@ -26,7 +26,7 @@
 	</div>
     </div>
     <div class="row-fluid">
-	<div class="${configurationDetails.type == 2 ? 'col-md-8' : 'col-md-6'}">
+	<div class="${configurationDetails.type == 2 ? 'col-md-11' : 'col-md-9'}">
 	    <section class="panel panel-default">
 		<div class="panel-heading">
                     <div class="pull-right">
@@ -34,8 +34,9 @@
                             <a href="#appendNewFieldsModal" class="btn btn-primary btn-xs  btn-action" rel2="${transportDetails.id}" rel="${configurationDetails.id}" id="appendConfigurationFields" data-toggle="modal">Append New Fields</a>
 			 </c:if>
                         <c:if test="${transportDetails.transportMethodId == 10 || (transportDetails.transportMethodId == 13 && configurationDetails.type == 2 && transportDetails.helRegistryConfigId > 0)}">
-			    <a class="btn btn-primary btn-xs  btn-action" rel2="${transportDetails.id}" rel="${configurationDetails.id}" id="reloadConfigurationFields" data-toggle="tooltip" data-original-title="Click here to reload Configuration Fields.">Reload Configuration Fields</a>
+			    <a class="btn btn-primary btn-xs btn-action" rel2="${transportDetails.id}" rel="${configurationDetails.id}" id="reloadConfigurationFields" data-toggle="tooltip" data-original-title="Click here to reload Configuration Fields.">Reload Configuration Fields</a>
                         </c:if>
+                        <a href="#!" class="btn btn-success btn-xs btn-action createNewTemplate" rel="${configurationDetails.id}" data-toggle="tooltip" data-original-title="Click here to create a new template with the below fields.">Create Template</a>
                     </div>     
 		    <h3 class="panel-title"><c:choose><c:when test="${configurationDetails.type == 2}">Target</c:when><c:otherwise>Source</c:otherwise></c:choose> Configuration Fields</h3>
 		</div>
@@ -50,11 +51,11 @@
                                     <tr>
                                         <th scope="col" class="center-text">Field No</th>
                                         <th scope="col">Field Name</th>
+                                        <th scope="col">Sample Data</th>
+                                        <c:if test="${configurationDetails.type == 2}"><th scope="col" class="center-text">Default Value</th></c:if>
                                         <th scope="col" class="center-text">Use Field</th>
                                         <th scope="col" class="center-text">Required</th> 
                                         <th scope="col" class="center-text">Validation</th> 
-                                        <c:if test="${configurationDetails.type == 2}"><th scope="col" class="center-text">Default Value</th></c:if>
-                                    </tr>
                                 </thead>
                                 <tbody>
 				    <c:forEach items="${transportDetails.fields}" var="mappings" varStatus="field">
@@ -64,14 +65,23 @@
 						<input type="hidden" name="fields[${field.index}].configId" value="${mappings.configId}" />
 						<input type="hidden" name="fields[${field.index}].transportDetailId" value="${mappings.transportDetailId}" />
 						<input type="hidden" name="fields[${field.index}].fieldNo" value="${mappings.fieldNo}" />
-						<input type="hidden" name="fields[${field.index}].fieldDesc" value="${mappings.fieldDesc}" />
 						<input type="hidden" name="fields[${field.index}].associatedFieldNo" value="${mappings.associatedFieldNo}" />
                                                 <c:if test="${configurationDetails.type == 1}">
                                                     <input type="hidden" name="fields[${field.index}].defaultValue" value="${mappings.defaultValue}" />
                                                 </c:if>
 						${mappings.fieldNo}
 					    </td>
-					    <td>${mappings.fieldDesc}</td>
+					    <td>
+                                                <input type="text" class="form-control" name="fields[${field.index}].fieldDesc" value="${mappings.fieldDesc}" maxlength="50" />
+                                            </td>
+                                            <td>
+                                                <input type="text" class="form-control" name="fields[${field.index}].sampleData" value="${mappings.sampleData}" maxlength="50" />
+                                            </td>
+                                            <c:if test="${configurationDetails.type == 2}">
+                                                <td class="center-text">
+                                                    <input type="text" name="fields[${field.index}].defaultValue" value="${mappings.defaultValue}" maxlength="50" />
+                                                </td>
+                                            </c:if>
 					    <td class="center-text">
 						<input type="checkbox" class="useField" fieldNo="${mappings.fieldNo}" name="fields[${field.index}].useField" <c:if test="${mappings.useField == true}">checked</c:if> />
 					    </td>
@@ -85,11 +95,6 @@
 						    </c:forEach>
 						</select>    
 					    </td>
-                                            <c:if test="${configurationDetails.type == 2}">
-                                                <td class="center-text">
-                                                    <input type="text" name="fields[${field.index}].defaultValue" value="${mappings.defaultValue}" maxlength="50" />
-                                                </td>
-                                            </c:if>
 					</tr>
 				    </c:forEach>
                                 </tbody>

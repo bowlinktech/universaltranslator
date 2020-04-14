@@ -6,7 +6,7 @@ public class appenedNewconfigurationFormFields {
     private int fieldNo;
     private int configId;
     private int transportDetailId;
-    private String fieldDesc;
+    private String fieldDesc, sampleData;
     private int validationType = 1;
     private boolean required = false;
     private boolean useField = false;
@@ -67,5 +67,12 @@ public class appenedNewconfigurationFormFields {
 	this.transportDetailId = transportDetailId;
     }
     
+    public void setSampleData(String sampleData) {
+	this.sampleData = sampleData;
+    }
+
+    public String getSampleData() {
+	return sampleData;
+    }
     
 }
