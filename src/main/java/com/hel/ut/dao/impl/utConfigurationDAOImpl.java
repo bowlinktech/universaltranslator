@@ -1179,6 +1179,8 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
     @Transactional(readOnly = false)
     public void loadExcelContents(configurationMessageSpecs messageSpecs, int transportDetailId, String fileName, String dir, boolean hasHeader, Integer fileLayout) throws Exception {
         String errorMessage = "";
+	List<String> templateFields = new ArrayList<>();
+	
         try {
 	    
 	    //Check to see if form fields already exist
@@ -1216,7 +1218,7 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
 	    Query query = null;
 	    
 	    boolean fieldFound = false;
-
+	    
 	    //Parse Vertical template file layout
 	    if(fileLayout == 2) {
 		
@@ -1376,6 +1378,8 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
 			fieldFound = false;
 			foundFieldId = 0;
 			sqlStatement = "";
+			
+			templateFields.add(fieldDesc);
 			
 			if(existingFormFields != null) {
 			    if(!existingFormFields.isEmpty()) {
@@ -1577,6 +1581,8 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
 			foundFieldId = 0;
 			sqlStatement = "";
 			
+			templateFields.add(fieldDesc);
+			
 			if(existingFormFields != null) {
 			    if(!existingFormFields.isEmpty()) {
 				for(configurationFormFields field : existingFormFields) {
@@ -1638,6 +1644,36 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
         if (!errorMessage.equalsIgnoreCase("")) {
             throw new Exception(errorMessage);
         }
+	
+	//Clear out fields that were not found in the file.
+	List<configurationFormFields> formFields = configurationTransportDAO.getConfigurationFields(messageSpecs.getconfigId(),transportDetailId);
+	
+	if(!formFields.isEmpty() && !templateFields.isEmpty()) {
+	    String formFieldDesc = "";
+	    boolean found = false;
+	    Integer fieldId = 0;
+	    Query removeQuery;
+	    for(configurationFormFields formField : formFields) {
+		found = false;
+		formFieldDesc = formField.getFieldDesc().trim().toLowerCase();
+		fieldId = formField.getId();
+		
+		for(String templateField : templateFields) {
+		    if(templateField.toLowerCase().trim().equals(formFieldDesc)) {
+			found = true;
+		    }
+		}
+		
+		if(!found && fieldId > 0) {
+		    removeQuery = sessionFactory.getCurrentSession().createSQLQuery("delete from configurationdatatranslations where fieldId = :fieldId")
+		    .setParameter("fieldId", fieldId);
+		    removeQuery.executeUpdate();
+		    removeQuery = sessionFactory.getCurrentSession().createSQLQuery("delete from configurationFormFields where id = :fieldId")
+		    .setParameter("fieldId", fieldId);
+		    removeQuery.executeUpdate();
+		}
+	    }
+	}
 
     }
     
