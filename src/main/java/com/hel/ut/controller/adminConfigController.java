@@ -3536,7 +3536,7 @@ public class adminConfigController {
 
 			if(!validations.isEmpty() && field.getValidationType() > 0) {
 			    for(validationType validation : validations) {
-				if(validation.equals(field.getValidationType())) {
+				if(validation.getId().equals(field.getValidationType())) {
 				    validationValue = validation.getValidationType();
 				}
 			    }
