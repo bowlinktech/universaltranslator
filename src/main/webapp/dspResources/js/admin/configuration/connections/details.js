@@ -203,8 +203,9 @@ require(['./main'], function () {
         var connectionId = $('#connectionId').val();
 
         var mappingArray = [];
+        var mappingErrorArray = [];
 
-         var errorFound = 0;
+        var errorFound = 0;
 
         $('.matchField').each(function() {
             var targetFieldNo = $(this).attr('fieldNo');
@@ -212,12 +213,16 @@ require(['./main'], function () {
             var targetUseField = $('#useField'+targetFieldNo).is(':checked');
             var matchingField = $(this).val();
 
-            /*if(matchingField == 0 && targetUseField) {
-                $('#matchField'+targetFieldNo).addClass('has-error');
-                errorFound = 1;
-            }*/
-
             mappingArray.push(targetFieldNo+'|'+targetFieldDesc+'|'+targetUseField+'|'+matchingField);
+
+        });
+
+        console.log(mappingArray);
+
+        $('.errorField').each(function() {
+            var errorField = $(this).val();
+
+            mappingErrorArray.push(errorField);
 
         });
 
@@ -246,7 +251,6 @@ require(['./main'], function () {
         }
 
         if(errorFound == 0) {
-
             if(mappingArray.length > 0) {
                 $.ajax({
                     url: 'saveConnectionElementMappings',
@@ -255,7 +259,8 @@ require(['./main'], function () {
                         'connectionId': connectionId,
                         'sourceConfigId': selectedSourceConfig,
                         'targetConfigId': selectedTargetConfig,
-                        'mappedFields': mappingArray
+                        'mappedFields': mappingArray,
+                        'mappedErrorFields':mappingErrorArray
                     },
                     success: function (data) {
                         window.location.replace('/administrator/configurations/connections?msg=saved');
@@ -263,6 +268,7 @@ require(['./main'], function () {
                 });
             }
         }
+        
     });
 
     $(document).on('change', '#sendAllSourceContacts', function () {
