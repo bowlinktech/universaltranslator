@@ -40,13 +40,13 @@
                 <form:hidden path="id" id="id" />
                 <form:hidden path="configId" />
 
-                <section class="panel panel-default">
+                 <section class="panel panel-default">
                     <div class="panel-heading">
-                        <h3 class="panel-title">Message Specs</h3>
+                        <h3 class="panel-title">Template Details</h3>
                     </div>
                     <div class="panel-body">
                         <div class="form-container">
-			    <c:choose>
+                            <c:choose>
 				<c:when test="${transportType == 10 || (transportType == 13 && configurationDetails.type == 2 && transportDetails.helRegistryConfigId > 0 && !transportDetails.ergFileDownload)}">
 				    <div class="form-group">
 					<label class="control-label" for="templateFile">Template File</label>
@@ -56,16 +56,36 @@
 				</c:when>
 				<c:otherwise>
 				    <c:if test="${not empty messageSpecs.templateFile}">
-					<div class="form-group">
+					<%-- <div class="form-group">
                                             <label class="control-label" for="templateFile">Current File <a href="/FileDownload/downloadFile.do?fromPage=messagespec&filename=${messageSpecs.templateFile}&foldername=${cleanOrgURL}/templates">Download Template</a></label>
 					    <input type="text" disabled class="form-control" value="${messageSpecs.templateFile}" />
 					    <form:hidden path="templateFile" />
-					</div>
-					<div class="form-group alert alert-danger">
-					    <p style="padding-bottom:10px;">Please download existing data translations before uploading a new template. You will clear out all existing data translations when a new template is uploaded.</p>
-					    <a href="#dtDownloadModal" rel="${configurationDetails.id}" data-toggle="modal" class="btn btn-primary btn-xs btn-action createDataTranslationDownload" title="Download Existing Translations">Download Existing Translations</a>
-					</div>
+					</div>--%>
+					<div class="form-group">
+                                            <div class="col-md-12" style="padding-left:0px;">
+                                                <div class="col-lg-2" style="padding-left:0px;">
+                                                    <a href="#!" class="btn btn-primary btn-action createNewTemplate" rel="${configurationDetails.id}" data-toggle="tooltip" data-original-title="Download Latest Template">Download Latest Template</a>
+                                                </div>
+                                                <div class="col-lg-10">
+                                                     <a href="#dtDownloadModal" rel="${configurationDetails.id}" data-toggle="modal" class="btn btn-primary btn-action createDataTranslationDownload" title="Download Existing Translations">Download Existing Translations</a>
+                                                </div>
+                                            </div>
+					 </div>
+                                        <div class="form-group">
+                                            <p>
+                                                <br /><br />
+                                                <span style="margin-top:10px;"><strong>Last Uploaded Template File: ${lastUploadedDate}</strong></span>
+                                                <hr>
+                                            </p>
+                                        </div>
 				    </c:if>
+				    <spring:bind path="file">
+					<div id="templateFileDiv" class="form-group ${status.error ? 'has-error' : '' }">
+					    <label class="control-label" for="file">Upload <c:if test="${not empty messageSpecs.templateFile}">New </c:if>Template (XLSX file) *</label>
+					    <form:input path="file" id="file" type="file" class="form-control"  />
+					    <span id="templateFileMsg" class="control-label"></span>
+					</div>
+				    </spring:bind>
                                     <div class="form-group">
                                         <label for="hasHeader">Does the Template file have a header row?</label>
                                         <div>
@@ -88,15 +108,18 @@
                                             </label>
                                         </div>
                                     </div>
-				    <spring:bind path="file">
-					<div id="templateFileDiv" class="form-group ${status.error ? 'has-error' : '' }">
-					    <label class="control-label" for="file"><c:if test="${not empty messageSpecs.templateFile}">New</c:if> File *</label>
-					    <form:input path="file" id="file" type="file" class="form-control"  />
-					    <span id="templateFileMsg" class="control-label"></span>
-					</div>
-				    </spring:bind>
 				</c:otherwise>
 			    </c:choose>
+                        </div>
+                    </div>
+                 </section>
+                
+                <section class="panel panel-default">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">Message Specs</h3>
+                    </div>
+                    <div class="panel-body">
+                        <div class="form-container">
                             <%-- Source File Download options only --%>
                             <c:if test="${configurationDetails.type == 1}">
 				<c:choose>
@@ -162,14 +185,14 @@
                                                 </spring:bind>
                                                 <c:if test="${not empty messageSpecs.parsingTemplate}">
                                                     <div class="form-group">
-                                                        <label class="control-label" for="parsingTemplate">Current Configuration Parsing Script</label>
+                                                        <label class="control-label" for="parsingTemplate">Current Parsing Script</label>
                                                         <input type="text" disabled id="parsingTemplate" class="form-control" value="${messageSpecs.parsingTemplate}" />
                                                         <form:hidden id="parsingTemplate" path="parsingTemplate" />
                                                     </div>
                                                 </c:if>
                                                 <spring:bind path="file">
                                                     <div id="parsingTemplateDiv" class="form-group ${status.error ? 'has-error' : '' }">
-                                                        <label class="control-label" for="file">Configuration Parsing Script (JAR file)</label>
+                                                        <label class="control-label" for="file">Upload <c:if test="${not empty messageSpecs.parsingTemplate}">New </c:if> Parsing Script (JAR file)</label>
                                                         <form:input path="parsingScriptFile" id="parsingScriptFile" class="form-control" type="file" />
                                                         <form:errors path="parsingScriptFile" cssClass="control-label" element="label" />
                                                         <span id="parsingTemplateMsg" class="control-label"></span>
