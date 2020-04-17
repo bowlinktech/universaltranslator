@@ -866,6 +866,8 @@ public class adminConfigController {
 	    configId = (Integer) session.getAttribute("manageconfigId");
 	}
 	
+	//Get the utConfiguration details for the selected config
+        utConfiguration configurationDetails = utconfigurationmanager.getConfigurationById(configId);
 	
 	
         mav.setViewName("/administrator/configurations/messagespecs");
@@ -875,6 +877,18 @@ public class adminConfigController {
             messageSpecs = new configurationMessageSpecs();
             messageSpecs.setconfigId(configId);
         }
+	else {
+	    if(messageSpecs.gettemplateFile().contains("-")) {
+		DateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmm");
+		DateFormat cleandateFormat = new SimpleDateFormat("MM/dd/yyyy hh:mm a");
+		String dateUploaded = messageSpecs.gettemplateFile().split("-")[0];
+		mav.addObject("lastUploadedDate", cleandateFormat.format(dateFormat.parse(dateUploaded)).toString());
+	    }
+	    else {
+		DateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy hh:mm a");
+		mav.addObject("lastUploadedDate", dateFormat.format(configurationDetails.getDateCreated()).toString());
+	    }
+	}
         mav.addObject("messageSpecs", messageSpecs);
 
         //Need to pass the selected transport Type
@@ -890,9 +904,6 @@ public class adminConfigController {
         mav.addObject("CCD", session.getAttribute("configCCD"));
 	mav.addObject("showAllConfigOptions",session.getAttribute("showAllConfigOptions"));
 	
-	
-        //Get the utConfiguration details for the selected config
-        utConfiguration configurationDetails = utconfigurationmanager.getConfigurationById(configId);
 	
 	 // Get organization directory name
         Organization orgDetails = organizationmanager.getOrganizationById(configurationDetails.getorgId());
