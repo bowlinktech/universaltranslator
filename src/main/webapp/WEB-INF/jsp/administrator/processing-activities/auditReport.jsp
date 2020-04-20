@@ -258,13 +258,16 @@
 					<c:if test="${not empty batchDetails.originalFileName}">
 					    <c:set var="text" value="${fn:split(batchDetails.originalFileName,'.')}" />
 					    <c:set var="ext" value="${text[fn:length(text)-1]}" />
+                                            <c:set var="fileName" value="" />
                                             
                                             <c:if test="${configDetails.configurationType == 1 && (batchDetails.transportMethodId == 10 || batchDetails.transportMethodId == 13)}">
                                                 <c:choose>
                                                     <c:when test="${fn:contains(transportMethod,'direct') || batchDetails.transportMethodId == 13}">
+                                                         <c:set var="fileName" value="${batchDetails.utBatchName}.txt" />
                                                         <c:set var="hreftranslateLink" value="/FileDownload/downloadFile.do?fromPage=inboundAudit&filename=${batchDetails.utBatchName}.txt&foldername=loadFiles&utBatchId=${batchDetails.utBatchName}"/>
                                                     </c:when>
                                                     <c:otherwise>
+                                                         <c:set var="fileName" value="archive_${batchDetails.utBatchName}.${fn:toLowerCase(ext)}" />
                                                         <c:set var="hreftranslateLink" value="/FileDownload/downloadFile.do?fromPage=inboundAudit&filename=archive_${batchDetails.utBatchName}.${fn:toLowerCase(ext)}&foldername=archivesIn&utBatchId=${batchDetails.utBatchName}"/>
                                                     </c:otherwise>
                                                 </c:choose>
@@ -288,7 +291,7 @@
 						<strong>Uploaded File:</strong><br />
 						<a href="${hrefLink}" title="View Original File">${batchDetails.originalFileName}</a>
 						<c:if test="${batchDetails.transportMethodId == 9 || batchDetails.transportMethodId == 13}">
-						    <br /><a href="${hreftranslateLink}" title="View Translated File">Download Translated File</a></p>
+						    <br /><a href="${hreftranslateLink}" title="View Translated File">Translated File - ${fileName}</a></p>
 						</c:if>
 					    </p>
 					</c:if>
@@ -341,7 +344,36 @@
 		</section>
 	    </div>
 	</div>
-    </c:if>                        
+    </c:if>    
+    <c:if test="${not empty batchSystemErrors}">
+	<div class="row-fluid">
+	    <div class="col-md-12">
+		<section class="panel panel-default">
+		    <div class="panel-heading">
+			<h3 class="panel-title">System Errors</h3>
+		    </div>
+		    <div class="panel-body">
+                        <c:forEach varStatus="i" var="batchError" items="${batchSystemErrors}">
+                            <div class="col-md-12">
+                                <section class="panel panel-default">
+                                    <div class="panel-heading">
+                                        <div class="clearfix">
+                                             <div class="pull-left">
+                                                 <h3 class="panel-title">Error: ${batchError.errorDisplayText} <c:if test="${batchError.fromOutboundConfig}"><span class="text-info">(From Outbound Config)</span></c:if></h3>
+                                             </div>
+                                             <div class="pull-right">
+                                                 <h3 class="panel-title" style="color:red">Total Found: <fmt:formatNumber value = "${batchError.totalErrors}" type = "number"/></h3>
+                                             </div>
+                                         </div>
+                                   </div>  
+                                </section>
+                            </div>
+                        </c:forEach>
+		    </div>
+		</section>
+	    </div>
+	</div>
+    </c:if>
     <c:if test="${not empty batchErrorSummary}">
 	<div class="row-fluid">
 	    <div class="col-md-12">
