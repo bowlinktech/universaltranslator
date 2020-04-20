@@ -46,8 +46,6 @@ require(['./main'], function () {
                 sProcessing: "<div style='background-color:#64A5D4; height:50px; margin-top:200px'><p style='color:white; padding-top:15px;' class='bolder'>Retrieving Results. Please wait...</p></div>"
             }
         });
-
-    });
 });
 
 
