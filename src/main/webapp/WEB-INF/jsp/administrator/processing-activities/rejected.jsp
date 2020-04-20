@@ -51,7 +51,7 @@
                         <i class="glyphicon glyphicon-calendar"></i>
                         <span class="date-label"><fmt:formatDate value="${fromDate}" type="date" pattern="MMMM dd, yyyy" /> - <fmt:formatDate value="${toDate}" type="date" pattern="MMMM dd, yyyy" /></span> <b class="caret"></b>
                     </div>
-                    <table class="table table-striped table-hover table-default"  <c:if test="${not empty batches}">id="dataTable"</c:if>>
+                    <table class="table table-striped table-hover table-default"  <c:if test="${not empty batches}">id="rejected-table"</c:if>  term="${searchFilter}">
                             <thead>
                                 <tr>
                                     <th scope="col">Organization</th>

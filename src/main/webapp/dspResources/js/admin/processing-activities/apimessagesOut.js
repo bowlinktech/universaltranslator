@@ -6,7 +6,6 @@
 
 
 require(['./main'], function () {
-    require(['jquery'], function ($) {
 
         $("input:text,form").attr("autocomplete", "off");
 
@@ -46,8 +45,6 @@ require(['./main'], function () {
 	    populateMessages(fromDate,toDate);
 	    
 	});
-
-    });
 });
 
 function populateMessages(fromDate,toDate) {
