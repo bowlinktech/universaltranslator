@@ -36,7 +36,7 @@
                         <c:if test="${transportDetails.transportMethodId == 10 || (transportDetails.transportMethodId == 13 && configurationDetails.type == 2 && transportDetails.helRegistryConfigId > 0)}">
 			    <a class="btn btn-primary btn-xs btn-action" rel2="${transportDetails.id}" rel="${configurationDetails.id}" id="reloadConfigurationFields" data-toggle="tooltip" data-original-title="Click here to reload Configuration Fields.">Reload Configuration Fields</a>
                         </c:if>
-                        <a href="#!" class="btn btn-success btn-xs btn-action createNewTemplate" rel="${configurationDetails.id}" data-toggle="tooltip" data-original-title="Click here to create a new template with the below fields.">Create Template</a>
+                        <%--<a href="#!" class="btn btn-success btn-xs btn-action createNewTemplate" rel="${configurationDetails.id}" data-toggle="tooltip" data-original-title="Click here to create a new template with the below fields.">Create Template</a>--%>
                     </div>     
 		    <h3 class="panel-title"><c:choose><c:when test="${configurationDetails.type == 2}">Target</c:when><c:otherwise>Source</c:otherwise></c:choose> Configuration Fields</h3>
 		</div>

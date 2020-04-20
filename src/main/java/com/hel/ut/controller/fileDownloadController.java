@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import com.hel.ut.model.Organization;
+import com.hel.ut.model.custom.searchParameters;
 import com.hel.ut.model.utUser;
 import com.hel.ut.model.utUserActivity;
 import com.hel.ut.service.fileManager;
@@ -29,6 +30,7 @@ import javax.annotation.Resource;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FilenameUtils;
@@ -65,7 +67,7 @@ public class fileDownloadController {
 	    @RequestParam(value = "utBatchName", required = false) String utBatchName,
 	    @RequestParam(value = "fromPage", required = false) String fromPage,
 	    @RequestParam(value = "utBatchId", required = false) String utBatchId,
-	    HttpServletResponse response, RedirectAttributes redirectAttr) throws Exception {
+	    HttpServletResponse response, RedirectAttributes redirectAttr, HttpSession session) throws Exception {
 	
 	String desc = "";
 	try {
@@ -230,18 +232,28 @@ public class fileDownloadController {
 		if(fromPage != null) {
 		    if(!"".equals(fromPage)) {
 			if("inbound".equals(fromPage)) {
+			   searchParameters searchParameters = (searchParameters) session.getAttribute("searchParameters"); 
+			   searchParameters.setsearchTerm(FilenameUtils.removeExtension(f.getName()).replace("archive_", "").replace("encoded_", "").replace("_dec", ""));
 			   mav = new ModelAndView(new RedirectView("/administrator/processing-activity/inbound")); 
 			}
 			else if("outbound".equals(fromPage)) {
+			   searchParameters searchParameters = (searchParameters) session.getAttribute("searchParameters"); 
+			   searchParameters.setsearchTerm(FilenameUtils.removeExtension(f.getName()).replace("archive_", "").replace("encoded_", "").replace("_dec", ""));
 			   mav = new ModelAndView(new RedirectView("/administrator/processing-activity/outbound")); 
 			}
 			else if("invalidin".equals(fromPage)) {
+			   searchParameters searchParameters = (searchParameters) session.getAttribute("searchParameters"); 
+			   searchParameters.setsearchTerm(FilenameUtils.removeExtension(f.getName()).replace("archive_", "").replace("encoded_", "").replace("_dec", ""));
 			   mav = new ModelAndView(new RedirectView("/administrator/processing-activity/invalidIn")); 
 			}
 			else if("rejected".equals(fromPage)) {
+			   searchParameters searchParameters = (searchParameters) session.getAttribute("searchParameters"); 
+			   searchParameters.setsearchTerm(FilenameUtils.removeExtension(f.getName()).replace("archive_", "").replace("encoded_", "").replace("_dec", ""));
 			   mav = new ModelAndView(new RedirectView("/administrator/processing-activity/rejected")); 
 			}
 			else if("invalidOut".equals(fromPage)) {
+			   searchParameters searchParameters = (searchParameters) session.getAttribute("searchParameters"); 
+			   searchParameters.setsearchTerm(FilenameUtils.removeExtension(f.getName()).replace("archive_", "").replace("encoded_", "").replace("_dec", ""));
 			   mav = new ModelAndView(new RedirectView("/administrator/processing-activity/invalidOut")); 
 			}
 			else if("inboundAudit".equals(fromPage)) {

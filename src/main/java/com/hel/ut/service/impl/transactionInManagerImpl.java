@@ -4566,4 +4566,9 @@ public class transactionInManagerImpl implements transactionInManager {
     public Integer getTotalErroredRows(Integer batchUploadId) throws Exception {
 	return transactionInDAO.getTotalErroredRows(batchUploadId);
     }
+    
+    @Override
+    public List<batchErrorSummary> getBatchSystemErrorSummary(int batchId, String inboundOutbound) throws Exception {
+	return transactionInDAO.getBatchSystemErrorSummary(batchId,inboundOutbound);
+    }
 }

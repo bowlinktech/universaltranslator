@@ -348,7 +348,12 @@ div.dataTables_length select {
 
 div.dataTables_filter label {
     float: right;
+    width: 350px;
+}
+
+div.dataTables_filter input { 
     width: 250px;
+    height:30px;
 }
 
 div.dataTables_info {

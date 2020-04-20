@@ -245,6 +245,7 @@ public class adminProcessingActivity {
         searchParameters.setfromDate(fromDate);
         searchParameters.settoDate(toDate);
         searchParameters.setsection("activityReport");
+	searchParameters.setsearchTerm("");
 
         /* Get the list of batches for the passed in dates */
         List<Integer> batchIds = transactionInManager.getBatchesForReport(fromDate, toDate);
@@ -308,16 +309,25 @@ public class adminProcessingActivity {
         ModelAndView mav = new ModelAndView();
         mav.setViewName("/administrator/processing-activity/inbound");
 	
+	String searchTerm = "";
+	
         if ("".equals(searchParameters.getsection()) || !"inbound".equals(searchParameters.getsection())) {
             searchParameters.setfromDate(fromDate);
             searchParameters.settoDate(toDate);
             searchParameters.setsection("inbound");
+	    searchParameters.setsearchTerm("");
 	    session.setAttribute("searchParameters", searchParameters);
         } else {
             fromDate = searchParameters.getfromDate();
             toDate = searchParameters.gettoDate();
+	    searchTerm = searchParameters.getsearchTerm().trim();
+	    
+	    searchParameters.setsearchTerm("");
+	    session.setAttribute("searchParameters", searchParameters);
         }
-
+	
+	
+	mav.addObject("searchFilter", searchTerm);
         mav.addObject("fromDate", fromDate);
         mav.addObject("toDate", toDate);
         mav.addObject("originalDate", originalDate);
@@ -406,15 +416,24 @@ public class adminProcessingActivity {
         ModelAndView mav = new ModelAndView();
         mav.setViewName("/administrator/processing-activity/outbound");
 	
-	if ("".equals(searchParameters.getsection()) || !"outbound".equals(searchParameters.getsection())) {
-	    searchParameters.setfromDate(fromDate);
+	String searchTerm = "";
+	
+        if ("".equals(searchParameters.getsection()) || !"outbound".equals(searchParameters.getsection())) {
+            searchParameters.setfromDate(fromDate);
             searchParameters.settoDate(toDate);
             searchParameters.setsection("outbound");
+	    searchParameters.setsearchTerm("");
+	    session.setAttribute("searchParameters", searchParameters);
         } else {
             fromDate = searchParameters.getfromDate();
             toDate = searchParameters.gettoDate();
+	    searchTerm = searchParameters.getsearchTerm().trim();
+	    
+	    searchParameters.setsearchTerm("");
+	    session.setAttribute("searchParameters", searchParameters);
         }
-
+	
+	mav.addObject("searchFilter", searchTerm);
         mav.addObject("fromDate", fromDate);
         mav.addObject("toDate", toDate);
         mav.addObject("originalDate", originalDate);
@@ -795,13 +814,16 @@ public class adminProcessingActivity {
 	    configurationTransport transportDetails = configurationTransportManager.getTransportDetails(batchDetails.getConfigId());
 	    
 	    String transportMethod = "";
-	    if(!"".equals(transportDetails.getDmConfigKeyword())) {
-		transportMethod = "File Drop (Direct)";
+	    if(transportDetails != null) {
+		if(!"".equals(transportDetails.getDmConfigKeyword())) {
+		    transportMethod = "File Drop (Direct)";
+		}
+
+		if(!"".equals(transportDetails.getRestAPIUsername())) {
+		    transportMethod = "File Drop (Rest)";
+		}
 	    }
 	    
-	    if(!"".equals(transportDetails.getRestAPIUsername())) {
-		transportMethod = "File Drop (Rest)";
-	    }
 	    mav.addObject("transportMethod",transportMethod);
 	    
 	    Organization orgDetails = organizationmanager.getOrganizationById(batchDetails.getOrgId());
@@ -890,6 +912,11 @@ public class adminProcessingActivity {
 			}
 		    }
 		}
+	    }
+	   
+	    if(batchDetails.getStatusId() == 7) {
+		List<batchErrorSummary> batchSystemErrors = transactionInManager.getBatchSystemErrorSummary(batchDetails.getId(),"inbound");
+		mav.addObject("batchSystemErrors", batchSystemErrors);
 	    }
 	    
 	    
@@ -1328,15 +1355,23 @@ public class adminProcessingActivity {
         systemSummary summaryDetails = transactionInManager.generateSystemInboundSummary();
         mav.addObject("summaryDetails", summaryDetails);
 
+	String searchTerm = "";
+	
         if ("".equals(searchParameters.getsection()) || !"rejected".equals(searchParameters.getsection())) {
             searchParameters.setfromDate(fromDate);
             searchParameters.settoDate(toDate);
+	    searchParameters.setsearchTerm("");
             searchParameters.setsection("rejected");
+	    session.setAttribute("searchParameters", searchParameters);
         } else {
             fromDate = searchParameters.getfromDate();
             toDate = searchParameters.gettoDate();
+	    searchTerm = searchParameters.getsearchTerm();
+	    searchParameters.setsearchTerm("");
+	    session.setAttribute("searchParameters", searchParameters);
         }
-
+	
+	mav.addObject("searchFilter", searchTerm);
         mav.addObject("fromDate", fromDate);
         mav.addObject("toDate", toDate);
         mav.addObject("originalDate", originalDate);
@@ -2105,7 +2140,7 @@ public class adminProcessingActivity {
 	
 	customCols.add("From Outbound");
 	customCols.add("Row No.");
-	customCols.add("Field Number");
+	customCols.add("Field No.");
 	
 	List reportableFields = null;
 	
@@ -2274,18 +2309,31 @@ public class adminProcessingActivity {
         
         /* Retrieve search parameters from session */
         searchParameters searchParameters = (searchParameters) session.getAttribute("searchParameters");
-        searchParameters.setsection("inbound");
         if (fromDate == null) {
-        	fromDate = getMonthDate("LAST30");
+	    fromDate = getMonthDate("LAST30");
         }
         if (toDate == null) {
-        	toDate = getMonthDate("END-TODAY");
+	    toDate = getMonthDate("END-TODAY");
         } 
-        searchParameters.setfromDate(fromDate);
+	searchParameters.setfromDate(fromDate);
         searchParameters.settoDate(toDate);
-        
+       
+	String searchTerm = "";
+	
+        if ("".equals(searchParameters.getsection()) || !"invalidIn".equals(searchParameters.getsection())) {
+            searchParameters.setsection("invalidIn");
+	    searchParameters.setsearchTerm("");
+	    session.setAttribute("searchParameters", searchParameters);
+        } else {
+	    searchTerm = searchParameters.getsearchTerm().trim();
+	    
+	    searchParameters.setsearchTerm("");
+	    session.setAttribute("searchParameters", searchParameters);
+        }
+	
         ModelAndView mav = new ModelAndView();
         mav.setViewName("/administrator/processing-activity/invalidIn");
+	mav.addObject("searchFilter", searchTerm);
         mav.addObject("fromDate", fromDate);
         mav.addObject("toDate", toDate);
         mav.addObject("originalDate", originalDate);
@@ -2394,18 +2442,31 @@ public class adminProcessingActivity {
         
         /* Retrieve search parameters from session */
         searchParameters searchParameters = (searchParameters) session.getAttribute("searchParameters");
-        searchParameters.setsection("inbound");
-        if (fromDate == null) {
-        	fromDate = getMonthDate("LAST30");
+         if (fromDate == null) {
+	    fromDate = getMonthDate("LAST30");
         }
         if (toDate == null) {
-        	toDate = getMonthDate("END-TODAY");
+	    toDate = getMonthDate("END-TODAY");
         } 
-        searchParameters.setfromDate(fromDate);
+	searchParameters.setfromDate(fromDate);
         searchParameters.settoDate(toDate);
-        
+       
+	String searchTerm = "";
+	
+        if ("".equals(searchParameters.getsection()) || !"invalidOut".equals(searchParameters.getsection())) {
+            searchParameters.setsection("invalidOut");
+	    searchParameters.setsearchTerm("");
+	    session.setAttribute("searchParameters", searchParameters);
+        } else {
+	    searchTerm = searchParameters.getsearchTerm().trim();
+	    
+	    searchParameters.setsearchTerm("");
+	    session.setAttribute("searchParameters", searchParameters);
+        }
+
         ModelAndView mav = new ModelAndView();
         mav.setViewName("/administrator/processing-activity/invalidOut");
+	mav.addObject("searchFilter", searchTerm);
         mav.addObject("fromDate", fromDate);
         mav.addObject("toDate", toDate);
         mav.addObject("originalDate", originalDate);
