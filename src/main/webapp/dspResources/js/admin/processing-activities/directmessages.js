@@ -7,26 +7,27 @@
 
 require(['./main'], function () {
 
-    $("input:text,form").attr("autocomplete", "off");
-
-    //Function to display the details of the selected batch received from a direct HISP
-    $(document).on('click', '.viewDirectDetails', function () {
-        $.ajax({
-            url: '/administrator/processing-activity/viewDirectDetailsById' + $(this).attr('rel'),
-            type: "GET",
-            success: function (data) {
-                $("#payloadModal").html(data);
-            }
+        $("input:text,form").attr("autocomplete", "off");
+	
+        //Function to display the details of the selected batch received from a direct HISP
+	$(document).on('click', '.viewDirectDetails', function () {
+            $.ajax({
+                url: '/administrator/processing-activity/viewDirectDetailsById' + $(this).attr('rel'),
+                type: "GET",
+                success: function (data) {
+                    $("#payloadModal").html(data);
+                }
+            });
         });
-    });
-
-    $(document).ready(function() {
-
-        var fromDate = $('#fromDate').attr('rel');
-        var toDate = $('#toDate').attr('rel');
-
-        populateMessages(fromDate,toDate);
-
+	
+	$(document).ready(function() {
+	   
+	    var fromDate = $('#fromDate').attr('rel');
+	    var toDate = $('#toDate').attr('rel');
+	    
+	    populateMessages(fromDate,toDate);
+	    
+	});
     });
 });
 

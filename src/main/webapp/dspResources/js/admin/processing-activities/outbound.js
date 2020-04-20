@@ -59,6 +59,8 @@ function populateMessages(fromDate,toDate) {
     
     var userRole = $('#userRole').val();
     
+     var searchTerm = $('#batchdownloads-table').attr('term');
+    
     $('#batchdownloads-table').DataTable().destroy();
      
      $('#batchdownloads-table').DataTable({
@@ -66,6 +68,7 @@ function populateMessages(fromDate,toDate) {
 	bProcessing: true, 
 	deferRender: true,
 	aaSorting: [[6,'desc']],
+        "oSearch": {"sSearch": searchTerm },
 	sPaginationType: "bootstrap", 
 	oLanguage: {
 	   sEmptyTable: "There were no files sent out for the selected date range.", 

@@ -7,8 +7,7 @@
 
 
 require(['./main'], function () {
-
-        $("input:text,form").attr("autocomplete", "off");
+    $("input:text,form").attr("autocomplete", "off");
 });
 
 

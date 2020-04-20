@@ -3374,4 +3374,41 @@ public class transactionInDAOImpl implements transactionInDAO {
 	return (Integer) query.list().get(0);
 
     }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public List<batchErrorSummary> getBatchSystemErrorSummary(int batchId, String inboundOutbound) throws Exception {
+	
+	
+	try {
+	    String sql = "select count(e.id) as totalErrors, e.errorId, 0 as fromOutboundConfig, c.displayText as errorDisplayText "
+		    + "from transactioninerrors_"+batchId+" e "
+		    + "inner join lu_errorcodes c on c.id = e.errorId "
+		    + "where e.batchUploadId = :batchId group by e.errorId";
+	    
+	    if("outbound".equals(inboundOutbound.toLowerCase())) {
+		sql = "select count(e.id) as totalErrors, e.errorId, 0 as fromOutboundConfig, c.displayText as errorDisplayText "
+		    + "from transactionouterrors_"+batchId+" e "
+		    + "inner join lu_errorcodes c on c.id = e.errorId "
+		    + "where e.batchDownloadId = :batchId group by e.errorId";
+	    }
+
+	    Query query = sessionFactory.getCurrentSession().createSQLQuery(sql)
+		    .addScalar("errorDisplayText", StandardBasicTypes.STRING)
+		    .addScalar("errorId", StandardBasicTypes.INTEGER)
+		    .addScalar("totalErrors", StandardBasicTypes.INTEGER)
+		    .addScalar("fromOutboundConfig", StandardBasicTypes.BOOLEAN)
+		    .setResultTransformer(Transformers.aliasToBean(batchErrorSummary.class));
+	    query.setParameter("batchId", batchId);
+
+	    List<batchErrorSummary> batchErrorSummaries = query.list();
+
+	    return batchErrorSummaries;
+
+	} catch (Exception ex) {
+	    System.err.println("getBatchSystemErrorSummary " + ex.getCause());
+	    ex.printStackTrace();
+	    return null;
+	}
+    }
 }

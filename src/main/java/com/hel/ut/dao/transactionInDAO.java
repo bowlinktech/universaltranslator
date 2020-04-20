@@ -297,4 +297,6 @@ public interface transactionInDAO {
     List<batchUploadDroppedValues> getBatchDroppedValues(Integer batchUploadId) throws Exception;
     
     Integer getTotalErroredRows(Integer batchUploadId) throws Exception;
+    
+    List<batchErrorSummary> getBatchSystemErrorSummary(int batchId, String inboundOutbound) throws Exception;
 }
