@@ -28,7 +28,6 @@ require(['./main'], function () {
 	    populateMessages(fromDate,toDate);
 	    
 	});
-    });
 });
 
 function populateMessages(fromDate,toDate) {
