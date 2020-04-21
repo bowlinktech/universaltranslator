@@ -63,6 +63,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import com.hel.ut.service.utConfigurationTransportManager;
 import java.text.DateFormat;
+import org.apache.poi.ss.usermodel.DateUtil;
 
 /**
  *
@@ -498,7 +499,10 @@ public class transactionInDAOImpl implements transactionInDAO {
 
 	if (toDate != null) {
 	    if (!"".equals(toDate)) {
-		findBatches.add(Restrictions.lt("dateSubmitted", toDate));
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(toDate);
+		cal.add(Calendar.DATE, 1);
+		findBatches.add(Restrictions.lt("dateSubmitted", cal.getTime()));
 	    }
 	}
 
@@ -2331,6 +2335,8 @@ public class transactionInDAOImpl implements transactionInDAO {
      *
      * @param fromDate
      * @param toDate
+     * @param fetchSize
+     * @param statusIds
      * @return This function will return a list of batch uploads
      * @throws Exception
      */
@@ -2347,10 +2353,14 @@ public class transactionInDAOImpl implements transactionInDAO {
 		findBatches.add(Restrictions.ge("dateSubmitted", fromDate));
 	    }
 	}
-
+	
+	
 	if (toDate != null) {
 	    if (!"".equals(toDate)) {
-		findBatches.add(Restrictions.lt("dateSubmitted", toDate));
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(toDate);
+		cal.add(Calendar.DATE, 1);
+		findBatches.add(Restrictions.lt("dateSubmitted", cal.getTime()));
 	    }
 	}
 
