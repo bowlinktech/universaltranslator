@@ -30,8 +30,13 @@ require(['./main'], function () {
             $('#successMsg').hide();
             $('#errorMsg').hide();
             
-            var expectedExtension = "."+$('#expectedExt').val();
-
+            var expectedExtension = $('#expectedExt').val();
+            
+            if($('#configFile').val() !== '') {
+                var file = $('#configFile').val();
+                var uploadedFileExt = file.substr( (file.lastIndexOf('.') +1) );
+            }
+            
             //Make sure a file is selected and is a text file
             if ($('#configFile').val() === '') {
                 $('#configFileDiv').addClass("has-error");
@@ -39,10 +44,10 @@ require(['./main'], function () {
                 $('#configFileMsg').html('The file is a required field.');
                 errorFound = 1;
             }
-            else if ($('#configFile').val().indexOf(expectedExtension) == -1) {
+            else if (uploadedFileExt != expectedExtension) {
                 $('#configFileDiv').addClass("has-error");
                 $('#configFileMsg').addClass("has-error");
-                $('#configFileMsg').html('The selected file must have a ' + $('#expectedExt').val() + ' extension.');
+                $('#configFileMsg').html('According to the configruation the file must have a .' + $('#expectedExt').val() + ' extension.');
                 errorFound = 1;
             }
 
@@ -51,7 +56,7 @@ require(['./main'], function () {
                 return false;
             }
             else {
-               
+              
                 //check and submit form
 		var form = $('#configFileForm')[0];
 		var formData = new FormData(form);
