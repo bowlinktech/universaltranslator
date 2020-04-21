@@ -1345,7 +1345,7 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
 				case 4: // Validation column
 				    try {
 					 validationVal = cell.getStringCellValue();
-					 if("none".equals(validationVal.toLowerCase()) || "no".equals(validationVal.toLowerCase()) || "n".equals(validationVal.toLowerCase()) || "".equals(validationVal.toLowerCase())) {
+					 if("x".equals(validationVal.toLowerCase()) || "none".equals(validationVal.toLowerCase()) || "no".equals(validationVal.toLowerCase()) || "n".equals(validationVal.toLowerCase()) || "".equals(validationVal.toLowerCase())) {
 					     validationId = 1;
 					 }
 					 else if("email".equals(validationVal.toLowerCase()) || "e".equals(validationVal.toLowerCase())) {
