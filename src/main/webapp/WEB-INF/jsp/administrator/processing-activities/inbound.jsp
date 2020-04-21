@@ -53,7 +53,7 @@
                         <i class="glyphicon glyphicon-calendar"></i>
                         <span class="date-label"><fmt:formatDate value="${fromDate}" type="date" pattern="MMMM dd, yyyy" /> - <fmt:formatDate value="${toDate}" type="date" pattern="MMMM dd, yyyy" /></span> <b class="caret"></b>
                     </div>
-                    <table class="table table-striped table-hover table-default" id="batchuploads-table">
+                    <table class="table table-striped table-hover table-default" id="batchuploads-table" term="${searchFilter}">
 			<thead>
 			    <tr>
 				<th scope="col">Organization</th>

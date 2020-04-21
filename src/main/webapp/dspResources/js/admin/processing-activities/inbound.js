@@ -76,13 +76,16 @@ function populateMessages(fromDate,toDate) {
     
     var userRole = $('#userRole').val();
     
+    var searchTerm = $('#batchuploads-table').attr('term');
+    
     $('#batchuploads-table').DataTable().destroy();
-     
-     $('#batchuploads-table').DataTable({
+    
+    $('#batchuploads-table').DataTable({
 	bServerSide: true,
 	bProcessing: true, 
 	deferRender: true,
 	aaSorting: [[5,'desc']],
+        "oSearch": {"sSearch": searchTerm },
 	sPaginationType: "bootstrap", 
 	oLanguage: {
 	   sEmptyTable: "There were no files submitted for the selected date range.", 
@@ -237,6 +240,7 @@ function populateMessages(fromDate,toDate) {
 	    }
 	 ]
     });   
+    
 }
 
 function commaSeparateNumber(val){

@@ -10,7 +10,7 @@
 	    <th scope="col">Field Name</th>
 	    <th scope="col" class="center-text">Use Field</th>
 	    <th scope="col" class="center-text">Required</th> 
-	    <th scope="col" class="center-text">Matching Field</th>
+	    <th scope="col" class="center-text">Matching Source Field</th>
 	    <c:if test="${showErrorField}"><th scope="col" class="center-text">Error Field <span class="badge badge-help" data-placement="top" data-toggle="tooltip" data-original-title="Select the column that holds the data from the source file to show on the audit report.">?</span></th></c:if>
 	</tr>
     </thead>

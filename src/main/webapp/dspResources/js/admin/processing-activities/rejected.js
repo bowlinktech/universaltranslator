@@ -21,9 +21,31 @@ require(['./main'], function () {
         });
     });
 
-    var oSettings = datatable.fnSettings();
+        var searchTerm = $('#rejected-table').attr('term');
 
-    datatable.fnSort([[5, 'desc']]);
+        $('#rejected-table').DataTable().destroy();
+
+        $('#rejected-table').DataTable({
+            bServerSide: false,
+            bProcessing: true, 
+            deferRender: true,
+            aaSorting: [[5,'desc']],
+            "oSearch": {"sSearch": searchTerm },
+            sPaginationType: "bootstrap", 
+            oLanguage: {
+               sEmptyTable: "There were no files submitted for the selected date range.", 
+               sSearch: "Filter Results: ",
+               sLengthMenu: '<select class="form-control" style="width:150px">' +
+                    '<option value="10">10 Records</option>' +
+                    '<option value="20">20 Records</option>' +
+                    '<option value="30">30 Records</option>' +
+                    '<option value="40">40 Records</option>' +
+                    '<option value="50">50 Records</option>' +
+                    '<option value="-1">All</option>' +
+                    '</select>',
+                sProcessing: "<div style='background-color:#64A5D4; height:50px; margin-top:200px'><p style='color:white; padding-top:15px;' class='bolder'>Retrieving Results. Please wait...</p></div>"
+            }
+        });
 });
 
 
