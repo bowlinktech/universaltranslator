@@ -1211,6 +1211,8 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
 	    
 	    Integer rowCounter = 0;
 	    
+	    Integer colCounter = 1;
+	    
 	    String sqlStatement = "";
 	    
 	    Integer foundFieldId = 0;
@@ -1249,9 +1251,10 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
 		    
 		    while (rowIterator.hasNext()) {
 			row = rowIterator.next();
-
+			
 			if(hasHeader && rowCounter == 0) {
 			    row = rowIterator.next();
+			    rowCounter++;
 			}
 			rowCounter++;
 
@@ -1275,7 +1278,7 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
 
 			while (cellIterator.hasNext()) {
 			    Cell cell = cellIterator.next();
-
+			    
 			    //Check the cell type and format accordingly
 			    switch (cell.getColumnIndex()) {
 				case 0:
@@ -1304,11 +1307,18 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
 						required = false;
 					    }
 					    else {
-						required = false;
+						//required = false;
+						throw new Exception("The uploaded template file did not have a correct R/O/D value (" + requiredAsString + ") in row " + rowCounter + " column 2");
 					    }
 					}
 					catch (Exception e) {
-					    required = false;
+					    if(ex.getMessage() != null && ex.getMessage().contains("uploaded template")) {
+						throw ex;
+					    }
+					    else {
+						throw new Exception("The uploaded template file did not have a correct R/O/D value in row " + rowCounter + " column 2");
+					    }
+					    //required = false;
 					}
 				    }
 				    break;
@@ -1339,8 +1349,19 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
 					 else if("not use".equals(useNotUse.toLowerCase()) || "n".equals(useNotUse.toLowerCase()) || "no".equals(useNotUse.toLowerCase())) {
 					     useField = false;
 					 }
+					 else {
+					     throw new Exception("The uploaded template file did not have a correct Use/Not Use value ("+useNotUse+") in row " + rowCounter + " column 4");
+					 }
 				    }
-				    catch (Exception ex) {}
+				    catch (Exception ex) {
+					 if(ex.getMessage() != null && ex.getMessage().contains("uploaded template")) {
+					      throw ex;
+					 }
+					 else {
+					     throw new Exception("The uploaded template file did not have a correct Use/Not Use value in row " + rowCounter + " column 4");
+					 }
+				    }
+				    break;
 				    
 				case 4: // Validation column
 				    try {
@@ -1364,12 +1385,20 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
 					     validationId = 6;
 					 }
 					 else {
-					     validationId = 1;
+					     //validationId = 1;
+					     throw new Exception("The uploaded template file did not have a correct validation value ("+validationVal+") in row " + rowCounter + " column 5");
 					 }
 				    }
 				    catch (Exception ex) {
-					 validationId = 1;
-				    }    
+					 //validationId = 1;
+					 if(ex.getMessage() != null && ex.getMessage().contains("uploaded template")) {
+					      throw ex;
+					 }
+					 else {
+					     throw new Exception("The uploaded template file did not have a correct validation value in row " + rowCounter + " column 5");
+					 }
+				    }   
+				     break;
 				default:
 				    break;
 			    }
@@ -1467,6 +1496,7 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
 			requiredAsString = "";
 			fieldNo = colNumber+1;
 			useField = true;
+			colCounter++;
 
 			rowNumber = startRow;
 			//Get the field name
@@ -1519,12 +1549,19 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
 				    defaultValue = "";
 				}
 				else {
-				    required = false;
-				    defaultValue = "";
+				    throw new Exception("The uploaded template file did not have a correct R/O/D value ("+requiredAsString+") in row 3 column " + fieldNo);
+				    //required = false;
+				    //defaultValue = "";
 				}
 			    }
 			    catch (Exception e) {
-				required = false;
+				if(ex.getMessage() != null && ex.getMessage().contains("uploaded template")) {
+				     throw ex;
+				}
+				else {
+				    throw new Exception("The uploaded template file did not have a correct R/O/D value in row 3 column " + fieldNo);
+				}
+				//required = false;
 			    }
 			}
 			
@@ -1541,8 +1578,18 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
 			    else if("not use".equals(useNotUse.toLowerCase()) || "n".equals(useNotUse.toLowerCase()) || "no".equals(useNotUse.toLowerCase())) {
 				useField = false;
 			    }
+			    else {
+				throw new Exception("The uploaded template file did not have a correct Use/Not Use value (" + useNotUse+ ") in row 4 column " + fieldNo);
+			    }
 			}
-			catch (Exception ex) {}
+			catch (Exception ex) {
+			   if(ex.getMessage() != null && ex.getMessage().contains("uploaded template")) {
+				throw ex;
+			   }
+			   else {
+			       throw new Exception("The uploaded template file did not have a correct Use/Not Use value in row 4 column " + fieldNo);
+			   }
+			}
 			
 			//Get the validation Id
 			rowNumber = rowNumber + 1;
@@ -1551,7 +1598,7 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
 			    cell = row.getCell(colNumber);
 			
 			    validationVal = cell.getStringCellValue();
-			    if("none".equals(validationVal.toLowerCase()) || "no".equals(validationVal.toLowerCase()) || "n".equals(validationVal.toLowerCase()) || "".equals(validationVal.toLowerCase())) {
+			    if("x".equals(validationVal.toLowerCase()) || "none".equals(validationVal.toLowerCase()) || "no".equals(validationVal.toLowerCase()) || "n".equals(validationVal.toLowerCase()) || "".equals(validationVal.toLowerCase())) {
 				validationId = 1;
 			    }
 			    else if("email".equals(validationVal.toLowerCase()) || "e".equals(validationVal.toLowerCase())) {
@@ -1570,11 +1617,18 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
 				validationId = 6;
 			    }
 			    else {
-				validationId = 1;
+				throw new Exception("The uploaded template file did not have a correct validation value (" + validationVal + ") in row 5 column " + fieldNo);
+				//validationId = 1;
 			    }
 		       }
 		       catch (Exception ex) {
-			    validationId = 1;
+			   if(ex.getMessage() != null && ex.getMessage().contains("uploaded template")) {
+				throw ex;
+			   }
+			   else {
+			       throw new Exception("The uploaded template file did not have a correct validation value in row 5 column " + fieldNo);
+			   }
+			   //validationId = 1;
 		       }      
 
 			fieldFound = false;
