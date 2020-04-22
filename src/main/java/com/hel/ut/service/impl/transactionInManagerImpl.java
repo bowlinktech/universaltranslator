@@ -3228,7 +3228,9 @@ public class transactionInManagerImpl implements transactionInManager {
 	boolean targetsInserted = false;
 	boolean noTargetsFound = false;
 	
-	if (batchStatusId == 24) {
+	updatedBatchDetails = getBatchDetails(batchUploadId);
+	
+	if (updatedBatchDetails.getStatusId() == 24) {
 	    
 	    //If no errors found then create the batch download entries
 	    if(updatedBatchDetails.getErrorRecordCount() == 0) {
@@ -3237,7 +3239,7 @@ public class transactionInManagerImpl implements transactionInManager {
 	    }
 	    else {
 		//if errors are found and the configuration is not set to "Reject entire file on a single transaction error" then create the batch download entry.
-		if(handlingDetails.get(0).geterrorHandling() != 3) {
+		if(handlingDetails.get(0).geterrorHandling() != 3 && (updatedBatchDetails.getErrorRecordCount() < updatedBatchDetails.getTotalRecordCount())) {
 		    targetsInserted = true;
 		    noTargetsFound = assignBatchDLId(batchUploadId, batch.getConfigId());
 		}
@@ -3275,7 +3277,7 @@ public class transactionInManagerImpl implements transactionInManager {
 	ba.setBatchUploadId(batchUploadId);
 	transactionInDAO.submitBatchActivityLog(ba);
 	
-	//If not targets were found
+	//If no targets were found
 	if(targetsInserted && !noTargetsFound) {
 	    //log batch activity
 	    ba = new batchuploadactivity();
@@ -3287,12 +3289,10 @@ public class transactionInManagerImpl implements transactionInManager {
 	    updateRecordCounts(batchUploadId, new ArrayList<Integer>(), false, "errorRecordCount");
 	    updateRecordCounts(batchUploadId, new ArrayList<Integer>(), false, "totalRecordCount");
 	    updateBatchStatus(batchUploadId, 7, "endDateTime");
-	}
-	
-	if(targetsInserted && !noTargetsFound) {
+	    
 	    return false;
 	}
-
+	
 	if (batchStatusId == 24) {
 	    
 	     Organization orgDetails = organizationmanager.getOrganizationById(batch.getOrgId());
