@@ -881,7 +881,13 @@ public class adminConfigController {
 		DateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmm");
 		DateFormat cleandateFormat = new SimpleDateFormat("MM/dd/yyyy hh:mm a");
 		String dateUploaded = messageSpecs.gettemplateFile().split("-")[0];
-		mav.addObject("lastUploadedDate", cleandateFormat.format(dateFormat.parse(dateUploaded)).toString());
+		try {
+		    mav.addObject("lastUploadedDate", cleandateFormat.format(dateFormat.parse(dateUploaded)).toString());
+		}
+		catch (Exception ex) {
+		    dateFormat = new SimpleDateFormat("MM/dd/yyyy hh:mm a");
+		    mav.addObject("lastUploadedDate", dateFormat.format(configurationDetails.getDateCreated()).toString());
+		}
 	    }
 	    else {
 		DateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy hh:mm a");
