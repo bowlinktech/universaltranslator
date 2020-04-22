@@ -88,7 +88,7 @@
 						    </c:if>
 
                                                     <a href="${hrefLink}" title="View Original File">
-                                                        ${batch.originalFileName}
+                                                        Submitted File - ${batch.originalFileName}
                                                     </a>
 						    <br/>
 						    <c:if test="${(batch.transportMethodId == 10 || batch.transportMethodId == 6 || batch.transportMethodId == 9) && batch.statusId != 42}">

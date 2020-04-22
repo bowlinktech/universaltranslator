@@ -192,25 +192,25 @@ function getInboundMessages() {
 		    }
 		    else if(data.errorRecordCount > 0) {
                         //< .5 green .5 | threshold = yellow | >= threshold = red
-			var percent = Math.round((data.errorRecordCount / data.totalRecordCount) * 100);
+			var percent = Math.round((data.totalErrorRows / data.totalRecordCount) * 100);
                         var thresholdHalf = Math.round((data.threshold / 2));
                         
 			if(percent < thresholdHalf) {
 			    $(row).addClass('table-success');
-			    $(row).attr('data-content', data.endUserDisplayText + "<br />" + "<b>File Processed Successfully with Errors</b>" + "<br />" + "<b>Error Percent: </b>" + percent + '%');
+			    $(row).attr('data-content', data.endUserDisplayText + "<br />" + "<b>File Processed Successfully with Errors</b>" + "<br />" + "<b>Record Error Percent: </b>" + percent + '%');
 			}
 			else if(percent/data.threshold >= thresholdHalf && percent < data.threshold) {
 			    $(row).addClass('table-warning');
-                            $(row).attr('data-content', data.endUserDisplayText + "<br />" + "<b>File Processed Successfully with Errors</b>" + "<br />" + "<b>Error Percent: </b>" + percent + '%');
+                            $(row).attr('data-content', data.endUserDisplayText + "<br />" + "<b>File Processed Successfully with Errors</b>" + "<br />" + "<b>Record Error Percent: </b>" + percent + '%');
 			}
                         else {
                             $(row).addClass('table-danger');
-			    $(row).attr('data-content', data.endUserDisplayText + "<br />" + "<b>File Processed Successfully with Errors</b>" + "<br />" + "<b>Error Percent: </b>" + percent + '%');
+			    $(row).attr('data-content', data.endUserDisplayText + "<br />" + "<b>File Processed Successfully with Errors</b>" + "<br />" + "<b>Record Error Percent: </b>" + percent + '%');
                         }
 		    }
 		    else {
 		       $(row).addClass("table-success"); 
-                       $(row).attr('data-content', data.endUserDisplayText + "<br />" + "<b>File Processed Successfully</b>" + "<br />" + "<b>Error Percent:</b> 0%");
+                       $(row).attr('data-content', data.endUserDisplayText + "<br />" + "<b>File Processed Successfully</b>" + "<br />" + "<b>Record Error Percent:</b> 0%");
 		    }
 		}
 		else if(data.statusId == 58 || data.statusId == 7|| data.statusId == 1 || data.statusId == 41 || data.statusId == 39 || data.statusId == 30 || data.statusId == 29) {
@@ -219,20 +219,20 @@ function getInboundMessages() {
 		}
 		else if(data.errorRecordCount > 0) {
 		     //< .5 green .5 | threshold = yellow | >= threshold = red
-                    var percent = Math.round((data.errorRecordCount / data.totalRecordCount) * 100);
+                    var percent = Math.round((data.totalErrorRows / data.totalRecordCount) * 100);
                     var thresholdHalf = Math.round((data.threshold / 2));
 
 		    if(percent < thresholdHalf) {
                         $(row).addClass('table-success');
-                        $(row).attr('data-content', data.endUserDisplayText + "<br />" + "<b>File Processed Successfully with Errors</b>" + "<br />" + "<b>Error Percent: </b>" + percent + '%');
+                        $(row).attr('data-content', data.endUserDisplayText + "<br />" + "<b>File Processed Successfully with Errors</b>" + "<br />" + "<b>Record Error Percent: </b>" + percent + '%');
                     }
                     else if(percent/data.threshold >= thresholdHalf && percent < data.threshold) {
                         $(row).addClass('table-warning');
-                        $(row).attr('data-content', data.endUserDisplayText + "<br />" + "<b>File Processed Successfully with Errors</b>" + "<br />" + "<b>Error Percent: </b>" + percent + '%');
+                        $(row).attr('data-content', data.endUserDisplayText + "<br />" + "<b>File Processed Successfully with Errors</b>" + "<br />" + "<b>Record Error Percent: </b>" + percent + '%');
                     }
                     else {
                         $(row).addClass('table-danger');
-                        $(row).attr('data-content', data.endUserDisplayText + "<br />" + "<b>File Processed Successfully with Errors</b>" + "<br />" + "<b>Error Percent: </b>" + percent + '%');
+                        $(row).attr('data-content', data.endUserDisplayText + "<br />" + "<b>File Processed Successfully with Errors</b>" + "<br />" + "<b>Record Error Percent: </b>" + percent + '%');
                     }
 		}
 	    }
@@ -474,43 +474,43 @@ function getOutboundMessages() {
 		}
 		else if(data.errorRecordCount > 0) {
                    //< .5 green .5 | threshold = yellow | >= threshold = red
-                    var percent = Math.round((data.errorRecordCount / data.totalRecordCount) * 100);
+                    var percent = Math.round((data.totalErrorRows / data.totalRecordCount) * 100);
                     var thresholdHalf = Math.round((data.threshold / 2));
 
                     if(percent < thresholdHalf) {
                         $(row).addClass('table-success');
-                        $(row).attr('data-content', data.endUserDisplayText + "<br />" + "<b>File Processed Successfully with Errors</b>" + "<br />" + "<b>Error Percent: </b>" + percent + '%');
+                        $(row).attr('data-content', data.endUserDisplayText + "<br />" + "<b>File Processed Successfully with Errors</b>" + "<br />" + "<b>Record Error Percent: </b>" + percent + '%');
                     }
                     else if(percent/data.threshold >= thresholdHalf && percent < data.threshold) {
                         $(row).addClass('table-warning');
-                        $(row).attr('data-content', data.endUserDisplayText + "<br />" + "<b>File Processed Successfully with Errors</b>" + "<br />" + "<b>Error Percent: </b>" + percent + '%');
+                        $(row).attr('data-content', data.endUserDisplayText + "<br />" + "<b>File Processed Successfully with Errors</b>" + "<br />" + "<b>Record Error Percent: </b>" + percent + '%');
                     }
                     else {
                         $(row).addClass('table-danger');
-                        $(row).attr('data-content', data.endUserDisplayText + "<br />" + "<b>File Processed Successfully with Errors</b>" + "<br />" + "<b>Error Percent: </b>" + percent + '%');
+                        $(row).attr('data-content', data.endUserDisplayText + "<br />" + "<b>File Processed Successfully with Errors</b>" + "<br />" + "<b>Record Error Percent: </b>" + percent + '%');
                     }
 		}
 		else {
                     $(row).addClass("table-success"); 
-                    $(row).attr('data-content', data.endUserDisplayText + "<br />" + "<b>File Processed Successfully</b>" + "<br />" + "<b>Error Percent:</b> 0%");
+                    $(row).attr('data-content', data.endUserDisplayText + "<br />" + "<b>File Processed Successfully</b>" + "<br />" + "<b>Record Error Percent:</b> 0%");
                 }
 	    }
 	    else if(data.statusId == 58 || data.statusId == 7|| data.statusId == 1 || data.statusId == 41 || data.statusId == 39 || data.statusId == 30 || data.statusId == 29) {
 		 //< .5 green .5 | threshold = yellow | >= threshold = red
-                var percent = Math.round((data.errorRecordCount / data.totalRecordCount) * 100);
+                var percent = Math.round((data.totalErrorRows / data.totalRecordCount) * 100);
                 var thresholdHalf = Math.round((data.threshold / 2));
 
                 if(percent < thresholdHalf) {
                     $(row).addClass('table-success');
-                    $(row).attr('data-content', data.endUserDisplayText + "<br />" + "<b>File Processed Successfully with Errors</b>" + "<br />" + "<b>Error Percent: </b>" + percent + '%');
+                    $(row).attr('data-content', data.endUserDisplayText + "<br />" + "<b>File Processed Successfully with Errors</b>" + "<br />" + "<b>Record Error Percent: </b>" + percent + '%');
                 }
                 else if(percent/data.threshold >= thresholdHalf && percent < data.threshold) {
                     $(row).addClass('table-warning');
-                    $(row).attr('data-content', data.endUserDisplayText + "<br />" + "<b>File Processed Successfully with Errors</b>" + "<br />" + "<b>Error Percent: </b>" + percent + '%');
+                    $(row).attr('data-content', data.endUserDisplayText + "<br />" + "<b>File Processed Successfully with Errors</b>" + "<br />" + "<b>Record Error Percent: </b>" + percent + '%');
                 }
                 else {
                     $(row).addClass('table-danger');
-                    $(row).attr('data-content', data.endUserDisplayText + "<br />" + "<b>File Processed Successfully with Errors</b>" + "<br />" + "<b>Error Percent: </b>" + percent + '%');
+                    $(row).attr('data-content', data.endUserDisplayText + "<br />" + "<b>File Processed Successfully with Errors</b>" + "<br />" + "<b>Record Error Percent: </b>" + percent + '%');
                 }
 	    }
 	},

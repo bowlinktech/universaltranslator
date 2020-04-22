@@ -216,11 +216,11 @@
 					    <c:set var="text" value="${fn:split(batchDetails.outputFileName,'.')}" />
 					    <c:set var="ext" value="${text[fn:length(text)-1]}" />
 					    <c:set var="hrefLink" value="/FileDownload/downloadFile.do?fromPage=outboundAudit&filename=${batchDetails.utBatchName}.${ext}&foldername=archivesOut&utBatchId=${batchDetails.utBatchName}"/>
-					    <p><strong>Generated Target File (Located in archivesOut):</strong>
+					    <p><strong>Associated File:</strong>
 					    <br />
 					    <c:choose>
 						<c:when test="${batchDetails.statusId == 28}">
-						    <a href="${hrefLink}" title="View Generated Target File">${batchDetails.utBatchName}.${ext}</a>
+						    <a href="${hrefLink}" title="View Generated Target File">Generated Target File - ${batchDetails.utBatchName}.${ext}</a>
 						</c:when>
 						<c:when test="${batchDetails.statusId == 64}">
 						    Outbound batch is ready to be processed
@@ -240,7 +240,7 @@
 				    </c:when>
 				    <c:otherwise>
 					<p>
-					    <strong>Related Outbound Batches</strong><br />
+					    <strong>Related Outbound Batches:</strong><br />
 					    <c:choose>
 						<c:when test="${not empty batchDetails.relatedBatchDownloadIds}">
 						    <c:forEach items="${batchDetails.relatedBatchDownloadIds}" var="batchDownloadId">
@@ -288,9 +288,9 @@
 						</c:otherwise>
 					    </c:choose>
 					    <p>
-						<strong>Uploaded File:</strong><br />
-						<a href="${hrefLink}" title="View Original File">${batchDetails.originalFileName}</a>
-						<c:if test="${batchDetails.transportMethodId == 9 || batchDetails.transportMethodId == 13}">
+						<strong>Associated File(s):</strong><br />
+						<a href="${hrefLink}" title="View Original File">Submitted File - ${batchDetails.originalFileName}</a>
+						<c:if test="${(batchDetails.transportMethodId == 9 || batchDetails.transportMethodId == 13) && not empty fileName}">
 						    <br /><a href="${hreftranslateLink}" title="View Translated File">Translated File - ${fileName}</a></p>
 						</c:if>
 					    </p>
