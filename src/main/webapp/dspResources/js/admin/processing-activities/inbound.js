@@ -129,16 +129,16 @@ function populateMessages(fromDate,toDate) {
 		    if(row.transportMethodId != 2) {
 		    
 			if(row.transportMethodId == 9 || row.transportMethodId == 12 ) {
-			   returnData += '<br /><a href="/FileDownload/downloadFile.do?fromPage=inbound&filename='+row.utBatchName+'.'+row.originalFileName.split('.')[1].toString().toLowerCase()+'&foldername=archivesIn" title="View Original File">'+row.originalFileName+'</a>';
+			   returnData += '<br /><a href="/FileDownload/downloadFile.do?fromPage=inbound&filename='+row.utBatchName+'.'+row.originalFileName.split('.')[1].toString().toLowerCase()+'&foldername=archivesIn" title="View Submitted File">Submitted File - '+row.originalFileName+'</a>';
 			}
 			else if (row.transportMethodId == 6) {
-			    returnData += '<br /><a href="/FileDownload/downloadFile.do?fromPage=inbound&filename='+row.utBatchName+'_dec.'+row.originalFileName.split('.')[1].toString().toLowerCase()+'&foldername=archivesIn" title="View Original File">'+row.originalFileName+'</a>';
+			    returnData += '<br /><a href="/FileDownload/downloadFile.do?fromPage=inbound&filename='+row.utBatchName+'_dec.'+row.originalFileName.split('.')[1].toString().toLowerCase()+'&foldername=archivesIn" title="View Submitted File">Submitted File - '+row.originalFileName+'</a>';
 			}
                         else if(row.transportMethodId == 13 ) {
-			   returnData += '<br /><a href="/FileDownload/downloadFile.do?fromPage=inbound&filename=archive_'+row.utBatchName+'.'+row.originalFileName.split('.')[1].toString().toLowerCase()+'&foldername=archivesIn&orgId='+row.orgId+'" title="View Original File">'+row.originalFileName+'</a>';
+			   returnData += '<br /><a href="/FileDownload/downloadFile.do?fromPage=inbound&filename=archive_'+row.utBatchName+'.'+row.originalFileName.split('.')[1].toString().toLowerCase()+'&foldername=archivesIn&orgId='+row.orgId+'" title="View Submitted File">Submitted File - '+row.originalFileName+'</a>';
 			}
 			else {
-			   returnData += '<br /><a href="/FileDownload/downloadFile.do?fromPage=inbound&filename=encoded_'+row.utBatchName+'.'+row.originalFileName.split('.')[1].toString().toLowerCase()+'&foldername=input files&orgId='+row.orgId+'" title="View Original File">'+row.originalFileName+'</a>'; 
+			   returnData += '<br /><a href="/FileDownload/downloadFile.do?fromPage=inbound&filename=encoded_'+row.utBatchName+'.'+row.originalFileName.split('.')[1].toString().toLowerCase()+'&foldername=input files&orgId='+row.orgId+'" title="View Submitted File">Submitted File - '+row.originalFileName+'</a>'; 
 			}
 			
 			if(row.inboundBatchConfigurationType == 1 && (row.transportMethodId == 10 || row.transportMethodId == 13)) {

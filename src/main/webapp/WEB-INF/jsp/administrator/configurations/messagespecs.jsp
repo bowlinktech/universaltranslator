@@ -65,7 +65,7 @@
 					<div class="form-group">
                                             <div class="col-md-12" style="padding-left:0px;">
                                                 <div class="col-lg-2" style="padding-left:0px;">
-                                                    <a href="#!" class="btn btn-primary btn-action createNewTemplate" rel="${configurationDetails.id}" data-toggle="tooltip" data-original-title="Download Latest Template">Download Latest Template</a>
+                                                    <a href="#!" class="btn btn-primary btn-action createNewTemplate" rel="${configurationDetails.id}" data-toggle="tooltip" data-original-title="Download Latest Template">Download Current Configuration Template</a>
                                                 </div>
                                             </div>
 					 </div>
