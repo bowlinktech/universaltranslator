@@ -3459,14 +3459,14 @@ public class adminConfigController {
     }
     
     /**
-     * The 'createNewFieldSettingsTemplate.do' method will create a new template file from fields that are saved.
+     * The 'createNewFieldSettingsTemplateVertical.do' method will create a new template file from fields that are saved (Vertical column format).
      * @param configId
      * @return 
      * @throws java.lang.Exception
      */
-    @RequestMapping(value = "/createNewFieldSettingsTemplate.do", method = RequestMethod.GET)
+    @RequestMapping(value = "/createNewFieldSettingsTemplateVertical.do", method = RequestMethod.GET)
     @ResponseBody
-    public String createNewFieldSettingsTemplate(@RequestParam int configId) throws Exception {
+    public String createNewFieldSettingsTemplateVertical(@RequestParam int configId) throws Exception {
 	
 	String fileName = "";
 	
@@ -3612,4 +3612,169 @@ public class adminConfigController {
 	 // close stream and return to view
 	response.flushBuffer();
     } 
+    
+    /**
+     * The 'createNewFieldSettingsTemplate.do' method will create a new template file from fields that are saved. (Horizontal Row format)
+     * @param configId
+     * @return 
+     * @throws java.lang.Exception
+     */
+    @RequestMapping(value = "/createNewFieldSettingsTemplate.do", method = RequestMethod.GET)
+    @ResponseBody
+    public String createNewFieldSettingsTemplate(@RequestParam int configId) throws Exception {
+	
+	String fileName = "";
+	
+	try {
+	    utConfiguration configDetails = utconfigurationmanager.getConfigurationById(configId);
+	    Organization orgDetails = organizationmanager.getOrganizationById(configDetails.getorgId());
+
+	    DateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmm");
+	    Date date = new Date();
+
+	    fileName = dateFormat.format(date) + "-" + configDetails.getconfigName().replace(" ", "-");
+
+	    File file = new File("/tmp/" + fileName + ".xlsx");
+	    file.createNewFile();
+
+	    FileInputStream fileInput = null;
+	    fileInput = new FileInputStream(file);
+
+	    FileWriter fw = null;
+
+	    try {
+		fw = new FileWriter(file, true);
+	    } catch (IOException ex) {
+
+	    }
+
+	    configurationTransport transportDetails = utconfigurationTransportManager.getTransportDetails(configDetails.getId());
+
+	    List<configurationFormFields> fields = utconfigurationTransportManager.getConfigurationFields(configDetails.getId(), transportDetails.getId());
+
+	    List<validationType> validations = messagetypemanager.getValidationTypes1();
+
+	    StringBuilder exportRow = new StringBuilder();
+
+	    String required = "";
+	    String usefield = "Y";
+	    String validationValue = "None";
+
+	    Workbook wb = new XSSFWorkbook();
+	    Sheet sheet = wb.createSheet("sheet1");
+
+	    Integer rowNum = 0;
+	    Integer cellNum = 0;
+
+	    Row currentRow = sheet.createRow(rowNum);
+	    
+	    if(fields != null) {
+		if(!fields.isEmpty()) {
+		    for(configurationFormFields field : fields) {
+			currentRow.createCell(cellNum).setCellValue(field.getFieldDesc());
+			cellNum++;
+		    }
+		    rowNum++;
+		    currentRow = sheet.createRow(rowNum);
+		    cellNum = 0;
+		    for(configurationFormFields field : fields) {
+			currentRow.createCell(cellNum).setCellValue(field.getSampleData());
+			cellNum++;
+		    }
+		    rowNum++;
+		    currentRow = sheet.createRow(rowNum);
+		    cellNum = 0;
+		    for(configurationFormFields field : fields) {
+			if(field.getDefaultValue() != null) {
+			    if(!field.getDefaultValue().isEmpty()) {
+				required = "D";
+			    }
+			}
+
+			if(!required.equals("D")) {
+			    if(field.getRequired()) {
+				required = "R";
+			    }
+			    else {
+				required = "O";
+			    }
+			}
+			
+			currentRow.createCell(cellNum).setCellValue(required);
+			cellNum++;
+		    }
+		    rowNum++;
+		    currentRow = sheet.createRow(rowNum);
+		    cellNum = 0;
+		    for(configurationFormFields field : fields) {
+			if(field.getUseField()) {
+			    usefield = "Y";
+			}
+			else {
+			    usefield = "N";
+			}
+			
+			currentRow.createCell(cellNum).setCellValue(usefield);
+			cellNum++;
+		    }
+		    rowNum++;
+		    currentRow = sheet.createRow(rowNum);
+		    cellNum = 0;
+		    for(configurationFormFields field : fields) {
+			validationValue = "X";
+			if(!validations.isEmpty() && field.getValidationType() > 0) {
+			    for(validationType validation : validations) {
+				if(validation.getId().equals(field.getValidationType())) {
+				    validationValue = validation.getValidationType();
+				}
+			    }
+			}
+			
+			if("Date (yyyy-mm-dd)".equals(validationValue)) {
+			    validationValue = "D";
+			}
+			else if("None".equals(validationValue)) {
+			    validationValue = "X";
+			}
+			else if("Email".equals(validationValue)) {
+			    validationValue = "E";
+			}
+			else if("Phone Number".equals(validationValue)) {
+			    validationValue = "P";
+			}
+			else if("Numeric".equals(validationValue)) {
+			    validationValue = "N";
+			}
+			else if("URL".equals(validationValue)) {
+			    validationValue = "U";
+			}
+			
+			currentRow.createCell(cellNum).setCellValue(validationValue);
+			cellNum++;
+		    }
+		}
+	    }
+
+	    try (OutputStream stream = new FileOutputStream(file)) {
+		wb.write(stream);
+	    }
+	}
+	catch (Exception ex) {
+	    //we notify admin
+	    mailMessage mail = new mailMessage();
+	    mail.settoEmailAddress(myProps.getProperty("admin.email"));
+	    mail.setfromEmailAddress("support@health-e-link.net");
+	    mail.setmessageSubject("Error creating template from config field settings - " + " " + myProps.getProperty("server.identity"));
+	    StringBuilder emailBody = new StringBuilder();
+	    emailBody.append("There was an error creating a template from the configuration field settings page.");
+	    emailBody.append("<br/>Configuration Id: " + configId);
+	    emailBody.append("<br/><br/>" + ex.getMessage());
+	    emailBody.append("<br/><br/>" + ex.getStackTrace());
+	    mail.setmessageBody(emailBody.toString());
+	    emailMessageManager.sendEmail(mail);
+	    fileName = "";
+	}
+
+	return fileName;
+    }
 }
