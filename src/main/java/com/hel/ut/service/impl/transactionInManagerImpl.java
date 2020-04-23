@@ -3238,12 +3238,15 @@ public class transactionInManagerImpl implements transactionInManager {
 		noTargetsFound = assignBatchDLId(batchUploadId, batch.getConfigId());
 	    }
 	    else {
-		//if errors are found and the configuration is not set to "Reject entire file on a single transaction error" then create the batch download entry.
-		if(handlingDetails.get(0).geterrorHandling() != 3 && (updatedBatchDetails.getErrorRecordCount() < updatedBatchDetails.getTotalRecordCount())) {
-		    targetsInserted = true;
-		    noTargetsFound = assignBatchDLId(batchUploadId, batch.getConfigId());
+		Integer totalErrorRows = 0;
+		
+		try {
+		    totalErrorRows = transactionInDAO.getTotalErroredRows(batchUploadId);
 		}
-		else {
+		catch (Exception ex) {}
+		
+		//if errors are found and the configuration is not set to "Reject entire file on a single transaction error" then create the batch download entry.
+		if(handlingDetails.get(0).geterrorHandling() == 3) {
 		    batchStatusId = 7;
 		    updateBatchStatus(batchUploadId, batchStatusId, "endDateTime");
 		    
@@ -3252,6 +3255,20 @@ public class transactionInManagerImpl implements transactionInManager {
 		    ba.setActivity("BatchId:" + batchUploadId + " was rejected because error handling is set to 'Reject entire file on a single transaction error' and has a total of " + updatedBatchDetails.getErrorRecordCount() + " errors.");
 		    ba.setBatchUploadId(batchUploadId);
 		    transactionInDAO.submitBatchActivityLog(ba);
+		}
+		else if(totalErrorRows >= updatedBatchDetails.getTotalRecordCount()) {
+		    batchStatusId = 7;
+		    updateBatchStatus(batchUploadId, batchStatusId, "endDateTime");
+		    
+		    //log batch activity
+		    batchuploadactivity ba = new batchuploadactivity();
+		    ba.setActivity("BatchId:" + batchUploadId + " was rejected because all the rows in the submitted file contained an error.");
+		    ba.setBatchUploadId(batchUploadId);
+		    transactionInDAO.submitBatchActivityLog(ba);
+		}
+		else {
+		    targetsInserted = true;
+		    noTargetsFound = assignBatchDLId(batchUploadId, batch.getConfigId());
 		}
 	    }
 	}
