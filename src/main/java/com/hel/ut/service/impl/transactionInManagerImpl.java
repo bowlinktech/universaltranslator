@@ -3870,7 +3870,7 @@ public class transactionInManagerImpl implements transactionInManager {
 		    
 		    configurationTransport transportDetails = configurationtransportmanager.getTransportDetails(configDetails.getId());
 
-		    String utbatchName = new StringBuilder().append(transportDetails.gettransportMethodId()).append("_m_").append(configDetails.getorgId()).append(configDetails.getMessageTypeId()).append(dateFormat.format(date)).toString();
+		    String utbatchName = new StringBuilder().append(transportDetails.gettransportMethodId()).append("_m_").append(batchUploadId).append(configDetails.getorgId()).append(configDetails.getMessageTypeId()).append(dateFormat.format(date)).toString();
 
 		    // Get the userId for the utConfiguration
 		    List<configurationConnection> connections = configurationManager.getConnectionsBySrcAndTargetConfigurations(batchUploadDetails.getConfigId(), configDetails.getId());
@@ -4031,7 +4031,7 @@ public class transactionInManagerImpl implements transactionInManager {
 
 		configurationTransport transportDetails = configurationtransportmanager.getTransportDetails(tgtconfigDetails.getId());
 
-		String utbatchName = new StringBuilder().append(transportDetails.gettransportMethodId()).append("_m_").append(tgtconfigDetails.getorgId()).append(tgtconfigDetails.getMessageTypeId()).append(dateFormat.format(date)).toString();
+		String utbatchName = new StringBuilder().append(transportDetails.gettransportMethodId()).append("_m_").append(batchDetails.getId()).append(tgtconfigDetails.getorgId()).append(tgtconfigDetails.getMessageTypeId()).append(dateFormat.format(date)).toString();
 
 		//we create a batchDownloads
 		batchDownloads batchDownload = new batchDownloads();
