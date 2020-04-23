@@ -1185,6 +1185,8 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
 	    
 	    //Check to see if form fields already exist
 	    List<configurationFormFields> existingFormFields = configurationTransportDAO.getConfigurationFields(messageSpecs.getconfigId(),transportDetailId);
+	    
+	    utConfiguration configDetails = getConfigurationById(messageSpecs.getconfigId());
            
             //Set the initial value of the field number (0);
             Integer fieldNo = new Integer(0);
@@ -1296,19 +1298,30 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
 				    catch (Exception ex) {
 					try {
 					    requiredAsString = cell.getStringCellValue();
-					    if("default".equals(requiredAsString.toLowerCase()) || "d".equals(requiredAsString.toLowerCase())) {
-						hasDefault = true;
-						required = false;
-					    }
-					    else if("r".equals(requiredAsString.toLowerCase()) || "true".equals(requiredAsString.toLowerCase()) || "t".equals(requiredAsString.toLowerCase())) {
-						required = true;
-					    }
-					    else if("o".equals(requiredAsString.toLowerCase()) || "false".equals(requiredAsString.toLowerCase()) || "f".equals(requiredAsString.toLowerCase())) {
-						required = false;
+					    
+					    if(configDetails.getType() == 1 && ("default".equals(requiredAsString.toLowerCase()) || "d".equals(requiredAsString.toLowerCase()))) {
+						throw new Exception("The uploaded template file did not have a correct R/O value (" + requiredAsString + ") in row " + rowCounter + " column 2");
 					    }
 					    else {
-						//required = false;
-						throw new Exception("The uploaded template file did not have a correct R/O/D value (" + requiredAsString + ") in row " + rowCounter + " column 2");
+						if("default".equals(requiredAsString.toLowerCase()) || "d".equals(requiredAsString.toLowerCase())) {
+						    hasDefault = true;
+						    required = false;
+						}
+						else if("r".equals(requiredAsString.toLowerCase()) || "true".equals(requiredAsString.toLowerCase()) || "t".equals(requiredAsString.toLowerCase())) {
+						    required = true;
+						}
+						else if("o".equals(requiredAsString.toLowerCase()) || "false".equals(requiredAsString.toLowerCase()) || "f".equals(requiredAsString.toLowerCase())) {
+						    required = false;
+						}
+						else {
+						    //required = false;
+						    if(configDetails.getType() == 1) {
+							throw new Exception("The uploaded template file did not have a correct R/O value (" + requiredAsString + ") in row " + rowCounter + " column 2");
+						    }
+						    else {
+							throw new Exception("The uploaded template file did not have a correct R/O/D value (" + requiredAsString + ") in row " + rowCounter + " column 2");
+						    }
+						}
 					    }
 					}
 					catch (Exception e) {
@@ -1316,7 +1329,12 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
 						throw ex;
 					    }
 					    else {
-						throw new Exception("The uploaded template file did not have a correct R/O/D value in row " + rowCounter + " column 2");
+						if(configDetails.getType() == 1) {
+						    throw new Exception("The uploaded template file did not have a correct R/O value in row " + rowCounter + " column 2");
+						}
+						else {
+						    throw new Exception("The uploaded template file did not have a correct R/O/D value in row " + rowCounter + " column 2");
+						}
 					    }
 					    //required = false;
 					}
@@ -1536,22 +1554,33 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
 			catch (Exception ex) {
 			    try {
 				requiredAsString = cell.getStringCellValue();
-				if("default".equals(requiredAsString.toLowerCase()) || "d".equals(requiredAsString.toLowerCase())) {
-				    defaultValue = sampleData;
-				    required = false;
-				}
-				else if("r".equals(requiredAsString.toLowerCase()) || "true".equals(requiredAsString.toLowerCase()) || "t".equals(requiredAsString.toLowerCase())) {
-				    required = true;
-				    defaultValue = "";
-				}
-				else if("o".equals(requiredAsString.toLowerCase()) || "false".equals(requiredAsString.toLowerCase()) || "f".equals(requiredAsString.toLowerCase())) {
-				    required = false;
-				    defaultValue = "";
+				
+				if(configDetails.getType() == 1 && ("default".equals(requiredAsString.toLowerCase()) || "d".equals(requiredAsString.toLowerCase()))) {
+				    throw new Exception("The uploaded template file did not have a correct R/O value (" + requiredAsString + ") in in row 3 column " + fieldNo);
 				}
 				else {
-				    throw new Exception("The uploaded template file did not have a correct R/O/D value ("+requiredAsString+") in row 3 column " + fieldNo);
-				    //required = false;
-				    //defaultValue = "";
+				    if("default".equals(requiredAsString.toLowerCase()) || "d".equals(requiredAsString.toLowerCase())) {
+					defaultValue = sampleData;
+					required = false;
+				    }
+				    else if("r".equals(requiredAsString.toLowerCase()) || "true".equals(requiredAsString.toLowerCase()) || "t".equals(requiredAsString.toLowerCase())) {
+					required = true;
+					defaultValue = "";
+				    }
+				    else if("o".equals(requiredAsString.toLowerCase()) || "false".equals(requiredAsString.toLowerCase()) || "f".equals(requiredAsString.toLowerCase())) {
+					required = false;
+					defaultValue = "";
+				    }
+				    else {
+					if(configDetails.getType() == 1) {
+					    throw new Exception("The uploaded template file did not have a correct R/O value ("+requiredAsString+") in row 3 column " + fieldNo); 
+					}
+					else {
+					    throw new Exception("The uploaded template file did not have a correct R/O/D value ("+requiredAsString+") in row 3 column " + fieldNo);  
+					}
+					//required = false;
+					//defaultValue = "";
+				    }
 				}
 			    }
 			    catch (Exception e) {
@@ -1559,7 +1588,12 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
 				     throw ex;
 				}
 				else {
-				    throw new Exception("The uploaded template file did not have a correct R/O/D value in row 3 column " + fieldNo);
+				    if(configDetails.getType() == 1) {
+					throw new Exception("The uploaded template file did not have a correct R/O value in row 3 column " + fieldNo); 
+				    }
+				    else {
+					throw new Exception("The uploaded template file did not have a correct R/O/D value in row 3 column " + fieldNo);
+				    }
 				}
 				//required = false;
 			    }
