@@ -30,12 +30,24 @@
                     <spring:bind path="defaultValue">
                         <div id="fieldAppendDiv" class="form-group ${status.error ? 'has-error' : '' }">
                             <label class="control-label" for="defaultValue">Default Value</label>
+                            <ul>
+                                <li>
+                                    <small>Use this field to prepend a string to the value returned from the selected field below. The string will only be added
+                                    when the value returned from the selected field is not empty. (Example: type in "tel:" in order to send "tel: 123-456-7890")</small>
+                                </li>
+                                <li>
+                                    <small>Use this field to enter a default value when no field is selected below.</small>
+                                </li>
+                                <li>
+                                    <small>Enter ~currDate~ to replace the element above with the date and time the output is generated.</small>
+                                </li>
+                            </ul>
                             <form:input path="defaultValue" id="defaultValue" class="form-control" type="text" maxLength="50" />
                         </div>
                     </spring:bind>
                     <spring:bind path="fieldValue">
                         <div id="fieldValueDiv" class="form-group ${status.error ? 'has-error' : '' }">
-                            <label class="control-label" for="fieldValue">Field Value</label>
+                            <label class="control-label" for="fieldValue">Field</label>
                             <form:select path="fieldValue" id="newFieldValue" class="form-control half">
                                 <option value="">- Select -</option>
                                 <c:forEach items="${fields}" var="field" varStatus="fStatus">
