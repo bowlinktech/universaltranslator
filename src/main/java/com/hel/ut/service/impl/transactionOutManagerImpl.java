@@ -382,16 +382,15 @@ public class transactionOutManagerImpl implements transactionOutManager {
 
 		    for (configurationCCDElements element : ccdElements) {
 
-			if (!"".equals(element.getDefaultValue())) {
-			    if ("~currDate~".equals(element.getDefaultValue())) {
-				SimpleDateFormat date_format = new SimpleDateFormat("yyyyMMddHms");
-				String date = date_format.format(batchDetails.getDateCreated());
-				contentToUpdate = contentToUpdate.replace(element.getElement(), date);
-			    } else {
-				contentToUpdate = contentToUpdate.replace(element.getElement(), element.getDefaultValue());
-			    }
-
-			} else {
+			if ("~currDate~".equals(element.getDefaultValue())) {
+			    SimpleDateFormat date_format = new SimpleDateFormat("yyyyMMddHms");
+			    String date = date_format.format(batchDetails.getDateCreated());
+			    contentToUpdate = contentToUpdate.replace(element.getElement(), date);
+			} 
+			else if(!"".equals(element.getDefaultValue().trim()) && "".equals(element.getFieldValue())) {
+			    contentToUpdate = contentToUpdate.replace(element.getElement(), element.getDefaultValue().trim());
+			}
+			else {
 			    String colName = new StringBuilder().append("f").append(element.getFieldValue()).toString();
 			    
 			    String fieldValue = (String) PropertyUtils.getProperty(records.get(0), colName);
@@ -404,6 +403,12 @@ public class transactionOutManagerImpl implements transactionOutManager {
 				fieldValue = "";
 			    } else if (fieldValue.length() == 0) {
 				fieldValue = "";
+			    }
+			    
+			    if(!"".equals(fieldValue) && !"".equals(element.getDefaultValue().trim())) {
+				StringBuilder sb1 = new StringBuilder(element.getDefaultValue().trim());
+				sb1.append(" ").append(fieldValue);
+				fieldValue = sb1.toString();
 			    }
 
 			    contentToUpdate = contentToUpdate.replace(element.getElement(), fieldValue);
@@ -1574,31 +1579,34 @@ public class transactionOutManagerImpl implements transactionOutManager {
 				
 				String fieldValue = "";
 				
-				if(!element.getDefaultValue().equals("")) {
-				    if ("~currDate~".equals(element.getDefaultValue())) {
-					SimpleDateFormat date_format = new SimpleDateFormat("yyyyMMdd");
-					String date = date_format.format(new Date());
+				if ("~currDate~".equals(element.getDefaultValue())) {
+				    SimpleDateFormat date_format = new SimpleDateFormat("yyyyMMdd");
+				    String date = date_format.format(new Date());
 
-					fieldValue = date;
-
-				    } 
-				    else {
-					fieldValue = element.getDefaultValue();
-				    }
+				    fieldValue = date;
 				} 
+				else if(!"".equals(element.getDefaultValue().trim()) && "".equals(element.getFieldValue())) {
+				    fieldValue = element.getDefaultValue();
+				}
 				else {
 				    fieldValue = (String) recordrow[elementCounter];
 				    elementCounter += 1;
-				}
-				
-				if (fieldValue == null) {
-				    fieldValue = "";
-				} else if ("null".equals(fieldValue)) {
-				    fieldValue = "";
-				} else if (fieldValue.isEmpty()) {
-				    fieldValue = "";
-				} else if (fieldValue.length() == 0) {
-				    fieldValue = "";
+				    
+				    if (fieldValue == null) {
+					fieldValue = "";
+				    } else if ("null".equals(fieldValue)) {
+					fieldValue = "";
+				    } else if (fieldValue.isEmpty()) {
+					fieldValue = "";
+				    } else if (fieldValue.length() == 0) {
+					fieldValue = "";
+				    }
+
+				    if(!"".equals(fieldValue) && !"".equals(element.getDefaultValue().trim())) {
+					StringBuilder sb1 = new StringBuilder(element.getDefaultValue().trim());
+					sb1.append(" ").append(fieldValue);
+					fieldValue = sb1.toString();
+				    }
 				}
 
 				repeatingSectionCopy = repeatingSectionCopy.replace(element.getElement(), fieldValue);
