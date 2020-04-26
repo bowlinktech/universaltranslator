@@ -872,26 +872,34 @@ public class adminConfigController {
         mav.setViewName("/administrator/configurations/messagespecs");
 
         configurationMessageSpecs messageSpecs = utconfigurationmanager.getMessageSpecs(configId);
+	
         if (messageSpecs == null) {
             messageSpecs = new configurationMessageSpecs();
             messageSpecs.setconfigId(configId);
         }
 	else {
-	    if(messageSpecs.gettemplateFile().contains("-")) {
-		DateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmm");
-		DateFormat cleandateFormat = new SimpleDateFormat("MM/dd/yyyy hh:mm a");
-		String dateUploaded = messageSpecs.gettemplateFile().split("-")[0];
-		try {
-		    mav.addObject("lastUploadedDate", cleandateFormat.format(dateFormat.parse(dateUploaded)).toString());
-		}
-		catch (Exception ex) {
-		    dateFormat = new SimpleDateFormat("MM/dd/yyyy hh:mm a");
-		    mav.addObject("lastUploadedDate", dateFormat.format(configurationDetails.getDateCreated()).toString());
-		}
-	    }
-	    else {
+	    
+	    if(messageSpecs.gettemplateFile() == null) {
 		DateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy hh:mm a");
 		mav.addObject("lastUploadedDate", dateFormat.format(configurationDetails.getDateCreated()).toString());
+	    }
+	    else {
+		if(messageSpecs.gettemplateFile().contains("-")) {
+		    DateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmm");
+		    DateFormat cleandateFormat = new SimpleDateFormat("MM/dd/yyyy hh:mm a");
+		    String dateUploaded = messageSpecs.gettemplateFile().split("-")[0];
+		    try {
+			mav.addObject("lastUploadedDate", cleandateFormat.format(dateFormat.parse(dateUploaded)).toString());
+		    }
+		    catch (Exception ex) {
+			dateFormat = new SimpleDateFormat("MM/dd/yyyy hh:mm a");
+			mav.addObject("lastUploadedDate", dateFormat.format(configurationDetails.getDateCreated()).toString());
+		    }
+		}
+		else {
+		    DateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy hh:mm a");
+		    mav.addObject("lastUploadedDate", dateFormat.format(configurationDetails.getDateCreated()).toString());
+		}
 	    }
 	}
         mav.addObject("messageSpecs", messageSpecs);
