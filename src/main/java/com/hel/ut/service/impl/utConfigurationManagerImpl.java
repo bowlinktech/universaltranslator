@@ -275,6 +275,8 @@ public class utConfigurationManagerImpl implements utConfigurationManager {
 	String fileName = null;
 	String directory = "";
 	
+	String currentTemplateFileName = messageSpecs.gettemplateFile();
+	
 	if(messageSpecs.getFile() != null) {
 	    if(!messageSpecs.getFile().isEmpty()) {
 		
@@ -373,7 +375,7 @@ public class utConfigurationManagerImpl implements utConfigurationManager {
 
 	if (processFile == true) {
 	    try {
-		loadExcelContents(messageSpecs, transportDetailId, fileName, directory, hasHeader,fileLayout);
+		loadExcelContents(messageSpecs, transportDetailId, fileName, directory, hasHeader,fileLayout, currentTemplateFileName);
 	    } catch (Exception e1) {
 		e1.printStackTrace();
 		throw new Exception(e1);
@@ -395,8 +397,8 @@ public class utConfigurationManagerImpl implements utConfigurationManager {
      * @throws java.lang.Exception
      *
      */
-    public void loadExcelContents(configurationMessageSpecs messageSpecs, int transportDetailId, String fileName, String dir, boolean hasHeader, Integer fileLayout) throws Exception {
-	utConfigurationDAO.loadExcelContents(messageSpecs, transportDetailId, fileName, dir, hasHeader, fileLayout);
+    public void loadExcelContents(configurationMessageSpecs messageSpecs, int transportDetailId, String fileName, String dir, boolean hasHeader, Integer fileLayout, String currentTemplateFileName) throws Exception {
+	utConfigurationDAO.loadExcelContents(messageSpecs, transportDetailId, fileName, dir, hasHeader, fileLayout, currentTemplateFileName);
     }
 
     @Override

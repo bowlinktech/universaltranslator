@@ -1177,14 +1177,21 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
      */
     @Override
     @Transactional(readOnly = false)
-    public void loadExcelContents(configurationMessageSpecs messageSpecs, int transportDetailId, String fileName, String dir, boolean hasHeader, Integer fileLayout) throws Exception {
+    public void loadExcelContents(configurationMessageSpecs messageSpecs, int transportDetailId, String fileName, String dir, boolean hasHeader, Integer fileLayout, String currentTemplateFileName) throws Exception {
         String errorMessage = "";
 	List<String> templateFields = new ArrayList<>();
 	
         try {
+	    boolean configHasFields = false;
 	    
 	    //Check to see if form fields already exist
 	    List<configurationFormFields> existingFormFields = configurationTransportDAO.getConfigurationFields(messageSpecs.getconfigId(),transportDetailId);
+	    
+	    if(existingFormFields != null) {
+		if(!existingFormFields.isEmpty()) {
+		    configHasFields = true;
+		}
+	    }
 	    
 	    utConfiguration configDetails = getConfigurationById(messageSpecs.getconfigId());
            
@@ -1239,9 +1246,13 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
 		Row row = sheet.getRow(startRow);
 		
 		if(row.getLastCellNum() > 5) {
+		    messageSpecs.settemplateFile(currentTemplateFileName);
+		    updateMessageSpecs(messageSpecs, transportDetailId);
 		    throw new Exception("The uploaded template file had more than 5 columns, please choose horizontal layout or check your uploaded template file.");
 		}
 		else if(row.getLastCellNum() < 2) {
+		    messageSpecs.settemplateFile(currentTemplateFileName);
+		    updateMessageSpecs(messageSpecs, transportDetailId);
 		    throw new Exception("The uploaded template file had only 1 column, please check your uploaded template file.");
 		}
 		else {
@@ -1325,8 +1336,10 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
 					    }
 					}
 					catch (Exception e) {
-					    if(ex.getMessage() != null && ex.getMessage().contains("uploaded template")) {
-						throw ex;
+					    messageSpecs.settemplateFile(currentTemplateFileName);
+					    updateMessageSpecs(messageSpecs, transportDetailId);
+					    if(e.getMessage() != null && e.getMessage().contains("uploaded template")) {
+						throw e;
 					    }
 					    else {
 						if(configDetails.getType() == 1) {
@@ -1368,10 +1381,12 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
 					     useField = false;
 					 }
 					 else {
-					     throw new Exception("The uploaded template file did not have a correct Use/Not Use value ("+useNotUse+") in row " + rowCounter + " column 4");
+					    throw new Exception("The uploaded template file did not have a correct Use/Not Use value ("+useNotUse+") in row " + rowCounter + " column 4");
 					 }
 				    }
 				    catch (Exception ex) {
+					 messageSpecs.settemplateFile(currentTemplateFileName);
+					 updateMessageSpecs(messageSpecs, transportDetailId);
 					 if(ex.getMessage() != null && ex.getMessage().contains("uploaded template")) {
 					      throw ex;
 					 }
@@ -1403,18 +1418,20 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
 					     validationId = 6;
 					 }
 					 else {
-					     //validationId = 1;
-					     throw new Exception("The uploaded template file did not have a correct validation value ("+validationVal+") in row " + rowCounter + " column 5");
+					    //validationId = 1;
+					    throw new Exception("The uploaded template file did not have a correct validation value ("+validationVal+") in row " + rowCounter + " column 5");
 					 }
 				    }
 				    catch (Exception ex) {
-					 //validationId = 1;
-					 if(ex.getMessage() != null && ex.getMessage().contains("uploaded template")) {
-					      throw ex;
-					 }
-					 else {
-					     throw new Exception("The uploaded template file did not have a correct validation value in row " + rowCounter + " column 5");
-					 }
+					messageSpecs.settemplateFile(currentTemplateFileName);
+					updateMessageSpecs(messageSpecs, transportDetailId);
+					//validationId = 1;
+					if(ex.getMessage() != null && ex.getMessage().contains("uploaded template")) {
+					    throw ex;
+					}
+					else {
+					    throw new Exception("The uploaded template file did not have a correct validation value in row " + rowCounter + " column 5");
+					}
 				    }   
 				     break;
 				default:
@@ -1428,15 +1445,13 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
 			
 			templateFields.add(fieldDesc);
 			
-			if(existingFormFields != null) {
-			    if(!existingFormFields.isEmpty()) {
-				for(configurationFormFields field : existingFormFields) {
-				    if(field.getFieldDesc().toLowerCase().equals(fieldDesc.toLowerCase())) {
-					foundFieldId = field.getId();
-					fieldFound = true;
-					sqlStatement = "UPDATE configurationFormFields set fieldNo = :fieldNo, validationType = :validationId, required = :required, useField = :useField, defaultValue = :defaultValue, sampleData = :sampleData "
-					    + "where id = :fieldId";
-				    }
+			if(configHasFields) {
+			    for(configurationFormFields field : existingFormFields) {
+				if(field.getFieldDesc().toLowerCase().equals(fieldDesc.toLowerCase())) {
+				    foundFieldId = field.getId();
+				    fieldFound = true;
+				    sqlStatement = "UPDATE configurationFormFields set fieldNo = :fieldNo, validationType = :validationId, required = :required, useField = :useField, defaultValue = :defaultValue, sampleData = :sampleData "
+					+ "where id = :fieldId";
 				}
 			    }
 			}
@@ -1475,9 +1490,13 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
 	    else if(fileLayout == 1) {
 		
 		if(sheet.getLastRowNum() > 5) {
+		    messageSpecs.settemplateFile(currentTemplateFileName);
+		    updateMessageSpecs(messageSpecs, transportDetailId);
 		    throw new Exception("The uploaded template file had more than 5 rows, please choose vertical layout or check your uploaded template file.");
 		}
 		else if(sheet.getLastRowNum() < 2) {
+		    messageSpecs.settemplateFile(currentTemplateFileName);
+		    updateMessageSpecs(messageSpecs, transportDetailId);
 		    throw new Exception("The uploaded template file had less than 3 rows, please choose horizontal layout or check your uploaded template file.");
 		}
 		else {
@@ -1584,9 +1603,10 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
 				}
 			    }
 			    catch (Exception e) {
-				System.out.println(e.getMessage());
-				if(ex.getMessage() != null && ex.getMessage().contains("uploaded template")) {
-				     throw ex;
+				messageSpecs.settemplateFile(currentTemplateFileName);
+				updateMessageSpecs(messageSpecs, transportDetailId);
+				if(e.getMessage() != null && e.getMessage().contains("uploaded template")) {
+				     throw e;
 				}
 				else {
 				    if(configDetails.getType() == 1) {
@@ -1618,12 +1638,14 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
 			    }
 			}
 			catch (Exception ex) {
-			   if(ex.getMessage() != null && ex.getMessage().contains("uploaded template")) {
+			    messageSpecs.settemplateFile(currentTemplateFileName);
+			    updateMessageSpecs(messageSpecs, transportDetailId);
+			    if(ex.getMessage() != null && ex.getMessage().contains("uploaded template")) {
 				throw ex;
-			   }
-			   else {
+			    }
+			    else {
 			       throw new Exception("The uploaded template file did not have a correct Use/Not Use value in row 4 column " + fieldNo);
-			   }
+			    }
 			}
 			
 			//Get the validation Id
@@ -1657,6 +1679,8 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
 			    }
 		       }
 		       catch (Exception ex) {
+			   messageSpecs.settemplateFile(currentTemplateFileName);
+			   updateMessageSpecs(messageSpecs, transportDetailId);
 			   if(ex.getMessage() != null && ex.getMessage().contains("uploaded template")) {
 				throw ex;
 			   }
@@ -1672,15 +1696,13 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
 			
 			templateFields.add(fieldDesc);
 			
-			if(existingFormFields != null) {
-			    if(!existingFormFields.isEmpty()) {
-				for(configurationFormFields field : existingFormFields) {
-				    if(field.getFieldDesc().toLowerCase().equals(fieldDesc.toLowerCase())) {
-					foundFieldId = field.getId();
-					fieldFound = true;
-					sqlStatement = "UPDATE configurationFormFields set fieldNo = :fieldNo, validationType = :validationId, required = :required, useField = :useField, defaultValue = :defaultValue, sampleData = :sampleData "
-					    + "where id = :fieldId";
-				    }
+			if(configHasFields) {
+			    for(configurationFormFields field : existingFormFields) {
+				if(field.getFieldDesc().toLowerCase().equals(fieldDesc.toLowerCase())) {
+				    foundFieldId = field.getId();
+				    fieldFound = true;
+				    sqlStatement = "UPDATE configurationFormFields set fieldNo = :fieldNo, validationType = :validationId, required = :required, useField = :useField, defaultValue = :defaultValue, sampleData = :sampleData "
+					+ "where id = :fieldId";
 				}
 			    }
 			}
