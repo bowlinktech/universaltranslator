@@ -1584,6 +1584,7 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
 				}
 			    }
 			    catch (Exception e) {
+				System.out.println(e.getMessage());
 				if(ex.getMessage() != null && ex.getMessage().contains("uploaded template")) {
 				     throw ex;
 				}
