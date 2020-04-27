@@ -547,7 +547,7 @@ public class adminConfigController {
 	    }
 	    else {
 		String directory = myProps.getProperty("ut.directory.utRootDir");
-		pushRFields.setDirectory(directory + orgDetails.getcleanURL() + "/input files/"+configurationDetails.getconfigName().toLowerCase().replace(" ", "")+"/");
+		pushRFields.setDirectory(directory.replace("/home/","/") + orgDetails.getcleanURL() + "/input files/"+configurationDetails.getconfigName().toLowerCase().replace(" ", "")+"/");
 	    }
 
 	    configurationFileDropFields getRFields = new configurationFileDropFields();
