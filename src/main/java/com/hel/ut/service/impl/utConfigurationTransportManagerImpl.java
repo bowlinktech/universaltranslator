@@ -28,6 +28,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.hel.ut.service.utConfigurationManager;
 import com.hel.ut.service.utConfigurationTransportManager;
 import com.hel.ut.dao.utConfigurationTransportDAO;
+import com.hel.ut.model.configurationCCDElements;
 import com.hel.ut.model.configurationconnectionfieldmappings;
 import com.hel.ut.model.organizationDirectDetails;
 import com.hel.ut.model.utConfiguration;
@@ -37,6 +38,7 @@ import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Properties;
 import javax.annotation.Resource;
+import org.hibernate.Query;
 
 @Service
 public class utConfigurationTransportManagerImpl implements utConfigurationTransportManager {
@@ -615,7 +617,8 @@ public class utConfigurationTransportManagerImpl implements utConfigurationTrans
      */
     private void insertCCDDataElements(Integer configId, File ccdTemplateFile) throws Exception {
 	
-	String sqlQuery = "insert into configurationccdelements (configId, element, fieldValue, defaultValue) values ";
+	//Check to see if there are any CCD Data elements already loaded
+	List<configurationCCDElements> configCCDDataElements = utConfigurationManager.getCCDElements(configId);
 	
 	Reader fileReader = new FileReader(ccdTemplateFile);
         BufferedReader bufReader = new BufferedReader(fileReader);
@@ -624,20 +627,24 @@ public class utConfigurationTransportManagerImpl implements utConfigurationTrans
         String line = bufReader.readLine();
 	String lineSubString = "";
 	ArrayList<String> substrings = new ArrayList<String>();
+	
+	Integer endTag = 0;
+	
         while( line != null){
+	    endTag = 0;
             
 	    if(line.contains("[@") && line.contains("@]")) {
+		
+		endTag = line.indexOf("@]")+2;
+		
 		lineSubString = line.substring(line.indexOf("[@"),line.indexOf("@]")+2);
 		
-		if(!substrings.isEmpty()) {
-		    if(substrings.indexOf(lineSubString) == -1) {
-			sqlQuery += "("+configId+",'"+lineSubString+"','',''),";
-			substrings.add(lineSubString);
-		    }
-		}
-		else {
+		substrings.add(lineSubString);
+		
+		while(line.indexOf("[@", endTag) != -1) {
+		    lineSubString = line.substring(line.indexOf("[@", endTag),line.indexOf("@]", endTag)+2);
 		    substrings.add(lineSubString);
-		    sqlQuery += "("+configId+",'"+lineSubString+"','',''),";
+		    endTag = line.indexOf("@]", endTag)+2;
 		}
 		
 	    }
@@ -647,17 +654,62 @@ public class utConfigurationTransportManagerImpl implements utConfigurationTrans
 	
 	bufReader.close();
 	
-	sqlQuery = sqlQuery.replaceAll(",$", "");
-	
-	try {
-	    configurationTransportDAO.executeConfigTransportSQL("delete from configurationccdelements where configId = " + configId);
-	    configurationTransportDAO.executeConfigTransportSQL(sqlQuery);
+	if(!substrings.isEmpty()) {
+	    Query query = null;
+	    String sqlQuery = "";
+	    
+	    if(configCCDDataElements != null) {
+		if(!configCCDDataElements.isEmpty()) {
+		    boolean fieldFound = false;
+		    for(String subString : substrings) {
+			fieldFound = false;
+			for(configurationCCDElements ccdDataElement : configCCDDataElements) {
+			    if(subString.toLowerCase().equals(ccdDataElement.getElement().trim().toLowerCase())) {
+				fieldFound = true;
+			    }
+			}
+			
+			if(!fieldFound) {
+			    sqlQuery = "insert into configurationccdelements (configId, element, fieldValue, defaultValue) values "
+				+ "("+configId+", '"+subString+"', '','')";
+			    
+			    configurationTransportDAO.executeConfigTransportSQL(sqlQuery);
+			    
+			}
+		    }
+		    
+		    //Delete any existing element that was not found in the new uploaded file
+		    Integer fieldId = 0;
+		    for(configurationCCDElements ccdDataElement : configCCDDataElements) {
+			fieldFound = false;
+			fieldId = ccdDataElement.getId();
+			for(String subString : substrings) {
+			    if(subString.toLowerCase().equals(ccdDataElement.getElement().trim().toLowerCase())) {
+				fieldFound = true;
+			    }
+			}
+			
+			if(!fieldFound && fieldId > 0) {
+			    configurationTransportDAO.executeConfigTransportSQL("delete from configurationccdelements where id = " + fieldId);
+			}
+		    }
+		}
+		else {
+		    for(String subString : substrings) {
+			sqlQuery = "insert into configurationccdelements (configId, element, fieldValue, defaultValue) values "
+			    + "("+configId+", '"+subString+"', '','')";
+			configurationTransportDAO.executeConfigTransportSQL(sqlQuery);
+		    }
+		}
+	    }
+	    else {
+		for(String subString : substrings) {
+		    sqlQuery = "insert into configurationccdelements (configId, element, fieldValue, defaultValue) values "
+			+ "("+configId+", '"+subString+"', '','')";
+		    configurationTransportDAO.executeConfigTransportSQL(sqlQuery);
+		}
+	    }
 	}
-	catch (Exception ex) {
-	    sqlQuery = "delete from configurationccdelements where configId = " + configId;
-	    configurationTransportDAO.executeConfigTransportSQL(sqlQuery);
-	}
-
     }
     
     @Override
