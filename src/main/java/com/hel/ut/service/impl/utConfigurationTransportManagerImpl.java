@@ -36,6 +36,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.Reader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Properties;
 import javax.annotation.Resource;
 import org.hibernate.Query;
@@ -638,12 +639,15 @@ public class utConfigurationTransportManagerImpl implements utConfigurationTrans
 		endTag = line.indexOf("@]")+2;
 		
 		lineSubString = line.substring(line.indexOf("[@"),line.indexOf("@]")+2);
-		
-		substrings.add(lineSubString);
+		if(substrings.indexOf(lineSubString) == -1) {
+		    substrings.add(lineSubString);
+		}
 		
 		while(line.indexOf("[@", endTag) != -1) {
 		    lineSubString = line.substring(line.indexOf("[@", endTag),line.indexOf("@]", endTag)+2);
-		    substrings.add(lineSubString);
+		    if(substrings.indexOf(lineSubString) == -1) {
+			substrings.add(lineSubString);
+		    }
 		    endTag = line.indexOf("@]", endTag)+2;
 		}
 		
