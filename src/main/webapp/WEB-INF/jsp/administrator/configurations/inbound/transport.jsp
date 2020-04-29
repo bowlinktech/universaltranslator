@@ -68,8 +68,11 @@
 		    <spring:bind path="fileLocation">
 			<div class="form-group ${status.error ? 'has-error' : '' }">
 			    <label class="control-label" for="fileLocation">Where will the file be stored on the UT prior to processing? *</label>
-			    <form:input origVal="${transportDetails.fileLocation}" path="fileLocation" id="fileLocation" class="form-control" type="text" maxLength="255" />
+			    <form:input disabled="${not empty transportDetails.fileLocation ? 'true' : 'false' }" origVal="${transportDetails.fileLocation}" path="fileLocation" id="fileLocation" class="form-control" type="text" maxLength="255" />
 			    <form:errors path="fileLocation" cssClass="control-label" element="label" />
+                            <c:if test="${not empty transportDetails.fileLocation}">
+                                <form:hidden path="fileLocation"/>
+                            </c:if> 
 			</div>
 		    </spring:bind>
 		    <spring:bind path="maxFileSize">
@@ -185,7 +188,7 @@
 		    </spring:bind>
 		    <spring:bind path="encodingId">
 			<div id="encodingDiv" class="form-group ${status.error ? 'has-error' : '' }">
-			    <label class="control-label" for="encodingId">What type of Encoding does the file have? *</label>
+			    <label class="control-label" for="encodingId">Does the incoming file have any Encoding? *</label>
 			    <form:select path="encodingId" id="encodingId" class="form-control" disabled="${transportDetails.copiedTransportId > 0 ? 'true' : 'false'}">
 				<option value="">- Select -</option>
 				<c:forEach items="${encodings}" varStatus="fStatus">
@@ -219,11 +222,15 @@
 			      <input name="fileDropFields[${field.index}].directory" id="directory${fileDropDetails.method}" class="form-control" type="hidden" maxLength="255" value="${fileDropDetails.directory}"  />
 			    </c:if>
 			    <c:if test="${fileDropDetails.method == 1}">
-				<label class="control-label" for="directory${fileDropDetails.method}">Location on the UT where files will be dropped</label>
-				<p>Make sure to add a sub folder after "/input files"</p>
-				<input name="fileDropFields[${field.index}].directory" id="directory${fileDropDetails.method}" class="form-control" type="text" maxLength="255" value="${fileDropDetails.directory}"  />
+                                <c:if test="${empty transportDetails.fileLocation}">
+                                    <p>Make sure to add a sub folder after "/input files"</p>
+                                </c:if>
+				<input disabled="${not empty fileDropDetails.directory ? 'true' : 'false' }" name="fileDropFields[${field.index}].directory" id="directory${fileDropDetails.method}" class="form-control" type="text" maxLength="255" value="${fileDropDetails.directory}"  />
 				<span id="rDirectory${fileDropDetails.method}Msg" class="control-label"></span>
-			    </c:if>           
+                                <c:if test="${not empty transportDetails.fileLocation}">
+                                    <input type="hidden" name="fileDropFields[${field.index}].directory" id="directory${fileDropDetails.method}" class="form-control"  maxLength="255" value="${fileDropDetails.directory}"  />
+                                </c:if>
+                             </c:if>       
 			</div>
 		    </c:forEach>
 		</div>
