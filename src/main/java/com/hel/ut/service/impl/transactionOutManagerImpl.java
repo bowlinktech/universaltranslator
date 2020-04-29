@@ -277,6 +277,9 @@ public class transactionOutManagerImpl implements transactionOutManager {
 	String fileName = null;
 	String strFileLoc = "";
 	batchDownloads batchDetails = transactionOutDAO.getBatchDetails(batchId);
+	batchUploads batchUploadDetails = transactionInDAO.getBatchDetails(batchDetails.getBatchUploadId());
+	
+	Organization sendingOrgDetails = organizationManager.getOrganizationById(batchUploadDetails.getOrgId());
 
 	InputStream inputStream = null;
 	OutputStream outputStream = null;
@@ -379,41 +382,154 @@ public class transactionOutManagerImpl implements transactionOutManager {
 		List<configurationCCDElements> ccdElements = configurationManager.getCCDElements(transportDetails.getconfigId());
 
 		if (!ccdElements.isEmpty()) {
+		    String fieldValue = "";
 
 		    for (configurationCCDElements element : ccdElements) {
-
-			if ("~currDate~".equals(element.getDefaultValue())) {
-			    SimpleDateFormat date_format = new SimpleDateFormat("yyyyMMddHms");
-			    String date = date_format.format(batchDetails.getDateCreated());
-			    contentToUpdate = contentToUpdate.replace(element.getElement(), date);
-			} 
-			else if(!"".equals(element.getDefaultValue().trim()) && "".equals(element.getFieldValue())) {
-			    contentToUpdate = contentToUpdate.replace(element.getElement(), element.getDefaultValue().trim());
-			}
-			else {
-			    String colName = new StringBuilder().append("f").append(element.getFieldValue()).toString();
-			    
-			    String fieldValue = (String) PropertyUtils.getProperty(records.get(0), colName);
-
-			    if (fieldValue == null) {
-				fieldValue = "";
-			    } else if ("null".equals(fieldValue)) {
-				fieldValue = "";
-			    } else if (fieldValue.isEmpty()) {
-				fieldValue = "";
-			    } else if (fieldValue.length() == 0) {
-				fieldValue = "";
+			fieldValue = "";
+			
+			//Check to see if element is for sending organiation information
+			if(element.getElement().contains("[@sendingOrg")) {
+			    if(element.getElement().equals("[@sendingOrgAddress@]")) {
+				if(sendingOrgDetails.getAddress() == null) {
+				    fieldValue = "";
+				}
+				else if("null".equals(sendingOrgDetails.getAddress().trim())) {
+				    fieldValue = "";
+				}
+				else if(sendingOrgDetails.getAddress().trim().isEmpty()) {
+				    fieldValue = "";
+				}
+				else if(sendingOrgDetails.getAddress().trim().length() == 0) {
+				    fieldValue = "";
+				}
+				else {
+				    fieldValue = sendingOrgDetails.getAddress().trim();
+				}
+			    }
+			    else if(element.getElement().equals("[@sendingOrgCity@]")) {
+				if(sendingOrgDetails.getCity() == null) {
+				    fieldValue = "";
+				}
+				else if("null".equals(sendingOrgDetails.getCity().trim())) {
+				    fieldValue = "";
+				}
+				else if(sendingOrgDetails.getCity().trim().isEmpty()) {
+				    fieldValue = "";
+				}
+				else if(sendingOrgDetails.getCity().trim().length() == 0) {
+				    fieldValue = "";
+				}
+				else {
+				    fieldValue = sendingOrgDetails.getCity().trim();
+				}
+			    }
+			    else if(element.getElement().equals("[@sendingOrgState@]")) {
+				if(sendingOrgDetails.getState() == null) {
+				    fieldValue = "";
+				}
+				else if("null".equals(sendingOrgDetails.getState().trim())) {
+				    fieldValue = "";
+				}
+				else if(sendingOrgDetails.getState().trim().isEmpty()) {
+				    fieldValue = "";
+				}
+				else if(sendingOrgDetails.getState().trim().length() == 0) {
+				    fieldValue = "";
+				}
+				else {
+				    fieldValue = sendingOrgDetails.getState().trim();
+				}
+			    }
+			    else if(element.getElement().equals("[@sendingOrgZipCode@]")) {
+				if(sendingOrgDetails.getPostalCode() == null) {
+				    fieldValue = "";
+				}
+				else if("null".equals(sendingOrgDetails.getPostalCode().trim())) {
+				    fieldValue = "";
+				}
+				else if(sendingOrgDetails.getPostalCode().trim().isEmpty()) {
+				    fieldValue = "";
+				}
+				else if(sendingOrgDetails.getPostalCode().trim().length() == 0) {
+				    fieldValue = "";
+				}
+				else {
+				    fieldValue = sendingOrgDetails.getPostalCode().trim();
+				}
+			    }
+			    else if(element.getElement().equals("[@sendingOrgPhone@]")) {
+				if(sendingOrgDetails.getPhone() == null) {
+				    fieldValue = "";
+				}
+				else if("null".equals(sendingOrgDetails.getPhone().trim())) {
+				    fieldValue = "";
+				}
+				else if(sendingOrgDetails.getPhone().trim().isEmpty()) {
+				    fieldValue = "";
+				}
+				else if(sendingOrgDetails.getPhone().trim().length() == 0) {
+				    fieldValue = "";
+				}
+				else {
+				    fieldValue = sendingOrgDetails.getPhone().trim();
+				    StringBuilder sb1 = new StringBuilder(element.getDefaultValue().trim());
+				    sb1.append(" ").append(fieldValue);
+				    fieldValue = sb1.toString();
+				}
+			    }
+			    else if(element.getElement().equals("[@sendingOrgName@]")) {
+				if(sendingOrgDetails.getOrgName() == null) {
+				    fieldValue = "";
+				}
+				else if("null".equals(sendingOrgDetails.getOrgName().trim())) {
+				    fieldValue = "";
+				}
+				else if(sendingOrgDetails.getOrgName().trim().isEmpty()) {
+				    fieldValue = "";
+				}
+				else if(sendingOrgDetails.getOrgName().trim().length() == 0) {
+				    fieldValue = "";
+				}
+				else {
+				    fieldValue = sendingOrgDetails.getOrgName().trim();
+				}
 			    }
 			    
-			    if(!"".equals(fieldValue) && !"".equals(element.getDefaultValue().trim())) {
-				StringBuilder sb1 = new StringBuilder(element.getDefaultValue().trim());
-				sb1.append(" ").append(fieldValue);
-				fieldValue = sb1.toString();
-			    }
-
 			    contentToUpdate = contentToUpdate.replace(element.getElement(), fieldValue);
 			}
+			else {
+			    if ("~currDate~".equals(element.getDefaultValue())) {
+				SimpleDateFormat date_format = new SimpleDateFormat("yyyyMMddHms");
+				String date = date_format.format(batchDetails.getDateCreated());
+				contentToUpdate = contentToUpdate.replace(element.getElement(), date);
+			    } 
+			    else if(!"".equals(element.getDefaultValue().trim()) && "".equals(element.getFieldValue())) {
+				contentToUpdate = contentToUpdate.replace(element.getElement(), element.getDefaultValue().trim());
+			    }
+			    else {
+				String colName = new StringBuilder().append("f").append(element.getFieldValue()).toString();
 
+				fieldValue = (String) PropertyUtils.getProperty(records.get(0), colName);
+
+				if (fieldValue == null) {
+				    fieldValue = "";
+				} else if ("null".equals(fieldValue)) {
+				    fieldValue = "";
+				} else if (fieldValue.isEmpty()) {
+				    fieldValue = "";
+				} else if (fieldValue.length() == 0) {
+				    fieldValue = "";
+				}
+
+				if(!"".equals(fieldValue) && !"".equals(element.getDefaultValue().trim())) {
+				    StringBuilder sb1 = new StringBuilder(element.getDefaultValue().trim());
+				    sb1.append(" ").append(fieldValue);
+				    fieldValue = sb1.toString();
+				}
+
+				contentToUpdate = contentToUpdate.replace(element.getElement(), fieldValue);
+			    }
+			}
 		    }
 		}
 
@@ -1343,6 +1459,8 @@ public class transactionOutManagerImpl implements transactionOutManager {
 	batchUploads batchUploadDetails = transactionInManager.getBatchDetails(batchDownload.getBatchUploadId());
 	utConfiguration uploadConfigDetails = configurationManager.getConfigurationById(batchUploadDetails.getConfigId());
 	
+	Organization sendingOrgDetails = organizationManager.getOrganizationById(batchUploadDetails.getOrgId());
+	
 	//Get the error handling for the source config.
 	configurationTransport sourceConfigTransportDetails = configurationTransportManager.getTransportDetails(batchUploadDetails.getConfigId());
 
@@ -1579,36 +1697,146 @@ public class transactionOutManagerImpl implements transactionOutManager {
 				
 				String fieldValue = "";
 				
-				if ("~currDate~".equals(element.getDefaultValue())) {
-				    SimpleDateFormat date_format = new SimpleDateFormat("yyyyMMdd");
-				    String date = date_format.format(new Date());
+				if(element.getElement().contains("[@sendingOrg")) {
+				    if(element.getElement().equals("[@sendingOrgAddress@]")) {
+					if(sendingOrgDetails.getAddress() == null) {
+					    fieldValue = "";
+					}
+					else if("null".equals(sendingOrgDetails.getAddress().trim())) {
+					    fieldValue = "";
+					}
+					else if(sendingOrgDetails.getAddress().trim().isEmpty()) {
+					    fieldValue = "";
+					}
+					else if(sendingOrgDetails.getAddress().trim().length() == 0) {
+					    fieldValue = "";
+					}
+					else {
+					    fieldValue = sendingOrgDetails.getAddress().trim();
+					}
+				    }
+				    else if(element.getElement().equals("[@sendingOrgCity@]")) {
+					if(sendingOrgDetails.getCity() == null) {
+					    fieldValue = "";
+					}
+					else if("null".equals(sendingOrgDetails.getCity().trim())) {
+					    fieldValue = "";
+					}
+					else if(sendingOrgDetails.getCity().trim().isEmpty()) {
+					    fieldValue = "";
+					}
+					else if(sendingOrgDetails.getCity().trim().length() == 0) {
+					    fieldValue = "";
+					}
+					else {
+					    fieldValue = sendingOrgDetails.getCity().trim();
+					}
+				    }
+				    else if(element.getElement().equals("[@sendingOrgState@]")) {
+					if(sendingOrgDetails.getState() == null) {
+					    fieldValue = "";
+					}
+					else if("null".equals(sendingOrgDetails.getState().trim())) {
+					    fieldValue = "";
+					}
+					else if(sendingOrgDetails.getState().trim().isEmpty()) {
+					    fieldValue = "";
+					}
+					else if(sendingOrgDetails.getState().trim().length() == 0) {
+					    fieldValue = "";
+					}
+					else {
+					    fieldValue = sendingOrgDetails.getState().trim();
+					}
+				    }
+				    else if(element.getElement().equals("[@sendingOrgZipCode@]")) {
+					if(sendingOrgDetails.getPostalCode() == null) {
+					    fieldValue = "";
+					}
+					else if("null".equals(sendingOrgDetails.getPostalCode().trim())) {
+					    fieldValue = "";
+					}
+					else if(sendingOrgDetails.getPostalCode().trim().isEmpty()) {
+					    fieldValue = "";
+					}
+					else if(sendingOrgDetails.getPostalCode().trim().length() == 0) {
+					    fieldValue = "";
+					}
+					else {
+					    fieldValue = sendingOrgDetails.getPostalCode().trim();
+					}
+				    }
+				    else if(element.getElement().equals("[@sendingOrgPhone@]")) {
+					if(sendingOrgDetails.getPhone() == null) {
+					    fieldValue = "";
+					}
+					else if("null".equals(sendingOrgDetails.getPhone().trim())) {
+					    fieldValue = "";
+					}
+					else if(sendingOrgDetails.getPhone().trim().isEmpty()) {
+					    fieldValue = "";
+					}
+					else if(sendingOrgDetails.getPhone().trim().length() == 0) {
+					    fieldValue = "";
+					}
+					else {
+					    fieldValue = sendingOrgDetails.getPhone().trim();
+					    StringBuilder sb1 = new StringBuilder(element.getDefaultValue().trim());
+					    sb1.append(" ").append(fieldValue);
+					    fieldValue = sb1.toString();
+					}
+				    }
+				    else if(element.getElement().equals("[@sendingOrgName@]")) {
+					if(sendingOrgDetails.getOrgName() == null) {
+					    fieldValue = "";
+					}
+					else if("null".equals(sendingOrgDetails.getOrgName().trim())) {
+					    fieldValue = "";
+					}
+					else if(sendingOrgDetails.getOrgName().trim().isEmpty()) {
+					    fieldValue = "";
+					}
+					else if(sendingOrgDetails.getOrgName().trim().length() == 0) {
+					    fieldValue = "";
+					}
+					else {
+					    fieldValue = sendingOrgDetails.getOrgName().trim();
+					}
+				    }
 
-				    fieldValue = date;
-				} 
-				else if(!"".equals(element.getDefaultValue().trim()) && "".equals(element.getFieldValue())) {
-				    fieldValue = element.getDefaultValue();
 				}
 				else {
-				    fieldValue = (String) recordrow[elementCounter];
-				    elementCounter += 1;
-				    
-				    if (fieldValue == null) {
-					fieldValue = "";
-				    } else if ("null".equals(fieldValue)) {
-					fieldValue = "";
-				    } else if (fieldValue.isEmpty()) {
-					fieldValue = "";
-				    } else if (fieldValue.length() == 0) {
-					fieldValue = "";
-				    }
+				    if ("~currDate~".equals(element.getDefaultValue())) {
+					SimpleDateFormat date_format = new SimpleDateFormat("yyyyMMdd");
+					String date = date_format.format(new Date());
 
-				    if(!"".equals(fieldValue) && !"".equals(element.getDefaultValue().trim())) {
-					StringBuilder sb1 = new StringBuilder(element.getDefaultValue().trim());
-					sb1.append(" ").append(fieldValue);
-					fieldValue = sb1.toString();
+					fieldValue = date;
+				    } 
+				    else if(!"".equals(element.getDefaultValue().trim()) && "".equals(element.getFieldValue())) {
+					fieldValue = element.getDefaultValue();
+				    }
+				    else {
+					fieldValue = (String) recordrow[elementCounter];
+					elementCounter += 1;
+
+					if (fieldValue == null) {
+					    fieldValue = "";
+					} else if ("null".equals(fieldValue)) {
+					    fieldValue = "";
+					} else if (fieldValue.isEmpty()) {
+					    fieldValue = "";
+					} else if (fieldValue.length() == 0) {
+					    fieldValue = "";
+					}
+
+					if(!"".equals(fieldValue) && !"".equals(element.getDefaultValue().trim())) {
+					    StringBuilder sb1 = new StringBuilder(element.getDefaultValue().trim());
+					    sb1.append(" ").append(fieldValue);
+					    fieldValue = sb1.toString();
+					}
 				    }
 				}
-
+				
 				repeatingSectionCopy = repeatingSectionCopy.replace(element.getElement(), fieldValue);
 
 			    }
