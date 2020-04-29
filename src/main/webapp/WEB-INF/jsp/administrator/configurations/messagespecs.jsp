@@ -39,6 +39,10 @@
                 <input type="hidden" id="action" name="action" value="save" />
                 <form:hidden path="id" id="id" />
                 <form:hidden path="configId" />
+                <form:hidden path="hasHeader" value="0"/>
+                <form:hidden path="fileLayout" value="1" /> 
+                <form:hidden path="excelstartrow" />
+                <form:hidden path="excelskiprows" />
 
                  <section class="panel panel-default">
                     <div class="panel-heading">
@@ -84,28 +88,6 @@
 					    <span id="templateFileMsg" class="control-label"></span>
 					</div>
 				    </spring:bind>
-                                    <div class="form-group">
-                                        <label for="hasHeader">Does the Template file have a header row?</label>
-                                        <div>
-                                            <label class="radio-inline">
-                                                <form:radiobutton id="hasHeader" path="hasHeader" value="1" />Yes 
-                                            </label>
-                                            <label class="radio-inline">
-                                                <form:radiobutton id="hasHeader" path="hasHeader" value="0"/>No
-                                            </label>
-                                        </div>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="fileLayout">Template File Layout? <span class="badge badge-help" data-placement="top" title="" data-html="true" data-original-title="<div style='text-align:left;'>Select Horizontal when all the field names are going across row 1. Row 1 = Field Names, Row 2 = Sample Data/Default Data, Row 3 = R/O/D</div><div style='text-align:left;padding-top:5px;'>Select Vertical when all the field names are going down in column 1. Col 1 = Field Names, Col 2 = R/O/D, Col 3 = Sample Data/Default Data</div>">?</span></label>
-                                        <div>
-                                            <label class="radio-inline">
-                                                <form:radiobutton id="fileLayout" path="fileLayout" value="1" />Horiztonal 
-                                            </label>
-                                            <label class="radio-inline">
-                                                <form:radiobutton id="fileLayout" path="fileLayout" value="2"/>Vertical
-                                            </label>
-                                        </div>
-                                    </div>
 				</c:otherwise>
 			    </c:choose>
                         </div>
@@ -139,7 +121,7 @@
                                     <c:if test="${transportType != 10}">
                                         <spring:bind path="messageTypeCol">
                                             <div class="form-group ${status.error ? 'has-error' : '' }">
-                                                <label class="control-label" for="messageTypeCol">Column containing the message type (Enter 0 if not provided) *</label>
+                                                <label class="control-label" for="messageTypeCol">Column containing the message type (Enter 0 if not provided or not in use) *</label>
                                                 <form:input path="messageTypeCol" id="messageTypeCol" class="form-control sm-input" type="text" maxLength="3" />
                                                 <form:errors path="messageTypeCol" cssClass="control-label" element="label" />
                                             </div>
@@ -161,7 +143,7 @@
                                     </spring:bind>
                                     <spring:bind path="targetOrgCol">
                                         <div class="form-group ${status.error ? 'has-error' : '' }">
-                                            <label class="control-label" for="targetOrgCol">Column containing the target organization (Enter 0 if not provided) *</label>
+                                            <label class="control-label" for="targetOrgCol">Column containing the target organization (Enter 0 if not provided or not in use) *</label>
                                             <form:input path="targetOrgCol" id="targetOrgCol" class="form-control sm-input" type="text" maxLength="3" />
                                             <form:errors path="targetOrgCol" cssClass="control-label" element="label" />
                                         </div>
@@ -170,7 +152,7 @@
                                         <c:when test="${transportType != 10}">
                                             <spring:bind path="containsHeaderRow">
                                                 <div class="form-group">
-                                                    <label class="control-label" for="containsHeaderRow">Will the submission have a header row? *</label>
+                                                    <label class="control-label" for="containsHeaderRow">Will the submitted file have a header row? *</label>
                                                     <div>
                                                         <label class="radio-inline">
                                                             <form:radiobutton id="containsHeaderRow" path="containsHeaderRow" value="1" /> Yes 
@@ -181,21 +163,30 @@
                                                     </div>
                                                 </div>
                                             </spring:bind>
-                                            <c:if test="${not empty messageSpecs.parsingTemplate}">
-                                                <div class="form-group">
-                                                    <label class="control-label" for="parsingTemplate">Current Parsing Script</label>
-                                                    <input type="text" disabled id="parsingTemplate" class="form-control" value="${messageSpecs.parsingTemplate}" />
-                                                    <form:hidden id="parsingTemplate" path="parsingTemplate" />
-                                                </div>
-                                            </c:if>
-                                            <spring:bind path="file">
-                                                <div id="parsingTemplateDiv" class="form-group ${status.error ? 'has-error' : '' }">
-                                                    <label class="control-label" for="file">Upload <c:if test="${not empty messageSpecs.parsingTemplate}">New </c:if> Parsing Script (JAR file)</label>
-                                                    <form:input path="parsingScriptFile" id="parsingScriptFile" class="form-control" type="file" />
-                                                    <form:errors path="parsingScriptFile" cssClass="control-label" element="label" />
-                                                    <span id="parsingTemplateMsg" class="control-label"></span>
-                                                </div>
-                                            </spring:bind>
+                                             <c:choose>
+                                                <%-- Only CCD (XML), HL7 and JSON file types need parsing scripts --%>
+                                                <c:when test="${fileType == 4 || fileType == 9 || fileType == 12}">
+                                                   <c:if test="${not empty messageSpecs.parsingTemplate}">
+                                                       <div class="form-group">
+                                                           <label class="control-label" for="parsingTemplate">Current Parsing Script</label>
+                                                           <input type="text" disabled id="parsingTemplate" class="form-control" value="${messageSpecs.parsingTemplate}" />
+                                                           <form:hidden id="parsingTemplate" path="parsingTemplate" />
+                                                       </div>
+                                                   </c:if>
+                                                   <spring:bind path="file">
+                                                       <div id="parsingTemplateDiv" class="form-group ${status.error ? 'has-error' : '' }">
+                                                           <label class="control-label" for="file">Upload <c:if test="${not empty messageSpecs.parsingTemplate}">New </c:if> Parsing Script (JAR file)</label>
+                                                           <form:input path="parsingScriptFile" id="parsingScriptFile" class="form-control" type="file" />
+                                                           <form:errors path="parsingScriptFile" cssClass="control-label" element="label" />
+                                                           <span id="parsingTemplateMsg" class="control-label"></span>
+                                                       </div>
+                                                    </spring:bind>
+                                                </c:when>
+                                                 <c:otherwise>
+                                                    <form:hidden path="parsingTemplate" />
+                                                    <form:hidden path="parsingScriptFile" />
+                                                 </c:otherwise>
+                                             </c:choose>
                                         </c:when>
                                         <c:otherwise>
                                             <form:hidden path="containsHeaderRow" />
@@ -214,28 +205,6 @@
                                     <form:hidden path="containsHeaderRow" />
                                     <form:hidden path="parsingTemplate" />
                                     <form:hidden path="parsingScriptFile" />
-                                </c:otherwise>
-                            </c:choose>
-                            <c:choose>
-                                <c:when test="${fileType == 11}">
-                                    <spring:bind path="excelstartrow">
-                                        <div class="form-group ${status.error ? 'has-error' : '' }">
-                                            <label class="control-label" for="excelstartrow">Start Row (Excel files only)</label>
-                                            <form:input path="excelstartrow" id="excelstartrow" class="form-control sm-input" type="text" maxLength="2" />
-                                            <form:errors path="excelstartrow" cssClass="control-label" element="label" />
-                                        </div>
-                                    </spring:bind>
-                                    <spring:bind path="excelskiprows">
-                                        <div class="form-group ${status.error ? 'has-error' : '' }">
-                                            <label class="control-label" for="excelskiprows">How many end rows to skip? (Excel files only)</label>
-                                            <form:input path="excelskiprows" id="excelskiprows" class="form-control sm-input" type="text" maxLength="2" />
-                                            <form:errors path="excelskiprows" cssClass="control-label" element="label" />
-                                        </div>
-                                    </spring:bind>
-                                </c:when>
-                                <c:otherwise>
-                                    <form:hidden path="excelstartrow" />
-                                    <form:hidden path="excelskiprows" />
                                 </c:otherwise>
                             </c:choose>
                         </div>
