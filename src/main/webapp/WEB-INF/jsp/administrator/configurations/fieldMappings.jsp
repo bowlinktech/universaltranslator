@@ -30,9 +30,9 @@
 	    <section class="panel panel-default">
 		<div class="panel-heading">
                     <div class="pull-right">
-                        <c:if test="${not empty transportDetails.fields}">
+                        <%--<c:if test="${not empty transportDetails.fields}">
                             <a href="#appendNewFieldsModal" class="btn btn-primary btn-xs  btn-action" rel2="${transportDetails.id}" rel="${configurationDetails.id}" id="appendConfigurationFields" data-toggle="modal">Append New Fields</a>
-			 </c:if>
+			 </c:if>--%>
                         <c:if test="${transportDetails.transportMethodId == 10 || (transportDetails.transportMethodId == 13 && configurationDetails.type == 2 && transportDetails.helRegistryConfigId > 0)}">
 			    <a class="btn btn-primary btn-xs btn-action" rel2="${transportDetails.id}" rel="${configurationDetails.id}" id="reloadConfigurationFields" data-toggle="tooltip" data-original-title="Click here to reload Configuration Fields.">Reload Configuration Fields</a>
                         </c:if>

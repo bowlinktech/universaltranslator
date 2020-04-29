@@ -20,6 +20,7 @@
     <form:hidden path="helSchemaName" id="helSchemaName" />
     <form:hidden path="mergeBatches" />
     <form:hidden path="restAPIType" value = "0" />
+    <form:hidden path="maxFileSize" />
 
     <section class="panel panel-default">
 	<div class="panel-heading">
@@ -79,7 +80,7 @@
 
     <section class="panel panel-default">
 	<div class="panel-heading">
-	    <h3 class="panel-title">Transport File Details</h3>
+	    <h3 class="panel-title">File Details</h3>
 	</div>
 	<div class="panel-body">
 	    <div class="form-container">
@@ -88,24 +89,16 @@
 		    <spring:bind path="fileLocation">
 			<div class="form-group ${status.error ? 'has-error' : '' }">
 			    <label class="control-label" for="fileLocation">Where will the file be stored on the UT prior to processing? *</label>
-			    <form:input origVal="${transportDetails.fileLocation}" path="fileLocation" id="fileLocation" class="form-control" type="text" maxLength="255" />
+			    <form:input disabled="${not empty transportDetails.fileLocation ? 'true' : 'false' }" origVal="${transportDetails.fileLocation}" path="fileLocation" id="fileLocation" class="form-control" type="text" maxLength="255" />
 			    <form:errors path="fileLocation" cssClass="control-label" element="label" />
-			</div>
-		    </spring:bind>
-		    <spring:bind path="maxFileSize">
-			<div id="maxFileSizeDiv" class="form-group ${status.error ? 'has-error' : '' }">
-			    <label class="control-label" for="maxFileSize">Max Accepted File Size (mb) *</label>
-			    <form:input path="maxFileSize" id="maxFileSize" class="form-control sm-input" type="text" maxLength="11" disabled="${transportDetails.copiedTransportId > 0 ? 'true' : 'false'}" />
-			    <form:errors path="maxFileSize" cssClass="control-label" element="label" />
-			    <span id="maxFileSizeMsg" class="control-label"></span>
-			    <c:if test="${transportDetails.copiedTransportId > 0}">
-				<form:hidden path="maxFileSize" />
-			    </c:if>
+                            <c:if test="${not empty transportDetails.fileLocation}">
+                                <form:hidden path="fileLocation"/>
+                            </c:if> 
 			</div>
 		    </spring:bind>
 		    <spring:bind path="zipped">
 			<div class="form-group">
-			    <label class="control-label" for="status">Is the file Zipped? *</label>
+			    <label class="control-label" for="status">Should the target file be zipped? *</label>
 			    <div>
 				<label class="radio-inline">
 				    <form:radiobutton id="zipped" name="zipped" class="zipped" path="zipped" value="1" disabled="${transportDetails.copiedTransportId > 0 ? 'true' : 'false'}" /> Yes 
@@ -203,7 +196,7 @@
 		    </spring:bind>
 		    <spring:bind path="encodingId">
 			<div id="encodingDiv" class="form-group ${status.error ? 'has-error' : '' }">
-			    <label class="control-label" for="encodingId">What type of Encoding does the file have? *</label>
+			    <label class="control-label" for="encodingId">What type of Encoding should the target file? *</label>
 			    <form:select path="encodingId" id="encodingId" class="form-control" disabled="${transportDetails.copiedTransportId > 0 ? 'true' : 'false'}">
 				<option value="">- Select -</option>
 				<c:forEach items="${encodings}" varStatus="fStatus">
@@ -218,7 +211,7 @@
 		    </spring:bind>
 		    <spring:bind path="targetFileName">
 			<div class="targetFileNameDiv form-group ${status.error ? 'has-error' : '' }">
-			    <label class="control-label" for="targetFileName">File Name * <span id="useSourceFileName"><input id="useSource" type="checkbox"> Use Source File Name</label></span>
+			    <label class="control-label" for="targetFileName">What should the target file name be? * <span id="useSourceFileName"><input id="useSource" type="checkbox"> Use Source File Name</label></span>
 				    <form:input path="targetFileName" id="targetFileName" class="form-control" type="text" maxLength="255" disabled="${transportDetails.copiedTransportId > 0 ? 'true' : 'false'}" />
 				    <form:errors path="targetFileName" cssClass="control-label" element="label" />
 				    <c:if test="${transportDetails.copiedTransportId > 0}">

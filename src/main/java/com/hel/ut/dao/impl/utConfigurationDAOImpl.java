@@ -48,6 +48,10 @@ import org.springframework.stereotype.Repository;
 import com.hel.ut.dao.utConfigurationDAO;
 import com.hel.ut.dao.utConfigurationTransportDAO;
 import com.hel.ut.model.configurationFormFields;
+import java.util.Calendar;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.CellType;
+import org.apache.poi.ss.usermodel.DateUtil;
 
 @Repository
 public class utConfigurationDAOImpl implements utConfigurationDAO {
@@ -1550,17 +1554,67 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
 			rowNumber = rowNumber+1;
 			row = sheet.getRow(rowNumber);
 			cell = row.getCell(colNumber);
+			
 			try {
-			    sampleData = cell.getStringCellValue();
+			     sampleData = String.valueOf((double) cell.getNumericCellValue());
+			     
+			     if(DateUtil.isCellDateFormatted(cell)) {
+				 CellStyle cellstyle = cell.getCellStyle();
+				 SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-d");
+				 if(cellstyle.getDataFormatString().equals("m/d/yy")) {
+				    format = new SimpleDateFormat("M/d/yy");
+				    sampleData = format.format(cell.getDateCellValue());
+				 }
+				 else if(cellstyle.getDataFormatString().equals("mm/d/yy;@")) {
+				    format = new SimpleDateFormat("MM/d/yy");
+				    sampleData = format.format(cell.getDateCellValue());
+				 }
+				 else if(cellstyle.getDataFormatString().equals("[$-409]d\\-mmm;@")) {
+				    format = new SimpleDateFormat("dd-MMM");
+				    sampleData = format.format(cell.getDateCellValue());
+				 }
+				 else if(cellstyle.getDataFormatString().equals("[$-409]d\\-mmm\\-yy;@")) {
+				    format = new SimpleDateFormat("d-MMM-yy");
+				    sampleData = format.format(cell.getDateCellValue());
+				 }
+				 else if(cellstyle.getDataFormatString().equals("[$-409]mmm\\-yy;@")) {
+				    format = new SimpleDateFormat("MMM-yy");
+				    sampleData = format.format(cell.getDateCellValue());
+				 }
+				 else if(cellstyle.getDataFormatString().equals("[$-409]mmmm\\-yy;@")) {
+				    format = new SimpleDateFormat("MMMM-yy");
+				    sampleData = format.format(cell.getDateCellValue());
+				 }
+				 else if(cellstyle.getDataFormatString().equals("[$-409]mmmm\\ d\\,\\ yyyy;@")) {
+				    format = new SimpleDateFormat("MMMM d, yyyy");
+				    sampleData = format.format(cell.getDateCellValue());
+				 }
+				 else if(cellstyle.getDataFormatString().equals("m/d/yyyy;@")) {
+				    format = new SimpleDateFormat("M/d/yyyy");
+				    sampleData = format.format(cell.getDateCellValue());
+				 }
+				 else if(cellstyle.getDataFormatString().equals("[$-409]d\\-mmm\\-yyyy;@")) {
+				    format = new SimpleDateFormat("d-MMM-yyyy");
+				    sampleData = format.format(cell.getDateCellValue());
+				 }
+				 else {
+				     sampleData = format.format(cell.getDateCellValue());
+				 }
+			     }
 			}
-			catch (Exception ex) {
-			    try {
-			       sampleData = String.valueOf((int) cell.getNumericCellValue());
-			    }
-			    catch(Exception e) {
-				sampleData = "";
-			    } 
-			}
+			catch (Exception ex1) {
+			     try {
+				 sampleData = cell.getDateCellValue().toString();
+			     }
+			     catch (Exception ex2) {
+				 try {
+				    sampleData = cell.getStringCellValue(); 
+				 }
+				 catch(Exception ex3) {
+				     sampleData = "";
+				 } 
+			     }
+			 } 
 
 			//Get the r/o/d value
 			rowNumber = rowNumber+1;
@@ -1714,7 +1768,7 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
 				.setParameter("required", required)
 				.setParameter("useField", useField)
 				.setParameter("defaultValue", defaultValue)
-				.setParameter("sampleData", sampleData)
+				.setParameter("sampleData", sampleData.replace(".0", ""))
 				.setParameter("fieldId", foundFieldId);
 			}
 			else {

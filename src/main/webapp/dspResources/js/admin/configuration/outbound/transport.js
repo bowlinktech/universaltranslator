@@ -31,73 +31,75 @@ require(['./main'], function () {
         });
     });
 
-        $("input:text,form").attr("autocomplete", "off");
-	
-	//Fade out the updated/created message after being displayed.
-        if ($('.alert').length > 0) {
-            $('.alert').delay(2000).fadeOut(1000);
+    $("input:text,form").attr("autocomplete", "off");
+
+    //Fade out the updated/created message after being displayed.
+    if ($('.alert').length > 0) {
+        $('.alert').delay(2000).fadeOut(1000);
+    }
+
+    //Selected transport method
+    var transportMethod = $('#transportMethod').val();
+    var helRegistryId = $('#helRegistryId').val();
+    var helSchemaName = $('#helSchemaName').val();
+    var messageTypeId = $('#messageTypeId').val();
+    var fileType = $('#fileType').val();
+
+    showCorrectFieldsByTransportMethod(transportMethod);
+    showCorrectFileDetails(fileType,0);
+
+    //if the selected transport method is From a Health-e-Link Registry or going to a Health-e-Link registry
+    //show the conifguration box
+    if(transportMethod == 13 && messageTypeId == 1 && helRegistryId > 0 && helSchemaName !== "") {
+        $('#helRegistryConfigDiv').show();
+        $('#ergFileDownloadDiv').show();
+        populateHELRegistryConfigs(helRegistryId,helSchemaName);
+    }
+
+    $('#transportMethod').change(function () {
+        var methodId = $(this).val();
+
+        if(methodId == 13 && messageTypeId == 1 && helRegistryId > 0 && helSchemaName !== "") {
+            $('#ergFileDownloadDiv').show();
+            $('#helRegistryConfigDiv').show();
+            populateHELRegistryConfigs(helRegistryId,helSchemaName);
+
+            //Set the file drop location
+            $('#directory2').val('/HELProductSuite/registries/'+$('#helRegistryFolderName').val()+'/loadFiles/');
+
+            //If method == 10 (Coming from a HEL Registry online form preset the values
+            $('#fileType').val(2);
+            $('#fileExt').val('txt');
         }
-	
-	//Selected transport method
-	var transportMethod = $('#transportMethod').val();
-	var helRegistryId = $('#helRegistryId').val();
-	var helSchemaName = $('#helSchemaName').val();
-	var messageTypeId = $('#messageTypeId').val();
-	
-	showCorrectFieldsByTransportMethod(transportMethod);
-	
-	//if the selected transport method is From a Health-e-Link Registry or going to a Health-e-Link registry
-	//show the conifguration box
-	if(transportMethod == 13 && messageTypeId == 1 && helRegistryId > 0 && helSchemaName !== "") {
-	    $('#helRegistryConfigDiv').show();
-	    $('#ergFileDownloadDiv').show();
-	    populateHELRegistryConfigs(helRegistryId,helSchemaName);
-	}
-	
-	$('#transportMethod').change(function () {
-            var methodId = $(this).val();
-	    
-	    if(methodId == 13 && messageTypeId == 1 && helRegistryId > 0 && helSchemaName !== "") {
-		$('#ergFileDownloadDiv').show();
-		$('#helRegistryConfigDiv').show();
-		populateHELRegistryConfigs(helRegistryId,helSchemaName);
-		
-		//Set the file drop location
-		$('#directory2').val('/HELProductSuite/registries/'+$('#helRegistryFolderName').val()+'/loadFiles/');
-		
-		//If method == 10 (Coming from a HEL Registry online form preset the values
-		$('#fileType').val(2);
-		$('#fileExt').val('txt');
-	    }
-	    else {
-		 $('#ergFileDownloadDiv').hide();
-		$('#helRegistryConfigDiv').hide();
-		$('#helRegistryConfigId').find('option').remove().end().append('<option value="">- Select Registry Configuration -</option>').val('');
-	    }
-	    
-	    showCorrectFieldsByTransportMethod(methodId);
-        });
-	
-	
-	$(document).on('change','#ergFileDownload',function() {
-	    var fileDropDir = $('#directory2').val();
-	    if($(this).val() == 1) {
-		$('#directory2').val(fileDropDir.replace('loadFiles','importFiles'));
-	    }
-	    else {
-		$('#directory2').val(fileDropDir.replace('importFiles','loadFiles'));
-	    }
-	});
-	
-        $(document).on('change','#dmFindConfig',function() {
-            if($(this).val() == 1) {
-                $('.dmConfigKeywordDiv').show();
-            }
-            else {
-                $('#dmConfigKeyword').val("");
-                $('.dmConfigKeywordDiv').hide();
-            }
-        });
+        else {
+             $('#ergFileDownloadDiv').hide();
+            $('#helRegistryConfigDiv').hide();
+            $('#helRegistryConfigId').find('option').remove().end().append('<option value="">- Select Registry Configuration -</option>').val('');
+        }
+
+        showCorrectFieldsByTransportMethod(methodId);
+    });
+
+
+    $(document).on('change','#ergFileDownload',function() {
+        var fileDropDir = $('#directory2').val();
+        if($(this).val() == 1) {
+            $('#directory2').val(fileDropDir.replace('loadFiles','importFiles'));
+        }
+        else {
+            $('#directory2').val(fileDropDir.replace('importFiles','loadFiles'));
+        }
+    });
+
+    $(document).on('change','#dmFindConfig',function() {
+        if($(this).val() == 1) {
+            $('.dmConfigKeywordDiv').show();
+        }
+        else {
+            $('#dmConfigKeyword').val("");
+            $('.dmConfigKeywordDiv').hide();
+        }
+    });
 
     $('#useSource').click(function () {
         if ($('#useSource').is(":checked")) {
@@ -133,93 +135,8 @@ require(['./main'], function () {
 
     //Set the default file extension when the file type is selected
     $('#fileType').change(function () {
-        $('#ccdSampleDiv').hide();
-        $('#hl7PDFSampleDiv').hide();
-        $('#jsonWrapperElementDiv').hide();
-        $('#fileDelimiterDiv').hide();
-        $('#lineTerminatortDiv').hide();
-        $('#encodingDiv').hide();
-
         var fileType = $(this).val();
-        $('#fileDelimiterDiv').show();
-        $('#lineTerminatortDiv').show();
-
-        if (fileType == 2) {
-            $('#fileExt').val('txt');
-            $('#fileDelimiterDiv').show();
-            $('#lineTerminatortDiv').show();
-            $('#encodingDiv').show();
-        } 
-        else if (fileType == 3) {
-            $('#fileExt').val('csv');
-            $('#fileDelimiterDiv').show();
-            $('#lineTerminatortDiv').show();
-            $('#encodingDiv').show();
-        } 
-        else if (fileType == 4) {
-            $('#fileExt').val('hr');
-            $('#fileDelimiterDiv').show();
-            $('#lineTerminatortDiv').show();
-            $('#encodingDiv').show();
-
-            if ($('#configType').attr('rel') == 2) {
-                $('#hl7PDFSampleDiv').show();
-            }
-        } 
-        else if (fileType == 5) {
-            $('#fileExt').val('mdb');
-            $('#fileDelimiterDiv').hide();
-            $('#lineTerminatortDiv').hide();
-            $('#encodingDiv').hide();
-        } 
-        else if (fileType == 6) {
-            $('#fileExt').val('pdf');
-            $('#fileDelimiterDiv').hide();
-            $('#lineTerminatortDiv').hide();
-            $('#encodingDiv').hide();
-        } 
-        else if (fileType == 7) {
-            $('#fileExt').val('odbc');
-            $('#fileDelimiterDiv').hide();
-            $('#lineTerminatortDiv').hide();
-            $('#encodingDiv').hide();
-        } 
-        else if (fileType == 8) {
-            $('#fileExt').val('xls');
-            $('#fileDelimiterDiv').show();
-            $('#lineTerminatortDiv').show();
-            $('#encodingDiv').show();
-        } 
-        else if (fileType == 9) {
-            $('#fileExt').val('xml');
-            $('#fileDelimiterDiv').hide();
-            $('#lineTerminatortDiv').hide();
-            $('#encodingDiv').hide();
-
-            if ($('#configType').attr('rel') == 2) {
-                $('#ccdDetailsDiv').show();
-            }
-
-        } 
-        else if (fileType == 10) {
-            $('#fileExt').val('doc');
-            $('#fileDelimiterDiv').hide();
-            $('#lineTerminatortDiv').hide();
-            $('#encodingDiv').hide();
-        } 
-        else if (fileType == 11) {
-            $('#fileExt').val('xlsx');
-            $('#fileDelimiterDiv').show();
-            $('#lineTerminatortDiv').show();
-            $('#encodingDiv').show();
-        }
-        else if (fileType == 12) {
-            $('#jsonWrapperElementDiv').show();
-            $('#fileExt').val('json');
-            $('#fileDelimiterDiv').hide();
-            $('#lineTerminatortDiv').hide();
-            $('#encodingDiv').hide();
-        }
+        showCorrectFileDetails(fileType,1);
     });
 
     $('.zipped').change(function () {
@@ -249,6 +166,83 @@ function showCorrectFieldsByTransportMethod(transportMethod) {
     }
 }
 
+function showCorrectFileDetails(fileType,fileTypeChanged) {
+    $('#ccdSampleDiv').hide();
+    $('#hl7PDFSampleDiv').hide();
+    $('#jsonWrapperElementDiv').hide();
+    $('#fileDelimiterDiv').hide();
+    $('#lineTerminatortDiv').hide();
+    $('#encodingDiv').hide();
+
+    $('#fileDelimiterDiv').show();
+    $('#lineTerminatortDiv').show();
+
+    if (fileType == 2) {
+        $('#fileExt').val('txt');
+        if(fileTypeChanged === 1) {
+            $('#fileDelimiter').val('');
+            $('#lineTerminator').val('\\n');
+        }
+        $('#fileDelimiterDiv').show();
+        $('#lineTerminatortDiv').show();
+        $('#fileExtDiv').hide();
+        $('#encodingDiv').show();
+    } 
+    else if (fileType == 3) {
+        $('#fileExt').val('csv');
+        if(fileTypeChanged === 1) {
+            $('#fileDelimiter').val(1);
+            $('#lineTerminator').val('\\n');
+        }
+        $('#fileDelimiterDiv').show();
+        $('#lineTerminatortDiv').show();
+         $('#fileExtDiv').hide();
+        $('#encodingDiv').show();
+    } 
+    else if (fileType == 4) {
+        $('#fileExt').val('hr');
+        $('#fileDelimiter').val(2);
+        $('#lineTerminator').val('\\n');
+        $('#fileDelimiterDiv').hide();
+        $('#lineTerminatortDiv').hide();
+        $('#fileExtDiv').hide();
+        $('#encodingDiv').show();
+    } 
+    else if (fileType == 8) {
+        $('#fileExt').val('xls');
+        $('#fileDelimiter').val(12);
+        $('#lineTerminator').val('\\n');
+        $('#fileDelimiterDiv').hide();
+        $('#lineTerminatortDiv').hide();
+        $('#fileExtDiv').hide();
+        $('#encodingDiv').show();
+    } 
+    else if (fileType == 9) {
+        $('#fileExt').val('xml');
+        $('#fileDelimiter').val(2);
+        $('#lineTerminator').val('\\n');
+        $('#fileDelimiterDiv').hide();
+        $('#lineTerminatortDiv').hide();
+        $('#fileExtDiv').hide();
+        $('#encodingDiv').show();
+    }
+    else if (fileType == 11) {
+        $('#fileExt').val('xlsx');
+        $('#fileDelimiter').val(12);
+        $('#lineTerminator').val('\\n');
+        $('#fileDelimiterDiv').hide();
+        $('#lineTerminatortDiv').hide();
+        $('#fileExtDiv').hide();
+        $('#encodingDiv').show();
+    }
+    else if (fileType == 12) {
+        $('#jsonWrapperElementDiv').show();
+        $('#fileExt').val('json');
+        $('#fileDelimiterDiv').hide();
+        $('#lineTerminatortDiv').hide();
+        $('#encodingDiv').show();
+    }
+}
 
 
 function checkFormFields() {
