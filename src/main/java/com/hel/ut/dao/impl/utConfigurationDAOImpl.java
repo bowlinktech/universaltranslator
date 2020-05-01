@@ -1561,6 +1561,8 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
 			     if(DateUtil.isCellDateFormatted(cell)) {
 				 CellStyle cellstyle = cell.getCellStyle();
 				 SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-d");
+				 
+				 
 				 if(cellstyle.getDataFormatString().equals("m/d/yy")) {
 				    format = new SimpleDateFormat("M/d/yy");
 				    sampleData = format.format(cell.getDateCellValue());
@@ -1569,8 +1571,12 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
 				    format = new SimpleDateFormat("MM/d/yy");
 				    sampleData = format.format(cell.getDateCellValue());
 				 }
+				 else if(cellstyle.getDataFormatString().equals("yyyymmd;@")) {
+				    format = new SimpleDateFormat("yyyyMMd");
+				    sampleData = format.format(cell.getDateCellValue());
+				 }
 				 else if(cellstyle.getDataFormatString().equals("[$-409]d\\-mmm;@")) {
-				    format = new SimpleDateFormat("dd-MMM");
+				    format = new SimpleDateFormat("d-MMM");
 				    sampleData = format.format(cell.getDateCellValue());
 				 }
 				 else if(cellstyle.getDataFormatString().equals("[$-409]d\\-mmm\\-yy;@")) {
@@ -1600,6 +1606,10 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
 				 else {
 				     sampleData = format.format(cell.getDateCellValue());
 				 }
+			     }
+			     else {
+				cell.setCellType(Cell.CELL_TYPE_STRING);
+				sampleData = cell.getStringCellValue();
 			     }
 			}
 			catch (Exception ex1) {
@@ -1784,7 +1794,7 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
 				.setParameter("required", required)
 				.setParameter("useField", useField)
 				.setParameter("defaultValue", defaultValue)
-				.setParameter("sampleData", sampleData);
+				.setParameter("sampleData", sampleData.replace(".0", ""));
 			}
 			
 			query.executeUpdate();

@@ -311,13 +311,14 @@ public class messageTypeManagerImpl implements messageTypeManager {
                 } else {
                     lineValue = line.split("\\" + delim);
                 }
-                String sourceValue = lineValue[0];
-                String targetValue = lineValue[1];
-                String descVal = lineValue[2];
 		
-		sqlStmt += "INSERT INTO rel_crosswalkData (crosswalkId, sourceValue, targetValue, descValue) VALUES ("+id+",'"+sourceValue+"','"+targetValue+"','"+descVal+"');";
-
-                try {
+                String sourceValue = lineValue[0].replace("'", "\\'");
+                String targetValue = lineValue[1].replace("'", "\\'");
+                String descVal = lineValue[2].replace("'", "\\'");
+		
+		sqlStmt = "INSERT INTO rel_crosswalkData (crosswalkId, sourceValue, targetValue, descValue) VALUES ("+id+",'"+sourceValue+"','"+targetValue+"','"+descVal+"');";
+		messageTypeDAO.executeSQLStatement(sqlStmt);
+		try {
                     line = br.readLine();
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -325,9 +326,6 @@ public class messageTypeManagerImpl implements messageTypeManager {
                 }
             }
 	    
-	    if(!"".equals(sqlStmt)) {
-		messageTypeDAO.executeSQLStatement(sqlStmt);
-	    }
 
         } finally {
             try {
