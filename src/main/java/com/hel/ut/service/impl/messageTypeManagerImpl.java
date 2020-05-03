@@ -157,9 +157,12 @@ public class messageTypeManagerImpl implements messageTypeManager {
             throw new Exception(e);
         }
 
-        //Need to get the actual delimiter character
-        String delimChar = (String) messageTypeDAO.getDelimiterChar(crosswalkDetails.getFileDelimiter());
+        String delimChar = "|";
 
+	if (crosswalkDetails.getFileDelimiter() > 0) {
+	    delimChar = messageTypeDAO.getDelimiterChar(crosswalkDetails.getFileDelimiter());
+	} 
+	
         //Check to make sure the file contains the selected delimiter
         //Set the directory that holds the crosswalk files
 	fileSystem dir = new fileSystem();
@@ -229,10 +232,13 @@ public class messageTypeManagerImpl implements messageTypeManager {
         } catch (IOException e) {
             e.printStackTrace();
         }
+	
+	String delimChar = "|";
 
-        //Need to get the actual delimiter character
-        String delimChar = (String) messageTypeDAO.getDelimiterChar(crosswalkDetails.getFileDelimiter());
-
+	if (crosswalkDetails.getFileDelimiter() > 0) {
+	    delimChar = messageTypeDAO.getDelimiterChar(crosswalkDetails.getFileDelimiter());
+	} 
+	
         //Check to make sure the file contains the selected delimiter
         //Set the directory that holds the crosswalk files
 	fileSystem dir = new fileSystem();
@@ -279,62 +285,14 @@ public class messageTypeManagerImpl implements messageTypeManager {
         } else {
 	    directory = myProps.getProperty("ut.directory.utRootDir") + cleanURL + "/crosswalks/";
         }
+	
+	messageTypeDAO.executeSQLStatement("delete from rel_crosswalkData where crosswalkId = "+id);
+	
+	String sql = ("LOAD DATA LOCAL INFILE '" + directory + fileName + "' INTO TABLE rel_crosswalkData fields terminated by '" + delim + "' "
+		+ " optionally ENCLOSED BY '\"' ESCAPED BY '\\b' LINES TERMINATED BY '\\n' "
+		+ "(sourceValue,targetValue,descValue)  set crosswalkId = " + id + ";");
 
-        FileInputStream file = null;
-        String[] lineValue = null;
-        try {
-            file = new FileInputStream(new File(directory + fileName));
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-            throw new Exception(e);
-        }
-
-        BufferedReader br = new BufferedReader(new InputStreamReader(file));
-
-        try {
-	    String sqlStmt = "";
-            String line = null;
-            try {
-                line = br.readLine();
-            } catch (IOException e) {
-                e.printStackTrace();
-                throw new Exception(e);
-            }
-	    
-	    messageTypeDAO.executeSQLStatement("delete from rel_crosswalkData where crosswalkId = "+id);
-	   
-            while (line != null) {
-
-                //Need to parse each line via passed in delimiter
-                if (delim == "t") {
-                    lineValue = line.split("\t");
-                } else {
-                    lineValue = line.split("\\" + delim);
-                }
-		
-                String sourceValue = lineValue[0].replace("'", "\\'");
-                String targetValue = lineValue[1].replace("'", "\\'");
-                String descVal = lineValue[2].replace("'", "\\'");
-		
-		sqlStmt = "INSERT INTO rel_crosswalkData (crosswalkId, sourceValue, targetValue, descValue) VALUES ("+id+",'"+sourceValue+"','"+targetValue+"','"+descVal+"');";
-		messageTypeDAO.executeSQLStatement(sqlStmt);
-		try {
-                    line = br.readLine();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    throw new Exception(e);
-                }
-            }
-	    
-
-        } finally {
-            try {
-                br.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-                throw new Exception(e);
-            }
-        }
+	messageTypeDAO.executeSQLStatement(sql);
 
     }
 

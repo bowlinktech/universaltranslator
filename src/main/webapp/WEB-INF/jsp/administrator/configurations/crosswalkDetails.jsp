@@ -7,8 +7,11 @@
         <div class="modal-header">
             <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
             <h3 class="panel-title"><c:choose><c:when test="${crosswalkDetails.id > 0}">View</c:when><c:when test="${btnValue == 'Create'}">Add</c:when></c:choose> Crosswalk ${success}</h3>
-                </div>
-                <div class="modal-body">
+        </div>
+        <div class="modal-body">
+            <div class="alert alert-danger uploadError" role="alert" style="display:none;">
+                The uploaded file did not have the delimiter you selected.
+            </div>
 
             <form:form id="crosswalkdetailsform" commandName="crosswalkDetails" modelAttribute="crosswalkDetails" enctype="multipart/form-data" method="post" role="form">
                 <form:hidden path="id" id="id" />
@@ -20,7 +23,7 @@
                             <label class="control-label" for="name">Crosswalk Name *</label>
                             <c:choose>
                                 <c:when test="${crosswalkDetails.id > 0 }">
-				    <form:hidden path="name" />
+                                    <form:hidden path="name" />
                                     <br />${crosswalkDetails.name}
                                 </c:when>
                                 <c:otherwise>
@@ -42,29 +45,29 @@
                             <span id="crosswalkDelimMsg" class="control-label"></span>
                         </div>
                     </spring:bind>
-		    <c:if test="${crosswalkDetails.id > 0 }">
+                    <c:if test="${crosswalkDetails.id > 0 }">
                         <c:choose>
-			    <c:when test="${not empty cleanOrgURL}">
-				<c:set var="hrefLink" value="/FileDownload/downloadFile.do?fromPage=config&filename=${crosswalkDetails.fileName}&foldername=${cleanOrgURL}/crosswalks"/>
-				<div class="form-group">
-				    <label class="control-label" >Existing Crosswalk File</label>
-				    <p><a href="${hrefLink}" title="Download Crosswalk File">${crosswalkDetails.fileName}</a></p>
-				</div>
-			    </c:when>
+                            <c:when test="${not empty cleanOrgURL}">
+                                <c:set var="hrefLink" value="/FileDownload/downloadFile.do?fromPage=config&filename=${crosswalkDetails.fileName}&foldername=${cleanOrgURL}/crosswalks"/>
+                                <div class="form-group">
+                                    <label class="control-label" >Existing Crosswalk File</label>
+                                    <p><a href="${hrefLink}" title="Download Crosswalk File">${crosswalkDetails.fileName}</a></p>
+                                </div>
+                            </c:when>
                             <c:when test="${crosswalkDetails.orgId == 0}">
-				<c:set var="hrefLink" value="/FileDownload/downloadFile.do?fromPage=crosswalks&filename=${crosswalkDetails.fileName}&foldername=libraryFiles"/>
-				<div class="form-group">
-				    <label class="control-label" >Existing Crosswalk File</label>
-				    <p><a href="${hrefLink}" title="Download Crosswalk File">${crosswalkDetails.fileName}</a></p>
-				</div>
-			    </c:when>
-			    <c:otherwise>
-				<div class="form-group">
-				    <label class="control-label" >Existing Crosswalk File</label>
-				    <p>${crosswalkDetails.fileName}</p>
-				</div>
-			    </c:otherwise>
-			</c:choose>
+                                <c:set var="hrefLink" value="/FileDownload/downloadFile.do?fromPage=crosswalks&filename=${crosswalkDetails.fileName}&foldername=libraryFiles"/>
+                                <div class="form-group">
+                                    <label class="control-label" >Existing Crosswalk File</label>
+                                    <p><a href="${hrefLink}" title="Download Crosswalk File">${crosswalkDetails.fileName}</a></p>
+                                </div>
+                            </c:when>
+                            <c:otherwise>
+                                <div class="form-group">
+                                    <label class="control-label" >Existing Crosswalk File</label>
+                                    <p>${crosswalkDetails.fileName}</p>
+                                </div>
+                            </c:otherwise>
+                        </c:choose>
                     </c:if>
                     <spring:bind path="file">
                         <div id="crosswalkFileDiv" class="form-group ${status.error ? 'has-error' : '' }">
@@ -73,9 +76,9 @@
                             <span id="crosswalkFileMsg" class="control-label"></span>
                         </div>
                     </spring:bind>
-		    <div class="form-group">
-			<input type="button" id="submitCrosswalkButton" rel="${actionValue}" class="btn btn-primary" value="${btnValue}"/>
-		    </div>
+                    <div class="form-group">
+                        <input type="button" id="submitCrosswalkButton" rel="${actionValue}" class="btn btn-primary" value="${btnValue}"/>
+                    </div>
 
                     <c:if test="${crosswalkDetails.id > 0}">
                         <div id="crosswalkNameDiv" class="form-group">
@@ -102,6 +105,7 @@
 
                         </div>
                     </c:if>
+
                 </div>
             </form:form>
         </div>
