@@ -1196,7 +1196,7 @@ public class adminConfigController {
         mav.addObject("fields", fields);
 
         //Return a list of available crosswalks
-        List<Crosswalks> crosswalks = messagetypemanager.getCrosswalks(1, 0, configurationDetails.getorgId());
+        List<Crosswalks> crosswalks = messagetypemanager.getCrosswalksForConfig(1, 0, configurationDetails.getorgId(),configurationDetails.getId());
         mav.addObject("crosswalks", crosswalks);
         mav.addObject("orgId", configurationDetails.getorgId());
 
@@ -2713,13 +2713,17 @@ public class adminConfigController {
      * @param page
      * @param orgId
      * @param maxCrosswalks
+     * @param configId
      * @return 
      * @throws java.lang.Exception 
      * @Return list of crosswalks
      */
     @RequestMapping(value = "/getCrosswalks.do", method = RequestMethod.GET)
     public @ResponseBody
-    ModelAndView getCrosswalks(@RequestParam(value = "page", required = false) Integer page, @RequestParam(value = "orgId", required = false) Integer orgId, @RequestParam(value = "maxCrosswalks", required = false) Integer maxCrosswalks) throws Exception {
+    ModelAndView getCrosswalks(@RequestParam(value = "page", required = false) Integer page, 
+	    @RequestParam(value = "orgId", required = false) Integer orgId, 
+	    @RequestParam(value = "maxCrosswalks", required = false) Integer maxCrosswalks,
+	    @RequestParam(value = "configId", required = false) Integer configId) throws Exception {
 
         if (page == null) {
             page = 1;
@@ -2740,13 +2744,14 @@ public class adminConfigController {
         mav.addObject("orgId", orgId);
 
         //Need to return a list of crosswalks
-        List<Crosswalks> crosswalks = messagetypemanager.getCrosswalks(page, maxCrosswalks, orgId);
+        List<Crosswalks> crosswalks = messagetypemanager.getCrosswalksForConfig(page, maxCrosswalks, orgId, configId);
         mav.addObject("availableCrosswalks", crosswalks);
 
         //Find out the total number of crosswalks
         double totalCrosswalks = messagetypemanager.findTotalCrosswalks(orgId);
 
         Integer totalPages = (int) Math.ceil((double) totalCrosswalks / maxCrosswalkVal);
+	
         mav.addObject("totalPages", totalPages);
         mav.addObject("currentPage", page);
 
@@ -3785,5 +3790,19 @@ public class adminConfigController {
 	}
 
 	return fileName;
+    }
+    
+    /**
+     *
+     * @param cwId
+     * @return 
+     * @throws java.lang.Exception
+     */
+    @RequestMapping(value = "/deleteCrosswalk.do", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+    public @ResponseBody
+    Integer deleteCrosswalk(@RequestParam(value = "cwId", required = true) Integer cwId) throws Exception {
+
+	 messagetypemanager.deleteCrosswalk(cwId);
+	 return 1;
     }
 }

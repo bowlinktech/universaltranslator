@@ -1,6 +1,34 @@
 
 
 require(['./main'], function () {
+    
+    $(document).on('click','.deleteCrosswalk',function() {
+        var dtsId = $(this).attr('rel2');
+        var cwId = $(this).attr('rel');
+        
+        if((dtsId*1) > 0) {
+             alert("The crosswalk is currenlty being used below and can't be deleted.");
+        }
+        else {
+             if(confirm("Are you sure you want to remove this batch?")) {
+                    $('body').overlay({
+                        glyphicon : 'floppy-disk',
+                        message : 'Deleting...'
+                    });
+
+                    $.ajax({
+                        url: 'deleteCrosswalk.do',
+                        data: {
+                            'cwId': cwId
+                        },
+                        type: 'POST',
+                        success: function(data) {
+                           location.reload();
+                        }
+                    });
+             }
+        }
+    });
         
     $(document).on('click','.printConfig',function() {
        /* $('body').overlay({
@@ -504,11 +532,12 @@ function populateExistingTranslations(reload) {
 
 function populateCrosswalks(page) {
     var orgId = $('#orgId').val();
-
+    var configId = $('#configId').val();
+   
     $.ajax({
         url: 'getCrosswalks.do',
         type: "GET",
-        data: {'page': page, 'orgId': orgId, 'maxCrosswalks': 8},
+        data: {'page': page, 'orgId': orgId, 'maxCrosswalks': 8, 'configId': configId},
         success: function (data) {
             $("#crosswalksTable").html(data);
         }
