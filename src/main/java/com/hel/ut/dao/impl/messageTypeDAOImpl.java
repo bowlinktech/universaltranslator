@@ -397,13 +397,13 @@ public class messageTypeDAOImpl implements messageTypeDAO {
 	String sql = "";
 	
 	if(orgId > 0) {
-	    sql = "select a.*, IFNULL((select id from configurationdatatranslations where configId = :configId and crosswalkId = a.id),0) as dtsId "
+	    sql = "select a.*, IFNULL((select id from configurationdatatranslations where configId = :configId and crosswalkId = a.id LIMIT 1),0) as dtsId "
 		+ "from crosswalks a "
 		+ "where a.orgId = :orgId or a.orgId = 0 "
 		+ "order by a.name asc";
 	}
 	else {
-	    sql = "select a.*, IFNULL((select id from configurationdatatranslations where configId = :configId and crosswalkId = a.id),0) as dtsId "
+	    sql = "select a.*, IFNULL((select id from configurationdatatranslations where configId = :configId and crosswalkId = a.id LIMIT 1),0) as dtsId "
 		+ "from crosswalks a "
 		+ "where a.orgId = 0 "
 		+ "order by a.name asc";
@@ -421,7 +421,7 @@ public class messageTypeDAOImpl implements messageTypeDAO {
 	    sql += " limit " + firstResult + ", " + maxCrosswalks;
 	}
 	
-	
+	System.out.println(sql);
 	Query query = sessionFactory
 	    .getCurrentSession()
 	    .createSQLQuery(sql)
