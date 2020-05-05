@@ -1,13 +1,9 @@
 package com.hel.ut.service.impl;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.List;
 
@@ -306,5 +302,44 @@ public class messageTypeManagerImpl implements messageTypeManager {
     @Override
     public String getDelimiterChar(int delimId) {
         return messageTypeDAO.getDelimiterChar(delimId);
+    }
+    
+    @Override
+    public List<Crosswalks> getCrosswalksForConfig(int page, int maxCrosswalks, int orgId, int configId) {
+	return messageTypeDAO.getCrosswalksForConfig(page, maxCrosswalks, orgId, configId);
+    }
+    
+    @Override
+    public void deleteCrosswalk(Integer cwId) throws Exception {
+        
+	Crosswalks crosswalkDetails = getCrosswalk(cwId);
+
+	String directory;
+
+        if (crosswalkDetails.getOrgId() > 0) {
+            Organization orgDetails = organizationDAO.getOrganizationById(crosswalkDetails.getOrgId());
+            String cleanURL = orgDetails.getcleanURL();
+	    directory = myProps.getProperty("ut.directory.utRootDir") + cleanURL + "/crosswalks/";
+        } else {
+            //Set the directory to save the uploaded message type template to
+	     directory = myProps.getProperty("ut.directory.utRootDir") + "libraryFiles/";
+        }
+
+        File newFile = null;
+        newFile = new File(directory + crosswalkDetails.getfileName());
+
+        try {
+            if (newFile.exists()) {
+		newFile.delete();
+		messageTypeDAO.executeSQLStatement("delete from rel_crosswalkData where crosswalkId = "+cwId);
+		messageTypeDAO.executeSQLStatement("delete from crosswalks where Id = "+cwId);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new Exception(e);
+        }
+
+        
     }
 }
