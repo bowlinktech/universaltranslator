@@ -22,4 +22,6 @@ public interface fileManager {
     byte[] loadFileAsBytesArray(String fileName) throws Exception;
     
     void copyFile(String sourceFile, String targetFile) throws Exception;
+    
+    boolean isFileBase64Encoded(File file) throws Exception;
 }

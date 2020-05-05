@@ -163,4 +163,12 @@ public class fileManagerImpl implements fileManager {
         return bytes;
 
     }
+    
+    public boolean isFileBase64Encoded(File file) throws Exception {
+	byte[] bytes = fileToBytes(file);
+	boolean isBase64 = Base64.isBase64(bytes);
+	
+	return isBase64;
+    }
+    
 }

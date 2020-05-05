@@ -208,7 +208,7 @@ public class adminConfigConnectionController {
 	    
 	    utConfiguration targetConfigDetails = utconfigurationmanager.getConfigurationById(connectionDetails.gettargetConfigId());
 	    targetOrgId = targetConfigDetails.getorgId();
-	   targetConfigId = connectionDetails.gettargetConfigId();
+	    targetConfigId = connectionDetails.gettargetConfigId();
 	    connectionId = connectionDetails.getId();
 	}
 	
@@ -220,7 +220,30 @@ public class adminConfigConnectionController {
 
         //Need to get a list of active organizations.
         List<Organization> organizations = organizationmanager.getAllActiveOrganizations();
-        mav.addObject("organizations", organizations);
+	
+	List<Organization> sourceOrganizations = new ArrayList<>();
+	List<Organization> targetOrganizations = new ArrayList<>();
+	
+	List<utConfiguration> sourceConfigurations = utconfigurationmanager.getAllSourceConfigurations();
+	List<utConfiguration> targetConfigurations = utconfigurationmanager.getAllTargetConfigurations();
+	
+	for(Organization org : organizations) {
+	   if(!sourceConfigurations.isEmpty()) {
+	       for(utConfiguration srcConfig : sourceConfigurations) {
+		   if(srcConfig.getorgId() == org.getId()) {
+		       sourceOrganizations.add(org);
+		   }
+	       } 
+	       for(utConfiguration tgtConfig : targetConfigurations) {
+		   if(tgtConfig.getorgId() == org.getId()) {
+		       targetOrganizations.add(org);
+		   }
+	       }
+	   }
+	}
+	
+        mav.addObject("sourceOrganizations", sourceOrganizations);
+	mav.addObject("targetOrganizations", targetOrganizations);
 
         return mav;
     }
@@ -254,7 +277,30 @@ public class adminConfigConnectionController {
 
         //Need to get a list of active organizations.
         List<Organization> organizations = organizationmanager.getAllActiveOrganizations();
-        mav.addObject("organizations", organizations);
+        
+	List<Organization> sourceOrganizations = new ArrayList<>();
+	List<Organization> targetOrganizations = new ArrayList<>();
+	
+	List<utConfiguration> sourceConfigurations = utconfigurationmanager.getAllSourceConfigurations();
+	List<utConfiguration> targetConfigurations = utconfigurationmanager.getAllTargetConfigurations();
+	
+	for(Organization org : organizations) {
+	   if(!sourceConfigurations.isEmpty()) {
+	       for(utConfiguration srcConfig : sourceConfigurations) {
+		   if(srcConfig.getorgId() == org.getId()) {
+		       sourceOrganizations.add(org);
+		   }
+	       } 
+	       for(utConfiguration tgtConfig : targetConfigurations) {
+		   if(tgtConfig.getorgId() == org.getId()) {
+		       targetOrganizations.add(org);
+		   }
+	       }
+	   }
+	}
+	
+        mav.addObject("sourceOrganizations", sourceOrganizations);
+	mav.addObject("targetOrganizations", targetOrganizations);
 
         return mav;
     }

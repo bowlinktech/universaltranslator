@@ -49,5 +49,9 @@ public interface messageTypeManager {
     Integer uploadNewFileForCrosswalk(Crosswalks crosswalkDetails) throws Exception;
     
     String getDelimiterChar(int delimId) throws Exception;
+    
+    List<Crosswalks> getCrosswalksForConfig(int page, int maxCrosswalks, int orgId, int configId);
+    
+    void deleteCrosswalk(Integer cwId) throws Exception;
 
 }

@@ -26,7 +26,7 @@
 	</div>
     </div>
     <div class="row-fluid">
-	<div class="${configurationDetails.type == 2 ? 'col-md-11' : 'col-md-9'}">
+        <div class="${configurationDetails.type == 2 ? 'col-md-11' : 'col-md-9'}">
 	    <section class="panel panel-default">
 		<div class="panel-heading">
                     <div class="pull-right">
@@ -41,6 +41,10 @@
 		    <h3 class="panel-title"><c:choose><c:when test="${configurationDetails.type == 2}">Target</c:when><c:otherwise>Source</c:otherwise></c:choose> Configuration Fields</h3>
 		</div>
 		<div class="panel-body">
+                    <div>
+                        <p>If you make any changes to the field settings page, it is strongly recommended that, after completing and saving changes, you go to the MESSAGE SPECS page and DOWNLOAD CURRENT CONFIGURATION TEMPLATE for your records. </p>
+	
+                    </div>
 		    <div class="form-container scrollable">
                         <form:form id="formFields" modelAttribute="transportDetails" method="post" role="form">
                             <input type="hidden" id="action" name="action" value="save" />

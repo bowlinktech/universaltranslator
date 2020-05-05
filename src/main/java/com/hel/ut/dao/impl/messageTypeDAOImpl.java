@@ -12,8 +12,11 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import com.hel.ut.dao.messageTypeDAO;
 import com.hel.ut.model.Crosswalks;
+import com.hel.ut.model.Organization;
 import com.hel.ut.model.validationType;
 import org.hibernate.criterion.Disjunction;
+import org.hibernate.transform.Transformers;
+import org.hibernate.type.StandardBasicTypes;
 
 /**
  * The brochureDAOImpl class will implement the DAO access layer to handle updates for organization brochures
@@ -386,5 +389,51 @@ public class messageTypeDAOImpl implements messageTypeDAO {
         query.setParameter("orgId", orgId);
 
         return query.list();
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public List<Crosswalks> getCrosswalksForConfig(int page, int maxCrosswalks, int orgId, int configId) {
+	String sql = "";
+	
+	if(orgId > 0) {
+	    sql = "select a.*, IFNULL((select id from configurationdatatranslations where configId = :configId and crosswalkId = a.id),0) as dtsId "
+		+ "from crosswalks a "
+		+ "where a.orgId = :orgId or a.orgId = 0 "
+		+ "order by a.name asc";
+	}
+	else {
+	    sql = "select a.*, IFNULL((select id from configurationdatatranslations where configId = :configId and crosswalkId = a.id),0) as dtsId "
+		+ "from crosswalks a "
+		+ "where a.orgId = 0 "
+		+ "order by a.name asc";
+	}
+	
+	int firstResult = 0;
+
+        //Set the parameters for paging
+        //Set the page to load
+        if (page > 1) {
+            firstResult = (maxCrosswalks * (page - 1));
+        }
+        
+	if(maxCrosswalks > 0) {
+	    sql += " limit " + firstResult + ", " + maxCrosswalks;
+	}
+	
+	
+	Query query = sessionFactory
+	    .getCurrentSession()
+	    .createSQLQuery(sql)
+	    .addScalar("id", StandardBasicTypes.INTEGER)
+	    .addScalar("orgId", StandardBasicTypes.INTEGER)
+	    .addScalar("dtsId", StandardBasicTypes.INTEGER)
+	    .addScalar("name", StandardBasicTypes.STRING)
+	    .setResultTransformer( Transformers.aliasToBean(Crosswalks.class))
+	    .setParameter("orgId", orgId).setParameter("configId", configId);
+	
+	List<Crosswalks> crosswalks = query.list();
+	
+        return crosswalks;
     }
 }

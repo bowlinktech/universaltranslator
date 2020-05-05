@@ -1385,8 +1385,14 @@ public class utConfigurationManagerImpl implements utConfigurationManager {
 			reportBody.append("<thead><tr><th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Source Value</th><th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Target Value</th><th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Desc</th>");
 			reportBody.append("</tr></thead><tbody>");
 		    }
-		    
-		    reportBody.append("<tr><td>").append(cwData[1]).append("</td><td>").append(cwData[2]).append("</td><td>").append(cwData[3]).append("</td></tr>");
+		   
+		    reportBody.append("<tr><td>")
+			.append(cwData[1].toString().replaceAll("[:\\\\/*\"?|<>']", " "))
+			.append("</td><td>")
+			.append(cwData[2].toString().replaceAll("[:\\\\/*\"?|<>']", " "))
+			.append("</td><td>")
+			.append(cwData[3].toString().replaceAll("[:\\\\/*\"?|<>']", " "))
+			.append("</td></tr>");
 		    
 		}
 		

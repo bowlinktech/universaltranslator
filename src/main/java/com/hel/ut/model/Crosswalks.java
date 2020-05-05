@@ -21,6 +21,9 @@ public class Crosswalks {
 
     @Transient
     private CommonsMultipartFile file;
+    
+    @Transient
+    private int dtsId = 0;
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -100,6 +103,14 @@ public class Crosswalks {
 
     public void setFile(CommonsMultipartFile file) {
         this.file = file;
+    }
+
+    public int getDtsId() {
+	return dtsId;
+    }
+
+    public void setDtsId(int dtsId) {
+	this.dtsId = dtsId;
     }
 
 }
