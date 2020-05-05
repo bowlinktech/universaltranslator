@@ -14,7 +14,7 @@
 <div class="pull-right" style="margin-bottom:10px;">
    ${i.index} <button class="btn btn-minier btn-grey print" rel2="${batchId}" rel="${indexVal}"><i class="fa fa-print"> Print</i></button>
 </div>
-<span><strong>Showing ${fn:length(errors)} out of <fmt:formatNumber value = "${totalErrors}" type = "number"/></strong></span>
+<span><strong>Showing <fmt:formatNumber value = "${fn:length(errors)}" type = "number"/> out of <fmt:formatNumber value = "${totalErrors}" type = "number"/></strong></span>
 <div id="errorTable-${indexVal}">
 <table border="1" class="table table-bordered">
     <thead>

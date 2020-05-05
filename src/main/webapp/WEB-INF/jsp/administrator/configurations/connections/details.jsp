@@ -29,8 +29,8 @@
 			    <label class="control-label" for="organization">Organization *</label>
 			    <select id="organization" class="form-control selSendingOrganization" <c:if test="${connectionId > 0}">disabled="true"</c:if>>
 				<option value="">- Select -</option>
-				<c:forEach items="${organizations}" var="org" varStatus="oStatus">
-				    <option value="${organizations[oStatus.index].id}" <c:if test="${organizations[oStatus.index].id == sourceOrgId}">selected</c:if>>${organizations[oStatus.index].orgName} </option>
+				<c:forEach items="${sourceOrganizations}" var="org" varStatus="oStatus">
+				    <option value="${sourceOrganizations[oStatus.index].id}" <c:if test="${sourceOrganizations[oStatus.index].id == sourceOrgId}">selected</c:if>>${sourceOrganizations[oStatus.index].orgName} </option>
 				</c:forEach>
 			    </select>
 			    <span id="srcOrgMsg" class="control-label"></span>
@@ -56,8 +56,8 @@
 			<label class="control-label" for="organization">Organization *</label>
 			<select id="organization" class="form-control seltgtOrganization" <c:if test="${connectionId > 0}">disabled="true"</c:if>>
 			    <option value="">- Select -</option>
-			    <c:forEach items="${organizations}" var="org" varStatus="oStatus">
-				<option value="${organizations[oStatus.index].id}" <c:if test="${organizations[oStatus.index].id == targetOrgId}">selected</c:if>>${organizations[oStatus.index].orgName} </option>
+			    <c:forEach items="${targetOrganizations}" var="org" varStatus="oStatus">
+				<option value="${targetOrganizations[oStatus.index].id}" <c:if test="${targetOrganizations[oStatus.index].id == targetOrgId}">selected</c:if>>${targetOrganizations[oStatus.index].orgName} </option>
 			    </c:forEach>
 			</select>
 			<span id="tgtOrgMsg" class="control-label"></span>

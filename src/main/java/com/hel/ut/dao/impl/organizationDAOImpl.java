@@ -127,9 +127,8 @@ public class organizationDAOImpl implements organizationDAO {
     /**
      * The 'getOrganizations' function will return a list of the organizations in the system
      *
+     * @return 
      * @Table	organizations
-     *
-     * @param	page	This will hold the value of page being viewed (used for pagination) maxResults	This will hold the value of the maxium number of results we want to send back to the list page
      *
      * @Return	This function will return a list of organization objects
      */
