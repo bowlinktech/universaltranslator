@@ -12,7 +12,6 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import com.hel.ut.dao.messageTypeDAO;
 import com.hel.ut.model.Crosswalks;
-import com.hel.ut.model.Organization;
 import com.hel.ut.model.validationType;
 import org.hibernate.criterion.Disjunction;
 import org.hibernate.transform.Transformers;
@@ -421,7 +420,6 @@ public class messageTypeDAOImpl implements messageTypeDAO {
 	    sql += " limit " + firstResult + ", " + maxCrosswalks;
 	}
 	
-	System.out.println(sql);
 	Query query = sessionFactory
 	    .getCurrentSession()
 	    .createSQLQuery(sql)

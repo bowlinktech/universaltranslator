@@ -1379,8 +1379,7 @@ public class transactionInManagerImpl implements transactionInManager {
 
 				//we check encoding here 
 				//file is not encoded
-				//!filemanager.isFileBase64Encoded(file)
-				if (encodingId < 2) { 
+				if (encodingId < 2 && !filemanager.isFileBase64Encoded(file)) { 
 				    String encodedOldFile = filemanager.encodeFileToBase64Binary(file);
 				    filemanager.writeFile(newFile.getAbsolutePath(), encodedOldFile);
 
@@ -3644,9 +3643,7 @@ public class transactionInManagerImpl implements transactionInManager {
 		    //decode and check delimiter
 		    File file = new File(writeToFile);
 		    
-		    //&& filemanager.isFileBase64Encoded(file)
-
-		    if (ct.getEncodingId() == 2 ) {
+		    if (ct.getEncodingId() == 2 && filemanager.isFileBase64Encoded(file)) {
 			//write to temp file
 			String strDecode = filemanager.decodeFileToBase64Binary(file);
 			file = new File(myProps.getProperty("ut.directory.utRootDir") + "archivesIn/" + batchName + "_dec" + fileExt);
@@ -4281,8 +4278,7 @@ public class transactionInManagerImpl implements transactionInManager {
 		    //decode and check delimiter
 		    File file = new File(writeToFile);
 
-		    // && filemanager.isFileBase64Encoded(file)
-		    if (ct.getEncodingId() == 2) {
+		    if (ct.getEncodingId() == 2 && filemanager.isFileBase64Encoded(file)) {
 			//write to temp file
 			String strDecode = filemanager.decodeFileToBase64Binary(file);
 			file = new File(myProps.getProperty("ut.directory.utRootDir") + "archivesIn/" + batchName + "_dec" + fileExt);
