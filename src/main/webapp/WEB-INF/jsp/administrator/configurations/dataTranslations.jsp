@@ -172,6 +172,7 @@
     </div>
 </div>
 <input type="hidden" id="orgId" value="${orgId}" />
+<input type="hidden" id="configId" value="${configurationDetails.id}" />
 <input type="hidden" id="macroLookUpList" value="${macroLookUpList}" />
 
 <%-- Provider Address modal --%>

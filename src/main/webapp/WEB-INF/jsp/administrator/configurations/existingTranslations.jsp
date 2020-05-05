@@ -63,7 +63,7 @@
                     </tr>
                 </c:forEach>
             </c:when>
-            <c:otherwise><tr><td scope="row" colspan="10" class="center-text">No Existing Translations Found</td></c:otherwise>
+            <c:otherwise><tr><td scope="row" colspan="10" class="center-text">No Existing Translations Found</td></tr></c:otherwise>
             </c:choose>
     </tbody>
 </table>
