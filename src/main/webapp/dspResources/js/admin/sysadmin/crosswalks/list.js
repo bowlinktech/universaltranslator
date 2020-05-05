@@ -37,7 +37,7 @@ require(['./main'], function () {
 
     //The function to submit the new crosswalk
     $(document).on('click', '#submitCrosswalkButton', function (event) {
-
+        $('.uploadError').hide();
         $('#crosswalkNameDiv').removeClass("has-error");
         $('#crosswalkNameMsg').removeClass("has-error");
         $('#crosswalkNameMsg').html('');
@@ -114,13 +114,19 @@ require(['./main'], function () {
                 cache: false,
                 data: formData,
                 success: function(data) {
-                   $.ajax({
-                        url: '/administrator/configurations/viewCrosswalk?i=' + data,
-                        type: "GET",
-                        success: function(data) {
-                            $("#crosswalkModal").html(data);
-                        }
-                    });
+                   if(data > 0) {
+                       $.ajax({
+                            url: '/administrator/configurations/viewCrosswalk?i=' + data,
+                            type: "GET",
+                            success: function(data) {
+                                data = data.replace('close', 'close cwClose');
+                                $("#crosswalkModal").html(data);
+                            }
+                        });
+                   }
+                   else {
+                       $('.uploadError').show();
+                   }
                 }
             });
         }
