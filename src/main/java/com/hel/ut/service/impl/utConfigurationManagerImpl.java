@@ -945,12 +945,6 @@ public class utConfigurationManagerImpl implements utConfigurationManager {
 		delim = "tab";
 	    }
 
-	    String encoding = "none";
-
-	    if(transportDetails.getEncodingId() == 2) {
-		encoding = "Base64";
-	    }
-
 	    String apiType = "";
 
 	    if(transportDetails.getRestAPIType() == 1) {
@@ -997,8 +991,6 @@ public class utConfigurationManagerImpl implements utConfigurationManager {
 	    reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>").append(delim).append("</span><br /><br />");
 	    reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'><strong>Line Terminator</strong></span><br />");
 	    reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>.").append(transportDetails.getLineTerminator()).append("</span><br /><br />");
-	    reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'><strong>What type of Encoding does the file have?</strong></span><br />");
-	    reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>").append(encoding).append("</span><br /><br />");
 	    reportBody.append("</div>");
 	    
 	    if(fileDropFields != null) {
