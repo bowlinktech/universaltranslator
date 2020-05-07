@@ -10,6 +10,26 @@ require(['./main'], function () {
     //setInterval(function(){searchByDateRange()}, 30000);
 
     $("input:text,form").attr("autocomplete", "off");
+    
+    //This function will release the batch
+    $(document).on('click', '.releaseBatch', function () {
+
+        var confirmed = confirm("Are you sure you want to release this batch?");
+
+        if (confirmed) {
+            $.ajax({
+                url: '/administrator/processing-activity/inboundBatchOptions',
+                data: {
+                    'batchOption': $(this).attr('rel'), 
+                    'batchId': $(this).attr('rel2')
+                },
+                type: "POST",
+                success: function (data) {
+                    window.location.href = '/administrator/processing-activity/inbound';
+                }
+            });
+        }
+    });
 
     //This function will launch the status detail overlay with the selected
     //status
@@ -141,14 +161,16 @@ function populateMessages(fromDate,toDate) {
 			   returnData += '<br /><a href="/FileDownload/downloadFile.do?fromPage=inbound&filename=encoded_'+row.utBatchName+'.'+row.originalFileName.split('.')[1].toString().toLowerCase()+'&foldername=input files&orgId='+row.orgId+'" title="View Submitted File">Submitted File - '+row.originalFileName+'</a>'; 
 			}
 			
-			if(row.inboundBatchConfigurationType == 1 && (row.transportMethodId == 10 || row.transportMethodId == 13)) {
-			   if(row.transportMethod.indexOf("Direct") > 0 || row.transportMethod === 'File Drop') {
-			       returnData += '<br /><a href="/FileDownload/downloadFile.do?fromPage=inbound&filename='+row.utBatchName+'.txt&foldername=loadFiles" title="View Pipe File">Translated File - '+row.utBatchName+'.txt</a>';
-			   }
-			   else {
-			       returnData += '<br /><a href="/FileDownload/downloadFile.do?fromPage=inbound&filename=archive_'+row.utBatchName+'.'+row.originalFileName.split('.')[1].toString().toLowerCase()+'&foldername=archivesIn" title="View Pipe File">Translated File - '+row.utBatchName+'</a>';
-			   }
-			}
+                        if(row.originalFileName.split('.')[1].toString().toLowerCase() != 'txt') {
+                            if(row.inboundBatchConfigurationType == 1 && (row.transportMethodId == 10 || row.transportMethodId == 13)) {
+                                if(row.transportMethod.indexOf("Direct") > 0 || row.transportMethod === 'File Drop') {
+                                    returnData += '<br /><a href="/FileDownload/downloadFile.do?fromPage=inbound&filename='+row.utBatchName+'.txt&foldername=loadFiles" title="View Pipe File">Internal File - '+row.utBatchName+'.txt</a>';
+                                }
+                                else {
+                                    returnData += '<br /><a href="/FileDownload/downloadFile.do?fromPage=inbound&filename=archive_'+row.utBatchName+'.'+row.originalFileName.split('.')[1].toString().toLowerCase()+'&foldername=archivesIn" title="View Pipe File">Internal File - '+row.utBatchName+'</a>';
+                                }
+                             }
+                        }
 		    }
 		    
 		   return returnData;
@@ -212,6 +234,31 @@ function populateMessages(fromDate,toDate) {
 		    hours = hours ? hours : 12;
 		    minutes = minutes < 10 ? '0'+minutes : minutes;
 		    var myDateFormatted = ((dateC.getMonth()*1)+1)+'/'+dateC.getDate()+'/'+dateC.getFullYear() + ' ' + hours+':'+minutes+ ' ' + ampm;
+                   
+                    if(row.startDateTime != null) {
+                        dateC = new Date(row.startDateTime);
+                        minutes = dateC.getMinutes();
+                        hours = dateC.getHours()-1;
+                        ampm =  hours >= 12 ? 'pm' : 'am';
+                        hours = hours % 12;
+                        hours = hours ? hours : 12;
+                        minutes = minutes < 10 ? '0'+minutes : minutes;
+                        
+                        myDateFormatted += '<br />Start: ' + hours+':'+minutes+ ' ' + ampm;
+                    }
+                    
+                    if(row.endDateTime != null) {
+                        dateC = new Date(row.endDateTime);
+                        minutes = dateC.getMinutes();
+                        hours = dateC.getHours()-1;
+                        ampm =  hours >= 12 ? 'pm' : 'am';
+                        hours = hours % 12;
+                        hours = hours ? hours : 12;
+                        minutes = minutes < 10 ? '0'+minutes : minutes;
+                        
+                        myDateFormatted += '<br />End: ' + hours+':'+minutes+ ' ' + ampm;
+                    }
+                    
 		    return myDateFormatted;
 		}
 	    },
@@ -224,15 +271,20 @@ function populateMessages(fromDate,toDate) {
 		"render": function ( data, type, row, meta ) {
 		   var returnData = '<div class="dropdown pull-left"><button class="btn btn-sm btn-default dropdown-toggle" type="button" data-toggle="dropdown"><i class="fa fa-cog"></i></button><ul class="dropdown-menu pull-right">';
 		   
-		   if(data != 2) {
-		       returnData += '<li><a href="/administrator/processing-activity/inbound/batchActivities/'+row.utBatchName+'" class="viewBatchActivities" title="View Batch Activities"><span class="glyphicon glyphicon-edit"></span>View Batch Activities</a></li>';
+		    if(row.statusValue === 'MAN') {
+                       returnData += '<li><a href="#!" id="release" class="releaseBatch" rel="releaseBatch" rel2="'+row.id+'" title="Process Inbound Batch"><span class="glyphicon glyphicon-ok-sign"></span></span> Process Inbound Batch</a></li>';
 		       returnData += '<li class="divider"></li>';
-		       returnData += '<li><a href="/administrator/processing-activity/inbound/auditReport/'+row.utBatchName+'" title="View Audit Report"><span class="glyphicon glyphicon-edit"></span>View Audit Report</a></li>';
+                    }
+                    
+                    if(data != 2) {
+		       returnData += '<li><a href="/administrator/processing-activity/inbound/batchActivities/'+row.utBatchName+'" class="viewBatchActivities" title="View Batch Activities"><span class="glyphicon glyphicon-edit"></span> View Batch Activities</a></li>';
+		       returnData += '<li class="divider"></li>';
+		       returnData += '<li><a href="/administrator/processing-activity/inbound/auditReport/'+row.utBatchName+'" title="View Audit Report"><span class="glyphicon glyphicon-edit"></span> View Audit Report</a></li>';
 		   }
 		   
 		   if(userRole == 1) {
 		       returnData += '<li class="divider"></li>';
-		       returnData += '<li><a href="javascript:void(0);" rel="'+row.utBatchName+'" class="deleteTransactions" title="Delete Batch Transactions"><span class="glyphicon glyphicon-remove"></span>Delete Batch</a></li>';
+		       returnData += '<li><a href="javascript:void(0);" rel="'+row.utBatchName+'" class="deleteTransactions" title="Delete Batch Transactions"><span class="glyphicon glyphicon-remove"></span> Delete Batch</a></li>';
 		   }
 		   
 		   return returnData;

@@ -1074,7 +1074,7 @@ public class transactionInManagerImpl implements transactionInManager {
 				    batchInfo.setOrgId(orgId);
 				    batchInfo.setTransportMethodId(transportMethodId);
 				    batchInfo.setStatusId(4);
-				    batchInfo.setStartDateTime(date);
+				    //batchInfo.setStartDateTime(date);
 				    batchInfo.setUtBatchName(batchName);
 				    batchInfo.setOriginalFolder(rootPath + configDroppedPath);
 				    batchInfo.setUserId(0);
@@ -1379,8 +1379,7 @@ public class transactionInManagerImpl implements transactionInManager {
 
 				//we check encoding here 
 				//file is not encoded
-				//!filemanager.isFileBase64Encoded(file)
-				if (encodingId < 2) { 
+				if (encodingId < 2 && !filemanager.isFileBase64Encoded(file)) { 
 				    String encodedOldFile = filemanager.encodeFileToBase64Binary(file);
 				    filemanager.writeFile(newFile.getAbsolutePath(), encodedOldFile);
 
@@ -1432,7 +1431,7 @@ public class transactionInManagerImpl implements transactionInManager {
 				    insertProcessingError(errorId, 0, batchId, null, null, null, null, false, false, "");
 				}
 
-				updateBatchStatus(batchId, statusId, "endDateTime");
+				updateBatchStatus(batchId, statusId, "");
 				
 				//log batch activity
 				ba = new batchuploadactivity();
@@ -1450,7 +1449,7 @@ public class transactionInManagerImpl implements transactionInManager {
 					if(configurationSchedule != null) {
 					    //If manual change the status of the batch so it does not process (Setting batch status to "Manual Processing Required" Id: 64)
 					    if(configurationSchedule.gettype() == 1) {
-						updateBatchStatus(batchId, 64, "endDateTime");
+						updateBatchStatus(batchId, 64, "");
 
 						//log batch activity
 						ba = new batchuploadactivity();
@@ -2110,7 +2109,7 @@ public class transactionInManagerImpl implements transactionInManager {
 		
 		// set batch to SBL - 38
 		//if could be that the process has picked this up
-		updateBatchStatus(batchId, batchStatusId, "startDateTime");
+		updateBatchStatus(batchId, batchStatusId, "");
 		
 		//log batch activity
 		ba = new batchuploadactivity();
@@ -2784,7 +2783,7 @@ public class transactionInManagerImpl implements transactionInManager {
 	   }
 
 	    try {
-		updateBatchStatus(batchId, batchStatusId, "endDateTime");
+		updateBatchStatus(batchId, batchStatusId, "");
 		updateRecordCounts(batchId, new ArrayList<>(), false, "totalRecordCount");
 		// do we count pass records as errors?
 		updateRecordCounts(batchId, errorStatusIds, false, "errorRecordCount");
@@ -2982,7 +2981,7 @@ public class transactionInManagerImpl implements transactionInManager {
 	    }
 
 	    // set batch to SBP - 4*
-	    updateBatchStatus(batchUploadId, 4, "startDateTime");
+	    updateBatchStatus(batchUploadId, 4, "");
 	    
 	    //log batch activity
 	    batchuploadactivity ba = new batchuploadactivity();
@@ -3207,7 +3206,7 @@ public class transactionInManagerImpl implements transactionInManager {
 	    updateRecordCounts(batchUploadId, new ArrayList<Integer>(), false, "totalRecordCount");
 
 	    updateRecordCounts(batchUploadId, errorStatusIds, false, "errorRecordCount");
-	    updateBatchStatus(batchUploadId, batchStatusId, "endDateTime");
+	    updateBatchStatus(batchUploadId, batchStatusId, "");
 	    
 	    //log batch activity
 	    ba = new batchuploadactivity();
@@ -3644,9 +3643,7 @@ public class transactionInManagerImpl implements transactionInManager {
 		    //decode and check delimiter
 		    File file = new File(writeToFile);
 		    
-		    //&& filemanager.isFileBase64Encoded(file)
-
-		    if (ct.getEncodingId() == 2 ) {
+		    if (ct.getEncodingId() == 2 && filemanager.isFileBase64Encoded(file)) {
 			//write to temp file
 			String strDecode = filemanager.decodeFileToBase64Binary(file);
 			file = new File(myProps.getProperty("ut.directory.utRootDir") + "archivesIn/" + batchName + "_dec" + fileExt);
@@ -3792,7 +3789,7 @@ public class transactionInManagerImpl implements transactionInManager {
 		pendingBatches.setStatusId(61);
 		pendingBatches.setTotalErrorCount(0);
 		pendingBatches.setTotalRecordCount(0);
-		pendingBatches.setStartDateTime(new Date());
+		//pendingBatches.setStartDateTime(new Date());
 
 		transactionOutDAO.submitBatchDownloadChanges(pendingBatches);
 	    }
@@ -3902,7 +3899,7 @@ public class transactionInManagerImpl implements transactionInManager {
 		    //we determine output file name
 		    batchDownload.setOutputFileName(transactionoutmanager.generateDLBatchName(utbatchName,transportDetails, configDetails, batchUploadDetails, date) + "." + transportDetails.getfileExt());
 		    batchDownload.setMergeable(false);
-		    batchDownload.setStartDateTime(new Date());
+		    //batchDownload.setStartDateTime(new Date());
 		    batchDownload.setTransportMethodId(transportDetails.gettransportMethodId());
 		    batchDownload.setOrgId(useTargetOrgId);
 		    batchDownload.setUserId(userId);
@@ -4049,6 +4046,7 @@ public class transactionInManagerImpl implements transactionInManager {
 		batchDownload.setOutputFileName(transactionoutmanager.generateDLBatchName(utbatchName,transportDetails, tgtconfigDetails, batchDetails, date) + "." + transportDetails.getfileExt());
 		batchDownload.setMergeable(false);
 		batchDownload.setStartDateTime(new Date());
+		batchDownload.setEndDateTime(new Date());
 		batchDownload.setTransportMethodId(transportDetails.gettransportMethodId());
 		batchDownload.setOrgId(tgtconfigDetails.getorgId());
 		batchDownload.setUserId(0);
@@ -4201,7 +4199,7 @@ public class transactionInManagerImpl implements transactionInManager {
 	    batchInfo.setOrgId(directMessage.getOrgId());
 	    batchInfo.setTransportMethodId(13);
 	    batchInfo.setStatusId(4);
-	    batchInfo.setStartDateTime(date);
+	    //batchInfo.setStartDateTime(date);
 	    batchInfo.setUtBatchName(batchName);
 	    batchInfo.setConfigId(configId);
 	    batchInfo.setOriginalFileName(directMessage.getReferralFileName());
@@ -4281,8 +4279,7 @@ public class transactionInManagerImpl implements transactionInManager {
 		    //decode and check delimiter
 		    File file = new File(writeToFile);
 
-		    // && filemanager.isFileBase64Encoded(file)
-		    if (ct.getEncodingId() == 2) {
+		    if (ct.getEncodingId() == 2 && filemanager.isFileBase64Encoded(file)) {
 			//write to temp file
 			String strDecode = filemanager.decodeFileToBase64Binary(file);
 			file = new File(myProps.getProperty("ut.directory.utRootDir") + "archivesIn/" + batchName + "_dec" + fileExt);
@@ -4333,7 +4330,7 @@ public class transactionInManagerImpl implements transactionInManager {
 		}
 
 		batchInfo.setStatusId(statusId);
-		batchInfo.setEndDateTime(new Date());
+		//batchInfo.setEndDateTime(new Date());
 		batchInfo.setTotalRecordCount(1); // need to be at least one to show up in activites
 
 		if (batchInfo.getConfigId() != 0 && batchInfo.getStatusId() == 2) {

@@ -95,10 +95,10 @@
 						    <c:if test="${batch.inboundBatchConfigurationType == 1 && (batch.transportMethodId == 10 || batch.transportMethodId == 13)}">
                                                         <c:choose>
                                                             <c:when test="${batch.transportMethod == 'Direct Message' || batch.transportMethod == 'File Drop'}">
-                                                                <a href="/FileDownload/downloadFile.do?fromPage=invalidin&filename=${batch.utBatchName}.txt&foldername=loadFiles" title="View Pipe File">Translated File - ${batch.utBatchName}.txt</a>
+                                                                <a href="/FileDownload/downloadFile.do?fromPage=invalidin&filename=${batch.utBatchName}.txt&foldername=loadFiles" title="View Internal Processing File">Internal File - ${batch.utBatchName}.txt</a>
                                                             </c:when>
                                                             <c:otherwise>
-                                                                <a href="/FileDownload/downloadFile.do?fromPage=invalidin&filename=archive_${batch.utBatchName}.${ext}&foldername=archivesIn" title="View Pipe File"> Translated File - ${batch.utBatchName}</a>
+                                                                <a href="/FileDownload/downloadFile.do?fromPage=invalidin&filename=archive_${batch.utBatchName}.${ext}&foldername=archivesIn" title="View Internal Processing File"> Internal File - ${batch.utBatchName}</a>
                                                             </c:otherwise>
                                                         </c:choose>
 						    </c:if>

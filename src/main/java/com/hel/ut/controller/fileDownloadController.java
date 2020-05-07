@@ -133,6 +133,15 @@ public class fileDownloadController {
 		filename = filename.replace("archive_","encoded_");
 		f = new File(directory + filename);
 	    }
+	    else if(!f.exists() && foldername.contains("/crosswalks")) {
+		directory = myProps.getProperty("ut.directory.utRootDir") + "libraryFiles/crosswalks/";
+		f = new File(directory + filename);
+		
+		if(!f.exists()) {
+		    directory = myProps.getProperty("ut.directory.utRootDir") + "libraryFiles/";
+		    f = new File(directory + filename);
+		}
+	    }
 	    
 	    if (utBatchName != null) {
 

@@ -18,6 +18,7 @@
     <form:hidden path="helRegistryId" id="helRegistryId" />
     <form:hidden path="helSchemaName" id="helSchemaName" />
     <form:hidden path="mergeBatches" />
+    <form:hidden path="encodingId" value="1" />
 
     <section class="panel panel-default">
 	<div class="panel-heading">
@@ -186,6 +187,7 @@
 			    </c:if>
 			</div>
 		    </spring:bind>
+                    <%--  
 		    <spring:bind path="encodingId">
 			<div id="encodingDiv" class="form-group ${status.error ? 'has-error' : '' }">
 			    <label class="control-label" for="encodingId">Does the incoming file have any Encoding? *</label>
@@ -201,6 +203,7 @@
 			    </c:if>
 			</div>
 		    </spring:bind>
+                    --%>
 		</div>
 	    </div>
 	</div>

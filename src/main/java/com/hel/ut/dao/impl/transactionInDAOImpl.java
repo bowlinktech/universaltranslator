@@ -560,26 +560,41 @@ public class transactionInDAOImpl implements transactionInDAO {
     @Override
     @Transactional(readOnly = false)
     public void updateBatchStatus(Integer batchUploadId, Integer statusId, String timeField) throws Exception {
+	
+	if(statusId > 0) {
+	    String sql = "update batchUploads set statusId = :statusId ";
+	    if (timeField.equalsIgnoreCase("startover")) {
+		// we reset time
+		sql = sql + ", startDateTime = null, endDateTime = null";
+	    } else if (!timeField.equalsIgnoreCase("")) {
+		sql = sql + ", " + timeField + " = CURRENT_TIMESTAMP";
+	    } //else {
+		//sql = sql + ", startDateTime = CURRENT_TIMESTAMP, endDateTime = CURRENT_TIMESTAMP";
+	    //}
+	    sql = sql + " where id = :id ";
 
-	String sql = "update batchUploads set statusId = :statusId ";
-	if (timeField.equalsIgnoreCase("startover")) {
-	    // we reset time
-	    sql = sql + ", startDateTime = null, endDateTime = null";
-	} else if (!timeField.equalsIgnoreCase("")) {
-	    sql = sql + ", " + timeField + " = CURRENT_TIMESTAMP";
-	} else {
-	    sql = sql + ", startDateTime = CURRENT_TIMESTAMP, endDateTime = CURRENT_TIMESTAMP";
+	    Query updateData = sessionFactory.getCurrentSession().createSQLQuery(sql)
+		    .setParameter("statusId", statusId)
+		    .setParameter("id", batchUploadId);
+	    try {
+		updateData.executeUpdate();
+	    } catch (Exception ex) {
+		System.err.println("updateBatchStatus " + ex.getCause());
+	    }
 	}
-	sql = sql + " where id = :id ";
+	else if(statusId == 0 && "endDateTime".equals(timeField)) {
+	    String sql = "update batchUploads set endDateTime = CURRENT_TIMESTAMP";
+	    sql = sql + " where id = :id ";
 
-	Query updateData = sessionFactory.getCurrentSession().createSQLQuery(sql)
-		.setParameter("statusId", statusId)
-		.setParameter("id", batchUploadId);
-	try {
-	    updateData.executeUpdate();
-	} catch (Exception ex) {
-	    System.err.println("updateBatchStatus " + ex.getCause());
+	    Query updateData = sessionFactory.getCurrentSession().createSQLQuery(sql)
+		    .setParameter("id", batchUploadId);
+	    try {
+		updateData.executeUpdate();
+	    } catch (Exception ex) {
+		System.err.println("updateBatchStatus " + ex.getCause());
+	    }
 	}
+	
 
     }
 
@@ -2648,6 +2663,9 @@ public class transactionInDAOImpl implements transactionInDAO {
     @Override
     @Transactional(readOnly = false)
     public void deleteBatch(Integer batchId) throws Exception {
+	
+	//Get any batch downloads
+	List<batchDownloads> batchDownloads = getDLBatchesByBatchUploadId(batchId);
 
 	/* Delete all the stored records */
 	String deleteSQL = "";
@@ -2659,6 +2677,25 @@ public class transactionInDAOImpl implements transactionInDAO {
 	deleteSQL += "DROP TABLE IF EXISTS `transactioninerrors_" + batchId + "`;";
 	deleteSQL += "DROP TABLE IF EXISTS `transactioninmacrodroppedvalues_" + batchId + "`;";
 	deleteSQL += "DROP TABLE IF EXISTS `transactioninmacrokeptvalues_" + batchId + "`;";
+	deleteSQL += "DROP TABLE IF EXISTS `transactionindetailauditerrors_" + batchId + "`;";
+	
+	if(batchDownloads != null) {
+	    if(!batchDownloads.isEmpty()) {
+		for(batchDownloads bDL : batchDownloads) {
+		    deleteSQL += "DROP TABLE IF EXISTS `transactionoutdetailauditerrors_" + bDL.getId() + "`;";
+		    deleteSQL += "DROP TABLE IF EXISTS `transactionoutdetailauditerrorsforinbound_" + bDL.getId() + "`;";
+		    deleteSQL += "DROP TABLE IF EXISTS `transactionouterrors_" + bDL.getId() + "`;";
+		    deleteSQL += "DROP TABLE IF EXISTS `transactionoutjsontable_" + bDL.getId() + "`;";
+		    deleteSQL += "DROP TABLE IF EXISTS `transactionoutmacrodroppedvalues_" + bDL.getId() + "`;";
+		    deleteSQL += "DROP TABLE IF EXISTS `transactionoutmacrokeptvalues_" + bDL.getId() + "`;";
+		    deleteSQL += "DROP TABLE IF EXISTS `transactionoutrecords_" + bDL.getId() + "`;";
+		    deleteSQL += "DROP TABLE IF EXISTS `transactiontranslatedlistout_" + bDL.getId() + "`;";
+		    deleteSQL += "DROP TABLE IF EXISTS `transactiontranslatedout_" + bDL.getId() + "`;";
+		}
+	    }
+	}
+	
+	deleteSQL += "delete from directmessagesin where batchUploadId = " + batchId + ";";
 	deleteSQL += "delete from restapimessagesin where batchUploadId = " + batchId + ";";
 	deleteSQL += "delete from wsmessagesin where batchUploadId = " + batchId + ";";
 	deleteSQL += "delete from useractivity where batchUploadId = " + batchId + ";";
@@ -3157,10 +3194,10 @@ public class transactionInDAOImpl implements transactionInDAO {
 	}
 	
 	String sqlQuery = "select id, orgId, utBatchName, transportMethodId, originalFileName, totalRecordCount, errorRecordCount, totalErrorRows, configName, threshold, inboundBatchConfigurationType, statusId, dateSubmitted,"
-		+ "statusValue, endUserDisplayText, orgName, case when dmConfigKeyWord != '' then 'File Drop (Direct)' when transportMethod != 'Online Form' && restAPIUsername != '' then 'File Drop (Rest)' else transportMethod end as transportMethod, totalMessages, 'On Demand' as uploadType, dmConfigKeyWord "
+		+ "startDateTime,endDateTime,statusValue, endUserDisplayText, orgName, case when dmConfigKeyWord != '' then 'File Drop (Direct)' when transportMethod != 'Online Form' && restAPIUsername != '' then 'File Drop (Rest)' else transportMethod end as transportMethod, totalMessages, 'On Demand' as uploadType, dmConfigKeyWord "
 		+ "FROM ("
 		+ "select a.id, a.orgId, a.utBatchName, a.transportMethodId, a.originalFileName, a.totalRecordCount, a.errorRecordCount, b.configName, b.threshold, b.configurationType as inboundBatchConfigurationType,"
-		+ "a.statusId, a.dateSubmitted, c.displayCode as statusValue, c.endUserDisplayText as endUserDisplayText,d.orgName, e.transportMethod,"
+		+ "a.statusId, a.dateSubmitted, a.startDateTime, a.endDateTime, c.displayCode as statusValue, c.endUserDisplayText as endUserDisplayText,d.orgName, e.transportMethod,"
 		+ "(select count(id) as total from batchuploads where "+dateSQLStringTotal+") as totalMessages, "
 		+ "(select count(distinct rowNumber) as totalRows from batchuploadauditerrors where batchUploadId = a.id) as totalErrorRows, "
 		+ "f.dmConfigKeyWord, f.restAPIUsername "
@@ -3200,6 +3237,8 @@ public class transactionInDAOImpl implements transactionInDAO {
 	    .addScalar("inboundBatchConfigurationType", StandardBasicTypes.INTEGER)
 	    .addScalar("statusId", StandardBasicTypes.INTEGER)
 	    .addScalar("dateSubmitted", StandardBasicTypes.TIMESTAMP)
+	    .addScalar("startDateTime", StandardBasicTypes.TIMESTAMP)
+	    .addScalar("endDateTime", StandardBasicTypes.TIMESTAMP)
 	    .addScalar("statusValue", StandardBasicTypes.STRING)
 	    .addScalar("orgName", StandardBasicTypes.STRING)
 	    .addScalar("transportMethod", StandardBasicTypes.STRING)
@@ -3420,5 +3459,16 @@ public class transactionInDAOImpl implements transactionInDAO {
 	    ex.printStackTrace();
 	    return null;
 	}
+    }
+    
+    @Transactional(readOnly = true)
+    public List<batchDownloads> getDLBatchesByBatchUploadId(Integer batchUploadId) throws Exception {
+	
+	Criteria dlBatches = sessionFactory.getCurrentSession().createCriteria(batchDownloads.class);
+	
+	dlBatches.add(Restrictions.eq("batchUploadId", batchUploadId));
+	
+	List<batchDownloads> dlBatchesList = dlBatches.list();
+	return dlBatchesList;
     }
 }
