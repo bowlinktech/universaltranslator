@@ -120,6 +120,7 @@ require(['./main'], function () {
                             type: "GET",
                             success: function(data) {
                                 data = data.replace('close', 'close cwClose');
+                                 data = data.replace('uploadSuccess" role="alert" style="display:none;"', 'uploadSuccess" role="alert" style="display:block;"');
                                 $("#crosswalkModal").html(data);
                             }
                         });

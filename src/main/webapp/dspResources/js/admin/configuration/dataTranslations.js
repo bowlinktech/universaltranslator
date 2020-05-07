@@ -307,6 +307,7 @@ require(['./main'], function () {
     //The function to submit the new crosswalk
     $(document).on('click', '#submitCrosswalkButton', function (event) {
         $('.uploadError').hide();
+        $('.uploadSuccess').hide();
         $('#crosswalkNameDiv').removeClass("has-error");
         $('#crosswalkNameMsg').removeClass("has-error");
         $('#crosswalkNameMsg').html('');
@@ -389,6 +390,7 @@ require(['./main'], function () {
                             type: "GET",
                             success: function(data) {
                                 data = data.replace('close', 'close cwClose');
+                                data = data.replace('uploadSuccess" role="alert" style="display:none;"', 'uploadSuccess" role="alert" style="display:block;"');
                                 $("#crosswalkModal").html(data);
                             }
                         });
@@ -396,7 +398,6 @@ require(['./main'], function () {
                    else {
                        $('.uploadError').show();
                    }
-                   
                 }
             });
         }

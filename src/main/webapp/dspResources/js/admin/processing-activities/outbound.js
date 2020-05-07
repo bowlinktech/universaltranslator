@@ -192,6 +192,31 @@ function populateMessages(fromDate,toDate) {
 		    hours = hours ? hours : 12;
 		    minutes = minutes < 10 ? '0'+minutes : minutes;
 		    var myDateFormatted = ((dateC.getMonth()*1)+1)+'/'+dateC.getDate()+'/'+dateC.getFullYear() + ' ' + hours+':'+minutes+ ' ' + ampm;
+                    
+                    if(row.startDateTime != null) {
+                        dateC = new Date(row.startDateTime);
+                        minutes = dateC.getMinutes();
+                        hours = dateC.getHours()-1;
+                        ampm =  hours >= 12 ? 'pm' : 'am';
+                        hours = hours % 12;
+                        hours = hours ? hours : 12;
+                        minutes = minutes < 10 ? '0'+minutes : minutes;
+                        
+                        myDateFormatted += '<br />Start: ' + hours+':'+minutes+ ' ' + ampm;
+                    }
+                    
+                    if(row.endDateTime != null) {
+                        dateC = new Date(row.endDateTime);
+                        minutes = dateC.getMinutes();
+                        hours = dateC.getHours()-1;
+                        ampm =  hours >= 12 ? 'pm' : 'am';
+                        hours = hours % 12;
+                        hours = hours ? hours : 12;
+                        minutes = minutes < 10 ? '0'+minutes : minutes;
+                        
+                        myDateFormatted += '<br />End: ' + hours+':'+minutes+ ' ' + ampm;
+                    }
+                    
 		    return myDateFormatted;
 		}
 	    },

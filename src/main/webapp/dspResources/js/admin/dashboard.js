@@ -242,7 +242,7 @@ function getInboundMessages() {
 		"mData": "uploadType", 
 		"defaultContent": "",
 		"bSortable":true,
-		"sWidth": "10%",
+		"sWidth": "8%",
 		"className": "center-text",
 		"render": function ( data, type, row, meta ) {
 		    return data;
@@ -252,8 +252,7 @@ function getInboundMessages() {
 		"mData": "dateSubmitted", 
 		"defaultContent": "",
 		"bSortable":true,
-		"sWidth": "10%",
-		"className": "center-text",
+		"sWidth": "13%",
 		"render": function ( data, type, row, meta ) {
 		    var dateC = new Date(data);
 		    var minutes = dateC.getMinutes();
@@ -262,7 +261,32 @@ function getInboundMessages() {
 		    hours = hours % 12;
 		    hours = hours ? hours : 12;
 		    minutes = minutes < 10 ? '0'+minutes : minutes;
-		    var myDateFormatted = ((dateC.getMonth()*1)+1)+'/'+dateC.getDate()+'/'+dateC.getFullYear() + ' ' + hours+':'+minutes+ ' ' + ampm;
+		    var myDateFormatted = 'Received: ' + ((dateC.getMonth()*1)+1)+'/'+dateC.getDate()+'/'+dateC.getFullYear() + ' ' + hours+':'+minutes+ ' ' + ampm;
+                    
+                    if(row.startDateTime != null) {
+                        dateC = new Date(row.startDateTime);
+                        minutes = dateC.getMinutes();
+                        hours = dateC.getHours()-1;
+                        ampm =  hours >= 12 ? 'pm' : 'am';
+                        hours = hours % 12;
+                        hours = hours ? hours : 12;
+                        minutes = minutes < 10 ? '0'+minutes : minutes;
+                        
+                        myDateFormatted += '<br />Processing Start: ' + hours+':'+minutes+ ' ' + ampm;
+                    }
+                    
+                    if(row.endDateTime != null) {
+                        dateC = new Date(row.endDateTime);
+                        minutes = dateC.getMinutes();
+                        hours = dateC.getHours()-1;
+                        ampm =  hours >= 12 ? 'pm' : 'am';
+                        hours = hours % 12;
+                        hours = hours ? hours : 12;
+                        minutes = minutes < 10 ? '0'+minutes : minutes;
+                        
+                        myDateFormatted += '<br />Processing End: ' + hours+':'+minutes+ ' ' + ampm;
+                    }
+                    
 		    return myDateFormatted;
 		}
 	    },
@@ -519,7 +543,7 @@ function getOutboundMessages() {
 		"mData": "id", 
 		"defaultContent": "",
 		"bSortable":true,
-		"sWidth": "10%",
+		"sWidth": "8%",
 		"className": "center-text",
 		"render": function ( data, type, row, meta ) {
 		    return "On Demand";
@@ -529,8 +553,7 @@ function getOutboundMessages() {
 		"mData": "dateCreated", 
 		"defaultContent": "",
 		"bSortable":true,
-		"sWidth": "10%",
-		"className": "center-text",
+		"sWidth": "12%",
 		"render": function ( data, type, row, meta ) {
 		    var dateC = new Date(data);
 		    var minutes = dateC.getMinutes();
@@ -539,7 +562,36 @@ function getOutboundMessages() {
 		    hours = hours % 12;
 		    hours = hours ? hours : 12;
 		    minutes = minutes < 10 ? '0'+minutes : minutes;
-		    var myDateFormatted = ((dateC.getMonth()*1)+1)+'/'+dateC.getDate()+'/'+dateC.getFullYear() + ' ' + hours+':'+minutes+ ' ' + ampm;
+                    
+                    var myDateFormatted = '';
+		    
+                    if(row.startDateTime != null) {
+                        dateC = new Date(row.startDateTime);
+                        minutes = dateC.getMinutes();
+                        hours = dateC.getHours()-1;
+                        ampm =  hours >= 12 ? 'pm' : 'am';
+                        hours = hours % 12;
+                        hours = hours ? hours : 12;
+                        minutes = minutes < 10 ? '0'+minutes : minutes;
+                        
+                        myDateFormatted += 'Processing Start: ' + hours+':'+minutes+ ' ' + ampm;
+                    }
+                    
+                    if(row.endDateTime != null) {
+                        dateC = new Date(row.endDateTime);
+                        minutes = dateC.getMinutes();
+                        hours = dateC.getHours()-1;
+                        ampm =  hours >= 12 ? 'pm' : 'am';
+                        hours = hours % 12;
+                        hours = hours ? hours : 12;
+                        minutes = minutes < 10 ? '0'+minutes : minutes;
+                        
+                        myDateFormatted += '<br />Processing End: ' + hours+':'+minutes+ ' ' + ampm;
+                    }
+                    
+                     myDateFormatted += '<br />Sent: ' + ((dateC.getMonth()*1)+1)+'/'+dateC.getDate()+'/'+dateC.getFullYear() + ' ' + hours+':'+minutes+ ' ' + ampm;
+                    
+                    
 		    return myDateFormatted;
 		}
 	    },

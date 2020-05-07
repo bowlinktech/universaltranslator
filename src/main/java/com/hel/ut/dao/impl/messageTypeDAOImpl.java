@@ -384,7 +384,7 @@ public class messageTypeDAOImpl implements messageTypeDAO {
     @Override
     @Transactional(readOnly = true)
     public List getCrosswalksWithData(Integer orgId) {
-        Query query = sessionFactory.getCurrentSession().createSQLQuery("select a.name,  b.sourceValue, b.targetValue, b.descValue from crosswalks a inner join rel_crosswalkdata b on b.crosswalkId = a.id where a.orgId = :orgId order by a.id asc");
+        Query query = sessionFactory.getCurrentSession().createSQLQuery("select a.name,  b.sourceValue, b.targetValue, b.descValue from crosswalks a inner join rel_crosswalkdata b on b.crosswalkId = a.id where a.orgId = :orgId order by a.name asc");
         query.setParameter("orgId", orgId);
 
         return query.list();
