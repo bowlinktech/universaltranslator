@@ -2082,12 +2082,21 @@ public class transactionOutManagerImpl implements transactionOutManager {
 		    //File targetFile = new File(targetDirectory + batchDownload.getUtBatchName() + "." + fileExt);
 		    File targetFile = new File(targetDirectory + batchDownload.getOutputFileName());
 		    
-		    Files.copy(archiveFile.toPath(), targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+		    try {
+			Files.copy(archiveFile.toPath(), targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
 		    
-		    ba = new batchdownloadactivity();
-		    ba.setActivity("Moved the archive file: " + archiveFile.getAbsolutePath() + " to the config drop directory: "+ targetFile.getAbsolutePath());
-		    ba.setBatchDownloadId(batchDownload.getId());
-		    transactionOutDAO.submitBatchActivityLog(ba);
+			ba = new batchdownloadactivity();
+			ba.setActivity("Moved the archive file: " + archiveFile.getAbsolutePath() + " to the config drop directory: "+ targetFile.getAbsolutePath());
+			ba.setBatchDownloadId(batchDownload.getId());
+			transactionOutDAO.submitBatchActivityLog(ba);
+		    }
+		    catch (Exception ex) {
+			ba = new batchdownloadactivity();
+			ba.setActivity("Failed to move the archive file: " + archiveFile.getAbsolutePath() + ". Drop Directory: "+ targetFile.getAbsolutePath() + " does not exist.");
+			ba.setBatchDownloadId(batchDownload.getId());
+			transactionOutDAO.submitBatchActivityLog(ba);
+		    }
+		    
 		}
 		else {
 		    updateTargetBatchStatus(batchDownload.getId(), 58, "endDateTime");
@@ -2368,6 +2377,8 @@ public class transactionOutManagerImpl implements transactionOutManager {
 		}
 	    }
 	}
+	
+	transactionInManager.updateBatchStatus(batchDownload.getBatchUploadId(), 0, "endDateTime");
 	
 	return 0;
     }
