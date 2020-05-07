@@ -1403,7 +1403,7 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
 				case 4: // Validation column
 				    try {
 					 validationVal = cell.getStringCellValue();
-					 if("x".equals(validationVal.toLowerCase()) || "none".equals(validationVal.toLowerCase()) || "no".equals(validationVal.toLowerCase()) || "n".equals(validationVal.toLowerCase()) || "".equals(validationVal.toLowerCase())) {
+					 if("x".equals(validationVal.toLowerCase()) || "none".equals(validationVal.toLowerCase()) || "no".equals(validationVal.toLowerCase()) || "".equals(validationVal.toLowerCase())) {
 					     validationId = 1;
 					 }
 					 else if("email".equals(validationVal.toLowerCase()) || "e".equals(validationVal.toLowerCase())) {
@@ -1552,90 +1552,98 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
 
 			//Get the sample data/default value
 			rowNumber = rowNumber+1;
-			row = sheet.getRow(rowNumber);
-			cell = row.getCell(colNumber);
 			
 			try {
-			     sampleData = String.valueOf((double) cell.getNumericCellValue());
-			     
-			     if(DateUtil.isCellDateFormatted(cell)) {
-				 CellStyle cellstyle = cell.getCellStyle();
-				 SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-d");
-				 
-				 
-				 if(cellstyle.getDataFormatString().equals("m/d/yy")) {
-				    format = new SimpleDateFormat("M/d/yy");
-				    sampleData = format.format(cell.getDateCellValue());
-				 }
-				 else if(cellstyle.getDataFormatString().equals("mm/d/yy;@")) {
-				    format = new SimpleDateFormat("MM/d/yy");
-				    sampleData = format.format(cell.getDateCellValue());
-				 }
-				 else if(cellstyle.getDataFormatString().equals("yyyymmd;@")) {
-				    format = new SimpleDateFormat("yyyyMMd");
-				    sampleData = format.format(cell.getDateCellValue());
-				 }
-				 else if(cellstyle.getDataFormatString().equals("[$-409]d\\-mmm;@")) {
-				    format = new SimpleDateFormat("d-MMM");
-				    sampleData = format.format(cell.getDateCellValue());
-				 }
-				 else if(cellstyle.getDataFormatString().equals("[$-409]d\\-mmm\\-yy;@")) {
-				    format = new SimpleDateFormat("d-MMM-yy");
-				    sampleData = format.format(cell.getDateCellValue());
-				 }
-				 else if(cellstyle.getDataFormatString().equals("[$-409]mmm\\-yy;@")) {
-				    format = new SimpleDateFormat("MMM-yy");
-				    sampleData = format.format(cell.getDateCellValue());
-				 }
-				 else if(cellstyle.getDataFormatString().equals("[$-409]mmmm\\-yy;@")) {
-				    format = new SimpleDateFormat("MMMM-yy");
-				    sampleData = format.format(cell.getDateCellValue());
-				 }
-				 else if(cellstyle.getDataFormatString().equals("[$-409]mmmm\\ d\\,\\ yyyy;@")) {
-				    format = new SimpleDateFormat("MMMM d, yyyy");
-				    sampleData = format.format(cell.getDateCellValue());
-				 }
-				 else if(cellstyle.getDataFormatString().equals("m/d/yyyy;@")) {
-				    format = new SimpleDateFormat("M/d/yyyy");
-				    sampleData = format.format(cell.getDateCellValue());
-				 }
-				 else if(cellstyle.getDataFormatString().equals("[$-409]d\\-mmm\\-yyyy;@")) {
-				    format = new SimpleDateFormat("d-MMM-yyyy");
-				    sampleData = format.format(cell.getDateCellValue());
+			    row = sheet.getRow(rowNumber);
+			    cell = row.getCell(colNumber);
+			
+			    try {
+				 sampleData = String.valueOf((double) cell.getNumericCellValue());
+
+				 if(DateUtil.isCellDateFormatted(cell)) {
+				     CellStyle cellstyle = cell.getCellStyle();
+				     SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-d");
+
+
+				     if(cellstyle.getDataFormatString().equals("m/d/yy")) {
+					format = new SimpleDateFormat("M/d/yy");
+					sampleData = format.format(cell.getDateCellValue());
+				     }
+				     else if(cellstyle.getDataFormatString().equals("mm/d/yy;@")) {
+					format = new SimpleDateFormat("MM/d/yy");
+					sampleData = format.format(cell.getDateCellValue());
+				     }
+				     else if(cellstyle.getDataFormatString().equals("yyyymmd;@")) {
+					format = new SimpleDateFormat("yyyyMMd");
+					sampleData = format.format(cell.getDateCellValue());
+				     }
+				     else if(cellstyle.getDataFormatString().equals("[$-409]d\\-mmm;@")) {
+					format = new SimpleDateFormat("d-MMM");
+					sampleData = format.format(cell.getDateCellValue());
+				     }
+				     else if(cellstyle.getDataFormatString().equals("[$-409]d\\-mmm\\-yy;@")) {
+					format = new SimpleDateFormat("d-MMM-yy");
+					sampleData = format.format(cell.getDateCellValue());
+				     }
+				     else if(cellstyle.getDataFormatString().equals("[$-409]mmm\\-yy;@")) {
+					format = new SimpleDateFormat("MMM-yy");
+					sampleData = format.format(cell.getDateCellValue());
+				     }
+				     else if(cellstyle.getDataFormatString().equals("[$-409]mmmm\\-yy;@")) {
+					format = new SimpleDateFormat("MMMM-yy");
+					sampleData = format.format(cell.getDateCellValue());
+				     }
+				     else if(cellstyle.getDataFormatString().equals("[$-409]mmmm\\ d\\,\\ yyyy;@")) {
+					format = new SimpleDateFormat("MMMM d, yyyy");
+					sampleData = format.format(cell.getDateCellValue());
+				     }
+				     else if(cellstyle.getDataFormatString().equals("m/d/yyyy;@")) {
+					format = new SimpleDateFormat("M/d/yyyy");
+					sampleData = format.format(cell.getDateCellValue());
+				     }
+				     else if(cellstyle.getDataFormatString().equals("[$-409]d\\-mmm\\-yyyy;@")) {
+					format = new SimpleDateFormat("d-MMM-yyyy");
+					sampleData = format.format(cell.getDateCellValue());
+				     }
+				     else {
+					 sampleData = format.format(cell.getDateCellValue());
+				     }
 				 }
 				 else {
-				     sampleData = format.format(cell.getDateCellValue());
+				    cell.setCellType(Cell.CELL_TYPE_STRING);
+				    sampleData = cell.getStringCellValue();
 				 }
-			     }
-			     else {
-				cell.setCellType(Cell.CELL_TYPE_STRING);
-				sampleData = cell.getStringCellValue();
-			     }
-			}
-			catch (Exception ex1) {
-			     try {
-				 sampleData = cell.getDateCellValue().toString();
-			     }
-			     catch (Exception ex2) {
+			    }
+			    catch (Exception ex1) {
 				 try {
-				    sampleData = cell.getStringCellValue(); 
+				     sampleData = cell.getDateCellValue().toString();
 				 }
-				 catch(Exception ex3) {
-				     sampleData = "";
-				 } 
-			     }
-			 } 
+				 catch (Exception ex2) {
+				     try {
+					sampleData = cell.getStringCellValue(); 
+				     }
+				     catch(Exception ex3) {
+					 sampleData = "";
+				     } 
+				 }
+			     } 
+			}
+			catch (Exception cellIsNull) {
+			    sampleData = "";
+			}
 
 			//Get the r/o/d value
 			rowNumber = rowNumber+1;
-			row = sheet.getRow(rowNumber);
-			cell = row.getCell(colNumber);
-
+			
 			try {
+			    row = sheet.getRow(rowNumber);
+			    cell = row.getCell(colNumber);
 			    required = cell.getBooleanCellValue();
 			}
 			catch (Exception ex) {
 			    try {
+				row = sheet.getRow(rowNumber);
+				cell = row.getCell(colNumber);
 				requiredAsString = cell.getStringCellValue();
 				
 				if(configDetails.getType() == 1 && ("default".equals(requiredAsString.toLowerCase()) || "d".equals(requiredAsString.toLowerCase()))) {
@@ -1719,7 +1727,8 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
 			    cell = row.getCell(colNumber);
 			
 			    validationVal = cell.getStringCellValue();
-			    if("x".equals(validationVal.toLowerCase()) || "none".equals(validationVal.toLowerCase()) || "no".equals(validationVal.toLowerCase()) || "n".equals(validationVal.toLowerCase()) || "".equals(validationVal.toLowerCase())) {
+			    
+			    if("x".equals(validationVal.toLowerCase()) || "none".equals(validationVal.toLowerCase()) || "no".equals(validationVal.toLowerCase()) || "".equals(validationVal.toLowerCase())) {
 				validationId = 1;
 			    }
 			    else if("email".equals(validationVal.toLowerCase()) || "e".equals(validationVal.toLowerCase())) {

@@ -12,6 +12,9 @@
             <div class="alert alert-danger uploadError" role="alert" style="display:none;">
                 The uploaded file did not have the delimiter you selected.
             </div>
+            <div class="alert alert-success uploadSuccess" role="alert" style="display:none;">
+                The crosswalk file was successfully uploaded.
+            </div>
 
             <form:form id="crosswalkdetailsform" commandName="crosswalkDetails" modelAttribute="crosswalkDetails" enctype="multipart/form-data" method="post" role="form">
                 <form:hidden path="id" id="id" />
@@ -51,7 +54,8 @@
                                 <c:set var="hrefLink" value="/FileDownload/downloadFile.do?fromPage=config&filename=${crosswalkDetails.fileName}&foldername=${cleanOrgURL}/crosswalks"/>
                                 <div class="form-group">
                                     <label class="control-label" >Existing Crosswalk File</label>
-                                    <p><a href="${hrefLink}" title="Download Crosswalk File">${crosswalkDetails.fileName}</a></p>
+                                    <p>${crosswalkDetails.fileName}</p>
+                                    <p><a href="${hrefLink}" title="Download Crosswalk File">Click here to download the file.</a></p>
                                 </div>
                             </c:when>
                             <c:when test="${crosswalkDetails.orgId == 0}">

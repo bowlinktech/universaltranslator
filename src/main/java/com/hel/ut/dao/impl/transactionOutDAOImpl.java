@@ -358,7 +358,8 @@ public class transactionOutDAOImpl implements transactionOutDAO {
 	String sql = "update batchDownloads set statusId = :statusId ";
 	if (!timeField.equalsIgnoreCase("")) {
 	    sql = sql + ", " + timeField + " = CURRENT_TIMESTAMP";
-	} else {
+	} 
+	else {
 	    // we reset time
 	    sql = sql + ", startDateTime = null, endDateTime = null";
 	}
@@ -1335,10 +1336,10 @@ public class transactionOutDAOImpl implements transactionOutDAO {
 	
 	
 	String sqlQuery = "select id, orgId, utBatchName, transportMethodId, outputFileName, totalRecordCount, totalErrorCount, configName, threshold, statusId, dateCreated,"
-		+ "statusValue, endUserDisplayText, orgName, transportMethod, fromBatchName, fromBatchFile, totalMessages, srcOrgName "
+		+ "startDateTime, endDateTime, statusValue, endUserDisplayText, orgName, transportMethod, fromBatchName, fromBatchFile, totalMessages, srcOrgName "
 		+ "FROM ("
 		+ "select a.id, a.orgId, a.utBatchName, a.transportMethodId, a.outputFileName, a.totalRecordCount, a.totalErrorCount, b.configName, b.threshold,"
-		+ "a.statusId, a.dateCreated, c.displayCode as statusValue, c.endUserDisplayText as endUserDisplayText, d.orgName, e.transportMethod, f.utBatchName as fromBatchName,"
+		+ "a.statusId, a.dateCreated, a.startDateTime, a.endDateTime, c.displayCode as statusValue, c.endUserDisplayText as endUserDisplayText, d.orgName, e.transportMethod, f.utBatchName as fromBatchName,"
 		+ "case when f.transportMethodId = 5 THEN CONCAT(f.utBatchName,'.',SUBSTRING_INDEX(f.originalFileName,'.',-1)) "
 		+ "when f.transportMethodId = 1 THEN CONCAT(f.utBatchName,'.',SUBSTRING_INDEX(f.originalFileName,'.',-1)) "
 		+ "else '' end as fromBatchFile,"
@@ -1379,6 +1380,8 @@ public class transactionOutDAOImpl implements transactionOutDAO {
 	    .addScalar("configName", StandardBasicTypes.STRING)
 	    .addScalar("statusId", StandardBasicTypes.INTEGER)
 	    .addScalar("dateCreated", StandardBasicTypes.TIMESTAMP)
+	    .addScalar("startDateTime", StandardBasicTypes.TIMESTAMP)
+	    .addScalar("endDateTime", StandardBasicTypes.TIMESTAMP)
 	    .addScalar("statusValue", StandardBasicTypes.STRING)
 	    .addScalar("orgName", StandardBasicTypes.STRING)
 	    .addScalar("transportMethod", StandardBasicTypes.STRING)

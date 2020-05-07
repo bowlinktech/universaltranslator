@@ -290,8 +290,8 @@
 					    <p>
 						<strong>Associated File(s):</strong><br />
 						<a href="${hrefLink}" title="View Original File">Submitted File - ${batchDetails.originalFileName}</a>
-						<c:if test="${(batchDetails.transportMethodId == 9 || batchDetails.transportMethodId == 13) && not empty fileName}">
-						    <br /><a href="${hreftranslateLink}" title="View Translated File">Translated File - ${fileName}</a></p>
+						<c:if test="${(batchDetails.transportMethodId == 9 || batchDetails.transportMethodId == 13) && ext != 'txt' && not empty fileName}">
+						    <br /><a href="${hreftranslateLink}" title="View Internal Processing File">Internal File - ${fileName}</a></p>
 						</c:if>
 					    </p>
 					</c:if>
