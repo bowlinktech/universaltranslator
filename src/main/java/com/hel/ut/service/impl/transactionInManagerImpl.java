@@ -1074,7 +1074,7 @@ public class transactionInManagerImpl implements transactionInManager {
 				    batchInfo.setOrgId(orgId);
 				    batchInfo.setTransportMethodId(transportMethodId);
 				    batchInfo.setStatusId(4);
-				    //batchInfo.setStartDateTime(date);
+				    batchInfo.setStartDateTime(date);
 				    batchInfo.setUtBatchName(batchName);
 				    batchInfo.setOriginalFolder(rootPath + configDroppedPath);
 				    batchInfo.setUserId(0);
@@ -4199,7 +4199,7 @@ public class transactionInManagerImpl implements transactionInManager {
 	    batchInfo.setOrgId(directMessage.getOrgId());
 	    batchInfo.setTransportMethodId(13);
 	    batchInfo.setStatusId(4);
-	    //batchInfo.setStartDateTime(date);
+	    batchInfo.setStartDateTime(date);
 	    batchInfo.setUtBatchName(batchName);
 	    batchInfo.setConfigId(configId);
 	    batchInfo.setOriginalFileName(directMessage.getReferralFileName());
