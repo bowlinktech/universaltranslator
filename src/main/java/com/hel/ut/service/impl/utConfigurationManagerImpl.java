@@ -762,7 +762,7 @@ public class utConfigurationManagerImpl implements utConfigurationManager {
 	reportBody.append("<div style='text-align:center'>");
 	reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 16px;'>").append(configDetails.getconfigName()).append("</span><br />");
 	reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 14px;'>Organization: ").append(orgDetails.getOrgName()).append("</span><br />");
-	reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>This configuartion was created on ").append(df.format(configDetails.getDateCreated())).append("</span><br /><br />");
+	reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>This configuration was created on ").append(df.format(configDetails.getDateCreated())).append("</span><br /><br />");
 	reportBody.append("</div>");
 
 	reportBody.append("<div>");
@@ -935,20 +935,14 @@ public class utConfigurationManagerImpl implements utConfigurationManager {
 	    if(transportDetails.getfileDelimiter() == 2) {
 		delim = "pipe (|)";
 	    }
-	    else if(transportDetails.getfileType() == 3) {
+	    else if(transportDetails.getfileDelimiter() == 3) {
 		delim = "colon (:)";
 	    }
-	    else if(transportDetails.getfileType() == 11) {
+	    else if(transportDetails.getfileDelimiter() == 11) {
 		delim = "semi-colon (;)";
 	    }
-	    else if(transportDetails.getfileType() == 12) {
+	    else if(transportDetails.getfileDelimiter() == 12) {
 		delim = "tab";
-	    }
-
-	    String encoding = "none";
-
-	    if(transportDetails.getEncodingId() == 2) {
-		encoding = "Base64";
 	    }
 
 	    String apiType = "";
@@ -991,15 +985,17 @@ public class utConfigurationManagerImpl implements utConfigurationManager {
 	    }
 	    reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'><strong>File Type</strong></span><br />");
 	    reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>").append(fileType).append("</span><br /><br />");
-	    reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'><strong>File Extension</strong></span><br />");
-	    reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>.").append(transportDetails.getfileExt()).append("</span><br /><br />");
-	    reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'><strong>File Delimiter</strong></span><br />");
-	    reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>").append(delim).append("</span><br /><br />");
-	    reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'><strong>Line Terminator</strong></span><br />");
-	    reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>.").append(transportDetails.getLineTerminator()).append("</span><br /><br />");
-	    reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'><strong>What type of Encoding does the file have?</strong></span><br />");
-	    reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>").append(encoding).append("</span><br /><br />");
-	    reportBody.append("</div>");
+	    
+	    if("CSV".equals(fileType) || "Text File".equals(fileType)) {
+		reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'><strong>File Extension</strong></span><br />");
+		reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>.").append(transportDetails.getfileExt()).append("</span><br /><br />");
+		reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'><strong>File Delimiter</strong></span><br />");
+		reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>").append(delim).append("</span><br /><br />");
+		reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'><strong>Line Terminator</strong></span><br />");
+		reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>").append(transportDetails.getLineTerminator()).append("</span><br /><br />");
+	    }
+	    
+	     reportBody.append("</div>");
 	    
 	    if(fileDropFields != null) {
 		if(fileDropFields.size() > 0) {
@@ -1167,27 +1163,39 @@ public class utConfigurationManagerImpl implements utConfigurationManager {
 	    reportBody.append("<div>");
 	    reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'><strong>Current Template File?</strong></span><br />");
 	    reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>").append(messageSpecs.gettemplateFile()).append("</span><br /><br />");
-	    reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'><strong>Does the Template file have a header row?</strong></span><br />");
-	    reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>").append(hasHeaderRow).append("</span><br /><br />");
-	    reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'><strong>Template File Layout?</strong></span><br />");
-	    reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>").append(fileLayout).append("</span><br /><br />");
 	    if(configDetails.getType() == 1) {
-		reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'><strong>Message Type Identifier in file name</strong></span><br />");
-		reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>").append(messageSpecs.getFileNameConfigHeader()).append("</span><br /><br />");
-		reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'><strong>Column containing the message type (Enter 0 if not provided)</strong></span><br />");
-		reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>").append(messageSpecs.getmessageTypeCol()).append("</span><br /><br />");
-		reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'><strong>Message Type Value</strong></span><br />");
-		reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>").append(messageSpecs.getmessageTypeVal()).append("</span><br /><br />");
-		reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'><strong>Column containing the target organization (Enter 0 if not provided)</strong></span><br />");
-		reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>").append(messageSpecs.gettargetOrgCol()).append("</span><br /><br />");
+		
+		if(messageSpecs.getFileNameConfigHeader() != null) {
+		    if(!"".equals(messageSpecs.getFileNameConfigHeader())) {
+			reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'><strong>Message Type Identifier in file name</strong></span><br />");
+			reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>").append(messageSpecs.getFileNameConfigHeader()).append("</span><br /><br />");
+		    }
+		}
+		
+		if(messageSpecs.getmessageTypeCol() > 0) {
+		    reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'><strong>Column containing the message type (Enter 0 if not provided)</strong></span><br />");
+		    reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>").append(messageSpecs.getmessageTypeCol()).append("</span><br /><br />");
+		}
+		
+		if(messageSpecs.getmessageTypeVal() != null) {
+		    if(!"".equals(messageSpecs.getmessageTypeVal())) {
+			reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'><strong>Message Type Value</strong></span><br />");
+			reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>").append(messageSpecs.getmessageTypeVal()).append("</span><br /><br />");
+		    }
+		}
+		
+		if(messageSpecs.gettargetOrgCol() > 0) {
+		    reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'><strong>Column containing the target organization (Enter 0 if not provided)</strong></span><br />");
+		    reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>").append(messageSpecs.gettargetOrgCol()).append("</span><br /><br />");
+		}
+		
 		reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'><strong>Will the submission have a header row?</strong></span><br />");
 		reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>").append(submissionHeaderRow).append("</span><br /><br />");
-		reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'><strong>Configuration Parsing Script</strong></span><br />");
-		if(messageSpecs.getParsingTemplate() != null && !"".equals(messageSpecs.getParsingTemplate())) { 
-		    reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>").append(messageSpecs.getParsingTemplate()).append("</span><br /><br />");
-		}
-		else {
-		    reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>").append("N/A").append("</span><br /><br />");
+		if(messageSpecs.getParsingTemplate() != null) {
+		    if(!"".equals(messageSpecs.getParsingTemplate())) { 
+			reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'><strong>Configuration Parsing Script</strong></span><br />");
+			reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>").append(messageSpecs.getParsingTemplate()).append("</span><br /><br />");
+		    }
 		}
 	    }
 	    reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 14px;'><strong>Audit Report Reportable Fields</strong></span><br />");
@@ -1227,8 +1235,7 @@ public class utConfigurationManagerImpl implements utConfigurationManager {
 		}	
 		reportBody.append("</tr></thead><tbody>");
 		for(configurationFormFields field : fields) {
-		    reportBody.append("<tr><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>").append(field.getFieldNo()).append("</td><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>").append(field.getFieldDesc()).append("</td>");
-		    
+		    reportBody.append("<tr><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>F").append(field.getFieldNo()).append("</td><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>").append(field.getFieldDesc()).append("</td>");
 		    
 		    if(field.getSampleData() == null) {
 			reportBody.append("<td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>").append("").append("</td>");
@@ -1311,7 +1318,7 @@ public class utConfigurationManagerImpl implements utConfigurationManager {
 	    if(!existingTranslations.isEmpty()) {
 		reportBody.append("</div>");
 		reportBody.append("<div><table border='1' cellpadding='1' cellspacing='1' width='100%'>");
-		reportBody.append("<thead><tr><th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Field</th><th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Macro Name</th><th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Crosswalk Name</th><th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Pass/Clear</th>");
+		reportBody.append("<thead><tr><th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Field No</th><th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Field Name</th><th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Macro Name</th><th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Crosswalk Name</th><th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Pass/Clear</th>");
 		reportBody.append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Field A</th>");
 		reportBody.append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Field B</th>");
 		reportBody.append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Constant 1</th>");
@@ -1319,6 +1326,8 @@ public class utConfigurationManagerImpl implements utConfigurationManager {
 		reportBody.append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Process Order</th>");
 		reportBody.append("</tr></thead><tbody>");
 		for(configurationDataTranslations dt : existingTranslations) {
+		    macroName = "";
+		    crosswalkName = "";
 		    
 		    for(configurationFormFields field : fields) {
 			if(field.getId() == dt.getFieldId()) { fieldName = field.getFieldDesc(); fieldNo = field.getFieldNo(); }
@@ -1336,7 +1345,9 @@ public class utConfigurationManagerImpl implements utConfigurationManager {
 			}
 		    }
 		    
-		    reportBody.append("<tr><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>").append(fieldName).append("F").append(fieldNo).append("</td>");
+		    reportBody.append("<tr>");
+		    reportBody.append("<td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>").append("F").append(fieldNo).append("</td>");
+		    reportBody.append("<td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>").append(fieldName).append("</td>");
 		    reportBody.append("<td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>").append(macroName).append("</td>");
 		    reportBody.append("<td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>").append(crosswalkName).append("</td>");
 

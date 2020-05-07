@@ -117,15 +117,17 @@ public class messageTypeManagerImpl implements messageTypeManager {
         InputStream inputStream = null;
         OutputStream outputStream = null;
 	String directory;
-
+	
         if (crosswalkDetails.getOrgId() > 0) {
             Organization orgDetails = organizationDAO.getOrganizationById(crosswalkDetails.getOrgId());
             cleanURL = orgDetails.getcleanURL();
 	    directory = myProps.getProperty("ut.directory.utRootDir") + cleanURL + "/crosswalks/";
         } else {
             //Set the directory to save the uploaded message type template to
-	     directory = myProps.getProperty("ut.directory.utRootDir") + "libraryFiles/";
+	     directory = myProps.getProperty("ut.directory.utRootDir") + "libraryFiles/crosswalks/";
         }
+	
+	System.out.println(directory + fileName);
 
         File newFile = null;
         newFile = new File(directory + fileName);

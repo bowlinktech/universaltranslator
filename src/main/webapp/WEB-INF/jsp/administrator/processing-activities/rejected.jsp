@@ -92,8 +92,8 @@
                                                     </a>
 						    <br/>
 						    <c:if test="${(batch.transportMethodId == 10 || batch.transportMethodId == 6 || batch.transportMethodId == 9) && batch.statusId != 42}">
-							<a href="${hrefPipeLink}" title="View Pipe File">
-							    Translated File - ${batch.utBatchName}
+							<a href="${hrefPipeLink}" title="View Internal Processing File">
+							    Internal File - ${batch.utBatchName}
 							</a>
 						    </c:if>
                                                 </c:if>

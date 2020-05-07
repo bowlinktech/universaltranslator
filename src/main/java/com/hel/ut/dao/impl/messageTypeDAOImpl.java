@@ -12,7 +12,6 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import com.hel.ut.dao.messageTypeDAO;
 import com.hel.ut.model.Crosswalks;
-import com.hel.ut.model.Organization;
 import com.hel.ut.model.validationType;
 import org.hibernate.criterion.Disjunction;
 import org.hibernate.transform.Transformers;
@@ -385,7 +384,7 @@ public class messageTypeDAOImpl implements messageTypeDAO {
     @Override
     @Transactional(readOnly = true)
     public List getCrosswalksWithData(Integer orgId) {
-        Query query = sessionFactory.getCurrentSession().createSQLQuery("select a.name,  b.sourceValue, b.targetValue, b.descValue from crosswalks a inner join rel_crosswalkdata b on b.crosswalkId = a.id where a.orgId = :orgId order by a.id asc");
+        Query query = sessionFactory.getCurrentSession().createSQLQuery("select a.name,  b.sourceValue, b.targetValue, b.descValue from crosswalks a inner join rel_crosswalkdata b on b.crosswalkId = a.id where a.orgId = :orgId order by a.name asc");
         query.setParameter("orgId", orgId);
 
         return query.list();
@@ -421,7 +420,6 @@ public class messageTypeDAOImpl implements messageTypeDAO {
 	    sql += " limit " + firstResult + ", " + maxCrosswalks;
 	}
 	
-	System.out.println(sql);
 	Query query = sessionFactory
 	    .getCurrentSession()
 	    .createSQLQuery(sql)
