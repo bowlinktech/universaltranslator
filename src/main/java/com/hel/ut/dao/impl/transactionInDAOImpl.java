@@ -566,11 +566,13 @@ public class transactionInDAOImpl implements transactionInDAO {
 	    if (timeField.equalsIgnoreCase("startover")) {
 		// we reset time
 		sql = sql + ", startDateTime = null, endDateTime = null";
-	    } else if (!timeField.equalsIgnoreCase("")) {
-		sql = sql + ", " + timeField + " = CURRENT_TIMESTAMP";
-	    } //else {
-		//sql = sql + ", startDateTime = CURRENT_TIMESTAMP, endDateTime = CURRENT_TIMESTAMP";
-	    //}
+	    } 
+	    else if ("startDateTime".equals(timeField)) {
+		sql = sql + ", startDateTime = CURRENT_TIMESTAMP, endDateTime = null";
+	    }
+	    else if ("endDateTime".equals(timeField)) {
+		sql = sql + ", endDateTime = CURRENT_TIMESTAMP";
+	    }
 	    sql = sql + " where id = :id ";
 
 	    Query updateData = sessionFactory.getCurrentSession().createSQLQuery(sql)
@@ -594,8 +596,6 @@ public class transactionInDAOImpl implements transactionInDAO {
 		System.err.println("updateBatchStatus " + ex.getCause());
 	    }
 	}
-	
-
     }
 
     @Override
