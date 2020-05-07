@@ -1074,7 +1074,7 @@ public class transactionInManagerImpl implements transactionInManager {
 				    batchInfo.setOrgId(orgId);
 				    batchInfo.setTransportMethodId(transportMethodId);
 				    batchInfo.setStatusId(4);
-				    batchInfo.setStartDateTime(date);
+				    //batchInfo.setStartDateTime(date);
 				    batchInfo.setUtBatchName(batchName);
 				    batchInfo.setOriginalFolder(rootPath + configDroppedPath);
 				    batchInfo.setUserId(0);
@@ -1094,6 +1094,8 @@ public class transactionInManagerImpl implements transactionInManager {
 				    }
 				    
 				    batchId = submitBatchUpload(batchInfo);
+				    
+				    updateBatchStatus(batchId, 4, "startDateTime");
 				    
 				    //log batch activity
 				    batchuploadactivity ba = new batchuploadactivity();
@@ -3711,6 +3713,8 @@ public class transactionInManagerImpl implements transactionInManager {
 
 		batchId = submitBatchUpload(batchInfo);
 		
+		updateBatchStatus(batchId, 4, "startDateTime");
+		
 		createBatchTables(batchId, configId);
 
 		if (statusId != 2 && statusId != 42 && statusId != 24) {
@@ -4347,6 +4351,8 @@ public class transactionInManagerImpl implements transactionInManager {
 		}
 
 		batchId = submitBatchUpload(batchInfo);
+		
+		updateBatchStatus(batchId, statusId, "startDateTime");
 		
 		createBatchTables(batchId, configId);
 
