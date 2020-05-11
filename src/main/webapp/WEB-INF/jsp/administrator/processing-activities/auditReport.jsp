@@ -242,9 +242,15 @@
 					<p>
 					    <strong>Related Outbound Batches:</strong><br />
 					    <c:choose>
-						<c:when test="${not empty batchDetails.relatedBatchDownloadIds}">
-						    <c:forEach items="${batchDetails.relatedBatchDownloadIds}" var="batchDownloadId">
-							<a href="/administrator/processing-activity/outbound/auditReport/${batchDownloadId}">${batchDownloadId}</a><br />
+						<c:when test="${not empty batchDetails.relatedBatchDownloads}">
+						    <c:forEach items="${batchDetails.relatedBatchDownloads}" var="targetBatch">
+							<a href="/administrator/processing-activity/outbound/auditReport/${targetBatch.utBatchName}">${targetBatch.utBatchName}</a><br />
+                                                        <c:if test="${targetBatch.targetFileExists}">
+                                                            <c:set var="text" value="${fn:split(targetBatch.outputFileName,'.')}" />
+                                                            <c:set var="ext" value="${text[fn:length(text)-1]}" />
+                                                            <c:set var="hrefLink" value="/FileDownload/downloadFile.do?fromPage=inboundAudit&filename=${targetBatch.outputFileName}&foldername=archivesOut&orgId=${targetBatch.orgId}&utBatchId=${batchDetails.utBatchName}"/>
+                                                            <a href="${hrefLink}" title="View Generated Target File">Generated Target File - ${targetBatch.outputFileName}</a>
+                                                        </c:if>
 						    </c:forEach>
 						</c:when>
 						<c:when test="${canSend}">
