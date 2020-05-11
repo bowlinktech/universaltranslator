@@ -244,7 +244,7 @@ function populateMessages(fromDate,toDate) {
                         hours = hours ? hours : 12;
                         minutes = minutes < 10 ? '0'+minutes : minutes;
                         
-                        myDateFormatted += '<br />Start: ' + hours+':'+minutes+ ' ' + ampm;
+                        myDateFormatted += '<br />Start: ' + ((dateC.getMonth()*1)+1)+'/'+dateC.getDate()+'/'+dateC.getFullYear() + ' ' + hours+':'+minutes+ ' ' + ampm;
                     }
                     
                     if(row.endDateTime != null) {
@@ -256,7 +256,7 @@ function populateMessages(fromDate,toDate) {
                         hours = hours ? hours : 12;
                         minutes = minutes < 10 ? '0'+minutes : minutes;
                         
-                        myDateFormatted += '<br />End: ' + hours+':'+minutes+ ' ' + ampm;
+                        myDateFormatted += '<br />End: ' + ((dateC.getMonth()*1)+1)+'/'+dateC.getDate()+'/'+dateC.getFullYear() + ' ' + hours+':'+minutes+ ' ' + ampm;
                     }
                     
 		    return myDateFormatted;
