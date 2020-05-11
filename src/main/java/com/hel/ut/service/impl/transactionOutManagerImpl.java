@@ -1435,6 +1435,10 @@ public class transactionOutManagerImpl implements transactionOutManager {
     public Integer processMassOutputBatch(batchDownloads batchDownload) throws Exception {
 	
 	batchdownloadactivity ba = new batchdownloadactivity();
+	String patientId = "";
+	String patientDOB = "";
+	String patientFirstname = "";
+	String patientLastname = "";
 	
 	try {
 	    ba = new batchdownloadactivity();
@@ -1837,6 +1841,19 @@ public class transactionOutManagerImpl implements transactionOutManager {
 				    }
 				}
 				
+				if(element.getElement().equals("[@patientFirstName@]")) {
+				    patientFirstname = fieldValue;
+				}
+				else if(element.getElement().equals("[@patientLastName@]")) {
+				    patientLastname = fieldValue;
+				}
+				else if(element.getElement().equals("[@patientID@]")) {
+				    patientId = fieldValue;
+				}
+				else if(element.getElement().equals("[@patientDOB@]")) {
+				    patientDOB = fieldValue;
+				}
+				
 				repeatingSectionCopy = repeatingSectionCopy.replace(element.getElement(), fieldValue);
 
 			    }
@@ -2194,9 +2211,9 @@ public class transactionOutManagerImpl implements transactionOutManager {
 		    hisps hispDetails = hispManager.getHispById(directDetails.getHispId());
 		    
 		    methodName = "senddirectOut"+hispDetails.getHispName().toLowerCase().replaceAll(" ","");
-		    Class<?>[] paramTypes = {Integer.class, configurationTransport.class, hisps.class};
+		    Class<?>[] paramTypes = {Integer.class, configurationTransport.class, hisps.class, String.class, String.class, String.class, String.class};
 		    Method method = directManager.getClass().getMethod(methodName, paramTypes);
-		    method.invoke(directManager, batchDownload.getId(), transportDetails, hispDetails);
+		    method.invoke(directManager, batchDownload.getId(), transportDetails, hispDetails, patientId, patientDOB, patientFirstname, patientLastname);
 		    
 		    ba = new batchdownloadactivity();
 		    ba.setActivity("Called the DIRECT Method: " + methodName + " for Hisp ("+hispDetails.getHispName()+") id:"+hispDetails.getId());
