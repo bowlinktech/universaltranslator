@@ -833,13 +833,23 @@ public class adminProcessingActivity {
 	    
 	    if(associatedDownloadBatches != null) {
 		if(!associatedDownloadBatches.isEmpty()) {
-		    StringBuilder sbl = new StringBuilder(); 
 		    
-		    associatedDownloadBatches.forEach(batchDownload -> {
-			sbl.append(batchDownload.getUtBatchName()).append(",");
-		    });
+		    for(batchDownloads batchDownload : associatedDownloadBatches) {
+			Organization tgtOrgDetails = organizationmanager.getOrganizationById(batchDownload.getOrgId());
+			File targetFile = null;
+			//Check if target file has been generated
+			if(batchDownload.getOutputFileName() != null) {
+			    if(!"".equals(batchDownload.getOutputFileName())) {
+				targetFile = new File(myProps.getProperty("ut.directory.utRootDir") + tgtOrgDetails.getCleanURL() + "/output files/" + batchDownload.getOutputFileName());
+				if(targetFile.exists()) {
+				    batchDownload.setTargetFileExists(true);
+				}
+			    }
+			}
+		    }
 		    
-		    batchDetails.setRelatedBatchDownloadIds(sbl.toString());
+		    batchDetails.setRelatedBatchDownloads(associatedDownloadBatches);
+		    
 		}
 	    }
 	    
@@ -2161,18 +2171,18 @@ public class adminProcessingActivity {
 		if("inbound".equals(type)) {
 		    customCols.add("Field Value");
 		
-		    sql = "select fromOutboundConfig, case when b.containsHeaderRow = 1 then a.rownumber+1 else a.rownumber end as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name,a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
+		    sql = "select fromOutboundConfig, a.rownumber as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name,a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
 			+ "from batchuploadauditerrors a left outer  join "
 			+ "configurationmessagespecs b on a.configId = b.configId "
-			+ "where a.batchUploadId = " + batchId + " and a.errorId = " + errorId + " order by a.id asc";
+			+ "where a.batchUploadId = " + batchId + " and a.errorId = " + errorId + " order by a.rownumber asc";
 		}
 		else {
 		    customCols.add("Field Value");
 		
-		    sql = "select 'false' as fromOutboundConfig,case when b.containsHeaderRow = 1 then a.rownumber+1 else a.rownumber end as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name,a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
+		    sql = "select 'false' as fromOutboundConfig,a.rownumber as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name,a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
 			+ "from batchdownloadauditerrors a left outer  join "
 			+ "configurationmessagespecs b on a.configId = b.configId "
-			+ "where a.batchDownloadId = " + batchId + " and a.errorId = " + errorId + " order by a.id asc";
+			+ "where a.batchDownloadId = " + batchId + " and a.errorId = " + errorId + " order by a.rownumber asc";
 		}
 		
 		break;
@@ -2183,18 +2193,18 @@ public class adminProcessingActivity {
 		if("inbound".equals(type)) {
 		    customCols.add("Field Value");
 
-		    sql = "select fromOutboundConfig, case when b.containsHeaderRow = 1 then a.rownumber+1 else a.rownumber end as rownumber, a.fieldNo as fieldNumber, a.fieldName as column_name, a.errorDetails as validation_type, a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
+		    sql = "select fromOutboundConfig, a.rownumber as rownumber, a.fieldNo as fieldNumber, a.fieldName as column_name, a.errorDetails as validation_type, a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
 			+ "from batchuploadauditerrors a left outer  join "
 			+ "configurationmessagespecs b on a.configId = b.configId "
-			+ "where a.batchUploadId = " + batchId + " and a.errorId = " + errorId + " order by a.id asc";
+			+ "where a.batchUploadId = " + batchId + " and a.errorId = " + errorId + " order by a.rownumber asc";
 		}
 		else {
 		    customCols.add("Field Value");
 
-		    sql = "select 'false' as fromOutboundConfig,case when b.containsHeaderRow = 1 then a.rownumber+1 else a.rownumber end as rownumber, a.fieldNo as fieldNumber, a.fieldName as column_name, a.errorDetails as validation_type, a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
+		    sql = "select 'false' as fromOutboundConfig,a.rownumber as rownumber, a.fieldNo as fieldNumber, a.fieldName as column_name, a.errorDetails as validation_type, a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
 			+ "from batchdownloadauditerrors a left outer  join "
 			+ "configurationmessagespecs b on a.configId = b.configId "
-			+ "where a.batchDownloadId = " + batchId + " and a.errorId = " + errorId + " order by a.id asc";
+			+ "where a.batchDownloadId = " + batchId + " and a.errorId = " + errorId + " order by a.rownumber asc";
 		}
 		
 		break;
@@ -2205,16 +2215,16 @@ public class adminProcessingActivity {
 		if("inbound".equals(type)) {
 		    customCols.add("Field Value");	
 
-		    sql = "select fromOutboundConfig, case when b.containsHeaderRow = 1 then a.rownumber+1 else a.rownumber end as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name, a.errorDetails as crosswalk, a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
+		    sql = "select fromOutboundConfig,a.rownumber as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name, a.errorDetails as crosswalk, a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
 			+ "from batchuploadauditerrors a left outer join "
 			+ "configurationmessagespecs b on a.configId = b.configId "
-			+ "where a.batchUploadId = " + batchId + " and a.errorId = " + errorId + " order by a.id asc";
+			+ "where a.batchUploadId = " + batchId + " and a.errorId = " + errorId + " order by a.rownumber asc";
 		}
 		else {
-		    sql = "select 'false' as fromOutboundConfig,case when b.containsHeaderRow = 1 then a.rownumber+1 else a.rownumber end as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name, a.errorDetails as crosswalk, a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
+		    sql = "select 'false' as fromOutboundConfig,a.rownumber as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name, a.errorDetails as crosswalk, a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
 			+ "from batchdownloadauditerrors a left outer join "
 			+ "configurationmessagespecs b on a.configId = b.configId "
-			+ "where a.batchDownloadId = " + batchId + " and a.errorId = " + errorId + " order by a.id asc";
+			+ "where a.batchDownloadId = " + batchId + " and a.errorId = " + errorId + " order by a.rownumber asc";
 		}
 		break;
 		
@@ -2224,18 +2234,18 @@ public class adminProcessingActivity {
 		if("inbound".equals(type)) {
 		    customCols.add("Field Value");
 
-		    sql = "select fromOutboundConfig, case when b.containsHeaderRow = 1 then a.rownumber+1 else a.rownumber end as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name,a.errorDetails as macro, a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
+		    sql = "select fromOutboundConfig, a.rownumber as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name,a.errorDetails as macro, a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
 			+ "from batchuploadauditerrors a left outer  join "
 			+ "configurationmessagespecs b on a.configId = b.configId "
-			+ "where a.batchUploadId = " + batchId + " and a.errorId = " + errorId + " order by a.id asc";
+			+ "where a.batchUploadId = " + batchId + " and a.errorId = " + errorId + " order by a.rownumber asc";
 		}
 		else {
 		    customCols.add("Field Value");
 
-		    sql = "select 'false' as fromOutboundConfig,case when b.containsHeaderRow = 1 then a.rownumber+1 else a.rownumber end as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name,a.errorDetails as macro, a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
+		    sql = "select 'false' as fromOutboundConfig,a.rownumber as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name,a.errorDetails as macro, a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
 			+ "from batchdownloadauditerrors a left outer  join "
 			+ "configurationmessagespecs b on a.configId = b.configId "
-			+ "where a.batchDownloadId = " + batchId + " and a.errorId = " + errorId + " order by a.id asc";
+			+ "where a.batchDownloadId = " + batchId + " and a.errorId = " + errorId + " order by a.rownumber asc";
 		}
 		
 		break;
@@ -2244,18 +2254,18 @@ public class adminProcessingActivity {
 		if("inbound".equals(type)) {
 		    customCols.add("Field Value");
 
-		    sql = "select fromOutboundConfig, case when b.containsHeaderRow = 1 then a.rownumber+1 else a.rownumber end as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name,a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
+		    sql = "select fromOutboundConfig, a.rownumber as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name,a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
 			+ "from batchuploadauditerrors a left outer  join "
 			+ "configurationmessagespecs b on a.configId = b.configId "
-			+ "where a.batchUploadId = " + batchId + " and a.errorId = " + errorId + " order by a.id asc";
+			+ "where a.batchUploadId = " + batchId + " and a.errorId = " + errorId + " order by a.rownumber asc";
 		}
 		else {
 		    customCols.add("Field Value");
 
-		    sql = "select 'false' as fromOutboundConfig,case when b.containsHeaderRow = 1 then a.rownumber+1 else a.rownumber end as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name,a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
+		    sql = "select 'false' as fromOutboundConfig,a.rownumber as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name,a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
 			+ "from batchdownloadauditerrors a left outer  join "
 			+ "configurationmessagespecs b on a.configId = b.configId "
-			+ "where a.batchDownloadId = " + batchId + " and a.errorId = " + errorId + " order by a.id asc";
+			+ "where a.batchDownloadId = " + batchId + " and a.errorId = " + errorId + " order by a.rownumber asc";
 		}
 		
 		break;

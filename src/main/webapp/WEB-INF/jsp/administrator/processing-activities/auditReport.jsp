@@ -213,14 +213,20 @@
 				<c:choose>
 				    <c:when test="${batchDownload}">
 					<c:if test="${not empty batchDetails.utBatchName}">
-					    <c:set var="text" value="${fn:split(batchDetails.outputFileName,'.')}" />
-					    <c:set var="ext" value="${text[fn:length(text)-1]}" />
-					    <c:set var="hrefLink" value="/FileDownload/downloadFile.do?fromPage=outboundAudit&filename=${batchDetails.utBatchName}.${ext}&foldername=archivesOut&utBatchId=${batchDetails.utBatchName}"/>
-					    <p><strong>Associated File:</strong>
+                                            <c:set var="text" value="${fn:split(batchDetails.outputFileName,'.')}" />
+                                            <c:set var="ext" value="${text[fn:length(text)-1]}" />
+                                            <c:url value="/FileDownload/downloadFile.do" var="hrefLink">
+                                                <c:param name="fromPage" value="inboundAudit" />
+                                                <c:param name="filename" value="${batchDetails.outputFileName}" />
+                                                <c:param name="foldername" value="archivesOut" />
+                                                <c:param name="orgId" value="${batchDetails.orgId}" />
+                                                <c:param name="utBatchId" value="${batchDetails.utBatchName}" />
+                                            </c:url>
+                                              <p><strong>Associated File:</strong>
 					    <br />
 					    <c:choose>
 						<c:when test="${batchDetails.statusId == 28}">
-						    <a href="${hrefLink}" title="View Generated Target File">Generated Target File - ${batchDetails.utBatchName}.${ext}</a>
+						    <a href="${hrefLink}" title="View Generated Target File">Generated Target File - ${batchDetails.outputFileName}</a>
 						</c:when>
 						<c:when test="${batchDetails.statusId == 64}">
 						    Outbound batch is ready to be processed
@@ -240,18 +246,30 @@
 				    </c:when>
 				    <c:otherwise>
 					<p>
-					    <strong>Related Outbound Batches:</strong><br />
+					    <strong>Related Outbound Batches:</strong>
 					    <c:choose>
-						<c:when test="${not empty batchDetails.relatedBatchDownloadIds}">
-						    <c:forEach items="${batchDetails.relatedBatchDownloadIds}" var="batchDownloadId">
-							<a href="/administrator/processing-activity/outbound/auditReport/${batchDownloadId}">${batchDownloadId}</a><br />
+						<c:when test="${not empty batchDetails.relatedBatchDownloads}">
+						    <c:forEach items="${batchDetails.relatedBatchDownloads}" var="targetBatch">
+							<br /><a href="/administrator/processing-activity/outbound/auditReport/${targetBatch.utBatchName}">${targetBatch.utBatchName}</a><br />
+                                                        <c:if test="${targetBatch.targetFileExists}">
+                                                            <c:set var="text" value="${fn:split(targetBatch.outputFileName,'.')}" />
+                                                            <c:set var="ext" value="${text[fn:length(text)-1]}" />
+                                                            <c:url value="/FileDownload/downloadFile.do" var="hrefLink">
+                                                                <c:param name="fromPage" value="inboundAudit" />
+                                                                <c:param name="filename" value="${targetBatch.outputFileName}" />
+                                                                <c:param name="foldername" value="archivesOut" />
+                                                                <c:param name="orgId" value="${targetBatch.orgId}" />
+                                                                <c:param name="utBatchId" value="${batchDetails.utBatchName}" />
+                                                            </c:url>
+                                                            <a href="${hrefLink}" title="View Generated Target File">Generated Target File - ${targetBatch.outputFileName}</a><br />
+                                                        </c:if>
 						    </c:forEach>
 						</c:when>
 						<c:when test="${canSend}">
-						    Batch is ready to be processed
+						    <br />Batch is ready to be processed
 						</c:when>
 						<c:otherwise>
-						    Could not generate target file(s) because of errors 
+						    <br />Could not generate target file(s) because of errors 
 						</c:otherwise>
 					    </c:choose>
 					</p> 
@@ -275,16 +293,38 @@
                                             </c:if>
 					    <c:choose>
 						<c:when test="${batchDetails.transportMethodId == 9 || batchDetails.transportMethodId == 12}">
-						     <c:set var="hrefLink" value="/FileDownload/downloadFile.do?fromPage=inboundAudit&filename=${batchDetails.utBatchName}.${fn:toLowerCase(ext)}&foldername=archivesIn&utBatchId=${batchDetails.utBatchName}"/>
+                                                    <c:url value="/FileDownload/downloadFile.do" var="hrefLink">
+                                                        <c:param name="fromPage" value="inboundAudit" />
+                                                        <c:param name="filename" value="${batchDetails.utBatchName}.${fn:toLowerCase(ext)}" />
+                                                        <c:param name="foldername" value="archivesIn" />
+                                                        <c:param name="utBatchId" value="${batchDetails.utBatchName}" />
+                                                    </c:url>
 						</c:when>
                                                 <c:when test="${batchDetails.transportMethodId == 6}">
-						     <c:set var="hrefLink" value="/FileDownload/downloadFile.do?fromPage=inboundAudit&filename=${batchDetails.utBatchName}_dec.${fn:toLowerCase(ext)}&foldername=archivesIn&utBatchId=${batchDetails.utBatchName}"/>
+                                                    <c:url value="/FileDownload/downloadFile.do" var="hrefLink">
+                                                        <c:param name="fromPage" value="inboundAudit" />
+                                                        <c:param name="filename" value="${batchDetails.utBatchName}_dec.${fn:toLowerCase(ext)}" />
+                                                        <c:param name="foldername" value="archivesIn" />
+                                                        <c:param name="utBatchId" value="${batchDetails.utBatchName}" />
+                                                    </c:url>
 						</c:when>
                                                 <c:when test="${batchDetails.transportMethodId == 13}">
-						     <c:set var="hrefLink" value="/FileDownload/downloadFile.do?fromPage=inboundAudit&filename=archive_${batchDetails.utBatchName}.${fn:toLowerCase(ext)}&foldername=archivesIn&orgId=${batchDetails.orgId}&utBatchId=${batchDetails.utBatchName}"/>
+                                                     <c:url value="/FileDownload/downloadFile.do" var="hrefLink">
+                                                        <c:param name="fromPage" value="inboundAudit" />
+                                                        <c:param name="filename" value="archive_${batchDetails.utBatchName}.${fn:toLowerCase(ext)}" />
+                                                        <c:param name="foldername" value="archivesIn" />
+                                                        <c:param name="orgId" value="${batchDetails.orgId}" />
+                                                        <c:param name="utBatchId" value="${batchDetails.utBatchName}" />
+                                                    </c:url>
 						</c:when>
 						<c:otherwise>
-						    <c:set var="hrefLink" value="/FileDownload/downloadFile.do?fromPage=inboundAudit&filename=encoded_${batchDetails.utBatchName}.${fn:toLowerCase(ext)}&foldername=input files&orgId=${batchDetails.orgId}&utBatchId=${batchDetails.utBatchName}"/>
+                                                    <c:url value="/FileDownload/downloadFile.do" var="hrefLink">
+                                                        <c:param name="fromPage" value="inboundAudit" />
+                                                        <c:param name="filename" value="encoded_${batchDetails.utBatchName}.${fn:toLowerCase(ext)}" />
+                                                        <c:param name="foldername" value="input files" />
+                                                        <c:param name="orgId" value="${batchDetails.orgId}" />
+                                                        <c:param name="utBatchId" value="${batchDetails.utBatchName}" />
+                                                    </c:url>
 						</c:otherwise>
 					    </c:choose>
 					    <p>

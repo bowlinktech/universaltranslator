@@ -1261,7 +1261,10 @@ public class transactionOutManagerImpl implements transactionOutManager {
     }
 
     @Override
-    public void runValidations(Integer batchDownloadId, Integer configId) throws Exception {
+    public Integer runValidations(Integer batchDownloadId, Integer configId) throws Exception {
+	
+	Integer errorCount = 0;
+	
 	//1. we get validation types
 	//2. we skip 1 as that is not necessary
 	//3. we skip date (4) as there is no isDate function in MySQL
@@ -1283,31 +1286,38 @@ public class transactionOutManagerImpl implements transactionOutManager {
 		    break; // no validation
 		//email calling SQL to validation and insert - one statement
 		case 2:
-		    //genericValidation(cff, validationTypeId, batchDownloadId, regEx, transactionId);
+		    errorCount = errorCount + genericValidation(cff, validationTypeId, batchDownloadId, regEx);
 		    break;
 		//phone  calling SP to validation and insert - one statement 
 		case 3:
-		    //genericValidation(cff, validationTypeId, batchDownloadId, regEx, transactionId);
+		     errorCount = errorCount + genericValidation(cff, validationTypeId, batchDownloadId, regEx);
 		    break;
 		// need to loop through each record / each field
 		case 4:
-		    //dateValidation(cff, validationTypeId, batchDownloadId);
+		     errorCount = errorCount + genericValidation(cff, validationTypeId, batchDownloadId, regEx);
 		    break;
 		//numeric   calling SQL to validation and insert - one statement      
 		case 5:
-		    //genericValidation(cff, validationTypeId, batchDownloadId, regEx, transactionId);
+		    errorCount = errorCount + genericValidation(cff, validationTypeId, batchDownloadId, regEx);
 		    break;
 		//url - need to rethink as regExp is not validating correctly
 		case 6:
-		    //urlValidation(cff, validationTypeId, batchDownloadId);
+		     errorCount = errorCount + genericValidation(cff, validationTypeId, batchDownloadId, regEx);
 		    break;
 		//anything new we hope to only have to modify sp
 		default:
-		    //genericValidation(cff, validationTypeId, batchDownloadId, regEx, transactionId);
+		     errorCount = errorCount + genericValidation(cff, validationTypeId, batchDownloadId, regEx);
 		    break;
 	    }
 
 	}
+	
+	return errorCount;
+    }
+    
+    @Override
+    public Integer genericValidation(configurationFormFields cff, Integer validationTypeId, Integer batchDownloadId, String regEx) {
+	return transactionOutDAO.genericValidation(cff, validationTypeId, batchDownloadId, regEx);
     }
 
 
@@ -1435,6 +1445,10 @@ public class transactionOutManagerImpl implements transactionOutManager {
     public Integer processMassOutputBatch(batchDownloads batchDownload) throws Exception {
 	
 	batchdownloadactivity ba = new batchdownloadactivity();
+	String patientId = "";
+	String patientDOB = "";
+	String patientFirstname = "";
+	String patientLastname = "";
 	
 	try {
 	    ba = new batchdownloadactivity();
@@ -1533,7 +1547,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
 	}
 	
 	//run validation
-	runValidations(batchDownload.getId(), batchDownload.getConfigId());
+	Integer validationErrors = runValidations(batchDownload.getId(), batchDownload.getConfigId());
 	
 	totalErrorCount = totalErrorCount + transactionInManager.getRecordCounts(batchDownload.getId(), transRELId, true, false);
 	
@@ -1835,6 +1849,19 @@ public class transactionOutManagerImpl implements transactionOutManager {
 					    fieldValue = sb1.toString();
 					}
 				    }
+				}
+				
+				if(element.getElement().equals("[@patientFirstName@]")) {
+				    patientFirstname = fieldValue;
+				}
+				else if(element.getElement().equals("[@patientLastName@]")) {
+				    patientLastname = fieldValue;
+				}
+				else if(element.getElement().equals("[@patientID@]")) {
+				    patientId = fieldValue;
+				}
+				else if(element.getElement().equals("[@patientDOB@]")) {
+				    patientDOB = fieldValue;
 				}
 				
 				repeatingSectionCopy = repeatingSectionCopy.replace(element.getElement(), fieldValue);
@@ -2194,9 +2221,9 @@ public class transactionOutManagerImpl implements transactionOutManager {
 		    hisps hispDetails = hispManager.getHispById(directDetails.getHispId());
 		    
 		    methodName = "senddirectOut"+hispDetails.getHispName().toLowerCase().replaceAll(" ","");
-		    Class<?>[] paramTypes = {Integer.class, configurationTransport.class, hisps.class};
+		    Class<?>[] paramTypes = {Integer.class, configurationTransport.class, hisps.class, String.class, String.class, String.class, String.class};
 		    Method method = directManager.getClass().getMethod(methodName, paramTypes);
-		    method.invoke(directManager, batchDownload.getId(), transportDetails, hispDetails);
+		    method.invoke(directManager, batchDownload.getId(), transportDetails, hispDetails, patientId, patientDOB, patientFirstname, patientLastname);
 		    
 		    ba = new batchdownloadactivity();
 		    ba.setActivity("Called the DIRECT Method: " + methodName + " for Hisp ("+hispDetails.getHispName()+") id:"+hispDetails.getId());

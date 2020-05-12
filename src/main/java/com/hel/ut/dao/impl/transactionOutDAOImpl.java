@@ -75,6 +75,8 @@ public class transactionOutDAOImpl implements transactionOutDAO {
 
     //list of final status - these batches are considered generated
     private List<Integer> batchFinalStatuses = Arrays.asList(28, 41, 59);
+    
+    private int processingSysErrorId = 5;
 
     /**
      * The 'submitBatchDownload' function will submit the new batch.
@@ -1711,4 +1713,28 @@ public class transactionOutDAOImpl implements transactionOutDAO {
 	}
     }
     
+    @Override
+    @Transactional(readOnly = false)
+    public Integer genericValidation(configurationFormFields cff, Integer validationTypeId, Integer batchDownloadId, String regEx) {
+
+	String sql = "call insertValidationErrorsOutbound(:vtType, :fieldNo, :batchDownloadId, :configId, :transactionId)";
+
+	Query insertError = sessionFactory.getCurrentSession().createSQLQuery(sql);
+	insertError.setParameter("vtType", cff.getValidationType());
+	insertError.setParameter("fieldNo", cff.getFieldNo());
+	insertError.setParameter("batchDownloadId", batchDownloadId);
+	insertError.setParameter("configId", cff.getconfigId());
+	insertError.setParameter("transactionId", 0);
+
+	try {
+	    insertError.executeUpdate();
+	    return 0;
+	} catch (Exception ex) {
+	    System.err.println("genericValidation " + ex.getCause());
+	    ex.printStackTrace();
+	    transactionInManager.insertProcessingError(processingSysErrorId, cff.getconfigId(), batchDownloadId, cff.getFieldNo(),
+		    null, null, validationTypeId, false, true, ("-" + ex.getCause().toString()));
+	    return 1; //we return error count of 1 when error
+	}
+    }
 }

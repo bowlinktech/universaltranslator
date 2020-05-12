@@ -136,7 +136,7 @@ function populateMessages(fromDate,toDate) {
 		"mData": "transportMethod", 
 		"defaultContent": "",
 		"bSortable":true,
-		"sWidth": "15%",
+		"sWidth": "12%",
 		"className": "center-text",
 		"render": function ( data, type, row, meta ) {
 		    var returnData = '';
@@ -181,7 +181,7 @@ function populateMessages(fromDate,toDate) {
 		"mData": "dateCreated", 
 		"defaultContent": "",
 		"bSortable":true,
-		"sWidth": "15%",
+		"sWidth": "18%",
 		"className": "center-text",
 		"render": function ( data, type, row, meta ) {
 		    var dateC = new Date(data);
@@ -202,7 +202,7 @@ function populateMessages(fromDate,toDate) {
                         hours = hours ? hours : 12;
                         minutes = minutes < 10 ? '0'+minutes : minutes;
                         
-                        myDateFormatted += '<br />Start: ' + hours+':'+minutes+ ' ' + ampm;
+                        myDateFormatted += '<br />Start: ' + ((dateC.getMonth()*1)+1)+'/'+dateC.getDate()+'/'+dateC.getFullYear() + ' ' + hours+':'+minutes+ ' ' + ampm;
                     }
                     
                     if(row.endDateTime != null) {
@@ -214,7 +214,7 @@ function populateMessages(fromDate,toDate) {
                         hours = hours ? hours : 12;
                         minutes = minutes < 10 ? '0'+minutes : minutes;
                         
-                        myDateFormatted += '<br />End: ' + hours+':'+minutes+ ' ' + ampm;
+                        myDateFormatted += '<br />End: ' + ((dateC.getMonth()*1)+1)+'/'+dateC.getDate()+'/'+dateC.getFullYear() + ' ' + hours+':'+minutes+ ' ' + ampm;
                     }
                     
 		    return myDateFormatted;

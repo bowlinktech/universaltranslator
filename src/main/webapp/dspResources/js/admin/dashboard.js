@@ -272,7 +272,7 @@ function getInboundMessages() {
                         hours = hours ? hours : 12;
                         minutes = minutes < 10 ? '0'+minutes : minutes;
                         
-                        myDateFormatted += '<br />Processing Start: ' + hours+':'+minutes+ ' ' + ampm;
+                        myDateFormatted += '<br />Start: ' + ((dateC.getMonth()*1)+1)+'/'+dateC.getDate()+'/'+dateC.getFullYear() + ' ' + hours+':'+minutes+ ' ' + ampm;
                     }
                     
                     if(row.endDateTime != null) {
@@ -284,7 +284,7 @@ function getInboundMessages() {
                         hours = hours ? hours : 12;
                         minutes = minutes < 10 ? '0'+minutes : minutes;
                         
-                        myDateFormatted += '<br />Processing End: ' + hours+':'+minutes+ ' ' + ampm;
+                        myDateFormatted += '<br />End: ' + ((dateC.getMonth()*1)+1)+'/'+dateC.getDate()+'/'+dateC.getFullYear() + ' ' + hours+':'+minutes+ ' ' + ampm;
                     }
                     
 		    return myDateFormatted;
@@ -574,7 +574,7 @@ function getOutboundMessages() {
                         hours = hours ? hours : 12;
                         minutes = minutes < 10 ? '0'+minutes : minutes;
                         
-                        myDateFormatted += 'Processing Start: ' + hours+':'+minutes+ ' ' + ampm;
+                        myDateFormatted += 'Start: ' + ((dateC.getMonth()*1)+1)+'/'+dateC.getDate()+'/'+dateC.getFullYear() + ' ' + hours+':'+minutes+ ' ' + ampm;
                     }
                     
                     if(row.endDateTime != null) {
@@ -586,7 +586,7 @@ function getOutboundMessages() {
                         hours = hours ? hours : 12;
                         minutes = minutes < 10 ? '0'+minutes : minutes;
                         
-                        myDateFormatted += '<br />Processing End: ' + hours+':'+minutes+ ' ' + ampm;
+                        myDateFormatted += '<br />End: ' + ((dateC.getMonth()*1)+1)+'/'+dateC.getDate()+'/'+dateC.getFullYear() + ' ' + hours+':'+minutes+ ' ' + ampm;
                     }
                     
                      myDateFormatted += '<br />Sent: ' + ((dateC.getMonth()*1)+1)+'/'+dateC.getDate()+'/'+dateC.getFullYear() + ' ' + hours+':'+minutes+ ' ' + ampm;
