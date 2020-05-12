@@ -28,86 +28,86 @@ require(['./main'], function () {
 
      });
 
-    //This function will launch the status detail overlay with the selected
-    //status
-    $(document).on('click', '.viewStatus', function () {
-        $.ajax({
-            url: '../../viewStatus' + $(this).attr('rel'),
-            type: "GET",
-            success: function (data) {
-                $("#statusModal").html(data);
-            }
+        //This function will launch the status detail overlay with the selected
+        //status
+        $(document).on('click', '.viewStatus', function () {
+            $.ajax({
+                url: '../../viewStatus' + $(this).attr('rel'),
+                type: "GET",
+                success: function (data) {
+                    $("#statusModal").html(data);
+                }
+            });
         });
-    });
-
-    $(document).on('click', '.droppedValueCollapse', function() {
-        var batchId = $(this).attr('rel');
-        var totalErrors = $(this).attr('total');
-        var type = $(this).attr('rel3');
-
-        var isExpanded = $('#collapse-droppedValues').hasClass("expanded");
-
-        if(isExpanded == false) {
-            $('#collapse-droppedValues').addClass("expanded");
-            $(".errorList-droppedValues").html("");
-            $(".spinner-droppedValues").show();
-
-            //Go get error records;
-            $.ajax({
-                url: '../../loadDroppedValues.do',
-                data: {
-                    'batchId': batchId,
-                    'totalErrors': totalErrors,
-                    'type': type
-                },
-                type: "GET",
-                success: function (data) {
-                    $(".spinner-droppedValues").hide();
-                    $(".errorList-droppedValues").html(data);
-                }
-            });
-        }
-        else {
-            $('#collapse-droppedValues').removeClass("expanded");
-        } 
-    });
-
-    $(document).on('click', '.errorCollapse', function() {
-        var batchId = $(this).attr('rel');
-        var errorId = $(this).attr('error');
-        var indexVal = $(this).attr('rel2');
-        var totalErrors = $(this).attr('total');
-        var type = $(this).attr('rel3');
-
-        var isExpanded = $('#collapse-'+indexVal).hasClass("expanded");
-
-        if(isExpanded == false) {
-            $('#collapse-'+indexVal).addClass("expanded");
-            $(".errorList-"+indexVal).html("");
-            $(".spinner-"+indexVal).show();
-
-            //Go get error records;
-            $.ajax({
-                url: '../../loadErrors.do',
-                data: {
-                    'batchId': batchId,
-                    'errorId': errorId,
-                    'totalErrors': totalErrors,
-                    'indexVal': indexVal,
-                    'type': type
-                },
-                type: "GET",
-                success: function (data) {
-                    $(".spinner-"+indexVal).hide();
-                    $(".errorList-"+indexVal).html(data);
-                }
-            });
-        }
-        else {
-            $('#collapse-'+indexVal).removeClass("expanded");
-        }
-
-    });
+        
+        $(document).on('click', '.droppedValueCollapse', function() {
+	    var batchId = $(this).attr('rel');
+	    var totalErrors = $(this).attr('total');
+	    var type = $(this).attr('rel3');
+	    
+	    var isExpanded = $('#collapse-droppedValues').hasClass("expanded");
+	    
+	    if(isExpanded == false) {
+		$('#collapse-droppedValues').addClass("expanded");
+		$(".errorList-droppedValues").html("");
+		$(".spinner-droppedValues").show();
+		
+		//Go get error records;
+		$.ajax({
+		    url: '../../loadDroppedValues.do',
+		    data: {
+			'batchId': batchId,
+			'totalErrors': totalErrors,
+			'type': type
+		    },
+		    type: "GET",
+		    success: function (data) {
+			$(".spinner-droppedValues").hide();
+			$(".errorList-droppedValues").html(data);
+		    }
+		});
+	    }
+	    else {
+		$('#collapse-droppedValues').removeClass("expanded");
+	    } 
+	});
+	
+	$(document).on('click', '.errorCollapse', function() {
+	    var batchId = $(this).attr('rel');
+	    var errorId = $(this).attr('error');
+	    var indexVal = $(this).attr('rel2');
+	    var totalErrors = $(this).attr('total');
+	    var type = $(this).attr('rel3');
+	    
+	    var isExpanded = $('#collapse-'+indexVal).hasClass("expanded");
+	    
+	    if(isExpanded == false) {
+		$('#collapse-'+indexVal).addClass("expanded");
+		$(".errorList-"+indexVal).html("");
+		$(".spinner-"+indexVal).show();
+		
+		//Go get error records;
+		$.ajax({
+		    url: '../../loadErrors.do',
+		    data: {
+			'batchId': batchId,
+			'errorId': errorId,
+			'totalErrors': totalErrors,
+			'indexVal': indexVal,
+			'type': type
+		    },
+		    type: "GET",
+		    success: function (data) {
+			$(".spinner-"+indexVal).hide();
+			$(".errorList-"+indexVal).html(data);
+		    }
+		});
+	    }
+	    else {
+		$('#collapse-'+indexVal).removeClass("expanded");
+	    }
+	    
+	});
 
     $(document).on('click', '.viewLink', function () {
 

@@ -12,7 +12,7 @@
 <c:set var="hasOutboundError" value="0" />
 <c:if test="${not empty errors}">
     <c:forEach var="errorRow" items="${errors}">
-        <c:if test="${errorRow[0] == 'true'}"><c:set var="hasOutboundError" value="1" /></c:if>
+        <c:if test="${hasOutboundError == 0 && errorRow[0] == 'true'}"><c:set var="hasOutboundError" value="1" /></c:if>
     </c:forEach>     
 </c:if>   
 
@@ -24,7 +24,7 @@
 <c:if test="${hasOutboundError == 1}">
 <span><span style="color:#ffe3a4;font-weight: bold;margin-top:5px;">Rows</span> = errors found from processing the outbound target file.</span>
 </c:if>
-<table border="1" class="table table-bordered">
+<table border="1" class="table table-bordered" id="errordatatable">
     <thead>
 	<tr>
 	    <c:if test="${not empty customCols}">
