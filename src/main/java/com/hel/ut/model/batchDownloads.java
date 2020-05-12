@@ -36,6 +36,9 @@ public class batchDownloads {
     
     @Transient
     private Date dateSubmitted;
+    
+    @Transient
+    private boolean targetFileExists = false;
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -387,6 +390,14 @@ public class batchDownloads {
 
     public void setSrcOrgName(String srcOrgName) {
 	this.srcOrgName = srcOrgName;
+    }
+
+    public boolean isTargetFileExists() {
+	return targetFileExists;
+    }
+
+    public void setTargetFileExists(boolean targetFileExists) {
+	this.targetFileExists = targetFileExists;
     }
     
 }

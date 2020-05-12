@@ -72,7 +72,7 @@ public interface transactionOutManager {
 
     String getConfigFieldsForOutput(Integer configId) throws Exception;
 
-    void runValidations(Integer batchDownloadId, Integer configId) throws Exception;
+    Integer runValidations(Integer batchDownloadId, Integer configId) throws Exception;
 
     BigInteger getRejectedCount(Date fromDate, Date toDate) throws Exception;
     
@@ -126,4 +126,5 @@ public interface transactionOutManager {
     
     void updateMissingRequiredFieldStatus(Integer batchDownloadId) throws Exception;
     
+    Integer genericValidation(configurationFormFields cff, Integer validationTypeId, Integer batchDownloadId, String regEx);
 }

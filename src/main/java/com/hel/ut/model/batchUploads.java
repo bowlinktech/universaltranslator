@@ -7,6 +7,7 @@ package com.hel.ut.model;
 
 import com.hel.ut.validator.NoHtml;
 import java.util.Date;
+import java.util.List;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -36,6 +37,9 @@ public class batchUploads {
 
     @Transient
     private boolean watchListCompleted = false;
+    
+    @Transient
+    private List<batchDownloads> relatedBatchDownloads = null;
     
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -479,6 +483,14 @@ public class batchUploads {
 
     public void setTotalErrorRows(Integer totalErrorRows) {
 	this.totalErrorRows = totalErrorRows;
+    }
+
+    public List<batchDownloads> getRelatedBatchDownloads() {
+	return relatedBatchDownloads;
+    }
+
+    public void setRelatedBatchDownloads(List<batchDownloads> relatedBatchDownloads) {
+	this.relatedBatchDownloads = relatedBatchDownloads;
     }
 
 }
