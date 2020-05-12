@@ -228,10 +228,15 @@ public class directManager {
      * @param batchDownloadId
      * @param transportDetails
      * @param hispDetails
+     * @param patientId
+     * @param patientDOB
+     * @param patientFirstname
+     * @param patientLastname
      * @throws Exception 
      */
     @Async
-    public void senddirectOutmedallies(Integer batchDownloadId, configurationTransport transportDetails, hisps hispDetails) throws Exception {
+    public void senddirectOutmedallies(Integer batchDownloadId, configurationTransport transportDetails, hisps hispDetails, String patientId,
+	    String patientDOB, String patientFirstname, String patientLastname) throws Exception {
 	
 	try {
 	    boolean clearRecords = false;
@@ -320,6 +325,14 @@ public class directManager {
 		
 		envelopeInfoObject.put("fromDirectAddress",batchUploadDetails.getRecipientEmail());
 		envelopeInfoObject.put("messageId","urn:uuid:"+uuid);
+		
+		if(patientFirstname != null && patientLastname != null && patientId != null && patientDOB != null) {
+		    envelopeInfoObject.put("subject","Patient: " + patientFirstname + " " + patientLastname + "; DOB: " + patientDOB);
+		    envelopeInfoObject.put("patientId",patientId);
+		    envelopeInfoObject.put("patientDOB",patientDOB);
+		    envelopeInfoObject.put("patientFirstname",patientFirstname);
+		    envelopeInfoObject.put("patientLastname",patientLastname);
+		}
 		
 		JSONArray envelopeInfoToAddressArray = new JSONArray();
 		envelopeInfoToAddressArray.add(batchUploadDetails.getSenderEmail());

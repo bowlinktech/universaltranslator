@@ -140,4 +140,6 @@ public interface transactionOutDAO {
     List<batchDownloadDroppedValues> getBatchDroppedValues(Integer batchDownloadId) throws Exception;
     
     void updateMissingRequiredFieldStatus(Integer batchDownloadId) throws Exception;
+    
+    Integer genericValidation(configurationFormFields cff, Integer validationTypeId, Integer batchDownloadId, String regEx);
 }

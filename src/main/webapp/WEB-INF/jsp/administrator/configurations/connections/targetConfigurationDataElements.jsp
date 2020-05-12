@@ -22,7 +22,8 @@
 		</td>
 		<td>${fields.fieldDesc}</td>
 		<td class="center-text">
-		    <input type="checkbox" class="useField" id="useField${fields.fieldNo}" name="targetConfigurationDataElements[${field.index}].useField" <c:if test="${fields.useField == true}">checked</c:if> />
+                    <input type="hidden" name="targetConfigurationDataElements[${field.index}].useField" value="${fields.useField}" />
+                    <input type="checkbox" disabled="true" class="useField" id="useField${fields.fieldNo}" name="targetConfigurationDataElements[${field.index}].useField" <c:if test="${fields.useField == true}">checked</c:if> />
 		</td>
 		<td class="center-text">
 		    <c:choose>
