@@ -180,7 +180,7 @@ function populateMessages(fromDate,toDate) {
 		"mData": "transportMethod", 
 		"defaultContent": "",
 		"bSortable":true,
-		"sWidth": "20%",
+		"sWidth": "18%",
 		"className": "center-text",
 		"render": function ( data, type, row, meta ) {
 		    if(data.indexOf("Rest") > 0) {
@@ -223,7 +223,7 @@ function populateMessages(fromDate,toDate) {
 		"mData": "dateSubmitted", 
 		"defaultContent": "",
 		"bSortable":true,
-		"sWidth": "10%",
+		"sWidth": "12%",
 		"className": "center-text",
 		"render": function ( data, type, row, meta ) {
 		    var dateC = new Date(data);
