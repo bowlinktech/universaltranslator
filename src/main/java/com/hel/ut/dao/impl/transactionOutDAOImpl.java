@@ -1601,7 +1601,7 @@ public class transactionOutDAOImpl implements transactionOutDAO {
 		+ "IFNULL(c.utBatchName,\"\") as batchName,"
 		+ "(select count(id) as total from directmessagesout where "+dateSQLStringTotal+") as totalMessages "
 		+ "FROM directmessagesout a left outer join  "
-		+ "organizations b on b.id = a.orgId left outer join  "
+		+ "organizations b on b.id = a.orgId inner join  "
 		+ "batchdownloads c on c.id = a.batchDownloadId "
 		+ "where " + dateSQLString + ") as messagesOut ";
 	
