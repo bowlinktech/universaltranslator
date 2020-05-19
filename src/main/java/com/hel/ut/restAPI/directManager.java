@@ -307,6 +307,17 @@ public class directManager {
 		String jsonContentAsString = jsonContent.toString().replace("\\","\\\\");
 		String encodedContent = utilmanager.encodeStringToBase64Binary(jsonContentAsString);
 		
+		
+		JSONObject jsonObjectToSend = new JSONObject();
+		
+		if(patientFirstname != null && patientLastname != null && patientId != null && patientDOB != null) {
+		    jsonObjectToSend.put("messageSubject","Patient: " + patientFirstname + " " + patientLastname + "; DOB: " + patientDOB);
+		    jsonObjectToSend.put("patientId",patientId);
+		    jsonObjectToSend.put("patientDOB",patientDOB);
+		    jsonObjectToSend.put("patientFirstname",patientFirstname);
+		    jsonObjectToSend.put("patientLastname",patientLastname);
+		}
+		
 		JSONArray emailAttachmentListArray = new JSONArray();
 		
 		JSONObject emailAttachmentListObject = new JSONObject();
@@ -316,7 +327,6 @@ public class directManager {
 		
 		emailAttachmentListArray.add(emailAttachmentListObject);
 		
-		JSONObject jsonObjectToSend = new JSONObject();
 		jsonObjectToSend.put("emailAttachmentList", emailAttachmentListArray);
 		
 		JSONObject envelopeInfoObject = new JSONObject();
@@ -325,14 +335,6 @@ public class directManager {
 		
 		envelopeInfoObject.put("fromDirectAddress",batchUploadDetails.getRecipientEmail());
 		envelopeInfoObject.put("messageId","urn:uuid:"+uuid);
-		
-		if(patientFirstname != null && patientLastname != null && patientId != null && patientDOB != null) {
-		    envelopeInfoObject.put("subject","Patient: " + patientFirstname + " " + patientLastname + "; DOB: " + patientDOB);
-		    envelopeInfoObject.put("patientId",patientId);
-		    envelopeInfoObject.put("patientDOB",patientDOB);
-		    envelopeInfoObject.put("patientFirstname",patientFirstname);
-		    envelopeInfoObject.put("patientLastname",patientLastname);
-		}
 		
 		JSONArray envelopeInfoToAddressArray = new JSONArray();
 		envelopeInfoToAddressArray.add(batchUploadDetails.getSenderEmail());

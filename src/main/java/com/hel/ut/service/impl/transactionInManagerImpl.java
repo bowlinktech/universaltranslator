@@ -1971,74 +1971,60 @@ public class transactionInManagerImpl implements transactionInManager {
 	 */
 	//we check to see if anything is running first
 	boolean run = true;
+	
 	List<batchUploads> batchInProcess = getBatchesByStatusIds(Arrays.asList(38));
 
 	//we check time stamp to see how long that file has been processing
 	//get the details
 	if (!batchInProcess.isEmpty()) {
-	    batchUploads stuckBatchDetails = getBatchDetails(batchInProcess.get(0).getId());
+	    
 	    //check how long first batch is going
 	    //if more than 2 hours need to email 
-	    LocalDateTime d1 = LocalDateTime.ofInstant(stuckBatchDetails.getStartDateTime().toInstant(), ZoneId.systemDefault());
-	    LocalDateTime d2 = LocalDateTime.now();
-	    long diffHours = java.time.Duration.between(d1, d2).toHours();
-	    run = false;
-	    if (diffHours >= 3) {
-		/**
-		 * batch running for over 3 hours, we need to see if it has been re-process *
-		 */
-		//see if this batch has been retried
-		batchRetry br = getBatchRetryByUploadId(stuckBatchDetails.getId(), 38);
-		String subject = "Retrying Batch loadMassBatches ";
-		String msgBody = "Batch " + stuckBatchDetails.getId() + " (" + stuckBatchDetails.getUtBatchName() + ") will be retried.";
-		if (br == null) {
-		    //we retry this batch
-		    br = new batchRetry();
-		    br.setFromStatusId(38);
-		    br.setBatchUploadId(stuckBatchDetails.getId());
-		    saveBatchRetry(br);
-		    //reset status for batch so it will get pick up again
-		    //reprocess means resetting it to 42 and insert an entry into batchRetry so we know
-		    updateBatchStatus(stuckBatchDetails.getId(), 42, "endDateTime");
-		    //having log in new table and checking userActivity as if it is reset manually by user and gets stuck again it wont' retry and we want it to retry at least once each time it is reset
-		    try {
-			//log batch activity
-			batchuploadactivity ba = new batchuploadactivity();
-			ba.setActivity("System Set Batch To Retry During Loading");
-			ba.setBatchUploadId(stuckBatchDetails.getId());
-			transactionInDAO.submitBatchActivityLog(ba);
-		    } catch (Exception ex) {
-			ex.printStackTrace();
-			System.err.println("transactionId - insert user log" + ex.toString());
+	    LocalDateTime d1;
+	    LocalDateTime d2;
+	    long diffHours;
+	    
+	    for (batchUploads runningBatches : batchInProcess) {
+		batchUploads stuckBatchDetails = getBatchDetails(runningBatches.getId());
+
+		if (stuckBatchDetails != null) {
+		    d1 = LocalDateTime.ofInstant(stuckBatchDetails.getStartDateTime().toInstant(), ZoneId.systemDefault());
+		    d2 = LocalDateTime.now();
+
+		    diffHours = java.time.Duration.between(d1, d2).toHours();
+		    
+		    if (diffHours >= 3) {
+		
+			try {
+			    //log user activity
+			    batchuploadactivity ba = new batchuploadactivity();
+			    ba.setActivity("System Set to Status 58 - Loading");
+			    ba.setBatchUploadId(stuckBatchDetails.getId());
+			    transactionInDAO.submitBatchActivityLog(ba);
+			} catch (Exception ex) {
+			    ex.printStackTrace();
+			    System.err.println("transactionId - insert user log" + ex.toString());
+			}
+
+			String subject = "Batch set to Need to Review - processMassBatches ";
+			String  msgBody = "Batch " + stuckBatchDetails.getId() + " (" + stuckBatchDetails.getUtBatchName() + ") needs to be reviewed.";
+
+			updateBatchStatus(stuckBatchDetails.getId(), 58, "endDateTime");
+
+			//we notify admin
+			//we also notify admin
+			mailMessage mail = new mailMessage();
+			mail.settoEmailAddress(myProps.getProperty("admin.email"));
+			mail.setfromEmailAddress("support@health-e-link.net");
+			mail.setmessageSubject(subject + " " + myProps.getProperty("server.identity"));
+			StringBuilder emailBody = new StringBuilder();
+			emailBody.append("<br/>Current Time " + d2.toString());
+			emailBody.append("<br/><br/>" + msgBody + "<br/>File Name is  - " + stuckBatchDetails.getOriginalFileName() + ".");
+			emailBody.append("<br/>" + batchInProcess.size() + " batch(es) with status 38 in queue.<br/>");
+			mail.setmessageBody(emailBody.toString());
+			emailManager.sendEmail(mail);
 		    }
-		} else {
-		    try {
-			//log user activity
-			batchuploadactivity ba = new batchuploadactivity();
-			ba.setActivity("System Set to Status 58 - Loading");
-			ba.setBatchUploadId(stuckBatchDetails.getId());
-			transactionInDAO.submitBatchActivityLog(ba);
-		    } catch (Exception ex) {
-			ex.printStackTrace();
-			System.err.println("transactionId - insert user log" + ex.toString());
-		    }
-		    subject = "Batch set to Need to Review - processMassBatches ";
-		    msgBody = "Batch " + stuckBatchDetails.getId() + " (" + stuckBatchDetails.getUtBatchName() + ") needs to be reviewed.";
-		    //58
-		    updateBatchStatus(stuckBatchDetails.getId(), 58, "endDateTime");
 		}
-		//we notify admin
-		//we also notify admin
-		mailMessage mail = new mailMessage();
-		mail.settoEmailAddress(myProps.getProperty("admin.email"));
-		mail.setfromEmailAddress("support@health-e-link.net");
-		mail.setmessageSubject(subject + " " + myProps.getProperty("server.identity"));
-		StringBuilder emailBody = new StringBuilder();
-		emailBody.append("<br/>Current Time " + d2.toString());
-		emailBody.append("<br/><br/>" + msgBody + "<br/>File Name is  - " + stuckBatchDetails.getOriginalFileName() + ".");
-		emailBody.append("<br/>" + batchInProcess.size() + " batch(es) with status 38 in queue.<br/>");
-		mail.setmessageBody(emailBody.toString());
-		emailManager.sendEmail(mail);
 	    }
 	}
 	
@@ -2830,48 +2816,21 @@ public class transactionInManagerImpl implements transactionInManager {
 		    diffHours = java.time.Duration.between(d1, d2).toHours();
 
 		    if (diffHours >= 3) {
-			//batch running for over 3 hours, we need to see if it has been re-process 
-			//see if this batch has been retried
-			batchRetry br = getBatchRetryByUploadId(stuckBatchDetails.getId(), 4);
-			String subject = "Retrying Batch - processMassBatches";
-			String msgBody = "Batch " + stuckBatchDetails.getId() + " (" + stuckBatchDetails.getUtBatchName() + ") will be retried.";
-
-			if (br == null) {
-			    //we retry this batch
-			    br = new batchRetry();
-			    br.setFromStatusId(4);
-			    br.setBatchUploadId(stuckBatchDetails.getId());
-			    saveBatchRetry(br);
-			    //reset status for batch so it will get pick up again
-			    //reprocess means resetting it to 42 and insert an entry into batchRetry so we know
-			    updateBatchStatus(stuckBatchDetails.getId(), 42, "endDateTime");
-
-			    //having log in new table and checking userActivity as if it is reset manually by user and gets stuck again it wont' retry and we want it to retry at least once each time it is reset
-			    try {
-				//log user activity
-				batchuploadactivity ba = new batchuploadactivity();
-				ba.setActivity("System Set Batch (id: " + stuckBatchDetails.getId() + ") To Retry - Processing");
-				ba.setBatchUploadId(stuckBatchDetails.getId());
-				transactionInDAO.submitBatchActivityLog(ba);
-			    } catch (Exception ex) {
-				ex.printStackTrace();
-				System.err.println("System Set Batch (id: " + stuckBatchDetails.getId() + ") To Retry insert user log error " + ex.toString());
-			    }
-			} else {
-			    try {
-				//log user activity
-				batchuploadactivity ba = new batchuploadactivity();
-				ba.setActivity("System Set Batch (id: " + stuckBatchDetails.getId() + ") to Status 58 - Processing");
-				ba.setBatchUploadId(stuckBatchDetails.getId());
-				transactionInDAO.submitBatchActivityLog(ba);
-			    } catch (Exception ex) {
-				ex.printStackTrace();
-				System.err.println("System Set Batch (id: " + stuckBatchDetails.getId() + ") To Retry insert user log error " + ex.toString());
-			    }
-			    subject = "Batch set to Need to Review - processMassBatches ";
-			    msgBody = "Batch " + stuckBatchDetails.getId() + " (" + stuckBatchDetails.getUtBatchName() + ") needs to be reviewed.";
-			    updateBatchStatus(stuckBatchDetails.getId(), 58, "endDateTime");
+			
+			try {
+			    //log user activity
+			    batchuploadactivity ba = new batchuploadactivity();
+			    ba.setActivity("System Set Batch (id: " + stuckBatchDetails.getId() + ") to Status 58 - Processing");
+			    ba.setBatchUploadId(stuckBatchDetails.getId());
+			    transactionInDAO.submitBatchActivityLog(ba);
+			} catch (Exception ex) {
+			    ex.printStackTrace();
+			    System.err.println("System Set Batch (id: " + stuckBatchDetails.getId() + ") To Retry insert user log error " + ex.toString());
 			}
+			String subject = "Batch set to Need to Review - processMassBatches ";
+			String msgBody = "Batch " + stuckBatchDetails.getId() + " (" + stuckBatchDetails.getUtBatchName() + ") needs to be reviewed.";
+			updateBatchStatus(stuckBatchDetails.getId(), 58, "endDateTime");
+			
 			//we notify admin
 			//we also notify admin
 			mailMessage mail = new mailMessage();
