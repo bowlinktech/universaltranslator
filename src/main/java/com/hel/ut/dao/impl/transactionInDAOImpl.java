@@ -3321,7 +3321,7 @@ public class transactionInDAOImpl implements transactionInDAO {
 		+ "IFNULL(c.utBatchName,\"\") as batchName,"
 		+ "(select count(id) as total from directmessagesin where "+dateSQLStringTotal+") as totalMessages "
 		+ "FROM directmessagesin a left outer join  "
-		+ "organizations b on b.id = a.orgId left outer join  "
+		+ "organizations b on b.id = a.orgId inner join  "
 		+ "batchuploads c on c.id = a.batchUploadId "
 		+ "where " + dateSQLString + ") as messagesIn ";
 	
