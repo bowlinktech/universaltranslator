@@ -1071,7 +1071,7 @@ public class utConfigurationManagerImpl implements utConfigurationManager {
 		reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>").append(errorHandling).append("</span><br /><br />");
 		if(configDetails.getType() == 1 && transportDetails.getThreshold() > 0) {
 		    reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'><strong>Error Threshold %</strong></span><br />");
-		    reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>").append(transportDetails.getThreshold()).append("</span><br /><br />");
+		    reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>").append(configDetails.getThreshold()).append("</span><br /><br />");
 		}
 		if(configDetails.getType() == 2) {
 		    reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 14px;'><strong>Do you want to populate the inbound audit report with errors found while processing this target file?</strong></span><br />");
@@ -1392,7 +1392,7 @@ public class utConfigurationManagerImpl implements utConfigurationManager {
 			     reportBody.append("</tbody></table></div><br />");
 			}
 			cwname = (String) cwData[0];
-			reportBody.append("<div><span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 14px;'><strong>CW Name: "+cwname+"</strong></span><br /><table border='1' cellpadding='1' cellspacing='1' width='100%'>");
+			reportBody.append("<div><span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 14px;'><strong>CW Name: "+cwname+" (ID=" + cwData[4].toString() + ")</strong></span><br /><table border='1' cellpadding='1' cellspacing='1' width='100%'>");
 			reportBody.append("<thead><tr><th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Source Value</th><th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Target Value</th><th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Desc</th>");
 			reportBody.append("</tr></thead><tbody>");
 		    }
