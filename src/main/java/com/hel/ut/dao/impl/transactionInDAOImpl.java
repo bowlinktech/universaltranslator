@@ -2926,8 +2926,8 @@ public class transactionInDAOImpl implements transactionInDAO {
 	deleteSQL += "DROP TABLE IF EXISTS `transactioninmacrokeptvalues_" + batchId + "`;";
 	
 	
-	//deleteQuery = sessionFactory.getCurrentSession().createSQLQuery(deleteSQL);
-	//deleteQuery.executeUpdate();
+	deleteQuery = sessionFactory.getCurrentSession().createSQLQuery(deleteSQL);
+	deleteQuery.executeUpdate();
 
     }
     
