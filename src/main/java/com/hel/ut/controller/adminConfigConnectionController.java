@@ -227,16 +227,49 @@ public class adminConfigConnectionController {
 	List<utConfiguration> sourceConfigurations = utconfigurationmanager.getAllSourceConfigurations();
 	List<utConfiguration> targetConfigurations = utconfigurationmanager.getAllTargetConfigurations();
 	
+	boolean srcOrgFound = false;
+	boolean tgtOrgFound = false;
+	
 	for(Organization org : organizations) {
+	   srcOrgFound = false;
+	   tgtOrgFound = false;
+	   
 	   if(!sourceConfigurations.isEmpty()) {
 	       for(utConfiguration srcConfig : sourceConfigurations) {
 		   if(srcConfig.getorgId() == org.getId()) {
-		       sourceOrganizations.add(org);
+		       if(sourceOrganizations.isEmpty()) {
+			   sourceOrganizations.add(org);
+		       }
+		       else {
+			   for(Organization srcOrg : sourceOrganizations) {
+			       if(srcOrg.getId() == org.getId()) {
+				   srcOrgFound = true;
+			       }
+			   }
+			   
+			   if(!srcOrgFound) {
+			       sourceOrganizations.add(org);
+			   }
+		       }
+		       
 		   }
 	       } 
 	       for(utConfiguration tgtConfig : targetConfigurations) {
 		   if(tgtConfig.getorgId() == org.getId()) {
-		       targetOrganizations.add(org);
+		       if(targetOrganizations.isEmpty()) {
+			   targetOrganizations.add(org);
+		       }
+		       else {
+			   for(Organization tgtOrg : targetOrganizations) {
+			       if(tgtOrg.getId() == org.getId()) {
+				   tgtOrgFound = true;
+			       }
+			   }
+			   
+			   if(!tgtOrgFound) {
+			       targetOrganizations.add(org);
+			   }
+		       }
 		   }
 	       }
 	   }
