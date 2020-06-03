@@ -49,19 +49,15 @@ public class configurationDataTranslations {
     @Column(name = "PASSCLEAR", nullable = true)
     private int passClear = 1;
 
-    @NoHtml
     @Column(name = "FIELDA", nullable = true)
     private String fieldA = null;
 
-    @NoHtml
     @Column(name = "FIELDB", nullable = true)
     private String fieldB = null;
 
-    @NoHtml
     @Column(name = "CONSTANT1", nullable = true)
     private String constant1 = null;
 
-    @NoHtml
     @Column(name = "CONSTANT2", nullable = true)
     private String constant2 = null;
 
