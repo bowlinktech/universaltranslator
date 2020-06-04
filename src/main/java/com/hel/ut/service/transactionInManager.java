@@ -104,7 +104,7 @@ public interface transactionInManager {
 
     Integer executeMacro(Integer configId, Integer batchId, configurationDataTranslations cdt, boolean foroutboundProcessing, Macros macro);
 
-    void flagCWErrors(Integer configId, Integer batchId, configurationDataTranslations cdt, boolean foroutboundProcessing);
+    Integer flagCWErrors(Integer configId, Integer batchId, configurationDataTranslations cdt, boolean foroutboundProcessing, boolean isFieldRequired);
 
     Integer flagMacroErrors(Integer configId, Integer batchId, configurationDataTranslations cdt, boolean foroutboundProcessing);
 
@@ -254,7 +254,7 @@ public interface transactionInManager {
 
     void cleanAuditErrorTable(Integer batchUploadId) throws Exception;
 
-    Integer executeCWDataForSingleFieldValue(Integer configId, Integer batchId, configurationDataTranslations cdt, boolean foroutboundProcessing);
+    void executeCWDataForSingleFieldValue(Integer configId, Integer batchId, configurationDataTranslations cdt, boolean foroutboundProcessing);
 
     void deleteMoveFileLogsByStatus(Integer statusId, Integer transportMethodId) throws Exception;
 
@@ -334,7 +334,7 @@ public interface transactionInManager {
     
     void checkRemoteSFTPConfigurations() throws Exception;
     
-    void insertCWDroppedValues(Integer configId, Integer batchId, configurationFormFields cff, configurationDataTranslations cdt, boolean foroutboundProcessing) throws Exception;
+    void insertCWDroppedValues(Integer configId, Integer batchId, configurationDataTranslations cdt, boolean foroutboundProcessing) throws Exception;
     
     void populateDroppedValues(Integer batchUploadId, Integer configId, boolean foroutboundProcessing) throws Exception;
 

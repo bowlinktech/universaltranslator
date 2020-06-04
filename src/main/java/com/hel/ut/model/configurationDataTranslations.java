@@ -1,6 +1,5 @@
 package com.hel.ut.model;
 
-import com.hel.ut.validator.NoHtml;
 import java.util.Map;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -15,16 +14,13 @@ import javax.persistence.Transient;
 public class configurationDataTranslations {
 
     @Transient
-    String fieldName = null;
-
-    @Transient
-    String crosswalkName = null;
-
-    @Transient
-    String macroName = null;
+    String fieldName = null, crosswalkName = null, macroName = null, fieldDesc = null;
 
     @Transient
     int fieldNo;
+    
+    @Transient
+    boolean requiredField;
 
     @Transient
     Map<String, String> defaultValues;
@@ -212,6 +208,22 @@ public class configurationDataTranslations {
 
     public void setDefaultValue(String defaultValue) {
         this.defaultValue = defaultValue;
+    }
+
+    public boolean isRequiredField() {
+	return requiredField;
+    }
+
+    public void setRequiredField(boolean requiredField) {
+	this.requiredField = requiredField;
+    }
+
+    public String getFieldDesc() {
+	return fieldDesc;
+    }
+
+    public void setFieldDesc(String fieldDesc) {
+	this.fieldDesc = fieldDesc;
     }
 
 }
