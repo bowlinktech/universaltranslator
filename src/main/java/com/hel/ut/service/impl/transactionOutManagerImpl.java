@@ -246,7 +246,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
 		} catch (Exception e) {
 		    //throw new Exception("Error occurred processing crosswalks. crosswalkId: "+cdt.getCrosswalkId()+" configId: "+configId,e);
 		    //insert error into transactionouterrors
-		    transactionInManager.flagCWErrors(configId, batchId, cdt, true);
+		    transactionInManager.flagCWErrors(configId, batchId, cdt, true, cdt.isRequiredField());
 		    e.printStackTrace();
 		}
 	    } else if (cdt.getMacroId() != 0) {

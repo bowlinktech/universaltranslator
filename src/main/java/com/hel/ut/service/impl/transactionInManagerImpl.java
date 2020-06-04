@@ -404,75 +404,84 @@ public class transactionInManagerImpl implements transactionInManager {
     /**
      * This method finds all error transactionInId in TransactionInErrors / TransactionOutErrors and update transactionIn with the appropriate error status It can be passed, reject and error
      *
+     * @param batchId
+     * @param statusId
+     * @param foroutboundProcessing
+     * @throws java.lang.Exception
      */
     @Override
     public void updateStatusForErrorTrans(Integer batchId, Integer statusId, boolean foroutboundProcessing) throws Exception {
-
 	transactionInDAO.updateStatusForErrorTrans(batchId, statusId, foroutboundProcessing);
-
     }
 
     @Override
     public Integer runValidations(Integer batchUploadId, Integer configId) {
 	
+	Integer totalValidationErrors = 0;
 	Integer errorCount = 0;
-	//1. we get validation types
-	//2. we skip 1 as that is not necessary
-	//3. we skip date (4) as there is no isDate function in MySQL
-	//4. we skip the ids that are not null as Mysql will bomb out checking character placement
-	//5. back to date, we grab transaction info and we loop (errId 7)
-
-	//MySql RegEXP 
-	//validate numeric - ^-?[0-9]+[.]?[0-9]*$|^-?[.][0-9]+$ 
-	//validate email - ^[a-z0-9\._%+!$&*=^|~#%\'`?{}/\-]+@[a-z0-9\.-]+\.[a-z]{2,6}$ or ^[A-Z0-9._%-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$ 
-	//validate url - ^(https?://)?([\da-z.-]+).([a-z0-9])([0-9a-z]*)*[/]?$ - need to fix not correct - might have to run in java as mysql is not catching all. 
-	//validate phone - should be no longer than 11 digits ^[0-9]{7,11}$ 
-	//validate date - doing this in java
-	//TODO was hoping to have one SP but concat in SP not setting and not catching errors correctly. Need to recheck
+	
 	List<configurationFormFields> configurationFormFields = configurationtransportmanager.getCffByValidationType(configId, 0);
 	
 	if(configurationFormFields != null) {
 	    if(!configurationFormFields.isEmpty()) {
+		String validation = "";
+		Integer validationTypeId = 0; 
+		
 		for (configurationFormFields cff : configurationFormFields) {
-		    String regEx = "";
-
-		    Integer validationTypeId = cff.getValidationType();
+		    errorCount = 0;
+		    
+		    validationTypeId = cff.getValidationType();
+		    
 		    switch (cff.getValidationType()) {
 			// no validation
 			case 1:
 			    break;
 			//email calling SQL to validation and insert - one statement
 			case 2:
-			    errorCount = errorCount + genericValidation(cff, validationTypeId, batchUploadId, regEx);
+			    validation = "Email";
+			    errorCount = genericValidation(cff, validationTypeId, batchUploadId, "");
 			    break;
 			//phone  calling SP to validation and insert - one statement 
 			case 3:
-			    errorCount = errorCount + genericValidation(cff, validationTypeId, batchUploadId, regEx);
+			    validation = "Phone Number";
+			    errorCount = genericValidation(cff, validationTypeId, batchUploadId, "");
 			    break;
 			// need to loop through each record / each field
 			case 4:
-			    errorCount = errorCount + genericValidation(cff, validationTypeId, batchUploadId, regEx);
+			    validation = "Date";
+			    errorCount = genericValidation(cff, validationTypeId, batchUploadId, "");
 			    break;
 			//numeric   calling SQL to validation and insert - one statement      
 			case 5:
-			    errorCount = errorCount + genericValidation(cff, validationTypeId, batchUploadId, regEx);
+			    validation = "Numeric";
+			    errorCount = genericValidation(cff, validationTypeId, batchUploadId, "");
 			    break;
 			//url - need to rethink as regExp is not validating correctly
 			case 6:
-			    errorCount = errorCount + genericValidation(cff, validationTypeId, batchUploadId, regEx);
+			    validation = "URL";
+			    errorCount = genericValidation(cff, validationTypeId, batchUploadId, "");
 			    break;
 			//anything new we hope to only have to modify sp
 			default:
-			    errorCount = errorCount + genericValidation(cff, validationTypeId, batchUploadId, regEx);
+			    validation = "";
+			    //errorCount = genericValidation(cff, validationTypeId, batchUploadId, "");
 			    break;
 		    }
-
+		    
+		    if(errorCount > 0) {
+			totalValidationErrors = totalValidationErrors + errorCount;
+			
+			//log batch activity
+			batchuploadactivity ba = new batchuploadactivity();
+			ba.setActivity("Validation Error. Validation Type:" + validation + " for configId:" + configId + " Field No: " + cff.getFieldNo());
+			ba.setBatchUploadId(batchUploadId);
+			transactionInDAO.submitBatchActivityLog(ba);
+		    }
 		}
 	    }
 	}
-
-
-	return errorCount;
+	
+	return totalValidationErrors;
     }
 
     @Override
@@ -511,24 +520,26 @@ public class transactionInManagerImpl implements transactionInManager {
 		List<CrosswalkData> cdList = getCrosswalkDataForBatch(cdt, batchId, foroutboundProcessing);
 		// we loop through each field value in the list and apply cw
 		errors = processMultiValueCWData(configId, batchId, cdt, cdList, foroutboundProcessing);
-	    } else {
+	    } 
+	    else {
 		
-		Integer returnCW = executeCWDataForSingleFieldValue(configId, batchId, cdt, foroutboundProcessing);
-		//replacing with single query that will update entire cwlist
-		if (cdt.getPassClear() == 1) {
-		    //flag errors, anything row that is not null in F[FieldNo] but null in forCW
-		    flagCWErrors(configId, batchId, cdt, foroutboundProcessing);
-		    //flag as error in transactionIn or transactionOut table
+		executeCWDataForSingleFieldValue(configId, batchId, cdt, foroutboundProcessing);
+		
+		//flag errors, anything row that is not null in F[FieldNo] but null in forCW
+		errors = flagCWErrors(configId, batchId, cdt, foroutboundProcessing, cdt.isRequiredField());
+		
+		//If field is required update transaction status if error is CW error is found
+		if(cdt.isRequiredField() && errors > 0) {
+		    //flag as error in transactionIn or transactionOut table (Only updating REQUIRED records from transactioninerrors)
 		    updateStatusForErrorTrans(batchId, 14, foroutboundProcessing);
-
-		} else {
-			configurationFormFields cff = configurationtransportmanager.getConfigurationFieldById(cdt.getFieldId());
-			if (!cff.getRequired()) {
-				//insert dropped values for non-required fields, required fields will be captured with error
-				insertCWDroppedValues(configId, batchId, cff, cdt, foroutboundProcessing);
-			}
 		}
-		//we replace original F[FieldNo] column with data in forcw
+		
+		//If field is REQUIRED OR OPTIONAL and DTS says clear bad CW data then log dropped value.
+		if(cdt.getPassClear() == 2) {
+		    insertCWDroppedValues(configId, batchId, cdt, foroutboundProcessing);
+		}
+		
+		//we replace original F[FieldNo] column with data in forcw, if clear then NULL will be set.
 		updateFieldNoWithCWData(configId, batchId, cdt.getFieldNo(), cdt.getPassClear(), foroutboundProcessing);
 	    }
 	    return errors;
@@ -554,7 +565,7 @@ public class transactionInManagerImpl implements transactionInManager {
 		// insert macro errors
 		Integer intMacroReturn = flagMacroErrors(configId, batchId, cdt, foroutboundProcessing);
 		
-		//flag as error in transactionIn or transactionOut table
+		//flag as error in transactionIn or transactionOut table (Only updating REQUIRED records from transactioninerrors)
 		updateStatusForErrorTrans(batchId, 14, foroutboundProcessing);
 		
 		return sysError;
@@ -575,8 +586,8 @@ public class transactionInManagerImpl implements transactionInManager {
     }
 
     @Override
-    public Integer executeCWDataForSingleFieldValue(Integer configId, Integer batchId, configurationDataTranslations cdt, boolean foroutboundProcessing) {
-	return transactionInDAO.executeCWDataForSingleFieldValue(configId, batchId, cdt, foroutboundProcessing);
+    public void executeCWDataForSingleFieldValue(Integer configId, Integer batchId, configurationDataTranslations cdt, boolean foroutboundProcessing) {
+	transactionInDAO.executeCWDataForSingleFieldValue(configId, batchId, cdt, foroutboundProcessing);
     }
 
     @Override
@@ -585,8 +596,8 @@ public class transactionInManagerImpl implements transactionInManager {
     }
 
     @Override
-    public void flagCWErrors(Integer configId, Integer batchId, configurationDataTranslations cdt, boolean foroutboundProcessing) {
-	transactionInDAO.flagCWErrors(configId, batchId, cdt, foroutboundProcessing);
+    public Integer flagCWErrors(Integer configId, Integer batchId, configurationDataTranslations cdt, boolean foroutboundProcessing, boolean isFieldRequired) {
+	return transactionInDAO.flagCWErrors(configId, batchId, cdt, foroutboundProcessing,isFieldRequired);
     }
 
     @Override
@@ -2960,54 +2971,13 @@ public class transactionInManagerImpl implements transactionInManager {
 		ba.setBatchUploadId(batchUploadId);
 		transactionInDAO.submitBatchActivityLog(ba);
 	    }
-
-	    //we need to run all checks before insert regardless 
-	    //1. cw/macro
-	    //2. required 
-	    //3. validate 
-	    // 1. grab the configurationDataTranslations and run cw/macros
-	    List<configurationDataTranslations> dataTranslations = configurationManager.getDataTranslationsWithFieldNo(batch.getConfigId(), 1);
 	    
-	    if(dataTranslations != null) {
-		if(!dataTranslations.isEmpty()) {
-		    Integer crosswalkError = 0;
-		    Integer macroError = 0;
-		    
-		    for (configurationDataTranslations cdt : dataTranslations) {
-			crosswalkError = 0;
-			macroError = 0;
-			
-			if (cdt.getCrosswalkId() != 0) {
-			    crosswalkError = processCrosswalk(batch.getConfigId(), batchUploadId, cdt, false);
-			    
-			    if(crosswalkError > 0) {
-				systemErrorCount++;
-
-				//log batch activity
-				ba = new batchuploadactivity();
-				ba.setActivity("Crosswalk Error. CWId:" + cdt.getCrosswalkId() + " for configId:" + batch.getConfigId());
-				ba.setBatchUploadId(batchUploadId);
-				transactionInDAO.submitBatchActivityLog(ba);
-			    }
-			} 
-			else if (cdt.getMacroId() != 0) {
-			    macroError = processMacro(batch.getConfigId(), batchUploadId, cdt, false);
-
-			    if(macroError > 0) {
-				systemErrorCount++;
-
-				//log batch activity
-				ba = new batchuploadactivity();
-				ba.setActivity("Macro Error. macroId:" + cdt.getMacroId() + " for configId:" + batch.getConfigId());
-				ba.setBatchUploadId(batchUploadId);
-				transactionInDAO.submitBatchActivityLog(ba);
-			    }
-			}
-		    }
-		}
-	    }
-
-	    //check R/O
+	    //we need to run all checks before insert regardless 
+	    //1. required
+	    //2. cw/macro 
+	    //3. validate 
+	    
+	    //Step 1: check R/O
 	    List<configurationFormFields> reqFields = getRequiredFieldsForConfig(batch.getConfigId());
 	    
 	    if(reqFields != null) {
@@ -3030,22 +3000,59 @@ public class transactionInManagerImpl implements transactionInManager {
 		}
 	    }
 	    
-	    // update status of the failed records to ERR - 14
+	    // update status of the failed records to ERR - 14 (Only updating REQUIRED records from transactioninerrors)
 	    updateStatusForErrorTrans(batchUploadId, 14, false);
 	    
+	    //Step 2: grab the configurationDataTranslations and run cw/macros
+	    List<configurationDataTranslations> dataTranslations = configurationManager.getDataTranslationsWithFieldNo(batch.getConfigId(), 1);
+	    
+	    if(dataTranslations != null) {
+		if(!dataTranslations.isEmpty()) {
+		    Integer crosswalkErrors = 0;
+		    Integer macroError = 0;
+		    
+		    for (configurationDataTranslations cdt : dataTranslations) {
+			crosswalkErrors = 0;
+			macroError = 0;
+			
+			if (cdt.getCrosswalkId() != 0) {
+			    crosswalkErrors = processCrosswalk(batch.getConfigId(), batchUploadId, cdt, false);
+			    
+			    if(crosswalkErrors > 0) {
+				systemErrorCount = systemErrorCount + crosswalkErrors;
+
+				//log batch activity
+				ba = new batchuploadactivity();
+				ba.setActivity("Crosswalk Error. CWId:" + cdt.getCrosswalkId() + " for configId:" + batch.getConfigId() + " total records with CW error: " + crosswalkErrors);
+				ba.setBatchUploadId(batchUploadId);
+				transactionInDAO.submitBatchActivityLog(ba);
+			    }
+			} 
+			else if (cdt.getMacroId() != 0) {
+			    macroError = processMacro(batch.getConfigId(), batchUploadId, cdt, false);
+
+			    if(macroError > 0) {
+				systemErrorCount++;
+
+				//log batch activity
+				ba = new batchuploadactivity();
+				ba.setActivity("Macro Error. macroId:" + cdt.getMacroId() + " for configId:" + batch.getConfigId());
+				ba.setBatchUploadId(batchUploadId);
+				transactionInDAO.submitBatchActivityLog(ba);
+			    }
+			}
+		    }
+		}
+	    }
+	   
+	    //Step 3: Check validation errors
 	    Integer validationErrors = runValidations(batchUploadId, batch.getConfigId());
 	    
 	    if(validationErrors > 0) {
 		systemErrorCount = systemErrorCount + validationErrors;
-		
-		//log batch activity
-		ba = new batchuploadactivity();
-		ba.setActivity("One or more validation errors occurred.");
-		ba.setBatchUploadId(batchUploadId);
-		transactionInDAO.submitBatchActivityLog(ba);
 	    }
 
-	    // update status of the failed records to ERR - 14
+	    // update status of the failed records to ERR - 14 (Only updating REQUIRED records from transactioninerrors)
 	    updateStatusForErrorTrans(batchUploadId, 14, false);
 
 	    /**
@@ -4529,11 +4536,10 @@ public class transactionInManagerImpl implements transactionInManager {
 	
     }
 
-	@Override
-	public void insertCWDroppedValues(Integer configId, Integer batchId, configurationFormFields cff, configurationDataTranslations cdt,
-			boolean foroutboundProcessing) throws Exception {
-		transactionInDAO.insertCWDroppedValues(configId, batchId, cff, cdt, foroutboundProcessing);
-	}
+    @Override
+    public void insertCWDroppedValues(Integer configId, Integer batchId, configurationDataTranslations cdt, boolean foroutboundProcessing) throws Exception {
+	transactionInDAO.insertCWDroppedValues(configId, batchId, cdt, foroutboundProcessing);
+    }
     
     @Override
     public void populateDroppedValues(Integer batchUploadId, Integer configId, boolean foroutboundProcessing) throws Exception {
