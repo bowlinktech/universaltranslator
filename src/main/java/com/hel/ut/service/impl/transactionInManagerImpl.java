@@ -522,7 +522,6 @@ public class transactionInManagerImpl implements transactionInManager {
 		errors = processMultiValueCWData(configId, batchId, cdt, cdList, foroutboundProcessing);
 	    } 
 	    else {
-		
 		executeCWDataForSingleFieldValue(configId, batchId, cdt, foroutboundProcessing);
 		
 		//flag errors, anything row that is not null in F[FieldNo] but null in forCW
@@ -545,7 +544,7 @@ public class transactionInManagerImpl implements transactionInManager {
 	    return errors;
 	} catch (Exception e) {
 	    e.printStackTrace();
-	    return 1;
+	    return 9999999;
 	}
 
     }
@@ -558,24 +557,22 @@ public class transactionInManagerImpl implements transactionInManager {
 
 	try {
 	    Macros macro = configurationManager.getMacroById(cdt.getMacroId());
+	    
 	    int sysError = 0;
-	    try {
-		// we expect the target field back so we can figure out clear pass option
-		sysError = sysError + executeMacro(configId, batchId, cdt, foroutboundProcessing, macro);
-		// insert macro errors
-		Integer intMacroReturn = flagMacroErrors(configId, batchId, cdt, foroutboundProcessing);
 		
-		//flag as error in transactionIn or transactionOut table (Only updating REQUIRED records from transactioninerrors)
-		updateStatusForErrorTrans(batchId, 14, foroutboundProcessing);
-		
-		return sysError;
-	    } catch (Exception e) {
-		e.printStackTrace();
-		return 1;
-	    }
+	    // we expect the target field back so we can figure out clear pass option
+	    sysError = sysError + executeMacro(configId, batchId, cdt, foroutboundProcessing, macro);
+	    // insert macro errors
+	    Integer intMacroReturn = flagMacroErrors(configId, batchId, cdt, foroutboundProcessing);
+
+	    //flag as error in transactionIn or transactionOut table (Only updating REQUIRED records from transactioninerrors)
+	    updateStatusForErrorTrans(batchId, 14, foroutboundProcessing);
+
+	    return sysError;
+	    
 	} catch (Exception e) {
-	    e.printStackTrace();
-	    return 1;
+	   e.printStackTrace();
+	   return 9999999;
 	}
 
     }
@@ -2987,9 +2984,10 @@ public class transactionInManagerImpl implements transactionInManager {
 		    for (configurationFormFields cff : reqFields) {
 			reqError = insertFailedRequiredFields(cff, batchUploadId);
 			
-			if(reqError > 0) {
-			    systemErrorCount++;
-
+			if(reqError == 9999999) {
+			   systemErrorCount++; 
+			}
+			else if(reqError > 0) {
 			    //log batch activity
 			    ba = new batchuploadactivity();
 			    ba.setActivity("Required Field Error. Field No:" + cff.getFieldNo() + " Field Desc:" + cff.getFieldDesc() + " for configId:" + batch.getConfigId());
@@ -3018,9 +3016,10 @@ public class transactionInManagerImpl implements transactionInManager {
 			if (cdt.getCrosswalkId() != 0) {
 			    crosswalkErrors = processCrosswalk(batch.getConfigId(), batchUploadId, cdt, false);
 			    
-			    if(crosswalkErrors > 0) {
-				systemErrorCount = systemErrorCount + crosswalkErrors;
-
+			    if(crosswalkErrors == 9999999) {
+				systemErrorCount++; 
+			    }
+			    else if(crosswalkErrors > 0) {
 				//log batch activity
 				ba = new batchuploadactivity();
 				ba.setActivity("Crosswalk Error. CWId:" + cdt.getCrosswalkId() + " for configId:" + batch.getConfigId() + " total records with CW error: " + crosswalkErrors);
@@ -3030,10 +3029,11 @@ public class transactionInManagerImpl implements transactionInManager {
 			} 
 			else if (cdt.getMacroId() != 0) {
 			    macroError = processMacro(batch.getConfigId(), batchUploadId, cdt, false);
-
-			    if(macroError > 0) {
-				systemErrorCount++;
-
+			    
+			    if(crosswalkErrors == 9999999) {
+				systemErrorCount++; 
+			    }
+			    else if(macroError > 0) {
 				//log batch activity
 				ba = new batchuploadactivity();
 				ba.setActivity("Macro Error. macroId:" + cdt.getMacroId() + " for configId:" + batch.getConfigId());
@@ -3048,10 +3048,6 @@ public class transactionInManagerImpl implements transactionInManager {
 	    //Step 3: Check validation errors
 	    Integer validationErrors = runValidations(batchUploadId, batch.getConfigId());
 	    
-	    if(validationErrors > 0) {
-		systemErrorCount = systemErrorCount + validationErrors;
-	    }
-
 	    // update status of the failed records to ERR - 14 (Only updating REQUIRED records from transactioninerrors)
 	    updateStatusForErrorTrans(batchUploadId, 14, false);
 
@@ -3157,7 +3153,7 @@ public class transactionInManagerImpl implements transactionInManager {
 		//run check to make sure we have records 
 		if (getRecordCounts(batchUploadId, Arrays.asList(12), false, true) > 0) {
 		    updateRecordCounts(batchUploadId, new ArrayList<Integer>(), false, "totalRecordCount");
-		    // do we count pass records as errors?
+		    //do we count pass records as errors?
 		    updateRecordCounts(batchUploadId, errorStatusIds, false, "errorRecordCount");
 		    updateBatchStatus(batchUploadId, 29, "endDateTime");
 

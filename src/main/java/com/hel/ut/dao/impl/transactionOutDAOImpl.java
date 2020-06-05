@@ -1508,23 +1508,16 @@ public class transactionOutDAOImpl implements transactionOutDAO {
 	    
 	    insertData.executeUpdate();
 	    
-	    List missingField = getMissingRequiredField(batchDownloadId,cff.getconfigId(),cff.getFieldNo());
+	    sql = "select count(id) as total from transactionouterrors_" + batchDownloadId + " where errorId = 1 and fieldNo = " + cff.getFieldNo();
+	    Query query = sessionFactory.getCurrentSession().createSQLQuery(sql).addScalar("total", StandardBasicTypes.INTEGER);
 	    
-	    if(missingField == null) {
-		return 0;
-	    }
-	    else if(!missingField.isEmpty()) {
-		return 1;
-	    }
-	    else {
-		return 0;
-	    }
+	    return (Integer) query.list().get(0);
 	    
 	} catch (Exception ex) {
 	    System.err.println("insertFailedRequiredFields  failed for outbound batch - " + batchDownloadId + " " + ex.getCause());
 	    ex.printStackTrace();
 	    
-	    return 1;
+	    return 9999999;
 	}
     }
     
