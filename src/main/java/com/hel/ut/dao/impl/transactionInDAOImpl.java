@@ -678,7 +678,7 @@ public class transactionInDAOImpl implements transactionInDAO {
 	    System.err.println("insertFailedRequiredFields failed for batch - " + batchUploadId + " " + ex.getCause());
 	    ex.printStackTrace();
 	    
-	    return 0;
+	    return 9999999;
 	}
     }
 
@@ -960,7 +960,7 @@ public class transactionInDAOImpl implements transactionInDAO {
 	    insertProcessingError(processingSysErrorId, configId, batchId, cdt.getFieldNo(),cdt.getMacroId(), null, null,false, foroutboundProcessing, ("executeMacro " + ex.getCause().toString()));
 	    System.err.println("executeMacro -"+ macro.getFormula() + " for " + inboundOutbound + " batch (Id: " + batchId + ") " + ex.getCause());
 	    ex.printStackTrace();
-	    return 1;
+	    return 9999999;
 	}
 
     }
@@ -2229,7 +2229,7 @@ public class transactionInDAOImpl implements transactionInDAO {
 		+ " and (statusId is null or statusId not in (:transRELId));";
 	    
 	}
-
+	
 	Query updateData = sessionFactory.getCurrentSession().createSQLQuery(sql)
 	    .setParameter("crosswalkId", cdt.getCrosswalkId())
 	    .setParameter("configId", configId)
@@ -2240,8 +2240,7 @@ public class transactionInDAOImpl implements transactionInDAO {
 	} catch (Exception ex) {
 	    System.err.println("executeCWDataForSingleFieldValue for " + inboundOutbound + " batch (Id: " + batchId + ") " + ex.getCause());
 	    ex.printStackTrace();
-	    insertProcessingError(processingSysErrorId, configId, batchId, cdt.getFieldNo(),
-		    null, cdt.getCrosswalkId(), null,
+	    insertProcessingError(processingSysErrorId, configId, batchId, cdt.getFieldNo(), null, cdt.getCrosswalkId(), null,
 		    false, foroutboundProcessing, ("executeCWDataForSingleFieldValue for " + inboundOutbound + " batch (Id: " + batchId + ") " + ex.getCause().toString()));
 	}
 	
@@ -2635,10 +2634,10 @@ public class transactionInDAOImpl implements transactionInDAO {
 	     * original update transactionIn set statusId = 14 where id in (select distinct transactionInId from transactionInErrors where batchUploadId = 1216) and statusId not in (11, 12, 13, 16);
 	     */
 	    sql = "update " + updateTable + " updatetable inner join "
-		+ "(select distinct " + matchId + " from " + joinTable + ") jointable on "
+		+ "(select distinct " + matchId + " from " + joinTable + " where required = 1) jointable on "
 		+ "jointable." + matchId + " = updatetable.id "
 		+ "set statusId = :statusId "
-		+ "where required = 0 and (statusId is null or statusId not in (:transRELId));";
+		+ "where (statusId is null or statusId not in (:transRELId));";
 	  
 	    Query updateData = sessionFactory.getCurrentSession().createSQLQuery(sql)
 		.setParameter("statusId", statusId)
@@ -2948,8 +2947,8 @@ public class transactionInDAOImpl implements transactionInDAO {
 	deleteSQL += "DROP TABLE IF EXISTS `transactioninmacrokeptvalues_" + batchId + "`;";
 	
 	
-	deleteQuery = sessionFactory.getCurrentSession().createSQLQuery(deleteSQL);
-	deleteQuery.executeUpdate();
+	//deleteQuery = sessionFactory.getCurrentSession().createSQLQuery(deleteSQL);
+	//deleteQuery.executeUpdate();
 
     }
     
