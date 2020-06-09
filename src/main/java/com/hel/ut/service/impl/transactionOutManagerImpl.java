@@ -1285,7 +1285,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
 			
 			//log batch activity
 			batchdownloadactivity ba = new batchdownloadactivity();
-			ba.setActivity("Validation Error. Validation Type:" + validation + " for configId:" + configId + " Field No: " + cff.getFieldNo());
+			ba.setActivity("Validation Error. Validation Type: " + validation + " for configId: " + configId + " Field No: " + cff.getFieldNo());
 			ba.setBatchDownloadId(batchDownloadId);
 			transactionOutDAO.submitBatchActivityLog(ba);
 		    }
@@ -1576,7 +1576,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
 	//Step 3: Check validation errors
 	Integer validationErrors = runValidations(batchDownload.getId(), batchDownload.getConfigId());
 	
-	totalErrorCount = totalErrorCount + transactionInManager.getRecordCounts(batchDownload.getId(), transRELId, true, false);
+	totalErrorCount = totalErrorCount + validationErrors;
 	
 	boolean inserteReferralMessage = true;
 	
@@ -2713,10 +2713,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
     }
     
     public void populateOutboundAuditReport(Integer configId, Integer batchDownloadId, Integer batchUploadId, Integer batchUploadConfigId) throws Exception {
-	
-	//first we run store procedure
 	transactionOutDAO.populateOutboundAuditReport(configId, batchDownloadId, batchUploadId,batchUploadConfigId);
-	
     }
     
     @Override
