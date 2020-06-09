@@ -2943,8 +2943,8 @@ public class transactionInDAOImpl implements transactionInDAO {
 	deleteSQL += "DROP TABLE IF EXISTS `transactioninmacrokeptvalues_" + batchId + "`;";
 	
 	
-	//deleteQuery = sessionFactory.getCurrentSession().createSQLQuery(deleteSQL);
-	//deleteQuery.executeUpdate();
+	deleteQuery = sessionFactory.getCurrentSession().createSQLQuery(deleteSQL);
+	deleteQuery.executeUpdate();
 
     }
     
@@ -2955,8 +2955,11 @@ public class transactionInDAOImpl implements transactionInDAO {
 	String sql = "select * from ("
 		+ "select count(a.id) as totalBatchDownloads, deliveredBatches.totalDelivered, a.* "
 		+ "from batchdownloads a inner join information_schema.tables join ("
-		+ "select count(id) as totalDelivered, batchUploadId "
-		+ "from batchdownloads where statusId = 28 or statusId = 32 or statusId = 21 group by batchUploadId) deliveredBatches "
+		+ "select count(batchdownloads.id) as totalDelivered, batchUploadId "
+		+ "from batchdownloads inner join batchuploads on batchuploads.id = batchdownloads.batchUploadId "
+		+ "where (batchdownloads.statusId = 28 or batchdownloads.statusId = 32 or batchdownloads.statusId = 21) and "
+		+ "batchuploads.statusId not in (42,38,43,4) "
+		+ "group by batchUploadId) deliveredBatches "
 		+ "on deliveredBatches.batchUploadId = a.batchUploadId "
 		+ "where table_name = concat('transactiontranslatedin_',a.batchUploadId) "
 		+ "group by a.batchUploadId ) as batchesToClear "
