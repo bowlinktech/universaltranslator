@@ -526,7 +526,7 @@ public class transactionInManagerImpl implements transactionInManager {
 		
 		//flag errors, anything row that is not null in F[FieldNo] but null in forCW
 		errors = flagCWErrors(configId, batchId, cdt, foroutboundProcessing, cdt.isRequiredField());
-		
+	
 		//If field is required update transaction status if error is CW error is found
 		if(cdt.isRequiredField() && errors > 0) {
 		    //flag as error in transactionIn or transactionOut table (Only updating REQUIRED records from transactioninerrors)
@@ -3030,7 +3030,7 @@ public class transactionInManagerImpl implements transactionInManager {
 			else if (cdt.getMacroId() != 0) {
 			    macroError = processMacro(batch.getConfigId(), batchUploadId, cdt, false);
 			    
-			    if(crosswalkErrors == 9999999) {
+			    if(macroError == 9999999) {
 				systemErrorCount++; 
 			    }
 			    else if(macroError > 0) {
@@ -3096,16 +3096,18 @@ public class transactionInManagerImpl implements transactionInManager {
 		    Integer postMacroError = 0;
 		    
 		    for (configurationDataTranslations cdt : postDataTranslations) {
-			postMacroError = processMacro(batch.getConfigId(), batchUploadId, cdt, false);
 			
-			if(postMacroError > 0) {
+			postMacroError = processMacro(batch.getConfigId(), batchUploadId, cdt, false);
+			    
+			if(postMacroError == 9999999) {
+			    systemErrorCount++; 
+			}
+			else if(postMacroError > 0) {
 			    //log batch activity
 			    ba = new batchuploadactivity();
-			    ba.setActivity("Post macro processing error. macroId:" + cdt.getMacroId()+ " for configId:"+batch.getConfigId());
+			    ba.setActivity("Post Macro Error. macroId:" + cdt.getMacroId() + " for configId:" + batch.getConfigId());
 			    ba.setBatchUploadId(batchUploadId);
 			    transactionInDAO.submitBatchActivityLog(ba);
-			    
-			    systemErrorCount = systemErrorCount + postMacroError;
 			}
 		    }
 		}
@@ -3210,7 +3212,7 @@ public class transactionInManagerImpl implements transactionInManager {
 		catch (Exception ex) {}
 		
 		//if errors are found and the configuration is not set to "Reject entire file on a single transaction error" then create the batch download entry.
-		if(handlingDetails.get(0).geterrorHandling() == 3) {
+		if(totalErrorRows > 0 && handlingDetails.get(0).geterrorHandling() == 3) {
 		    batchStatusId = 7;
 		    updateBatchStatus(batchUploadId, batchStatusId, "endDateTime");
 		    
