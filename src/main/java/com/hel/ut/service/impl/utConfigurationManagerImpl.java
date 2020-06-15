@@ -718,7 +718,13 @@ public class utConfigurationManagerImpl implements utConfigurationManager {
     @Override
     public List getCrosswalksForDownload (Integer configId) throws Exception {
 	
-	String sqlStatement = "select name,  crosswalkId, sourcevalue, targetvalue, descValue from crosswalks cw join ("
+	String sqlStatement = "select name,  crosswalkId, sourcevalue, targetvalue, descValue " 
+	    + "from crosswalks inner join " 
+	    + "rel_crosswalkdata on rel_crosswalkdata.crosswalkId = crosswalks.id " 
+	    + " where orgId in (select orgId from configurations where id = " + configId + ") " 
+	    + "order by name,crosswalks.id";
+	
+	/*String sqlStatement = "select name,  crosswalkId, sourcevalue, targetvalue, descValue from crosswalks cw join ("
 	    + "select * from rel_crosswalkdata where crosswalkId in ("
 	    + "select distinct crosswalkId from ("
 	    + "select crosswalkId from configurationdatatranslations where configId = " + configId
@@ -726,7 +732,7 @@ public class utConfigurationManagerImpl implements utConfigurationManager {
 	    + "select crosswalkId from rel_crosswalkdata where crosswalkId in ("
 	    + "select crosswalkId from configurationdatatranslations where configId = " + configId + " order by processOrder)) cws"
 	    + ")) cwdata on cw.id = cwdata.crosswalkId "
-	    + "order by name, cwdata.id";
+	    + "order by name, cwdata.id";*/
 	
 	return utConfigurationDAO.getDTCWForDownload(sqlStatement);
     }
