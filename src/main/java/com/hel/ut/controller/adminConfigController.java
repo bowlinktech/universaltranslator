@@ -3103,11 +3103,11 @@ public class adminConfigController {
 		    Iterator cwDataIt = crosswalks.iterator();
 
 		    sb = new StringBuilder();
-		    sb.append("Crosswalk Name").append(",")
-		    .append("Crosswalk Id").append(",")
-		    .append("Source Value").append(",")
-		    .append("Target Value").append(",")
-		    .append("Desc Value").append(",");
+		    sb.append("Crosswalk Name").append("\t")
+		    .append("Crosswalk Id").append("\t")
+		    .append("Source Value").append("\t")
+		    .append("Target Value").append("\t")
+		    .append("Desc Value");
 
 		    writer.write(sb.toString());
 		    if(cwDataIt.hasNext()) {
@@ -3119,11 +3119,11 @@ public class adminConfigController {
 
 			Object cwDatarow[] = (Object[]) cwDataIt.next();
 
-			sb.append(cwDatarow[0]).append(",")
-			.append(cwDatarow[1]).append(",")
-			.append(cwDatarow[2]).append(",")
-			.append(cwDatarow[3]).append(",")
-			.append(cwDatarow[4]).append(",");
+			sb.append(cwDatarow[0]).append("\t")
+			.append(cwDatarow[1]).append("\t")
+			.append(cwDatarow[2]).append("\t")
+			.append(cwDatarow[3]).append("\t")
+			.append(cwDatarow[4]);
 
 			writer.write(sb.toString());
 			if(cwDataIt.hasNext()) {
