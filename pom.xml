@@ -24,7 +24,7 @@
 	<javax.validation.version>2.0.1.Final</javax.validation.version>
 	<javax.mail.version>1.5.0-b01</javax.mail.version>
 	<hibernate-core.version>4.3.1.Final</hibernate-core.version>
-	<hibernate-validator.version>5.1.0.Final</hibernate-validator.version>
+	<hibernate-validator.version>5.3.5.Final</hibernate-validator.version>
 	<junit.version>4.12</junit.version>
 	<mysql-connector.version>6.0.6</mysql-connector.version>
         <jstl.version>1.2</jstl.version>
