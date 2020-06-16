@@ -353,6 +353,7 @@ public class messageTypeDAOImpl implements messageTypeDAO {
     
     @Transactional(readOnly = false)
     public void executeSQLStatement(String sqlStmt) {
+	
 	if(sqlStmt != null) {
 	    if(!"".equals(sqlStmt)) {
 		 //Need to insert all the fields into the crosswalk data Fields table

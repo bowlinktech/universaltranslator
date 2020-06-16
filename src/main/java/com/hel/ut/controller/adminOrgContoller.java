@@ -32,6 +32,7 @@ import com.registryKit.registry.tiers.tierOrganizationDetails;
 import com.registryKit.registry.tiers.tiers;
 import com.hel.ut.service.utConfigurationManager;
 import com.hel.ut.service.utConfigurationTransportManager;
+import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -293,9 +294,12 @@ public class adminOrgContoller {
         }
 
         Organization currentOrg = organizationManager.getOrganizationById(organization.getId());
+	
+	boolean updatedName = false;
 
         if (!currentOrg.getcleanURL().trim().equals(organization.getcleanURL().trim())) {
             List<Organization> existing = organizationManager.getOrganizationByName(organization.getcleanURL());
+	    updatedName = true;
             if (!existing.isEmpty()) {
                 ModelAndView mav = new ModelAndView();
                 mav.setViewName("/administrator/organizations/organizationDetails");
@@ -311,6 +315,20 @@ public class adminOrgContoller {
 
         //Update the organization
         organizationManager.updateOrganization(organization);
+	
+	//If updated name, need to check if any configurations are set up for this or
+	if(updatedName) {
+	    List<utConfiguration> configurations = configurationmanager.getActiveConfigurationsByOrgId(currentOrg.getId());
+	    
+	    if(configurations != null) {
+		if(!configurations.isEmpty()) {
+		    
+		    List<Integer> configIds = configurations.stream().map(e -> e.getId()).collect(Collectors.toList());
+		    
+		    configurationmanager.updateConfigurationDirectories(configIds,currentOrg.getcleanURL().trim(),organization.getcleanURL().trim());
+		}
+	    }
+	}
 
         //This variable will be used to display the message on the details form
         redirectAttr.addFlashAttribute("savedStatus", "updated");

@@ -213,4 +213,6 @@ public interface utConfigurationManager {
     
     StringBuffer printConnectionDetails(utConfiguration srcconfigDetails,utConfiguration tgtconfigDetails) throws Exception;
     
+    void updateConfigurationDirectories(List<Integer> configIds, String oldCleanURL, String newCleanURL) throws Exception;
+    
 }
