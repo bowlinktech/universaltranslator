@@ -63,6 +63,7 @@ import com.hel.ut.model.organizationDirectDetails;
 import com.hel.ut.model.validationType;
 import com.hel.ut.service.emailMessageManager;
 import com.hel.ut.service.hispManager;
+import com.hel.ut.service.transactionInManager;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -135,6 +136,9 @@ public class adminConfigController {
     
     @Autowired
     private emailMessageManager emailMessageManager;
+    
+    @Autowired
+    private transactionInManager transactioninmanager;
     
     @Resource(name = "myProps")
     private Properties myProps;
@@ -3454,8 +3458,10 @@ public class adminConfigController {
 			outputStream.write(bytes, 0, read);
 		    }
 		    outputStream.close();
-
-		    //Save the attachment
+		    
+		    //Call the method to start processing
+		    transactioninmanager.moveFileDroppedFiles();
+			    
 		} catch (IOException e) {
 		    returnVal = 0;
 		    e.printStackTrace();
