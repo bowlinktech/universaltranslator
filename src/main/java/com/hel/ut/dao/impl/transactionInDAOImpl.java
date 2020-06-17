@@ -3435,12 +3435,12 @@ public class transactionInDAOImpl implements transactionInDAO {
     @Override
     @Transactional(readOnly = true)
     public Integer getTotalErroredRows(Integer batchUploadId) throws Exception {
-	//String sql = "select count(distinct rowNumber) as totalErrorRows from batchuploadauditerrors where batchUploadId = :batchUploadId";
+	String sql = "select count(distinct rowNumber) as totalRows from batchuploadauditerrors where batchUploadId = :batchUploadId";
 	
-	String sql = "select count(id) as totalErrorRows from transactiontranslatedin_" + batchUploadId + " where statusId = 14";
-	
-	Query query = sessionFactory.getCurrentSession().createSQLQuery(sql).addScalar("totalErrorRows", StandardBasicTypes.INTEGER);
+	Query query = sessionFactory.getCurrentSession().createSQLQuery(sql).addScalar("totalRows", StandardBasicTypes.INTEGER);
+	query.setParameter("batchUploadId", batchUploadId);
 	return (Integer) query.list().get(0);
+
     }
     
     @Override
