@@ -127,8 +127,6 @@ public class messageTypeManagerImpl implements messageTypeManager {
 	     directory = myProps.getProperty("ut.directory.utRootDir") + "libraryFiles/crosswalks/";
         }
 	
-	System.out.println(directory + fileName);
-
         File newFile = null;
         newFile = new File(directory + fileName);
 

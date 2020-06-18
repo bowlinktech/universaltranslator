@@ -48,6 +48,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Iterator;
 import java.util.Properties;
+import java.util.stream.Collectors;
 import javax.annotation.Resource;
 
 @Service
@@ -718,7 +719,13 @@ public class utConfigurationManagerImpl implements utConfigurationManager {
     @Override
     public List getCrosswalksForDownload (Integer configId) throws Exception {
 	
-	String sqlStatement = "select name,  crosswalkId, sourcevalue, targetvalue, descValue from crosswalks cw join ("
+	String sqlStatement = "select name,  crosswalkId, sourcevalue, targetvalue, descValue " 
+	    + "from crosswalks inner join " 
+	    + "rel_crosswalkdata on rel_crosswalkdata.crosswalkId = crosswalks.id " 
+	    + " where orgId in (select orgId from configurations where id = " + configId + ") " 
+	    + "order by name,crosswalks.id";
+	
+	/*String sqlStatement = "select name,  crosswalkId, sourcevalue, targetvalue, descValue from crosswalks cw join ("
 	    + "select * from rel_crosswalkdata where crosswalkId in ("
 	    + "select distinct crosswalkId from ("
 	    + "select crosswalkId from configurationdatatranslations where configId = " + configId
@@ -726,7 +733,7 @@ public class utConfigurationManagerImpl implements utConfigurationManager {
 	    + "select crosswalkId from rel_crosswalkdata where crosswalkId in ("
 	    + "select crosswalkId from configurationdatatranslations where configId = " + configId + " order by processOrder)) cws"
 	    + ")) cwdata on cw.id = cwdata.crosswalkId "
-	    + "order by name, cwdata.id";
+	    + "order by name, cwdata.id";*/
 	
 	return utConfigurationDAO.getDTCWForDownload(sqlStatement);
     }
@@ -1532,6 +1539,19 @@ public class utConfigurationManagerImpl implements utConfigurationManager {
 	
 	return reportBody;
 	
+    }
+    
+    @Override
+    public void updateConfigurationDirectories(List<Integer> configIds, String oldCleanURL, String newCleanURL) throws Exception {
+	
+	String joinedList = configIds.stream().map(String::valueOf).collect(Collectors.joining(","));
+	
+	String sqlStatement = "update configurationtransportdetails set fileLocation = REPLACE(fileLocation,'/HELProductSuite/universalTranslator/"+oldCleanURL+"','/HELProductSuite/universalTranslator/"+newCleanURL+"') "
+	    + "where configId in ("+joinedList+"); "
+	    + "update rel_transportfiledropdetails set directory = REPLACE(directory,'/HELProductSuite/universalTranslator/"+oldCleanURL+"','/HELProductSuite/universalTranslator/"+newCleanURL+"') "
+	    + "where transportId in (select id from configurationtransportdetails where configId in ("+joinedList+"));";
+	
+	messageTypeDAO.executeSQLStatement(sqlStatement);
     }
 }
 
