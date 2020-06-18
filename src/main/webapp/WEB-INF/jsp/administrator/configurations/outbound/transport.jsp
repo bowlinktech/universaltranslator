@@ -500,7 +500,7 @@
 				<form:radiobutton id="errorHandling" path="errorHandling" value="3" disabled="${transportDetails.copiedTransportId > 0 ? 'true' : 'false'}" /> Reject entire file on a single transaction error
 			    </label>
 			    <label class="radio-inline">
-				<form:radiobutton id="errorHandling" path="errorHandling" value="4" disabled="${transportDetails.copiedTransportId > 0 ? 'true' : 'false'}" /> Send transactions with errors through to the final generated target file
+				<form:radiobutton id="errorHandling" path="errorHandling" value="4" disabled="${transportDetails.copiedTransportId > 0 ? 'true' : 'false'}" /> Send error records through to the final generated target file
 			    </label>
 			</div>
 			<c:if test="${transportDetails.copiedTransportId > 0}">

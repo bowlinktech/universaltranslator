@@ -219,50 +219,6 @@ public class transactionOutManagerImpl implements transactionOutManager {
     }
 
     /**
-     * The 'translateTargetRecords' function will attempt to translate the target records based on the translation details set up in the target utConfiguration.
-     *
-     * @param transactionTargetId The id of the target transaction to be translated
-     * @param batchId The id of the batch the target transaction belongs to
-     * @param configId The id of the target utConfiguration.
-     * @param categoryId
-     *
-     * @return This function will return either TRUE (If translation completed with no errors) OR FALSE (If translation failed for any reason)
-     */
-    @Override
-    public Integer translateTargetRecords(int transactionTargetId, int configId, int batchId, int categoryId) {
-
-	Integer errorCount = 0;
-
-	// Need to get the configured data translations
-	List<configurationDataTranslations> dataTranslations = configurationManager.getDataTranslationsWithFieldNo(configId, categoryId);
-
-	for (configurationDataTranslations cdt : dataTranslations) {
-	   
-            
-	    if (cdt.getCrosswalkId() > 0) {
-		try {
-		    transactionInManager.processCrosswalk(configId, batchId, cdt, true);
-		    
-		} catch (Exception e) {
-		    //throw new Exception("Error occurred processing crosswalks. crosswalkId: "+cdt.getCrosswalkId()+" configId: "+configId,e);
-		    //insert error into transactionouterrors
-		    transactionInManager.flagCWErrors(configId, batchId, cdt, true);
-		    e.printStackTrace();
-		}
-	    } else if (cdt.getMacroId() != 0) {
-		try {
-		    transactionInManager.processMacro(configId, batchId, cdt, true);
-		   
-		} catch (Exception e) {
-		    transactionInManager.flagMacroErrors(configId, batchId, cdt, true);
-		    e.printStackTrace();
-		}
-	    }
-	}
-	return 0;
-    }
-
-    /**
      * The 'generateTargetFile' function will generate the actual file in the correct organizations outpufiles folder.
      *
      * @param createNewFile
@@ -1263,6 +1219,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
     @Override
     public Integer runValidations(Integer batchDownloadId, Integer configId) throws Exception {
 	
+	Integer totalValidationErrors = 0;
 	Integer errorCount = 0;
 	
 	//1. we get validation types
@@ -1278,41 +1235,66 @@ public class transactionOutManagerImpl implements transactionOutManager {
 	//TODO was hoping to have one SP but concat in SP not setting and not catching errors correctly. Need to recheck
 	List<configurationFormFields> configurationFormFields = configurationTransportManager.getCffByValidationType(configId, 0);
 
-	for (configurationFormFields cff : configurationFormFields) {
-	    String regEx = "";
-	    Integer validationTypeId = cff.getValidationType();
-	    switch (cff.getValidationType()) {
-		case 1:
-		    break; // no validation
-		//email calling SQL to validation and insert - one statement
-		case 2:
-		    errorCount = errorCount + genericValidation(cff, validationTypeId, batchDownloadId, regEx);
-		    break;
-		//phone  calling SP to validation and insert - one statement 
-		case 3:
-		     errorCount = errorCount + genericValidation(cff, validationTypeId, batchDownloadId, regEx);
-		    break;
-		// need to loop through each record / each field
-		case 4:
-		     errorCount = errorCount + genericValidation(cff, validationTypeId, batchDownloadId, regEx);
-		    break;
-		//numeric   calling SQL to validation and insert - one statement      
-		case 5:
-		    errorCount = errorCount + genericValidation(cff, validationTypeId, batchDownloadId, regEx);
-		    break;
-		//url - need to rethink as regExp is not validating correctly
-		case 6:
-		     errorCount = errorCount + genericValidation(cff, validationTypeId, batchDownloadId, regEx);
-		    break;
-		//anything new we hope to only have to modify sp
-		default:
-		     errorCount = errorCount + genericValidation(cff, validationTypeId, batchDownloadId, regEx);
-		    break;
-	    }
+	if(configurationFormFields != null) {
+	    if(!configurationFormFields.isEmpty()) {
+		String validation = "";
+		Integer validationTypeId = 0; 
+	
+		for (configurationFormFields cff : configurationFormFields) {
+		    errorCount = 0;
+		    
+		    validationTypeId = cff.getValidationType();
+		    
+		    switch (cff.getValidationType()) {
+			case 1:
+			    break; // no validation
+			//email calling SQL to validation and insert - one statement
+			case 2:
+			    validation = "Email";
+			    errorCount = genericValidation(cff, validationTypeId, batchDownloadId, "");
+			    break;
+			//phone  calling SP to validation and insert - one statement 
+			case 3:
+			    validation = "Phone Number";
+			    errorCount = genericValidation(cff, validationTypeId, batchDownloadId, "");
+			    break;
+			// need to loop through each record / each field
+			case 4:
+			    validation = "Date";
+			    errorCount = genericValidation(cff, validationTypeId, batchDownloadId, "");
+			    break;
+			//numeric   calling SQL to validation and insert - one statement      
+			case 5:
+			    validation = "Numeric";
+			    errorCount = genericValidation(cff, validationTypeId, batchDownloadId, "");
+			    break;
+			//url - need to rethink as regExp is not validating correctly
+			case 6:
+			    validation = "URL";
+			    errorCount = genericValidation(cff, validationTypeId, batchDownloadId, "");
+			    break;
+			//anything new we hope to only have to modify sp
+			default:
+			    validation = "";
+			    //errorCount = genericValidation(cff, validationTypeId, batchDownloadId, "");
+			    break;
+		    }
+		    
+		    if(errorCount > 0) {
+			totalValidationErrors = totalValidationErrors + errorCount;
+			
+			//log batch activity
+			batchdownloadactivity ba = new batchdownloadactivity();
+			ba.setActivity("Validation Error. Validation Type: " + validation + " for configId: " + configId + " Field No: " + cff.getFieldNo());
+			ba.setBatchDownloadId(batchDownloadId);
+			transactionOutDAO.submitBatchActivityLog(ba);
+		    }
 
+		}
+	    }
 	}
 	
-	return errorCount;
+	return totalValidationErrors;
     }
     
     @Override
@@ -1508,48 +1490,93 @@ public class transactionOutManagerImpl implements transactionOutManager {
 	configurationTransport transportDetails = configurationTransportManager.getTransportDetails(batchDownload.getConfigId());
 
 	Integer statusId = 37;
-        
-	// cw/macro checks, this does not return an error count
-	Integer totalErrorCount = translateTargetRecords(0, batchDownload.getConfigId(), batchDownload.getId(), 1);
 	
-	//Check for any errors logged with translating Macros and crosswalks
-	totalErrorCount = transactionOutDAO.getTotalErrors(batchDownload.getId());
-        
-	if (totalErrorCount > 0) {
-	    ba = new batchdownloadactivity();
-	    ba.setActivity("Crosswalk/Marcor Error(s) occurred while translating target records");
-	    ba.setBatchDownloadId(batchDownload.getId());
-	    transactionOutDAO.submitBatchActivityLog(ba);
-	}
+	Integer systemErrorCount = 0;
+	Integer totalErrorCount = 0;
 	
-	//check R/O
+	 //Step 1: check R/O
 	List<configurationFormFields> reqFields = transactionInManager.getRequiredFieldsForConfig(batchDownload.getConfigId());
-
-	Integer missingReqFields = 0;
-	Integer totalMissingReqFields = 0;
-	for (configurationFormFields cff : reqFields) {
-	    missingReqFields = insertFailedRequiredFields(cff, batchDownload.getId());
-	    
-	    if(missingReqFields > 0) {
-		totalMissingReqFields++;
-		ba = new batchdownloadactivity();
-		ba.setActivity("The required field " + cff.getFieldDesc() + " for configId:"+cff.getconfigId() + " is required but did not have a value.");
-		ba.setBatchDownloadId(batchDownload.getId());
-		transactionOutDAO.submitBatchActivityLog(ba);
+	
+	if(reqFields != null) {
+	    if(!reqFields.isEmpty()) {
+		Integer reqError = 0;
 		
-		totalErrorCount++;
+		for (configurationFormFields cff : reqFields) {
+		    reqError = insertFailedRequiredFields(cff, batchDownload.getId());
+		    
+		    if(reqError == 9999999) {
+			systemErrorCount++; 
+		     }
+		     else if(reqError > 0) {
+			 totalErrorCount = totalErrorCount + reqError;
+			 
+			 //log batch activity
+			 ba = new batchdownloadactivity();
+			 ba.setActivity("Required Field Error. Field No:" + cff.getFieldNo() + " Field Desc:" + cff.getFieldDesc() + " for configId:" + cff.getconfigId());
+			 ba.setBatchDownloadId(batchDownload.getId());
+			 transactionOutDAO.submitBatchActivityLog(ba);
+		     }
+		}
 	    }
 	}
-	
+
 	//Update all outbound records with missing required fields to have a status id of 14
-	if(totalMissingReqFields > 0) {
+	if(totalErrorCount > 0) {
 	    updateMissingRequiredFieldStatus(batchDownload.getId());
 	}
 	
-	//run validation
+	//Step 2: grab the configurationDataTranslations and run cw/macros
+	List<configurationDataTranslations> dataTranslations = configurationManager.getDataTranslationsWithFieldNo(batchDownload.getConfigId(), 1);
+	
+	if(dataTranslations != null) {
+	    if(!dataTranslations.isEmpty()) {
+		Integer crosswalkErrors = 0;
+		Integer macroError = 0;
+		
+		for (configurationDataTranslations cdt : dataTranslations) {
+		    crosswalkErrors = 0;
+		    macroError = 0;
+		    
+		    if (cdt.getCrosswalkId() != 0) {
+			crosswalkErrors = transactionInManager.processCrosswalk(batchDownload.getConfigId(), batchDownload.getId(), cdt, true);
+
+			if(crosswalkErrors == 9999999) {
+			    systemErrorCount++; 
+			}
+			else if(crosswalkErrors > 0) {
+			    totalErrorCount = totalErrorCount + crosswalkErrors;
+			    
+			    //log batch activity
+			    ba = new batchdownloadactivity();
+			    ba.setActivity("Crosswalk Error. CWId:" + cdt.getCrosswalkId() + " for configId:" + batchDownload.getConfigId() + " total records with CW error: " + crosswalkErrors);
+			    ba.setBatchDownloadId(batchDownload.getId());
+			    transactionOutDAO.submitBatchActivityLog(ba);
+			}
+			else if (cdt.getMacroId() != 0) {
+			    macroError = transactionInManager.processMacro(batchDownload.getConfigId(), batchDownload.getId(), cdt, true);
+			    
+			    if(crosswalkErrors == 9999999) {
+				systemErrorCount++; 
+			    }
+			    else if(macroError > 0) {
+				totalErrorCount = totalErrorCount + macroError;
+				
+				//log batch activity
+				ba = new batchdownloadactivity();
+				ba.setActivity("Macro Error. macroId:" + cdt.getMacroId() + " for configId:" + batchDownload.getConfigId());
+				ba.setBatchDownloadId(batchDownload.getId());
+				transactionOutDAO.submitBatchActivityLog(ba);
+			    }
+			}
+		    } 
+		}
+	    }
+	}
+	
+	//Step 3: Check validation errors
 	Integer validationErrors = runValidations(batchDownload.getId(), batchDownload.getConfigId());
 	
-	totalErrorCount = totalErrorCount + transactionInManager.getRecordCounts(batchDownload.getId(), transRELId, true, false);
+	totalErrorCount = totalErrorCount + validationErrors;
 	
 	boolean inserteReferralMessage = true;
 	
@@ -2686,10 +2713,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
     }
     
     public void populateOutboundAuditReport(Integer configId, Integer batchDownloadId, Integer batchUploadId, Integer batchUploadConfigId) throws Exception {
-	
-	//first we run store procedure
 	transactionOutDAO.populateOutboundAuditReport(configId, batchDownloadId, batchUploadId,batchUploadConfigId);
-	
     }
     
     @Override

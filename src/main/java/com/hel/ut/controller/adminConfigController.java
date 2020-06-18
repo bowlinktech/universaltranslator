@@ -63,6 +63,7 @@ import com.hel.ut.model.organizationDirectDetails;
 import com.hel.ut.model.validationType;
 import com.hel.ut.service.emailMessageManager;
 import com.hel.ut.service.hispManager;
+import com.hel.ut.service.transactionInManager;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -135,6 +136,9 @@ public class adminConfigController {
     
     @Autowired
     private emailMessageManager emailMessageManager;
+    
+    @Autowired
+    private transactionInManager transactioninmanager;
     
     @Resource(name = "myProps")
     private Properties myProps;
@@ -3103,11 +3107,11 @@ public class adminConfigController {
 		    Iterator cwDataIt = crosswalks.iterator();
 
 		    sb = new StringBuilder();
-		    sb.append("Crosswalk Name").append(",")
-		    .append("Crosswalk Id").append(",")
-		    .append("Source Value").append(",")
-		    .append("Target Value").append(",")
-		    .append("Desc Value").append(",");
+		    sb.append("Crosswalk Name").append("\t")
+		    .append("Crosswalk Id").append("\t")
+		    .append("Source Value").append("\t")
+		    .append("Target Value").append("\t")
+		    .append("Desc Value");
 
 		    writer.write(sb.toString());
 		    if(cwDataIt.hasNext()) {
@@ -3119,11 +3123,11 @@ public class adminConfigController {
 
 			Object cwDatarow[] = (Object[]) cwDataIt.next();
 
-			sb.append(cwDatarow[0]).append(",")
-			.append(cwDatarow[1]).append(",")
-			.append(cwDatarow[2]).append(",")
-			.append(cwDatarow[3]).append(",")
-			.append(cwDatarow[4]).append(",");
+			sb.append(cwDatarow[0]).append("\t")
+			.append(cwDatarow[1]).append("\t")
+			.append(cwDatarow[2]).append("\t")
+			.append(cwDatarow[3]).append("\t")
+			.append(cwDatarow[4]);
 
 			writer.write(sb.toString());
 			if(cwDataIt.hasNext()) {
@@ -3454,8 +3458,10 @@ public class adminConfigController {
 			outputStream.write(bytes, 0, read);
 		    }
 		    outputStream.close();
-
-		    //Save the attachment
+		    
+		    //Call the method to start processing
+		    transactioninmanager.moveFileDroppedFiles();
+			    
 		} catch (IOException e) {
 		    returnVal = 0;
 		    e.printStackTrace();
