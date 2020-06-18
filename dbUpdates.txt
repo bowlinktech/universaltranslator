@@ -1,8 +1,8 @@
-USE `universaltranslatorca`;
+USE `universaltranslator`;
 DROP procedure IF EXISTS `insertValidationErrors`;
 
 DELIMITER $$
-USE `universaltranslatorca`$$
+USE `universaltranslator`$$
 CREATE DEFINER=`root`@`localhost` PROCEDURE `insertValidationErrors`(in vtType int, in fieldNo int,
 in batchUploadId int, in configId int, in transactionId int, in isFieldRequired boolean)
 BEGIN
@@ -24,6 +24,8 @@ CASE vtType
 		set regEx = '^-?[0-9]+[.]?[0-9]*$|^-?[.][0-9]+$';
 	WHEN 6 THEN
 		set regEx = '^(?:http(s)?:\/\/)?[\w.-]+(?:\.[\w\.-]+)+[\w\-\._~:/?#[\]@!\$&\'\(\)\*\+,;=.]+$';
+WHEN 7 THEN
+        set regEx = '^[0-9]{4}(0[1-9]|1[0-2])(0[1-9]|[1-2][0-9]|3[0-1])';
     ELSE
         BEGIN
         END;
