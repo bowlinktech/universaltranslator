@@ -1542,7 +1542,7 @@ public class transactionOutDAOImpl implements transactionOutDAO {
     @Transactional(readOnly = true)
     public Integer getTotalErrors(Integer batchId) throws Exception {
 
-	String sql = "select * from transactionouterrors_"+batchId;
+	String sql = "select * from transactionouterrors_"+batchId + " where required = 1";
 
 	Query getTotalErrors = sessionFactory.getCurrentSession().createSQLQuery(sql);
 	
@@ -1708,7 +1708,7 @@ public class transactionOutDAOImpl implements transactionOutDAO {
     @Transactional(readOnly = false)
     public Integer genericValidation(configurationFormFields cff, Integer validationTypeId, Integer batchDownloadId, String regEx) {
 
-	String sql = "call insertValidationErrorsOutbound(:vtType, :fieldNo, :batchDownloadId, :configId, :transactionId)";
+	String sql = "call insertValidationErrorsOutbound(:vtType, :fieldNo, :batchDownloadId, :configId, :transactionId, :isFieldRequired)";
 
 	Query insertError = sessionFactory.getCurrentSession().createSQLQuery(sql);
 	insertError.setParameter("vtType", cff.getValidationType());
@@ -1716,6 +1716,7 @@ public class transactionOutDAOImpl implements transactionOutDAO {
 	insertError.setParameter("batchDownloadId", batchDownloadId);
 	insertError.setParameter("configId", cff.getconfigId());
 	insertError.setParameter("transactionId", 0);
+	insertError.setParameter("isFieldRequired", cff.getRequired());
 
 	try {
 	    insertError.executeUpdate();
