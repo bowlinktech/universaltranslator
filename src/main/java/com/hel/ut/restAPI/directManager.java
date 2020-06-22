@@ -259,7 +259,7 @@ public class directManager {
 	    if(batchUploadDetails.getAssociatedBatchId() > 0) {
 		
 		batchdownloadactivity ba = new batchdownloadactivity();
-		ba.setActivity("Found original source batch for this reply message.  Souce batch upload batchId:" + batchUploadDetails.getId());
+		ba.setActivity("Found original source batch for this reply message.  Souce batch upload batchId:" + batchUploadDetails.getAssociatedBatchId());
 		ba.setBatchDownloadId(batchDownloadId);
 		transactionOutDAO.submitBatchActivityLog(ba);
 		
