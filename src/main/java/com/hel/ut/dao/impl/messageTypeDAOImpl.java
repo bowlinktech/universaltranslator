@@ -435,4 +435,14 @@ public class messageTypeDAOImpl implements messageTypeDAO {
 	
         return crosswalks;
     }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public List getCrosswalksWithDataByFileName(Integer orgId, String fileName) {
+        Query query = sessionFactory.getCurrentSession().createSQLQuery("select b.sourceValue, b.targetValue, b.descValue, c.delimiter, c.delimChar from crosswalks a inner join rel_crosswalkdata b on b.crosswalkId = a.id inner join ref_delimiters c on c.id = a.fileDelimiter where a.orgId = :orgId and a.fileName = :fileName order by b.id asc");
+        query.setParameter("orgId", orgId);
+	query.setParameter("fileName", fileName);
+
+        return query.list();
+    }
 }

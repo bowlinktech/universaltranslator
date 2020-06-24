@@ -44,12 +44,14 @@ import com.hel.ut.model.configurationFileDropFields;
 import com.hel.ut.model.configurationFormFields;
 import com.hel.ut.model.configurationTransport;
 import com.hel.ut.model.configurationconnectionfieldmappings;
+import java.io.FileWriter;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Iterator;
 import java.util.Properties;
 import java.util.stream.Collectors;
 import javax.annotation.Resource;
+import org.apache.commons.io.FileUtils;
 
 @Service
 public class utConfigurationManagerImpl implements utConfigurationManager {
@@ -1552,6 +1554,118 @@ public class utConfigurationManagerImpl implements utConfigurationManager {
 	    + "where transportId in (select id from configurationtransportdetails where configId in ("+joinedList+"));";
 	
 	messageTypeDAO.executeSQLStatement(sqlStatement);
+	
+	//Need to copy crosswalks, input files and templates from the old folder to the new one
+	File sourceCrosswalkFolder = new File(myProps.getProperty("ut.directory.utRootDir") + oldCleanURL + "/crosswalks");
+	File destinationCrossalkFolder = new File(myProps.getProperty("ut.directory.utRootDir") + newCleanURL + "/crosswalks");
+	
+	try {
+	    FileUtils.copyDirectory(sourceCrosswalkFolder, destinationCrossalkFolder);
+	} catch (IOException e) {
+	    e.printStackTrace();
+	}
+	
+	File sourceTemplateFolder = new File(myProps.getProperty("ut.directory.utRootDir") + oldCleanURL + "/templates");
+	File destinationTemplateFolder = new File(myProps.getProperty("ut.directory.utRootDir") + newCleanURL + "/templates");
+	
+	try {
+	    FileUtils.copyDirectory(sourceTemplateFolder, destinationTemplateFolder);
+	} catch (IOException e) {
+	    e.printStackTrace();
+	}
+	
+	File sourceInputFolder = new File(myProps.getProperty("ut.directory.utRootDir") + oldCleanURL + "/input files");
+	File destinationInputFolder = new File(myProps.getProperty("ut.directory.utRootDir") + newCleanURL + "/input files");
+	
+	try {
+	    FileUtils.copyDirectory(sourceInputFolder, destinationInputFolder);
+	} catch (IOException e) {
+	    e.printStackTrace();
+	}
+	
+	File sourceOutputFolder = new File(myProps.getProperty("ut.directory.utRootDir") + oldCleanURL + "/output files");
+	File destinationOutputFolder = new File(myProps.getProperty("ut.directory.utRootDir") + newCleanURL + "/output files");
+	
+	try {
+	    FileUtils.copyDirectory(sourceOutputFolder, destinationOutputFolder);
+	} catch (IOException e) {
+	    e.printStackTrace();
+	}
+    }
+    
+    @Override
+    public void generateMissingCrosswalk(String cleanURL, String fileName) throws Exception {
+	
+	Organization orgDetails = null;
+	
+	Integer orgId = 0;
+	
+	if(!"".equals(cleanURL) && !"libraryFiles".equals(cleanURL)) {
+	    List<Organization> orgs = organizationDAO.getOrganizationByName(cleanURL);
+	    
+	    if(orgs != null) {
+		if(!orgs.isEmpty()) {
+		    orgDetails = orgs.get(0);
+		    orgId = orgDetails.getId();
+		}
+	    }
+	}
+	
+	if(fileName != null) {
+	    
+	    if(!"".equals(fileName)) {
+		List crosswalksWithData = messageTypeDAO.getCrosswalksWithDataByFileName(orgId, fileName);
+		
+		if(crosswalksWithData != null) {
+		    if(!crosswalksWithData.isEmpty()) {
+			
+			Iterator<Object[]> cwIterator = crosswalksWithData.iterator();
+			
+			//Create the file
+			File crosswalkFile = new File(myProps.getProperty("ut.directory.utRootDir") + cleanURL + "/crosswalks/"+ fileName);
+			
+			if(crosswalkFile.createNewFile()) {
+			    
+			    FileWriter fileWriter = new FileWriter(crosswalkFile);
+			    
+			    while(cwIterator.hasNext()) {
+				Object[] cwData = cwIterator.next();
+				
+				fileWriter.write(cwData[0].toString());
+				
+				if("tab".equals(cwData[3].toString())) {
+				    fileWriter.write("\t");
+				}
+				else {
+				    fileWriter.write(cwData[4].toString());
+				}
+				
+				fileWriter.write(cwData[1].toString());
+				
+				if("tab".equals(cwData[3].toString())) {
+				    fileWriter.write("\t");
+				}
+				else {
+				    fileWriter.write(cwData[4].toString());
+				}
+				
+				fileWriter.write(cwData[2].toString());
+				
+				if(cwIterator.hasNext()) {
+				    fileWriter.write(System.getProperty( "line.separator" ));
+				}
+
+			    }
+			    
+			    fileWriter.close();
+			}
+			
+			
+		    }
+		}
+	    }
+	}
+	
     }
 }
 
