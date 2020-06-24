@@ -215,4 +215,6 @@ public interface utConfigurationManager {
     
     void updateConfigurationDirectories(List<Integer> configIds, String oldCleanURL, String newCleanURL) throws Exception;
     
+    void generateMissingCrosswalk(String cleanURL, String fileName) throws Exception;
+    
 }
