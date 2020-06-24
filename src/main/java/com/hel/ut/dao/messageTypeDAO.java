@@ -56,4 +56,6 @@ public interface messageTypeDAO {
     List getCrosswalksWithData(Integer orgId);
     
     List<Crosswalks> getCrosswalksForConfig(int page, int maxCrosswalks, int orgId, int configId);
+    
+    List getCrosswalksWithDataByFileName(Integer orgId, String fileName);
 }

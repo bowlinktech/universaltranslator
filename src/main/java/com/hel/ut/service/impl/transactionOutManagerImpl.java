@@ -1576,14 +1576,27 @@ public class transactionOutManagerImpl implements transactionOutManager {
 	//Step 3: Check validation errors
 	Integer validationErrors = runValidations(batchDownload.getId(), batchDownload.getConfigId());
 	
+	// update status of the failed records to ERR - 14 (Only updating REQUIRED records from transactionouterrors)
+	transactionInManager.updateStatusForErrorTrans(batchDownload.getId(), 14, true);
+	
 	totalErrorCount = totalErrorCount + validationErrors;
 	
 	boolean inserteReferralMessage = true;
 	
-	if (totalErrorCount > 0 && sourceConfigTransportDetails.geterrorHandling() == 3) {
+	//Get the total number of errors found that are for required fields
+	Integer totalRequiredErrorsFound = transactionOutDAO.getTotalErrors(batchDownload.getId());
+	
+	if (totalRequiredErrorsFound > 0 && (sourceConfigTransportDetails.geterrorHandling() == 3 || transportDetails.geterrorHandling() == 3)) {
 	    
 	    ba = new batchdownloadactivity();
-	    ba.setActivity("Target batch batchId:"+batchDownload.getId()+" was rejected due to finding an error and the source config error handling set to reject entire file on single error.");
+	    
+	    if(transportDetails.geterrorHandling() == 3) {
+		ba.setActivity("Target batch batchId:"+batchDownload.getId()+" was rejected due to finding an error and the target config error handling set to reject entire file on single error.");
+	    }
+	    else {
+		ba.setActivity("Target batch batchId:"+batchDownload.getId()+" was rejected due to finding an error and the source config error handling set to reject entire file on single error.");
+	    }
+	    
 	    ba.setBatchDownloadId(batchDownload.getId());
 	    transactionOutDAO.submitBatchActivityLog(ba);
 	    
@@ -1617,7 +1630,9 @@ public class transactionOutManagerImpl implements transactionOutManager {
 	    
 	    return 1;
 	    
-	} else {
+	} 
+	
+	else {
 	    
 	    if(totalErrorCount > 0) {
 		populateOutboundAuditReport(batchDownload.getConfigId(),batchDownload.getId(), batchDownload.getBatchUploadId(),batchUploadDetails.getConfigId());
