@@ -23,6 +23,7 @@ import com.hel.ut.model.utUserActivity;
 import com.hel.ut.service.fileManager;
 import com.hel.ut.service.organizationManager;
 import com.hel.ut.service.userManager;
+import com.hel.ut.service.utConfigurationManager;
 
 import java.io.File;
 import java.util.Properties;
@@ -50,6 +51,9 @@ public class fileDownloadController {
 
     @Autowired
     private fileManager filemanager;
+    
+    @Autowired
+    private utConfigurationManager utconfigurationmanager;
 
     @Resource(name = "myProps")
     private Properties myProps;
@@ -189,48 +193,7 @@ public class fileDownloadController {
 	    }
 	    
 	    if(fileExists) {
-		if (mimeType == null) {
-		    // set to binary type if MIME mapping not found
-		    mimeType = "application/octet-stream";
-		}
-		response.setContentType(mimeType);
-		
-		byte[] buffer = new byte[BUFFER_SIZE];
-		int bytesRead = 0;
-
-		response.setHeader("Content-Transfer-Encoding", "binary");
-		response.setHeader("Content-Disposition", "attachment;filename=\"" + actualFileName + "\"");
-
-		outputStream = response.getOutputStream();
-
-		try {
-		    byte[] fileAsBytes = filemanager.loadFileAsBytesArray(directory + actualFileName);
-		    if(Base64.isBase64(new String(fileAsBytes))) {
-			byte[] decodedBytes = Base64.decodeBase64(fileAsBytes);
-			String decodedString = new String(decodedBytes);
-			response.setContentLength((int) decodedString.length());
-			outputStream.write(decodedString.getBytes());
-			in.close();
-			outputStream.close();
-		    }
-		    else {
-			response.setContentLength((int) f.length());
-			while (0 < (bytesRead = in.read(buffer))) {
-			    outputStream.write(buffer, 0, bytesRead);
-			}
-			in.close();
-			outputStream.close();
-		    }
-		}
-		catch (Exception ex) {
-		    response.setContentLength((int) f.length());
-		    while (0 < (bytesRead = in.read(buffer))) {
-			outputStream.write(buffer, 0, bytesRead);
-		    }
-		    in.close();
-		    outputStream.close();
-		}
-		
+		downloadfile(f, in, mimeType, actualFileName, directory, response, outputStream);
 		return null;
 
 	    }
@@ -272,13 +235,55 @@ public class fileDownloadController {
 			   mav = new ModelAndView(new RedirectView("/administrator/processing-activity/outbound/auditReport/"+utBatchId)); 
 			}
 			else if("config".equals(fromPage)) {
-			   mav = new ModelAndView(new RedirectView("/administrator/configurations/translations")); 
+			   mav = new ModelAndView(new RedirectView("/administrator/configurations/translations"));
+			   
+			   //Check to see if the file is a crosswalk, if it is lets create the crosswalk
+			   if(foldername != null) {
+			       if(!"".equals(foldername)) {
+				   if(foldername.contains("crosswalks")) {
+					utconfigurationmanager.generateMissingCrosswalk(foldername.split("/")[0],filename);
+					
+					directory = myProps.getProperty("ut.directory.utRootDir") + foldername.split("/")[0] + "/crosswalks/";
+					
+					f = new File(directory + filename);
+					
+					mimeType = context.getMimeType(directory + filename);
+					in = new FileInputStream(directory + filename);
+
+					actualFileName = filename;
+					
+					downloadfile(f, in, mimeType, actualFileName, directory, response, outputStream);
+
+					return null;
+				   }
+			       }
+			   }
 			}
 			else if("messagespec".equals(fromPage)) {
 			   mav = new ModelAndView(new RedirectView("/administrator/configurations/messagespecs")); 
 			}
 			else if("crosswalks".equals(fromPage)) {
 			   mav = new ModelAndView(new RedirectView("/administrator/sysadmin/crosswalks")); 
+			   
+			   //Check to see if the file is a crosswalk, if it is lets create the crosswalk
+			   if(foldername != null) {
+			       if(!"".equals(foldername)) {
+				    utconfigurationmanager.generateMissingCrosswalk(foldername,filename);
+
+				    directory = myProps.getProperty("ut.directory.utRootDir") + foldername + "/crosswalks/";
+
+				    f = new File(directory + filename);
+
+				    mimeType = context.getMimeType(directory + filename);
+				    in = new FileInputStream(directory + filename);
+
+				    actualFileName = filename;
+
+				    downloadfile(f, in, mimeType, actualFileName, directory, response, outputStream);
+
+				    return null;
+			       }
+			   }
 			}
 		    }
 		}
@@ -311,6 +316,52 @@ public class fileDownloadController {
 	}
 	
 	return null;
+    }
+    
+    private void downloadfile(File f, InputStream in, String mimeType, String actualFileName, String directory, HttpServletResponse response, OutputStream outputStream) throws Exception {
+	
+	if (mimeType == null) {
+	    // set to binary type if MIME mapping not found
+	    mimeType = "application/octet-stream";
+	}
+	response.setContentType(mimeType);
+
+	byte[] buffer = new byte[BUFFER_SIZE];
+	int bytesRead = 0;
+
+	response.setHeader("Content-Transfer-Encoding", "binary");
+	response.setHeader("Content-Disposition", "attachment;filename=\"" + actualFileName + "\"");
+
+	outputStream = response.getOutputStream();
+	
+	try {
+	    byte[] fileAsBytes = filemanager.loadFileAsBytesArray(directory + actualFileName);
+	    
+	    if(Base64.isBase64(new String(fileAsBytes))) {
+		byte[] decodedBytes = Base64.decodeBase64(fileAsBytes);
+		String decodedString = new String(decodedBytes);
+		response.setContentLength((int) decodedString.length());
+		outputStream.write(decodedString.getBytes());
+		in.close();
+		outputStream.close();
+	    }
+	    else {
+		response.setContentLength((int) f.length());
+		while (0 < (bytesRead = in.read(buffer))) {
+		    outputStream.write(buffer, 0, bytesRead);
+		}
+		in.close();
+		outputStream.close();
+	    }
+	}
+	catch (Exception ex) {
+	    response.setContentLength((int) f.length());
+	    while (0 < (bytesRead = in.read(buffer))) {
+		outputStream.write(buffer, 0, bytesRead);
+	    }
+	    in.close();
+	    outputStream.close();
+	}
     }
 
 }
