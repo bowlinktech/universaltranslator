@@ -26,6 +26,9 @@ import com.hel.ut.service.userManager;
 import com.hel.ut.service.utConfigurationManager;
 
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.List;
 import java.util.Properties;
 import javax.annotation.Resource;
 
@@ -337,7 +340,9 @@ public class fileDownloadController {
 	try {
 	    byte[] fileAsBytes = filemanager.loadFileAsBytesArray(directory + actualFileName);
 	    
-	    if(Base64.isBase64(new String(fileAsBytes))) {
+	    List<String> fileStream = Files.readAllLines(Paths.get(directory + actualFileName));
+	    
+	    if(Base64.isBase64(new String(fileAsBytes)) && fileStream.size() == 1) {
 		byte[] decodedBytes = Base64.decodeBase64(fileAsBytes);
 		String decodedString = new String(decodedBytes);
 		response.setContentLength((int) decodedString.length());
