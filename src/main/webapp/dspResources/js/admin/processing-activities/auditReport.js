@@ -9,6 +9,69 @@
 require(['./main'], function () {
 
     $("input:text,form").attr("autocomplete", "off");
+    
+    $(document).on('click','.printErrorsToExcel',function() {
+        
+        $('body').overlay({
+            glyphicon : 'print',
+            message : 'Gathering Details...'
+        });
+      
+        var batchName = $(this).attr('rel');
+        var type = $(this).attr('rel2');
+
+        $.ajax({
+            url: '/administrator/processing-activity/createAuditErrorsToExcel.do',
+            data: {
+                'batchName': batchName,
+                'type': type
+            },
+            type: "GET",
+            dataType : 'text',
+            contentType : 'application/json;charset=UTF-8',
+            success: function(data) {
+                if(data !== '') {
+                    $('.overlay').remove();
+                    window.location.href = '/administrator/processing-activity/printAuditErrorsToExcel/'+ data;
+                }
+                else {
+                    alert("An error occurred creating your audit error excel file. A Health-e-Link system administrator has been notified.");
+                }
+            }
+        });
+    });
+    
+    
+    $(document).on('click','.printErrorsToPDF',function() {
+        
+        $('body').overlay({
+            glyphicon : 'print',
+            message : 'Gathering Details...'
+        });
+      
+        var batchName = $(this).attr('rel');
+        var type = $(this).attr('rel2');
+
+        $.ajax({
+            url: '/administrator/processing-activity/createAuditErrorsToPDF.do',
+            data: {
+                'batchName': batchName,
+                'type': type
+            },
+            type: "GET",
+            dataType : 'text',
+            contentType : 'application/json;charset=UTF-8',
+            success: function(data) {
+                if(data !== '') {
+                    $('.overlay').remove();
+                    window.location.href = '/administrator/processing-activity/printAuditErrorsToPDF/'+ data;
+                }
+                else {
+                    alert("An error occurred creating your audit error PDF file. A Health-e-Link system administrator has been notified.");
+                }
+            }
+        });
+    });
 
     $(document).on('click', '.print', function() {
         var index = $(this).attr('rel');

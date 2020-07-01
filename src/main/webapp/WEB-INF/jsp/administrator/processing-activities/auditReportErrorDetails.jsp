@@ -16,9 +16,9 @@
     </c:forEach>     
 </c:if>   
 
-<div class="pull-right" style="margin-bottom:10px;">
+<%-- <div class="pull-right" style="margin-bottom:10px;">
    ${i.index} <button class="btn btn-minier btn-grey print" rel2="${batchId}" rel="${indexVal}"><i class="fa fa-print"> Print</i></button>
-</div>
+</div>--%>
 <span><strong>Showing <fmt:formatNumber value = "${fn:length(errors)}" type = "number"/> out of <fmt:formatNumber value = "${totalErrors}" type = "number"/></strong></span>
 <div id="errorTable-${indexVal}">
 <c:if test="${hasOutboundError == 1}">

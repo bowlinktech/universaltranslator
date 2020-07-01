@@ -9,9 +9,9 @@
 <%@ taglib prefix="s" uri="http://www.springframework.org/tags" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
 
-<div class="pull-right" style="margin-bottom:10px;">
+<%--<div class="pull-right" style="margin-bottom:10px;">
    ${i.index} <button class="btn btn-minier btn-grey print" rel2="${batchId}" rel="droppedValues"><i class="fa fa-print"> Print</i></button>
-</div>
+</div>--%>
 <span><strong>Showing ${fn:length(errors)} out of <fmt:formatNumber value = "${totalErrors}" type = "number"/></strong></span>
 <div id="errorTable-droppedValues">
 <table border="1" class="table table-striped table-hover table-bordered">
