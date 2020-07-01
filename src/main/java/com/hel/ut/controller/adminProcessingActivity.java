@@ -3755,16 +3755,50 @@ public class adminProcessingActivity {
 				     cellNum++;
 				     currentRow.createCell(cellNum).setCellValue(errorsRow[4].toString());
 				     cellNum++;
-				     currentRow.createCell(cellNum).setCellValue(errorsRow[5].toString());
+				     
+				     if(errorsRow[5] != null) {
+					currentRow.createCell(cellNum).setCellValue(errorsRow[5].toString());
+				     }
+				     else {
+					currentRow.createCell(cellNum).setCellValue("");
+				     }
 				     cellNum++;
-				     currentRow.createCell(cellNum).setCellValue(errorsRow[6].toString());
+				     
+				     if(errorsRow[6] != null) {
+					currentRow.createCell(cellNum).setCellValue(errorsRow[6].toString());
+				     }
+				     else {
+					currentRow.createCell(cellNum).setCellValue("");
+				     }
 				     cellNum++;
-				     currentRow.createCell(cellNum).setCellValue(errorsRow[7].toString());
+				     
+				     if(errorsRow[7] != null) {
+					currentRow.createCell(cellNum).setCellValue(errorsRow[7].toString());
+				     }
+				     else {
+					currentRow.createCell(cellNum).setCellValue("");
+				     }
 				     cellNum++;
-				     currentRow.createCell(cellNum).setCellValue(errorsRow[8].toString());
+				     
+				     if(errorsRow[8] != null) {
+					currentRow.createCell(cellNum).setCellValue(errorsRow[8].toString());
+				     }
+				     else {
+					currentRow.createCell(cellNum).setCellValue("");
+				     }
 				     cellNum++;
-				     currentRow.createCell(cellNum).setCellValue(errorsRow[9].toString());
-				 }
+				     
+				     if(errorsRow[9] != null) {
+					currentRow.createCell(cellNum).setCellValue(errorsRow[9].toString());
+				     }
+				     else {
+					currentRow.createCell(cellNum).setCellValue("");
+				     }
+				}
+				 
+				rowNum++;
+				rowNum++;
+				rowNum++;
 			     }
 			 }
 		     }
@@ -3836,20 +3870,53 @@ public class adminProcessingActivity {
 				     cellNum++;
 				     currentRow.createCell(cellNum).setCellValue(errorsRow[4].toString());
 				     cellNum++;
-				     currentRow.createCell(cellNum).setCellValue(errorsRow[5].toString());
+				     
+				     if(errorsRow[5] != null) {
+					currentRow.createCell(cellNum).setCellValue(errorsRow[5].toString());
+				     }
+				     else {
+					currentRow.createCell(cellNum).setCellValue("");
+				     }
 				     cellNum++;
-				     currentRow.createCell(cellNum).setCellValue(errorsRow[6].toString());
+				     
+				     if(errorsRow[6] != null) {
+					currentRow.createCell(cellNum).setCellValue(errorsRow[6].toString());
+				     }
+				     else {
+					currentRow.createCell(cellNum).setCellValue("");
+				     }
 				     cellNum++;
-				     currentRow.createCell(cellNum).setCellValue(errorsRow[7].toString());
+				     
+				     if(errorsRow[7] != null) {
+					currentRow.createCell(cellNum).setCellValue(errorsRow[7].toString());
+				     }
+				     else {
+					currentRow.createCell(cellNum).setCellValue("");
+				     }
 				     cellNum++;
-				     currentRow.createCell(cellNum).setCellValue(errorsRow[8].toString());
+				     
+				     if(errorsRow[8] != null) {
+					currentRow.createCell(cellNum).setCellValue(errorsRow[8].toString());
+				     }
+				     else {
+					currentRow.createCell(cellNum).setCellValue("");
+				     }
 				     cellNum++;
-				     currentRow.createCell(cellNum).setCellValue(errorsRow[9].toString());
-				 }
+				     
+				     if(errorsRow[9] != null) {
+					currentRow.createCell(cellNum).setCellValue(errorsRow[9].toString());
+				     }
+				     else {
+					currentRow.createCell(cellNum).setCellValue("");
+				     }
+				}
+				 
+				rowNum++;
+				rowNum++;
+				rowNum++;
 			     }
 			 }
-		     }
-
+		    }
 		}
 	    }
 	    
@@ -3861,11 +3928,14 @@ public class adminProcessingActivity {
 		    for(batchErrorSummary error : batchErrorSummary) {
 			
 			if(errorId == 0 || errorId != error.getErrorId()) {
-			    errorId = error.getErrorId();
 			    
-			    rowNum++;
-			    rowNum++;
-			    rowNum++;
+			    if(errorId > 0) {
+				rowNum++;
+				rowNum++;
+				rowNum++;
+			    }
+			    
+			    errorId = error.getErrorId();
 			    cellNum = 0;
 
 			    currentRow = sheet.createRow(rowNum);
@@ -3986,11 +4056,47 @@ public class adminProcessingActivity {
 				}
 				
 				break;
+				
+			    case 41:
+				errorType = "Zip Code Check";
+
+				if("inbound".equals(type)) {
+				    sql = "select fromOutboundConfig, a.rownumber as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name,'' as errorType, a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
+					+ "from batchuploadauditerrors a left outer  join "
+					+ "configurationmessagespecs b on a.configId = b.configId "
+					+ "where a.batchUploadId = " + batchId + " and a.errorId = " + error.getErrorId() + " order by a.rownumber asc";
+				}
+				else {
+				    sql = "select 'true' as fromOutboundConfig,a.rownumber as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name,a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
+					+ "from batchdownloadauditerrors a left outer  join "
+					+ "configurationmessagespecs b on a.configId = b.configId "
+					+ "where a.batchDownloadId = " + batchId + " and a.errorId = " + error.getErrorId() + " order by a.rownumber asc";
+				}
+				
+				break;
+			
+			    case 46:
+				errorType = "Invalid Date Format";
+
+				if("inbound".equals(type)) {
+				    sql = "select fromOutboundConfig, a.rownumber as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name,'' as errorType, a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
+					+ "from batchuploadauditerrors a left outer  join "
+					+ "configurationmessagespecs b on a.configId = b.configId "
+					+ "where a.batchUploadId = " + batchId + " and a.errorId = " + error.getErrorId() + " order by a.rownumber asc";
+				}
+				else {
+				    sql = "select 'true' as fromOutboundConfig,a.rownumber as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name,a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
+					+ "from batchdownloadauditerrors a left outer  join "
+					+ "configurationmessagespecs b on a.configId = b.configId "
+					+ "where a.batchDownloadId = " + batchId + " and a.errorId = " + error.getErrorId() + " order by a.rownumber asc";
+				}
+				
+				break;
 			}
 			
 			if(!"".equals(sql)) {
 			   errors = transactionInManager.getErrorDataBySQLStmt(sql);
-				
+			   
 			    if(errors != null) {
 				if(!errors.isEmpty()) {
 				    
@@ -4002,6 +4108,7 @@ public class adminProcessingActivity {
 					cellNum = 0;
 					
 					Object errorsRow[] = (Object[]) errorsIt.next();
+					
 					currentRow.createCell(cellNum).setCellValue(errorType);
 					cellNum++;
 					currentRow.createCell(cellNum).setCellValue(errorsRow[0].toString());
@@ -4012,19 +4119,49 @@ public class adminProcessingActivity {
 					cellNum++;
 					currentRow.createCell(cellNum).setCellValue(errorsRow[3].toString());
 					cellNum++;
-					if(errorId != 1) {
+					if(errorId != 1 && errorId != 41 && errorId != 46) {
 					    currentRow.createCell(cellNum).setCellValue(errorsRow[4].toString());
 					    cellNum++;
 					}
-					currentRow.createCell(cellNum).setCellValue(errorsRow[5].toString());
+					
+					if(errorsRow[5] != null) {
+					    currentRow.createCell(cellNum).setCellValue(errorsRow[5].toString());
+					}
+					else {
+					    currentRow.createCell(cellNum).setCellValue("");
+					}
 					cellNum++;
-					currentRow.createCell(cellNum).setCellValue(errorsRow[6].toString());
+					
+					if(errorsRow[6] != null) {
+					    currentRow.createCell(cellNum).setCellValue(errorsRow[6].toString());
+					}
+					else {
+					    currentRow.createCell(cellNum).setCellValue("");
+					}
 					cellNum++;
-					currentRow.createCell(cellNum).setCellValue(errorsRow[7].toString());
+					
+					if(errorsRow[7] != null) {
+					    currentRow.createCell(cellNum).setCellValue(errorsRow[7].toString());
+					}
+					else {
+					    currentRow.createCell(cellNum).setCellValue("");
+					}
 					cellNum++;
-					currentRow.createCell(cellNum).setCellValue(errorsRow[8].toString());
+					
+					if(errorsRow[8] != null) {
+					    currentRow.createCell(cellNum).setCellValue(errorsRow[8].toString());
+					}
+					else {
+					    currentRow.createCell(cellNum).setCellValue("");
+					}
 					cellNum++;
-					currentRow.createCell(cellNum).setCellValue(errorsRow[9].toString());
+					
+					if(errorsRow[9] != null) {
+					    currentRow.createCell(cellNum).setCellValue(errorsRow[9].toString());
+					}
+					else {
+					    currentRow.createCell(cellNum).setCellValue("");
+					}
 				    }
 				}
 			    }
@@ -4199,16 +4336,43 @@ public class adminProcessingActivity {
 				.append("</td>")
 				.append("<td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>")
 				.append(errorsRow[4].toString()).append("</td>")
-				.append("<td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>")
-				.append(errorsRow[5].toString())
-				.append("</td><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>")
-				.append(errorsRow[6].toString())
-				.append("</td><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>")
-				.append(errorsRow[7].toString())
-				.append("</td><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>")
-				.append(errorsRow[8].toString())
-				.append("</td><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>")
-				.append(errorsRow[9].toString()).append("</td></tr>");
+				.append("<td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>");
+				
+				if(errorsRow[5] != null) {
+				   reportBody.append(errorsRow[5].toString());
+				}
+				else {
+				   reportBody.append("");
+				}
+				
+				reportBody.append("</td><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>");
+				if(errorsRow[6] != null) {
+				   reportBody.append(errorsRow[6].toString());
+				}
+				else {
+				   reportBody.append("");
+				}
+				reportBody.append("</td><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>");
+				if(errorsRow[7] != null) {
+				   reportBody.append(errorsRow[7].toString());
+				}
+				else {
+				   reportBody.append("");
+				}
+				reportBody.append("</td><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>");
+				if(errorsRow[8] != null) {
+				   reportBody.append(errorsRow[8].toString());
+				}
+				else {
+				   reportBody.append("");
+				}
+				reportBody.append("</td><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>");
+				if(errorsRow[9] != null) {
+				   reportBody.append(errorsRow[9].toString()).append("</td></tr>");
+				}
+				else {
+				   reportBody.append("").append("</td></tr>");
+				}
 			    }
 			 }
 		     }
@@ -4274,16 +4438,41 @@ public class adminProcessingActivity {
 				.append("</td>")
 				.append("<td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>")
 				.append(errorsRow[4].toString()).append("</td>")
-				.append("<td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>")
-				.append(errorsRow[5].toString())
-				.append("</td><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>")
-				.append(errorsRow[6].toString())
-				.append("</td><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>")
-				.append(errorsRow[7].toString())
-				.append("</td><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>")
-				.append(errorsRow[8].toString())
-				.append("</td><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>")
-				.append(errorsRow[9].toString()).append("</td></tr>");
+				.append("<td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>");
+				if(errorsRow[5] != null) {
+				   reportBody.append(errorsRow[5].toString());
+				}
+				else {
+				   reportBody.append("");
+				}
+				reportBody.append("</td><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>");
+				if(errorsRow[6] != null) {
+				    reportBody.append(errorsRow[6].toString());
+				}
+				else {
+				    reportBody.append("");
+				}
+				reportBody.append("</td><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>");
+				if(errorsRow[7] != null) {
+				    reportBody.append(errorsRow[7].toString());
+				}
+				else {
+				    reportBody.append("");
+				}
+				reportBody.append("</td><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>");
+				if(errorsRow[8] != null) {
+				    reportBody.append(errorsRow[8].toString());
+				}
+				else {
+				    reportBody.append("");
+				}
+				reportBody.append("</td><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>");
+				if(errorsRow[9] != null) {
+				    reportBody.append(errorsRow[9].toString()).append("</td></tr>");
+				}
+				else {
+				    reportBody.append("").append("</td></tr>");
+				}
 			    }
 			 }
 		     }
@@ -4330,6 +4519,16 @@ public class adminProcessingActivity {
 			else if(errorId == 3) {
 			    reportBody.append("<div style='padding-top:10px;'>");
 			    reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 16px;'><strong>Error: Failed Macro</strong></span><br /><br />");
+			    reportBody.append("</div>");
+			}
+			else if(errorId == 41) {
+			    reportBody.append("<div style='padding-top:10px;'>");
+			    reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 16px;'><strong>Error: Zip Code Check</strong></span><br /><br />");
+			    reportBody.append("</div>");
+			}
+			else if(errorId == 46) {
+			    reportBody.append("<div style='padding-top:10px;'>");
+			    reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 16px;'><strong>Error: Invalid Data Format</strong></span><br /><br />");
 			    reportBody.append("</div>");
 			}
 			
@@ -4437,6 +4636,40 @@ public class adminProcessingActivity {
 			    }
 
 			    break;
+			
+			case 41:
+
+			    if("inbound".equals(type)) {
+				sql = "select fromOutboundConfig, a.rownumber as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name,'' as errorType, a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
+				    + "from batchuploadauditerrors a left outer  join "
+				    + "configurationmessagespecs b on a.configId = b.configId "
+				    + "where a.batchUploadId = " + batchId + " and a.errorId = " + error.getErrorId() + " order by a.rownumber asc";
+			    }
+			    else {
+				sql = "select 'true' as fromOutboundConfig,a.rownumber as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name,a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
+				    + "from batchdownloadauditerrors a left outer  join "
+				    + "configurationmessagespecs b on a.configId = b.configId "
+				    + "where a.batchDownloadId = " + batchId + " and a.errorId = " + error.getErrorId() + " order by a.rownumber asc";
+			    }
+
+			    break;
+			    
+			case 46:
+
+			    if("inbound".equals(type)) {
+				sql = "select fromOutboundConfig, a.rownumber as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name,'' as errorType, a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
+				    + "from batchuploadauditerrors a left outer  join "
+				    + "configurationmessagespecs b on a.configId = b.configId "
+				    + "where a.batchUploadId = " + batchId + " and a.errorId = " + error.getErrorId() + " order by a.rownumber asc";
+			    }
+			    else {
+				sql = "select 'true' as fromOutboundConfig,a.rownumber as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name,a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
+				    + "from batchdownloadauditerrors a left outer  join "
+				    + "configurationmessagespecs b on a.configId = b.configId "
+				    + "where a.batchDownloadId = " + batchId + " and a.errorId = " + error.getErrorId() + " order by a.rownumber asc";
+			    }
+
+			    break;
 		    }
 
 		    if(!"".equals(sql)) {
@@ -4459,20 +4692,46 @@ public class adminProcessingActivity {
 				    .append(errorsRow[3].toString())
 				    .append("</td>");
 				    
-				    if(errorId != 1) {
+				    if(errorId != 1 && errorId != 41 && errorId != 46) {
 					reportBody.append("<td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>")
 					.append(errorsRow[4].toString()).append("</td>");
 				    }
-				    reportBody.append("<td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>")
-				    .append(errorsRow[5].toString())
-				    .append("</td><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>")
-				    .append(errorsRow[6].toString())
-				    .append("</td><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>")
-				    .append(errorsRow[7].toString())
-				    .append("</td><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>")
-				    .append(errorsRow[8].toString())
-				    .append("</td><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>")
-				    .append(errorsRow[9].toString()).append("</td></tr>");
+				    reportBody.append("<td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>");
+				    if(errorsRow[5] != null) {
+					reportBody.append(errorsRow[5].toString());
+				    }
+				    else {
+					reportBody.append("");
+				    }
+				    reportBody.append("</td><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>");
+				    if(errorsRow[6] != null) {
+					reportBody.append(errorsRow[6].toString());
+				    }
+				    else {
+					reportBody.append("");
+				    }
+				    reportBody.append("</td><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>");
+				    if(errorsRow[7] != null) {
+					reportBody.append(errorsRow[7].toString());
+				    }
+				    else {
+					reportBody.append("");
+				    }
+				    reportBody.append("</td><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>");
+				    if(errorsRow[8] != null) {
+					reportBody.append(errorsRow[8].toString());
+				    }
+				    else {
+					reportBody.append("");
+				    }
+				    reportBody.append("</td><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>");
+				    
+				    if(errorsRow[9] != null) {
+					reportBody.append(errorsRow[9].toString()).append("</td></tr>");
+				    }
+				    else {
+					reportBody.append("").append("</td></tr>");
+				    }
 				}
 			    }
 			}
