@@ -38,7 +38,7 @@
 	<poi.version>3.17</poi.version>
 	<poi-ooxml.version>3.17</poi-ooxml.version>
 	<log4j.version>2.13.2</log4j.version>
-	<quartz.version>2.3.0</quartz.version>
+	<quartz.version>2.3.2</quartz.version>
 	<commons-validator.version>1.6</commons-validator.version>
         <tomcat-jdbc.version>9.0.6</tomcat-jdbc.version>
         <sax.version>2.0.1</sax.version>
