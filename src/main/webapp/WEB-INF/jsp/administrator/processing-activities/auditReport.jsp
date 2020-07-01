@@ -346,6 +346,22 @@
             </section>
         </div>
     </div>
+                            
+    <c:if test="${not empty batchDroppedValues || not empty batchErrorSummary}">
+        <div class="row-fluid clearfix" style="margin-bottom:10px;">
+            <div class="col-md-12">
+                <div class="pull-right">
+                    <button class="btn btn-success printErrorsToExcel" rel="${batchDetails.utBatchName}" rel2="${batchDownload ? 'outbound' : 'inbound'}" type="button">
+                        <i class="fa fa-file-excel"></i> Print Errors to Excel
+                    </button>
+                    <button class="btn btn-success printErrorsToPDF" rel="${batchDetails.utBatchName}" rel2="${batchDownload ? 'outbound' : 'inbound'}" type="button">
+                        <i class="fa fa-file-pdf"></i> Print Errors to PDF
+                    </button>
+                </div>
+            </div>
+        </div>
+    </c:if>                
+                            
     <c:if test="${not empty batchDroppedValues}">
 	<div class="row-fluid">
 	    <div class="col-md-12">
@@ -399,7 +415,7 @@
                                     <div class="panel-heading">
                                         <div class="clearfix">
                                              <div class="pull-left">
-                                                 <h3 class="panel-title">Error: ${batchError.errorDisplayText} <c:if test="${batchError.fromOutboundConfig}"><span class="text-info">(From Outbound Config)</span></c:if></h3>
+                                                 <h3 class="panel-title">Error: ${batchError.errorDisplayText}</h3>
                                              </div>
                                              <div class="pull-right">
                                                  <h3 class="panel-title" style="color:red">Total Found: <fmt:formatNumber value = "${batchError.totalErrors}" type = "number"/></h3>
@@ -429,7 +445,7 @@
                                         <a data-toggle="collapse" rel="${batchDetails.id}" error="${batchError.errorId}" total="${batchError.totalErrors}" rel2="${i.index}" rel3="${batchDownload ? 'outbound' : 'inbound'}" class="errorCollapse" href="#collapse-${i.index}">
                                            <div class="clearfix">
                                                 <div class="pull-left">
-                                                    <h3 class="panel-title">Error: ${batchError.errorDisplayText} <c:if test="${batchError.fromOutboundConfig}"><span class="text-info">(From Outbound Config)</span></c:if></h3>
+                                                    <h3 class="panel-title">Error: ${batchError.errorDisplayText}</h3>
                                                 </div>
                                                 <div class="pull-right">
                                                     <h3 class="panel-title" style="color:red">Total Found: <fmt:formatNumber value = "${batchError.totalErrors}" type = "number"/></h3>
