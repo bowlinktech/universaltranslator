@@ -16,7 +16,11 @@
             <title><tiles:insertAttribute name="title" /></title>
             <!%-- main css compiled from main.less --%>
                 <link rel="stylesheet" href="<%=request.getContextPath()%>/dspResources/css/admin/main.css?v=2">
-	<link rel="stylesheet" href="<%=request.getContextPath()%>/dspResources/css/font-awesome.min.css">
+	<!--<link rel="stylesheet" href="<%=request.getContextPath()%>/dspResources/css/font-awesome.min.css">-->
+        
+        <link rel="stylesheet" href="<%=request.getContextPath()%>/dspResources/@fortawesome/fontawesome-pro/css/regular.min.css">
+	<link rel="stylesheet" href="<%=request.getContextPath()%>/dspResources/@fortawesome/fontawesome-pro/css/solid.min.css">
+	<link rel="stylesheet" href="<%=request.getContextPath()%>/dspResources/@fortawesome/fontawesome-pro/css/fontawesome.min.css">
 
         <!%-- Health-e-link theme --%>
         <link rel="stylesheet" href="<%=request.getContextPath()%>/dspResources/css/admin/themes/theme-health-e-link.css">

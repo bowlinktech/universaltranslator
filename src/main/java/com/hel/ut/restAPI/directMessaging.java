@@ -150,7 +150,11 @@ public class directMessaging {
 					
                                         String DMDomain = messageInfo.getFromDirectAddress().substring(messageInfo.getFromDirectAddress().indexOf("@")+1,messageInfo.getFromDirectAddress().length());
 
-                                        organizationDirectDetails directDetails = configurationtransportmanager.getDirectMessagingDetails(DMDomain);
+                                        if(DMDomain.contains("elationemr")) {
+					    DMDomain = DMDomain.substring(DMDomain.indexOf(".")+1,DMDomain.length());
+					}
+					
+					organizationDirectDetails directDetails = configurationtransportmanager.getDirectMessagingDetails(DMDomain);
 
                                         if(directDetails != null) {
                                             Organization orgDetails = organizationmanager.getOrganizationById(directDetails.getOrgId());
