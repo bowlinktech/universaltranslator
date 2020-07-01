@@ -16,6 +16,7 @@ require(['./main'], function () {
             glyphicon : 'print',
             message : 'Gathering Details...'
         });
+        $('.overlay').css('display','block');
       
         var batchName = $(this).attr('rel');
         var type = $(this).attr('rel2');
@@ -31,10 +32,11 @@ require(['./main'], function () {
             contentType : 'application/json;charset=UTF-8',
             success: function(data) {
                 if(data !== '') {
-                    $('.overlay').remove();
+                    $('.overlay').css('display','none');
                     window.location.href = '/administrator/processing-activity/printAuditErrorsToExcel/'+ data;
                 }
                 else {
+                    $('.overlay').css('display','none');
                     alert("An error occurred creating your audit error excel file. A Health-e-Link system administrator has been notified.");
                 }
             }
@@ -48,6 +50,7 @@ require(['./main'], function () {
             glyphicon : 'print',
             message : 'Gathering Details...'
         });
+        $('.overlay').css('display','block');
       
         var batchName = $(this).attr('rel');
         var type = $(this).attr('rel2');
@@ -63,10 +66,11 @@ require(['./main'], function () {
             contentType : 'application/json;charset=UTF-8',
             success: function(data) {
                 if(data !== '') {
-                    $('.overlay').remove();
+                    $('.overlay').css('display','none');
                     window.location.href = '/administrator/processing-activity/printAuditErrorsToPDF/'+ data;
                 }
                 else {
+                    $('.overlay').css('display','none');
                     alert("An error occurred creating your audit error PDF file. A Health-e-Link system administrator has been notified.");
                 }
             }
