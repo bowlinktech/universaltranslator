@@ -3993,7 +3993,7 @@ public class adminProcessingActivity {
 					+ "where a.batchUploadId = " + batchId + " and a.errorId = " + error.getErrorId() + " order by a.rownumber asc";
 				}
 				else {
-				    sql = "select 'true' as fromOutboundConfig,a.rownumber as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name,a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
+				    sql = "select 'true' as fromOutboundConfig,a.rownumber as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name,'' as errorType,a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
 					+ "from batchdownloadauditerrors a left outer  join "
 					+ "configurationmessagespecs b on a.configId = b.configId "
 					+ "where a.batchDownloadId = " + batchId + " and a.errorId = " + error.getErrorId() + " order by a.rownumber asc";
@@ -4067,7 +4067,7 @@ public class adminProcessingActivity {
 					+ "where a.batchUploadId = " + batchId + " and a.errorId = " + error.getErrorId() + " order by a.rownumber asc";
 				}
 				else {
-				    sql = "select 'true' as fromOutboundConfig,a.rownumber as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name,a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
+				    sql = "select 'true' as fromOutboundConfig,a.rownumber as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name,'' as errorType,a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
 					+ "from batchdownloadauditerrors a left outer  join "
 					+ "configurationmessagespecs b on a.configId = b.configId "
 					+ "where a.batchDownloadId = " + batchId + " and a.errorId = " + error.getErrorId() + " order by a.rownumber asc";
@@ -4085,7 +4085,7 @@ public class adminProcessingActivity {
 					+ "where a.batchUploadId = " + batchId + " and a.errorId = " + error.getErrorId() + " order by a.rownumber asc";
 				}
 				else {
-				    sql = "select 'true' as fromOutboundConfig,a.rownumber as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name,a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
+				    sql = "select 'true' as fromOutboundConfig,a.rownumber as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name,'' as errorType,a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
 					+ "from batchdownloadauditerrors a left outer  join "
 					+ "configurationmessagespecs b on a.configId = b.configId "
 					+ "where a.batchDownloadId = " + batchId + " and a.errorId = " + error.getErrorId() + " order by a.rownumber asc";
@@ -4576,7 +4576,7 @@ public class adminProcessingActivity {
 				    + "where a.batchUploadId = " + batchId + " and a.errorId = " + error.getErrorId() + " order by a.rownumber asc";
 			    }
 			    else {
-				sql = "select 'true' as fromOutboundConfig,a.rownumber as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name,a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
+				sql = "select 'true' as fromOutboundConfig,a.rownumber as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name,'' as errorType,a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
 				    + "from batchdownloadauditerrors a left outer  join "
 				    + "configurationmessagespecs b on a.configId = b.configId "
 				    + "where a.batchDownloadId = " + batchId + " and a.errorId = " + error.getErrorId() + " order by a.rownumber asc";
@@ -4646,7 +4646,7 @@ public class adminProcessingActivity {
 				    + "where a.batchUploadId = " + batchId + " and a.errorId = " + error.getErrorId() + " order by a.rownumber asc";
 			    }
 			    else {
-				sql = "select 'true' as fromOutboundConfig,a.rownumber as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name,a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
+				sql = "select 'true' as fromOutboundConfig,a.rownumber as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name,'' as errorType,a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
 				    + "from batchdownloadauditerrors a left outer  join "
 				    + "configurationmessagespecs b on a.configId = b.configId "
 				    + "where a.batchDownloadId = " + batchId + " and a.errorId = " + error.getErrorId() + " order by a.rownumber asc";
@@ -4663,7 +4663,7 @@ public class adminProcessingActivity {
 				    + "where a.batchUploadId = " + batchId + " and a.errorId = " + error.getErrorId() + " order by a.rownumber asc";
 			    }
 			    else {
-				sql = "select 'true' as fromOutboundConfig,a.rownumber as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name,a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
+				sql = "select 'true' as fromOutboundConfig,a.rownumber as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name,'' as errorType,a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
 				    + "from batchdownloadauditerrors a left outer  join "
 				    + "configurationmessagespecs b on a.configId = b.configId "
 				    + "where a.batchDownloadId = " + batchId + " and a.errorId = " + error.getErrorId() + " order by a.rownumber asc";
