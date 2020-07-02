@@ -7,7 +7,8 @@ require(['./main'], function () {
         var cwId = $(this).attr('rel');
         
         if((dtsId*1) > 0) {
-             alert("The selected crosswalk is currently associated to one of the below data translations and cannot be deleted. \n\nIf you are trying to upload a new file for the selected crosswalk click on the 'View' link to upload a new file. \n\nTo completely remove this crosswalk you must first remove the associated translation below.");
+             //alert("The selected crosswalk is currently associated to one of the below data translations and cannot be deleted. \n\nIf you are trying to upload a new file for the selected crosswalk click on the 'View' link to upload a new file. \n\nTo completely remove this crosswalk you must first remove the associated translation below.");
+             alert("The selected crosswalk is part of an existing configuration. You can click 'view' and upload an updated crosswalk file or you can delete the crosswalk after removing it from all configurations (data translations section) it is associated with.");
         }
         else {
             if(confirm("Are you sure you want to remove this crosswalk?")) {
