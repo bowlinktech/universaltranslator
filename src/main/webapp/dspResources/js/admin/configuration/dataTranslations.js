@@ -7,26 +7,26 @@ require(['./main'], function () {
         var cwId = $(this).attr('rel');
         
         if((dtsId*1) > 0) {
-             alert("The crosswalk is currenlty being used below and can't be deleted.");
+             alert("The selected crosswalk is currently associated to one of the below data translations and cannot be deleted. \n\nIf you are trying to upload a new file for the selected crosswalk click on the 'View' link to upload a new file. \n\nTo completely remove this crosswalk you must first remove the associated translation below.");
         }
         else {
-             if(confirm("Are you sure you want to remove this batch?")) {
-                    $('body').overlay({
-                        glyphicon : 'floppy-disk',
-                        message : 'Deleting...'
-                    });
+            if(confirm("Are you sure you want to remove this crosswalk?")) {
+                $('body').overlay({
+                    glyphicon : 'floppy-disk',
+                    message : 'Deleting...'
+                });
 
-                    $.ajax({
-                        url: 'deleteCrosswalk.do',
-                        data: {
-                            'cwId': cwId
-                        },
-                        type: 'POST',
-                        success: function(data) {
-                           location.reload();
-                        }
-                    });
-             }
+                $.ajax({
+                    url: 'deleteCrosswalk.do',
+                    data: {
+                        'cwId': cwId
+                    },
+                    type: 'POST',
+                    success: function(data) {
+                       location.reload();
+                    }
+                });
+            }
         }
     });
         
