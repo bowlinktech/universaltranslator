@@ -38,7 +38,7 @@ public class MasterService {
 	
 	DriverManagerDataSource defaultdataSource = new DriverManagerDataSource();
         defaultdataSource.setDriverClassName("com.mysql.cj.jdbc.Driver");
-        defaultdataSource.setUrl("jdbc:mysql://"+masterservice.configProp.getProperty("jdbc.url")+"/"+defaultDBName+"?allowMultiQueries=true&serverTimezone=EST");
+        defaultdataSource.setUrl("jdbc:mysql://"+masterservice.configProp.getProperty("jdbc.url")+"/"+defaultDBName+"?allowMultiQueries=true&allowLoadLocalInfile=true&serverTimezone=EST");
         defaultdataSource.setUsername(masterservice.configProp.getProperty("jdbc.user"));
         defaultdataSource.setPassword(masterservice.configProp.getProperty("jdbc.password"));
 	
@@ -52,7 +52,7 @@ public class MasterService {
 	
 	DriverManagerDataSource defaultdataSource = new DriverManagerDataSource();
         defaultdataSource.setDriverClassName("com.mysql.cj.jdbc.Driver");
-        defaultdataSource.setUrl("jdbc:mysql://"+masterservice.configProp.getProperty("jdbc.url")+"/"+tenantIdentifier+"?allowMultiQueries=true&serverTimezone=EST");
+        defaultdataSource.setUrl("jdbc:mysql://"+masterservice.configProp.getProperty("jdbc.url")+"/"+tenantIdentifier+"?allowMultiQueries=true&allowLoadLocalInfile=true&serverTimezone=EST");
         defaultdataSource.setUsername(masterservice.configProp.getProperty("jdbc.user"));
         defaultdataSource.setPassword(masterservice.configProp.getProperty("jdbc.password"));
 	
