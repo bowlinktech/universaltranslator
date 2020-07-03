@@ -1538,39 +1538,40 @@ public class transactionOutManagerImpl implements transactionOutManager {
 		    macroError = 0;
 		    
 		    if (cdt.getCrosswalkId() != 0) {
-				crosswalkErrors = transactionInManager.processCrosswalk(batchDownload.getConfigId(), batchDownload.getId(), cdt, true);
-	
-				if(crosswalkErrors == 9999999) {
-				    systemErrorCount++; 
-				} else if(crosswalkErrors > 0) {
-				    totalErrorCount = totalErrorCount + crosswalkErrors;
-				    
-				    //log batch activity
-				    ba = new batchdownloadactivity();
-				    ba.setActivity("Crosswalk Error. CWId:" + cdt.getCrosswalkId() + " for configId:" + batchDownload.getConfigId() + " total records with CW error: " + crosswalkErrors);
-				    ba.setBatchDownloadId(batchDownload.getId());
-				    transactionOutDAO.submitBatchActivityLog(ba);
-				} // this } need to be here - gsc 2020-07-03
+			crosswalkErrors = transactionInManager.processCrosswalk(batchDownload.getConfigId(), batchDownload.getId(), cdt, true);
+
+			if(crosswalkErrors == 9999999) {
+			    systemErrorCount++; 
+			} 
+			else if(crosswalkErrors > 0) {
+			    totalErrorCount = totalErrorCount + crosswalkErrors;
+
+			    //log batch activity
+			    ba = new batchdownloadactivity();
+			    ba.setActivity("Crosswalk Error. CWId:" + cdt.getCrosswalkId() + " for configId:" + batchDownload.getConfigId() + " total records with CW error: " + crosswalkErrors);
+			    ba.setBatchDownloadId(batchDownload.getId());
+			    transactionOutDAO.submitBatchActivityLog(ba);
+			} 	
+		    }	
+		    else if (cdt.getMacroId() != 0) {
 				
-		    }	else if (cdt.getMacroId() != 0) {
-				
-			    macroError = transactionInManager.processMacro(batchDownload.getConfigId(), batchDownload.getId(), cdt, true);
-			    
-			    if(macroError == 9999999) {
-				systemErrorCount++; 
-			    }
-			    else if(macroError > 0) {
-				totalErrorCount = totalErrorCount + macroError;
-				
-				//log batch activity
-				ba = new batchdownloadactivity();
-				ba.setActivity("Macro Error. macroId:" + cdt.getMacroId() + " for configId:" + batchDownload.getConfigId());
-				ba.setBatchDownloadId(batchDownload.getId());
-				transactionOutDAO.submitBatchActivityLog(ba);
-			    }
+			macroError = transactionInManager.processMacro(batchDownload.getConfigId(), batchDownload.getId(), cdt, true);
+
+			if(macroError == 9999999) {
+			    systemErrorCount++; 
 			}
-		    } 
-		}
+			else if(macroError > 0) {
+			    totalErrorCount = totalErrorCount + macroError;
+
+			    //log batch activity
+			    ba = new batchdownloadactivity();
+			    ba.setActivity("Macro Error. macroId:" + cdt.getMacroId() + " for configId:" + batchDownload.getConfigId());
+			    ba.setBatchDownloadId(batchDownload.getId());
+			    transactionOutDAO.submitBatchActivityLog(ba);
+			}
+		    }
+		} 
+	    }
 	}
 	
 	//Step 3: Check validation errors
