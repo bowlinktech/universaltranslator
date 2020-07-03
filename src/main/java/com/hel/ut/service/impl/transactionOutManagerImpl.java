@@ -1538,24 +1538,25 @@ public class transactionOutManagerImpl implements transactionOutManager {
 		    macroError = 0;
 		    
 		    if (cdt.getCrosswalkId() != 0) {
-			crosswalkErrors = transactionInManager.processCrosswalk(batchDownload.getConfigId(), batchDownload.getId(), cdt, true);
-
-			if(crosswalkErrors == 9999999) {
-			    systemErrorCount++; 
-			}
-			else if(crosswalkErrors > 0) {
-			    totalErrorCount = totalErrorCount + crosswalkErrors;
-			    
-			    //log batch activity
-			    ba = new batchdownloadactivity();
-			    ba.setActivity("Crosswalk Error. CWId:" + cdt.getCrosswalkId() + " for configId:" + batchDownload.getConfigId() + " total records with CW error: " + crosswalkErrors);
-			    ba.setBatchDownloadId(batchDownload.getId());
-			    transactionOutDAO.submitBatchActivityLog(ba);
-			}
-			else if (cdt.getMacroId() != 0) {
+				crosswalkErrors = transactionInManager.processCrosswalk(batchDownload.getConfigId(), batchDownload.getId(), cdt, true);
+	
+				if(crosswalkErrors == 9999999) {
+				    systemErrorCount++; 
+				} else if(crosswalkErrors > 0) {
+				    totalErrorCount = totalErrorCount + crosswalkErrors;
+				    
+				    //log batch activity
+				    ba = new batchdownloadactivity();
+				    ba.setActivity("Crosswalk Error. CWId:" + cdt.getCrosswalkId() + " for configId:" + batchDownload.getConfigId() + " total records with CW error: " + crosswalkErrors);
+				    ba.setBatchDownloadId(batchDownload.getId());
+				    transactionOutDAO.submitBatchActivityLog(ba);
+				} // this } need to be here - gsc 2020-07-03
+				
+		    }	else if (cdt.getMacroId() != 0) {
+				
 			    macroError = transactionInManager.processMacro(batchDownload.getConfigId(), batchDownload.getId(), cdt, true);
 			    
-			    if(crosswalkErrors == 9999999) {
+			    if(macroError == 9999999) {
 				systemErrorCount++; 
 			    }
 			    else if(macroError > 0) {
@@ -1570,7 +1571,6 @@ public class transactionOutManagerImpl implements transactionOutManager {
 			}
 		    } 
 		}
-	    }
 	}
 	
 	//Step 3: Check validation errors
