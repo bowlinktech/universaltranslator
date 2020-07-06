@@ -3696,14 +3696,14 @@ public class adminProcessingActivity {
 		if(!inboundDroppedValues.isEmpty()) {
 		    errorType = "Dropped Crosswalk Values";
 		    
-		    sql = "select 'false' as fromOutboundConfig, a.transactionInRecordsId as rownumber, a.fieldNo as fieldNumber, a.fieldName as column_name,a.entity3Id as clientIdentifier,a.fieldValue as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
+		    sql = "select 'source' as fromOutboundConfig, a.transactionInRecordsId as rownumber, a.fieldNo as fieldNumber, a.fieldName as column_name,a.entity3Id as clientIdentifier,a.fieldValue as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
 		    + "from batchuploaddroppedvalues a "
 		    + "where a.batchUploadId = " + batchId + " order by a.id asc";
 		    
 		    currentRow = sheet.createRow(rowNum);
 		    currentRow.createCell(cellNum).setCellValue("Error Type");
 		    cellNum++;
-		    currentRow.createCell(cellNum).setCellValue("From Target Processing");
+		    currentRow.createCell(cellNum).setCellValue("S/T Config");
 		    cellNum++;
 		    currentRow.createCell(cellNum).setCellValue("Row No.");
 		    cellNum++;
@@ -3811,14 +3811,14 @@ public class adminProcessingActivity {
 		if(!outboundDroppedValues.isEmpty()) {
 		    errorType = "Dropped Crosswalk Values";
 		    
-		    sql = "select 'false' as fromOutboundConfig, a.transactionInRecordsId as rownumber, a.fieldNo as fieldNumber, a.fieldName as column_name,a.entity3Id as clientIdentifier,a.fieldValue as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
+		    sql = "select 'target' as fromOutboundConfig, a.transactionInRecordsId as rownumber, a.fieldNo as fieldNumber, a.fieldName as column_name,a.entity3Id as clientIdentifier,a.fieldValue as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
 		    + "from batchdownloaddroppedvalues a "
 		    + "where a.batchDownloadId = " + batchId + " order by a.id asc";
 		    
 		    currentRow = sheet.createRow(rowNum);
 		    currentRow.createCell(cellNum).setCellValue("Error Type");
 		    cellNum++;
-		    currentRow.createCell(cellNum).setCellValue("From Target Processing");
+		    currentRow.createCell(cellNum).setCellValue("S/T Config");
 		    cellNum++;
 		    currentRow.createCell(cellNum).setCellValue("Row No.");
 		    cellNum++;
@@ -3942,7 +3942,7 @@ public class adminProcessingActivity {
 			    currentRow = sheet.createRow(rowNum);
 			    currentRow.createCell(cellNum).setCellValue("Error Type");
 			    cellNum++;
-			    currentRow.createCell(cellNum).setCellValue("From Target Processing");
+			    currentRow.createCell(cellNum).setCellValue("S/T Config");
 			    cellNum++;
 			    currentRow.createCell(cellNum).setCellValue("Row No.");
 			    cellNum++;
@@ -3960,6 +3960,10 @@ public class adminProcessingActivity {
 			    }
 			    else if(errorId == 4) {
 				currentRow.createCell(cellNum).setCellValue("Macro Name");
+				cellNum++;
+			    }
+			    else {
+				currentRow.createCell(cellNum).setCellValue("");
 				cellNum++;
 			    }
 			    currentRow.createCell(cellNum).setCellValue("Field Value");
@@ -4112,7 +4116,13 @@ public class adminProcessingActivity {
 					
 					currentRow.createCell(cellNum).setCellValue(errorType);
 					cellNum++;
-					currentRow.createCell(cellNum).setCellValue(errorsRow[0].toString());
+					
+					if(errorsRow[0].toString().equals("true")) {
+					    currentRow.createCell(cellNum).setCellValue("target");
+					}
+					else {
+					    currentRow.createCell(cellNum).setCellValue("source");
+					}
 					cellNum++;
 					currentRow.createCell(cellNum).setCellValue(errorsRow[1].toString());
 					cellNum++;
@@ -4122,6 +4132,10 @@ public class adminProcessingActivity {
 					cellNum++;
 					if(errorId != 1 && errorId != 41 && errorId != 46) {
 					    currentRow.createCell(cellNum).setCellValue(errorsRow[4].toString());
+					    cellNum++;
+					}
+					else {
+					    currentRow.createCell(cellNum).setCellValue("");
 					    cellNum++;
 					}
 					
@@ -4292,7 +4306,7 @@ public class adminProcessingActivity {
 		reportBody.append("</div>");
 		
 		reportBody.append("<div><table border='1' cellpadding='1' cellspacing='1' width='100%'>").append("<thead><tr>")
-		.append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>From Target Processing</th>")	
+		.append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>S/T Config</th>")	
 		.append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Row No.</th>")	
 		.append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Field No.</th>")
 		.append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Column Name</th>")
@@ -4312,7 +4326,7 @@ public class adminProcessingActivity {
 		}
 		reportBody.append("</tr></thead><tbody>");
 
-		sql = "select 'false' as fromOutboundConfig, a.transactionInRecordsId as rownumber, a.fieldNo as fieldNumber, a.fieldName as column_name,a.entity3Id as clientIdentifier,a.fieldValue as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
+		sql = "select 'source' as fromOutboundConfig, a.transactionInRecordsId as rownumber, a.fieldNo as fieldNumber, a.fieldName as column_name,a.entity3Id as clientIdentifier,a.fieldValue as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
 		+ "from batchuploaddroppedvalues a "
 		+ "where a.batchUploadId = " + batchId + " order by a.id asc";
 
@@ -4394,7 +4408,7 @@ public class adminProcessingActivity {
 		reportBody.append("</div>");
 		
 		reportBody.append("<div><table border='1' cellpadding='1' cellspacing='1' width='100%'>").append("<thead><tr>")
-		.append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>From Target Processing</th>")	
+		.append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>S/T Config</th>")	
 		.append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Row No.</th>")	
 		.append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Field No.</th>")
 		.append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Column Name</th>")
@@ -4414,7 +4428,7 @@ public class adminProcessingActivity {
 		}
 		reportBody.append("</tr></thead><tbody>");
 
-		sql = "select 'true' as fromOutboundConfig, a.transactionInRecordsId as rownumber, a.fieldNo as fieldNumber, a.fieldName as column_name,a.entity3Id as clientIdentifier,a.fieldValue as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
+		sql = "select 'target' as fromOutboundConfig, a.transactionInRecordsId as rownumber, a.fieldNo as fieldNumber, a.fieldName as column_name,a.entity3Id as clientIdentifier,a.fieldValue as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
 		+ "from batchdownloaddroppedvalues a "
 		+ "where a.batchDownloadId = " + batchId + " order by a.id asc";
 
@@ -4535,7 +4549,7 @@ public class adminProcessingActivity {
 			
 			reportBody.append("<div><table border='1' cellpadding='1' cellspacing='1' width='100%'>");
 			reportBody.append("<thead><tr>")
-			.append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>From Target Processing</th>")	
+			.append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>S/T Config</th>")	
 			.append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Row No.</th>")	
 			.append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Field No.</th>")
 			.append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Column Name</th>");
@@ -4683,9 +4697,16 @@ public class adminProcessingActivity {
 				while (errorsIt.hasNext()) {
 				    Object errorsRow[] = (Object[]) errorsIt.next();
 				    
-				    reportBody.append("<tr><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>")
-				    .append(errorsRow[0].toString())
-				    .append("</td><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>")
+				    reportBody.append("<tr><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>");
+				    
+				    if(errorsRow[0].toString().equals("true")) {
+					reportBody.append("target");
+				    }
+				    else {
+					reportBody.append("source");
+				    }
+				    
+				    reportBody.append("</td><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>")
 				    .append(errorsRow[1].toString())
 				    .append("</td><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>")
 				    .append(errorsRow[2].toString())
