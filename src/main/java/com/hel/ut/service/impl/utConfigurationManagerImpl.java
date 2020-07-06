@@ -1393,6 +1393,7 @@ public class utConfigurationManagerImpl implements utConfigurationManager {
 		reportBody.append("</div>");
 		Iterator<Object[]> cwIterator = crosswalksWithData.iterator();
 		String cwname = "";
+		String delim = "";
 		while(cwIterator.hasNext()) {
 		    Object[] cwData = cwIterator.next();
 		    
@@ -1401,7 +1402,22 @@ public class utConfigurationManagerImpl implements utConfigurationManager {
 			     reportBody.append("</tbody></table></div><br />");
 			}
 			cwname = (String) cwData[0];
-			reportBody.append("<div><span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 14px;'><strong>CW Name: "+cwname+" (ID=" + cwData[4].toString() + ")</strong></span><br /><table border='1' cellpadding='1' cellspacing='1' width='100%'>");
+			if((Integer) cwData[5] == 1) {
+			    delim = "comma";
+			}
+			else if((Integer) cwData[5] == 2) {
+			    delim = "pipe";
+			}
+			else if((Integer) cwData[5] == 3) {
+			    delim = "colon";
+			}
+			else if((Integer) cwData[5] == 11) {
+			    delim = "semi-colon";
+			}
+			else if((Integer) cwData[5] == 12) {
+			    delim = "tab";
+			}
+			reportBody.append("<div><span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 14px;'><strong>CW Name: "+cwname+" (ID=" + cwData[4].toString() + ")</strong></span><br /><span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 14px;'><strong>Delimiter Used: " + delim+ "</strong></span><br /><table border='1' cellpadding='1' cellspacing='1' width='100%'>");
 			reportBody.append("<thead><tr><th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Source Value</th><th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Target Value</th><th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Desc</th>");
 			reportBody.append("</tr></thead><tbody>");
 		    }
