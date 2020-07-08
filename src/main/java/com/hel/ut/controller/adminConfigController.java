@@ -2999,8 +2999,7 @@ public class adminConfigController {
 		    .append("Pass/Clear").append(",")
 		    .append("Field A").append(",")
 		    .append("Field B").append(",")
-		    .append("Constant 1")
-		    .append(",")
+		    .append("Constant 1").append(",")
 		    .append("Constant 2");
 
 		    writer.write(sb.toString());
@@ -3018,14 +3017,14 @@ public class adminConfigController {
 			.append(dtDatarow[2]).append(",")
 			.append(dtDatarow[3]).append(",")
 			.append(dtDatarow[4]).append(",")
-			.append(dtDatarow[5]).append(",")
+			.append("\"").append(dtDatarow[5]).append("\"").append(",")
 			.append(dtDatarow[6]).append(",")
 			.append(dtDatarow[7]).append(",")
 			.append(dtDatarow[8]).append(",")
-			.append(dtDatarow[9]).append(",")
-			.append(dtDatarow[10]).append(",")
-			.append(dtDatarow[11]).append(",")
-			.append(dtDatarow[12]);
+			.append("\"").append(dtDatarow[9]).append("\"").append(",")
+			.append("\"").append(dtDatarow[10]).append("\"").append(",")
+			.append("\"").append(dtDatarow[11]).append("\"").append(",")
+			.append("\"").append(dtDatarow[12]).append("\"");
 
 			writer.write(sb.toString());
 			if(dtDataIt.hasNext()) {
