@@ -1368,8 +1368,8 @@ public class utConfigurationManagerImpl implements utConfigurationManager {
 		    }
 		    reportBody.append("<td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>").append(dt.getFieldA()).append("</td>");
 		    reportBody.append("<td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>").append(dt.getFieldB()).append("</td>");
-		    reportBody.append("<td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>").append(dt.getConstant1()).append("</td>");
-		    reportBody.append("<td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>").append(dt.getConstant2()).append("</td>");
+		    reportBody.append("<td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>").append(dt.getConstant1().replaceAll("[:\\\\/*\"?|<>']", " ")).append("</td>");
+		    reportBody.append("<td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>").append(dt.getConstant2().replaceAll("[:\\\\/*\"?|<>']", " ")).append("</td>");
 		    reportBody.append("<td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>").append(dt.getProcessOrder()).append("</td>");
 		    reportBody.append("</tr>");
 		}
