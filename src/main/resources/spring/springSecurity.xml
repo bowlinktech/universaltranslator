@@ -29,7 +29,7 @@
             <concurrency-control session-registry-alias="sessionRegistry" max-sessions="1" expired-url="/login?expired" />
         </session-management>
         <headers>
-	    <header name="Content-Security-Policy" value="style-src 'self' http://fonts.googleapis.com 'unsafe-inline'; media-src 'none'; block-all-mixed-content; frame-ancestors 'self'; img-src 'self' data:; script-src 'self' 'nonce-9483TZ393HIE383'" />
+	    <header name="Content-Security-Policy" value="style-src 'self' http://fonts.googleapis.com 'unsafe-inline'; media-src 'none'; block-all-mixed-content; frame-ancestors 'self'; img-src 'self' data:; script-src 'self' 'nonce-9483TZ393HIE383' 'unsafe-eval'" />
 	    <cache-control />
             <content-type-options />
             <hsts />
