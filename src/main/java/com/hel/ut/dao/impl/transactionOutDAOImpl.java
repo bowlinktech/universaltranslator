@@ -688,8 +688,8 @@ public class transactionOutDAOImpl implements transactionOutDAO {
     @Transactional(readOnly = false)
     public String getConfigFieldsForOutput(Integer configId) throws Exception {
 	String sql = ""
-		+ "select group_concat('REPLACE(REPLACE(ifnull(F', fieldNo, ',\"\") , ''\\n'', ''''), ''\\r'', '''')') as fieldNos "
-		+ " from configurationFormFields where configId = :configId order by fieldNo";
+		+ "select group_concat('REPLACE(REPLACE(ifnull(F', fieldNo, ',\"\") , ''\\n'', ''''), ''\\r'', '''')' order by fieldNo asc) as fieldNos "
+		+ " from configurationFormFields where configId = :configId";
 	Query query = sessionFactory.getCurrentSession().createSQLQuery(sql);
 	query.setParameter("configId", configId);
 	List<String> fieldNos = query.list();
@@ -725,8 +725,8 @@ public class transactionOutDAOImpl implements transactionOutDAO {
     @Override
     @Transactional(readOnly = true)
     public String getCustomXMLFieldsForOutput(Integer configId) throws Exception {
-	String sql = "select group_concat('REPLACE(REPLACE(ifnull(F', fieldValue, ',\"\") , ''\\n'', ''''), ''\\r'', '''')') as fieldNos "
-		+ " from configurationccdelements where configId = :configId  and fieldValue != '' order by id asc";
+	String sql = "select group_concat('REPLACE(REPLACE(ifnull(F', fieldValue, ',\"\") , ''\\n'', ''''), ''\\r'', '''')' order by id asc) as fieldNos "
+		+ " from configurationccdelements where configId = :configId  and fieldValue != ''";
 	Query query = sessionFactory.getCurrentSession().createSQLQuery(sql);
 	query.setParameter("configId", configId);
 	List<String> fieldNos = query.list();
