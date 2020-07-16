@@ -722,7 +722,7 @@ public class adminProcessingActivity {
         mav.setViewName("/administrator/processing-activity/batchActivities");
         mav.addObject("page", path);
 	
-	if("inbound".equals(path)) {
+	if("inbound".equals(path) || "invalidIn".equals(path) || "rejected".equals(path)) {
 	    // Get the details of the batch
 	    batchUploads batchDetails = transactionInManager.getBatchDetailsByBatchName(batchName);
 
@@ -812,8 +812,8 @@ public class adminProcessingActivity {
      *
      * @throws Exception
      */
-    @RequestMapping(value = "/inbound/auditReport/{batchName}", method = RequestMethod.GET)
-    public ModelAndView viewInboundAuditReport(@PathVariable String batchName) throws Exception {
+    @RequestMapping(value = {"/inbound/auditReport/{batchName}", "/invalidIn/auditReport/{batchName}", "/rejected/auditReport/{batchName}"}, method = RequestMethod.GET)
+    public ModelAndView viewInboundAuditReport(@PathVariable String batchName, HttpServletRequest request) throws Exception {
 
         ModelAndView mav = new ModelAndView();
         mav.setViewName("/administrator/processing-activity/auditReport");
@@ -824,6 +824,14 @@ public class adminProcessingActivity {
 	boolean showButtons = true;
 	
 	Integer totalErroredRows = 0;
+	
+	String page = "inbound";
+	if(request.getRequestURL().toString().contains("invalidIn")) {
+	    page = "invalid";
+	}
+	else if(request.getRequestURL().toString().contains("rejected")) {
+	    page = "rejected";
+	}
 
         /* Get the details of the batch */
         batchUploads batchDetails = transactionInManager.getBatchDetailsByBatchName(batchName);
@@ -963,7 +971,7 @@ public class adminProcessingActivity {
         mav.addObject("canSend", canSend);
 	mav.addObject("batchDownload",false);
 	mav.addObject("totalErroredRows", totalErroredRows);
-	
+	mav.addObject("page", page);
 	
 	if(canReset || canCancel || canEdit || canSend || batchDetails.getStatusId() == 2 || batchDetails.getStatusId() == 3 || batchDetails.getStatusId() == 36) {
 	    showButtons = true;
@@ -1451,8 +1459,16 @@ public class adminProcessingActivity {
 		users.forEach((user) -> {
 		    userMap.put(user.getId(), (user.getFirstName() + " " + user.getLastName()));
 		});
+		
+		Calendar cal = Calendar.getInstance();
 
 		rejectedBatches.stream().map((batch) -> {
+		    cal.setTime(batch.getStartDateTime());
+		    cal.add(Calendar.HOUR,-1);
+		    batch.setStartDateTime(cal.getTime());
+		    cal.setTime(batch.getEndDateTime());
+		    cal.add(Calendar.HOUR,-1);
+		    batch.setEndDateTime(cal.getTime());
 		    //the count is in totalRecordCount already, can skip re-count
 		    // batch.settotalTransactions(transactionInManager.getRecordCounts(batch.getId(), statusIds, false, false));
 		    batch.setStatusValue(psMap.get(batch.getStatusId()));
@@ -2344,11 +2360,22 @@ public class adminProcessingActivity {
         
         /* Retrieve search parameters from session */
         searchParameters searchParameters = (searchParameters) session.getAttribute("searchParameters");
+	
         if (fromDate == null) {
-	    fromDate = getMonthDate("LAST30");
+	    if(searchParameters.getfromDate() != null) {
+		fromDate = searchParameters.getfromDate();
+	    }
+	    else {
+		fromDate = getMonthDate("LAST30");
+	    }
         }
         if (toDate == null) {
-	    toDate = getMonthDate("END-TODAY");
+	    if(searchParameters.getfromDate() != null) {
+		toDate = searchParameters.gettoDate();
+	    }
+	    else {
+		toDate = getMonthDate("END-TODAY");
+	    }
         } 
 	searchParameters.setfromDate(fromDate);
         searchParameters.settoDate(toDate);
@@ -2420,8 +2447,16 @@ public class adminProcessingActivity {
 		users.forEach((user) -> {
 		    userMap.put(user.getId(), (user.getFirstName() + " " + user.getLastName()));
 		});
+		
+		Calendar cal = Calendar.getInstance();
 
 		invalidInboundBatches.stream().map((batch) -> {
+		    cal.setTime(batch.getStartDateTime());
+		    cal.add(Calendar.HOUR,-1);
+		    batch.setStartDateTime(cal.getTime());
+		    cal.setTime(batch.getEndDateTime());
+		    cal.add(Calendar.HOUR,-1);
+		    batch.setEndDateTime(cal.getTime());
 		    //the count is in totalRecordCount already, can skip re-count
 		    // batch.settotalTransactions(transactionInManager.getRecordCounts(batch.getId(), statusIds, false, false));
 		    batch.setStatusValue(psMap.get(batch.getStatusId()));

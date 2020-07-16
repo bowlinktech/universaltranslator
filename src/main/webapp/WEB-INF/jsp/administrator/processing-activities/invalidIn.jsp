@@ -55,7 +55,7 @@
                             <thead>
                                 <tr>
                                     <th scope="col">Organization</th>
-                                    <th scope="col" style="width:50px">Batch Details</th>
+                                    <th scope="col">Batch Details</th>
                                     <th scope="col" class="center-text">Transport Method</th>
                                     <th scope="col" class="center-text">Status</th>
                                     <th scope="col"># of Transactions</th>
@@ -74,7 +74,7 @@
                                             <td>
 						<strong><c:choose><c:when test="${not empty batch.configName}">${batch.configName}</c:when><c:otherwise>Invalid File</c:otherwise></c:choose></strong><br />
                                                 ${batch.utBatchName}
-                                                <c:if test="${batch.transportMethodId != 2 && batch.statusValue != 'SRJ'}">
+                                                <c:if test="${batch.transportMethodId != 2}">
                                                     <c:set var="text" value="${fn:split(batch.originalFileName,'.')}" />
                                                     <c:set var="ext" value="${text[fn:length(text)-1]}" />
                                                     <br />
@@ -91,8 +91,7 @@
                                                         ${batch.originalFileName}
                                                     </a>
 						    <br/>
-                                                    
-						    <c:if test="${batch.inboundBatchConfigurationType == 1 && (batch.transportMethodId == 10 || batch.transportMethodId == 13)}">
+						    <c:if test="${batch.inboundBatchConfigurationType == 1 && batch.statusValue != 'SRJ' && (batch.transportMethodId == 10 || batch.transportMethodId == 13)}">
                                                         <c:choose>
                                                             <c:when test="${batch.transportMethod == 'Direct Message' || batch.transportMethod == 'File Drop'}">
                                                                 <a href="/FileDownload/downloadFile.do?fromPage=invalidin&filename=${batch.utBatchName}.txt&foldername=loadFiles" title="View Internal Processing File">Internal File - ${batch.utBatchName}.txt</a>
@@ -123,9 +122,19 @@
                                             <td>
                                                 Total Transactions: <strong><fmt:formatNumber value = "${batch.totalRecordCount}" type = "number"/></strong>
 						<br />
-						Total Error Transactions: <strong><fmt:formatNumber value = "${batch.errorRecordCount}" type = "number"/></strong>
+						Total Errors: <strong><fmt:formatNumber value = "${batch.errorRecordCount}" type = "number"/></strong>
                                             </td>
-                                            <td class="center-text"><fmt:formatDate value="${batch.dateSubmitted}" type="both" pattern="M/dd/yyyy h:mm:ss a" /></td>
+                                            <td class="center-text">
+                                                <fmt:formatDate value="${batch.dateSubmitted}" type="both" pattern="M/dd/yyyy h:mm a" />
+                                                <c:if test="${not empty batch.startDateTime}">
+                                                    <br />
+                                                    Start: <fmt:formatDate value="${batch.startDateTime}" type="both" pattern="M/dd/yyyy h:mm a" />
+                                                </c:if>
+                                                <c:if test="${not empty batch.endDateTime}">
+                                                    <br />
+                                                    End <fmt:formatDate value="${batch.endDateTime}" type="both" pattern="M/dd/yyyy h:mm a" />
+                                                </c:if>    
+                                            </td>
                                             <td>
 						<div class="dropdown pull-left">
 						    <button class="btn btn-sm btn-default dropdown-toggle" type="button" data-toggle="dropdown">
@@ -134,14 +143,14 @@
 						    <ul class="dropdown-menu pull-right">
 							<c:if test="${batch.transportMethodId != 2}">
 							    <li>
-								<a href="<c:url value='/administrator/processing-activity/inbound/batchActivities/${batch.utBatchName}'/>" class="viewBatchActivities" title="View Batch Activities">
+								<a href="<c:url value='/administrator/processing-activity/invalidIn/batchActivities/${batch.utBatchName}'/>" class="viewBatchActivities" title="View Batch Activities">
 								    <span class="glyphicon glyphicon-edit"></span>
 								    View Batch Activities
 								</a>
 							    </li>
 							    <li class="divider"></li>
 							    <li>
-								<a href="<c:url value='/administrator/processing-activity/inbound/auditReport/${batch.utBatchName}' />" title="View Audit Report">
+								<a href="<c:url value='/administrator/processing-activity/invalidIn/auditReport/${batch.utBatchName}' />" title="View Audit Report">
 								    <span class="glyphicon glyphicon-edit"></span>
 								    View Audit Report
 								</a>

@@ -299,4 +299,8 @@ public interface transactionInDAO {
     Integer getTotalErroredRows(Integer batchUploadId) throws Exception;
     
     List<batchErrorSummary> getBatchSystemErrorSummary(int batchId, String inboundOutbound) throws Exception;
+    
+    List<batchUploads> findRejectedBatchesToCleanUp() throws Exception;
+    
+    void rejectedBatchUploadTableCleanUp(List<batchUploads> batchesToCleanup) throws Exception;
 }
