@@ -33,7 +33,7 @@ public class batchUploads {
     private String statusValue, usersName, endUserDisplayText = "",
 	    tgtorgName, orgName, transportMethod, configName, uploadType = "",
 	    referringBatch = "", dashboardRowColor = "table-secondary", 
-	    entryMessage = "", relatedBatchDownloadIds, dmConfigKeyWord, tableExists = "";
+	    entryMessage = "", relatedBatchDownloadIds, dmConfigKeyWord;
 
     @Transient
     private boolean watchListCompleted = false;
@@ -493,13 +493,4 @@ public class batchUploads {
 	this.relatedBatchDownloads = relatedBatchDownloads;
     }
 
-    public String getTableExists() {
-	return tableExists;
-    }
-
-    public void setTableExists(String tableExists) {
-	this.tableExists = tableExists;
-    }
-
-    
 }
