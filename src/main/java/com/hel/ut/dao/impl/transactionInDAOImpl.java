@@ -3581,8 +3581,7 @@ public class transactionInDAOImpl implements transactionInDAO {
     @Transactional(readOnly = true) 
     public List<batchUploads> findRejectedBatchesToCleanUp() throws Exception {
 	
-	String sql = "select batchUploads.* FROM (select *, case when (select count(*) from INFORMATION_SCHEMA.TABLES where TABLE_NAME=concat('transactiontranslatedin_',batchuploads.id)) = 1 then 'exists' else 'does not exist' end as tableExists "
-	 + "from batchuploads where statusId = 7) as batchUploads where batchUploads.tableExists = 'exists'";
+	String sql = "select * from batchuploads where statusId = 7 and id not in (select batchUploadId from batchuploadactivity where activity like '%Cleaned up tables for rejected batch utBatchName: %')";
 	
 	Query query = sessionFactory.getCurrentSession().createSQLQuery(sql)
 		.setResultTransformer(Transformers.aliasToBean(batchUploads.class));
@@ -3610,6 +3609,12 @@ public class transactionInDAOImpl implements transactionInDAO {
 			deleteSQL += "DROP TABLE IF EXISTS `transactioninrecords_" + batch.getId() + "`;";
 			deleteSQL += "DROP TABLE IF EXISTS `transactioninmacrodroppedvalues_" + batch.getId() + "`;";
 			deleteSQL += "DROP TABLE IF EXISTS `transactioninmacrokeptvalues_" + batch.getId() + "`;";
+			
+			batchuploadactivity ba = new batchuploadactivity();
+			ba.setActivity("Cleaned up tables for rejected batch utBatchName: " + batch.getUtBatchName() + ".");
+			ba.setBatchUploadId(batch.getId());
+			submitBatchActivityLog(ba);
+			
 		    }
 		}
 		

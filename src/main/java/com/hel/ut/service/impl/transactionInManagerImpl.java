@@ -3967,7 +3967,6 @@ public class transactionInManagerImpl implements transactionInManager {
 		transactionInDAO.rejectedBatchUploadTableCleanUp(rejectedInboundBatchesToCleanup);
 	    }
 	}
-
     }
 
     @Override
