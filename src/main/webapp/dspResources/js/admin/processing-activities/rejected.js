@@ -6,20 +6,21 @@
 
 
 require(['./main'], function () {
+    require(['jquery'], function ($) {
 
-    $("input:text,form").attr("autocomplete", "off");
+        $("input:text,form").attr("autocomplete", "off");
 
-    //This function will launch the status detail overlay with the selected
-    //status
-    $(document).on('click', '.viewStatus', function () {
-        $.ajax({
-            url: 'viewStatus' + $(this).attr('rel'),
-            type: "GET",
-            success: function (data) {
-                $("#statusModal").html(data);
-            }
+        //This function will launch the status detail overlay with the selected
+        //status
+        $(document).on('click', '.viewStatus', function () {
+            $.ajax({
+                url: 'viewStatus' + $(this).attr('rel'),
+                type: "GET",
+                success: function (data) {
+                    $("#statusModal").html(data);
+                }
+            });
         });
-    });
 
         var searchTerm = $('#rejected-table').attr('term');
 
@@ -30,6 +31,15 @@ require(['./main'], function () {
             bProcessing: true, 
             deferRender: true,
             aaSorting: [[5,'desc']],
+            "columns": [
+                { "width": "20%" },
+                { "width": "20%" },
+                { "width": "18%" },
+                { "width": "10%" },
+                { "width": "15%" },
+                { "width": "12%" },
+                { "width": "5%" }
+             ],
             "oSearch": {"sSearch": searchTerm },
             sPaginationType: "bootstrap", 
             oLanguage: {
@@ -46,6 +56,34 @@ require(['./main'], function () {
                 sProcessing: "<div style='background-color:#64A5D4; height:50px; margin-top:200px'><p style='color:white; padding-top:15px;' class='bolder'>Retrieving Results. Please wait...</p></div>"
             }
         });
+
+    });
+    
+    $(document).on('click', '.deleteTransactions', function() {
+
+        var batchName = $(this).attr('rel');
+
+        if(confirm("Are you sure you want to remove this batch?")) {
+
+            $('body').overlay({
+                glyphicon : 'floppy-disk',
+                message : 'Deleting...'
+            });
+
+            $.ajax({
+                url: 'deleteBatch.do',
+                data: {
+                    'batchName': batchName
+                },
+                type: 'POST',
+                success: function(data) {
+                   location.reload();
+                }
+            });
+
+        }
+
+    });
 });
 
 

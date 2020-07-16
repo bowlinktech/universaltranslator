@@ -72,7 +72,7 @@
 					</li>
 					<li class="divider"></li> 
 				    </c:if>   
-				    <c:if test="${canCancel && batchDetails.statusId != 4 && batchDetails.statusId != 24}">
+				    <c:if test="${canCancel && batchDetails.configId > 0 && batchDetails.statusId != 4 && batchDetails.statusId != 24}">
 					<c:choose>
 					    <c:when test="${batchDownload}">
 						<li>
@@ -92,7 +92,7 @@
 					    </c:otherwise>
 					</c:choose>
 				    </c:if> 
-				    <c:if test="${canReset && batchDetails.statusId != 64 && batchDetails.statusId != 42 && batchDetails.statusId != 43}">
+				    <c:if test="${canReset && batchDetails.configId > 0 && batchDetails.statusId != 64 && batchDetails.statusId != 42 && batchDetails.statusId != 43}">
 					<c:choose>
 					    <c:when test="${batchDownload}">
 						<li class="divider"></li> 
@@ -126,9 +126,9 @@
 				    <c:if test="${!batchDownload && sessionScope.userDetails.roleId == 1 && canReset}">
 					<li class="divider"></li>
 					<li>
-					    <a href="#!" rel="${batchDetails.utBatchName}" class="deleteTransactions" title="Delete Inbound Batch">
+					    <a href="#!" rel="${batchDetails.utBatchName}" class="deleteTransactions" title="Delete Batch">
 						<span class="glyphicon glyphicon-remove"></span>
-						<strong>Delete Inbound Batch</strong>
+						<strong>Delete Batch</strong>
 					    </a>
 					</li>
 				    </c:if>	
@@ -204,7 +204,7 @@
 					    <a href="/administrator/configurations/details?i=${batchDetails.configId}">${batchDetails.configName}</a>
 					</c:when>
 					<c:otherwise>
-					    Could not figure out the source configuration based on the file uploaded.
+					    Could find a valid configuration based on the file uploaded (check the file extension).
 					</c:otherwise>
 				    </c:choose>
 				</p>

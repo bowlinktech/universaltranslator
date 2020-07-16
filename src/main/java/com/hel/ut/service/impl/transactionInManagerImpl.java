@@ -1145,7 +1145,7 @@ public class transactionInManagerImpl implements transactionInManager {
 				    
 				    //log batch activity
 				    batchuploadactivity ba = new batchuploadactivity();
-				    ba.setActivity("No valid configuration transports were found.");
+				    ba.setActivity("No valid configuration was found for the selected organization and the file extension of the uploaded file.");
 				    ba.setBatchUploadId(batchId);
 				    transactionInDAO.submitBatchActivityLog(ba);
 				    
@@ -1431,12 +1431,12 @@ public class transactionInManagerImpl implements transactionInManager {
 					
 					//log batch activity
 					ba = new batchuploadactivity();
-					ba.setActivity("Invlaid file size. Uploaded file was "+ Files.size(target) + ". The configuration max file size was set to " + maxFileSize);
+					ba.setActivity("Invalid file size. Uploaded file was "+ Files.size(target) + ". The configuration max file size was set to " + maxFileSize);
 					ba.setBatchUploadId(batchId);
 					transactionInDAO.submitBatchActivityLog(ba);
 				    }
 				}
-
+				
 				if (statusId != 42) {
 				    insertProcessingError(errorId, 0, batchId, null, null, null, null, false, false, "");
 				}
@@ -2729,7 +2729,7 @@ public class transactionInManagerImpl implements transactionInManager {
 		    updateRecordCounts(batchId, new ArrayList<Integer>(), false, "totalRecordCount");
 		    updateBatchStatus(batchId, 7, "endDateTime");
 		    //need to insert error on why we are rejecting
-		    insertProcessingError(7, null, batchId, null, null, null, null, false, false, "No valid transactions were found for batch.");
+		    insertProcessingError(7, null, batchId, null, null, null, null, false, false, "No valid configurations were found for batch.");
 		    
 		    //log batch activity
 		    ba = new batchuploadactivity();
@@ -3956,6 +3956,15 @@ public class transactionInManagerImpl implements transactionInManager {
 	if (batchesToCleanup != null) {
 	    if (!batchesToCleanup.isEmpty()) {
 		transactionInDAO.batchUploadTableCleanUp(batchesToCleanup);
+	    }
+	}
+	
+	//Get a list of rejected batches to clean up
+	List<batchUploads> rejectedInboundBatchesToCleanup = transactionInDAO.findRejectedBatchesToCleanUp();
+	
+	if (rejectedInboundBatchesToCleanup != null) {
+	    if (!rejectedInboundBatchesToCleanup.isEmpty()) {
+		transactionInDAO.rejectedBatchUploadTableCleanUp(rejectedInboundBatchesToCleanup);
 	    }
 	}
 

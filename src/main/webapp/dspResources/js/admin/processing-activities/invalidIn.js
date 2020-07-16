@@ -49,8 +49,7 @@ require(['./main'], function () {
 
   //This will change between inbound and outbound
     $(document).on('change', '#wsDirection', function(event) {
-                    window.location.href = "invalidOut";  
-
+       window.location.href = "invalidOut";  
     });
 
     var searchTerm = $('#invalidInbound-table').attr('term');
@@ -62,6 +61,15 @@ require(['./main'], function () {
         bProcessing: true, 
         deferRender: true,
         aaSorting: [[5,'desc']],
+        "columns": [
+            { "width": "20%" },
+            { "width": "20%" },
+            { "width": "18%" },
+            { "width": "10%" },
+            { "width": "15%" },
+            { "width": "12%" },
+            { "width": "5%" }
+         ],
         "oSearch": {"sSearch": searchTerm },
         sPaginationType: "bootstrap", 
         oLanguage: {
@@ -77,6 +85,32 @@ require(['./main'], function () {
                 '</select>',
             sProcessing: "<div style='background-color:#64A5D4; height:50px; margin-top:200px'><p style='color:white; padding-top:15px;' class='bolder'>Retrieving Results. Please wait...</p></div>"
         }
+    });
+    
+    $(document).on('click', '.deleteTransactions', function() {
+
+        var batchName = $(this).attr('rel');
+
+        if(confirm("Are you sure you want to remove this batch?")) {
+
+            $('body').overlay({
+                glyphicon : 'floppy-disk',
+                message : 'Deleting...'
+            });
+
+            $.ajax({
+                url: 'deleteBatch.do',
+                data: {
+                    'batchName': batchName
+                },
+                type: 'POST',
+                success: function(data) {
+                   location.reload();
+                }
+            });
+
+        }
+
     });
 });
 
