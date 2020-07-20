@@ -1005,6 +1005,9 @@ public class adminProcessingActivity {
         if (userInfo != null && batchDetails != null) {
             
 	    if (batchOption.equalsIgnoreCase("processBatch")) {
+		//Clear Batch Activity Log table
+		transactionInManager.clearBatchActivityLogTable(batchId);
+		
 		//Clear transaction counts
 		transactionInManager.resetTransactionCounts(batchId);
 		
@@ -1017,6 +1020,7 @@ public class adminProcessingActivity {
                 strBatchOption = "Cancelled Batch";
                 transactionInManager.updateBatchStatus(batchId, 4, "startDateTime");
                 transactionInManager.updateBatchStatus(batchId, 32, "endDateTime");
+		
                 //need to cancel targets also
                 transactionInManager.updateBatchDLStatusByUploadBatchId(batchId, 0, 32, "endDateTime");
 		
@@ -1029,6 +1033,9 @@ public class adminProcessingActivity {
             } 
 	    else if (batchOption.equalsIgnoreCase("reset")) {
                 strBatchOption = "Reset Batch";
+		
+		//Clear Batch Activity Log table
+		transactionInManager.clearBatchActivityLogTable(batchId);
 		
 		//Clear transaction counts
 		transactionInManager.resetTransactionCounts(batchId);
@@ -1416,82 +1423,7 @@ public class adminProcessingActivity {
         mav.addObject("fromDate", fromDate);
         mav.addObject("toDate", toDate);
         mav.addObject("originalDate", originalDate);
-	
-	try {
-
-            Integer fetchCount = 0;
-	    
-	    List<batchUploads> rejectedBatches = transactionInManager.getAllRejectedBatches(fromDate, toDate, fetchCount);
-
-            if (!rejectedBatches.isEmpty()) {
-		
-		//we can map the process status so we only have to query once
-                List<utConfiguration> configurationList = configurationManager.getConfigurations();
-                Map<Integer, String> cMap = new HashMap<>();
-		configurationList.forEach((c) -> {
-		    cMap.put(c.getId(), c.getconfigName());
-		});
-		
-                //we can map the process status so we only have to query once
-                List<lu_ProcessStatus> processStatusList = sysAdminManager.getAllProcessStatus();
-                Map<Integer, String> psMap = new HashMap<>();
-		processStatusList.forEach((ps) -> {
-		    psMap.put(ps.getId(), ps.getDisplayCode());
-		});
-
-                //same with transport method names
-                List<TransportMethod> transporthMethods = configurationTransportManager.getTransportMethods(Arrays.asList(0, 1));
-                Map<Integer, String> tmMap = new HashMap<>();
-		transporthMethods.forEach((tms) -> {
-		    tmMap.put(tms.getId(), tms.getTransportMethod());
-		});
-
-                //if we have lots of organization in the future we can tweak this to narrow down to orgs with batches
-                List<Organization> organizations = organizationmanager.getOrganizations();
-                Map<Integer, String> orgMap = new HashMap<>();
-		organizations.forEach((org) -> {
-		    orgMap.put(org.getId(), org.getOrgName());
-		});
-
-                //same goes for users
-                List<utUser> users = usermanager.getAllUsers();
-                Map<Integer, String> userMap = new HashMap<>();
-		users.forEach((user) -> {
-		    userMap.put(user.getId(), (user.getFirstName() + " " + user.getLastName()));
-		});
-		
-		Calendar cal = Calendar.getInstance();
-
-		rejectedBatches.stream().map((batch) -> {
-		    cal.setTime(batch.getStartDateTime());
-		    cal.add(Calendar.HOUR,-1);
-		    batch.setStartDateTime(cal.getTime());
-		    cal.setTime(batch.getEndDateTime());
-		    cal.add(Calendar.HOUR,-1);
-		    batch.setEndDateTime(cal.getTime());
-		    //the count is in totalRecordCount already, can skip re-count
-		    // batch.settotalTransactions(transactionInManager.getRecordCounts(batch.getId(), statusIds, false, false));
-		    batch.setStatusValue(psMap.get(batch.getStatusId()));
-		    return batch;
-		}).map((batch) -> {
-		    batch.setOrgName(orgMap.get(batch.getOrgId()));
-		    return batch;
-		}).map((batch) -> {
-		    batch.setTransportMethod(tmMap.get(batch.getTransportMethodId()));
-		    return batch;
-		}).map((batch) -> {
-		    batch.setUsersName(userMap.get(batch.getUserId()));
-		    return batch;
-		}).forEachOrdered((batch) -> {
-		    batch.setConfigName(cMap.get(batch.getConfigId()));
-		});
-            }
-
-            mav.addObject("batches", rejectedBatches);
-
-        } catch (Exception e) {
-            throw new Exception("Error occurred viewing the all uploaded batches.", e);
-        }
+	mav.addObject("DTS", "");
 
         return mav;
 
@@ -1503,6 +1435,7 @@ public class adminProcessingActivity {
      * @param fromDate
      * @param toDate
      * @param request
+     * @param DTS
      * @param response
      * @param session
      * @return The list of batches with rejected transactions
@@ -1512,7 +1445,9 @@ public class adminProcessingActivity {
      * @throws Exception
      */
     @RequestMapping(value = "/rejected", method = RequestMethod.POST)
-    public ModelAndView listRejectedBatches(@RequestParam Date fromDate, @RequestParam Date toDate, HttpServletRequest request, HttpServletResponse response, HttpSession session) throws Exception {
+    public ModelAndView listRejectedBatches(@RequestParam Date fromDate, 
+	    @RequestParam Date toDate, HttpServletRequest request, @RequestParam(value = "DTS", required=false) Integer DTS,
+	    HttpServletResponse response, HttpSession session) throws Exception {
 
         int year = 114;
         int month = 0;
@@ -1525,6 +1460,7 @@ public class adminProcessingActivity {
         mav.addObject("fromDate", fromDate);
         mav.addObject("toDate", toDate);
         mav.addObject("originalDate", originalDate);
+	mav.addObject("DTS", DTS);
 
         /* Retrieve search parameters from session */
         searchParameters searchParameters = (searchParameters) session.getAttribute("searchParameters");
@@ -1574,8 +1510,22 @@ public class adminProcessingActivity {
 		users.forEach((user) -> {
 		    userMap.put(user.getId(), (user.getFirstName() + " " + user.getLastName()));
 		});
+		
+		Calendar cal = Calendar.getInstance();
 
 		rejectedBatches.stream().map((batch) -> {
+		    
+		    if(DTS != null) {
+			if(DTS == 1) {
+			    cal.setTime(batch.getStartDateTime());
+			    cal.add(Calendar.HOUR,-1);
+			    batch.setStartDateTime(cal.getTime());
+			    cal.setTime(batch.getEndDateTime());
+			    cal.add(Calendar.HOUR,-1);
+			    batch.setEndDateTime(cal.getTime());
+			}
+		    }
+		    
 		    //the count is in totalRecordCount already, can skip re-count
 		    // batch.settotalTransactions(transactionInManager.getRecordCounts(batch.getId(), statusIds, false, false));
 		    batch.setStatusValue(psMap.get(batch.getStatusId()));
@@ -2331,15 +2281,11 @@ public class adminProcessingActivity {
 	mav.addObject("errors", errors);
         
         return mav;
-
     }
     
     /**
      * The '/invalidIn' GET request will serve up the list of inbound batches that errored
      *
-     *
-     * @param fromDate
-     * @param toDate
      * @param request
      * @param response
      * @param session
@@ -2348,11 +2294,84 @@ public class adminProcessingActivity {
      *
      * @throws Exception
      */
-    @RequestMapping(value = "/invalidIn", method = {RequestMethod.GET, RequestMethod.POST})
+    @RequestMapping(value = "/invalidIn", method = RequestMethod.GET)
+    public ModelAndView listInvalidInBatches(HttpServletRequest request, HttpServletResponse response, HttpSession session) throws Exception {
+	
+        int year = 114;
+        int month = 0;
+        int day = 1;
+        Date originalDate = new Date(year, month, day);
+        
+        // Retrieve search parameters from session
+        searchParameters searchParameters = (searchParameters) session.getAttribute("searchParameters");
+	
+	Date fromDate;
+	Date toDate;
+	
+	if(searchParameters.getfromDate() != null) {
+	    fromDate = searchParameters.getfromDate();
+	}
+	else {
+	    fromDate = getMonthDate("LAST30");
+	}
+	if(searchParameters.gettoDate() != null) {
+	    toDate = searchParameters.gettoDate();
+	}
+	else {
+	    toDate = getMonthDate("END-TODAY");
+	}
+	
+	searchParameters.setfromDate(fromDate);
+        searchParameters.settoDate(toDate);
+       
+	String searchTerm = "";
+	
+        if ("".equals(searchParameters.getsection()) || !"invalidIn".equals(searchParameters.getsection())) {
+            searchParameters.setsection("invalidIn");
+	    searchParameters.setsearchTerm("");
+	    session.setAttribute("searchParameters", searchParameters);
+        } else {
+	    searchTerm = searchParameters.getsearchTerm().trim();
+	    
+	    searchParameters.setsearchTerm("");
+	    session.setAttribute("searchParameters", searchParameters);
+        }
+	
+        ModelAndView mav = new ModelAndView();
+        mav.setViewName("/administrator/processing-activity/invalidIn");
+	mav.addObject("searchFilter", searchTerm);
+        mav.addObject("fromDate", fromDate);
+        mav.addObject("toDate", toDate);
+        mav.addObject("originalDate", originalDate);
+	mav.addObject("DTS", "");
+	
+	// Get system inbound summary
+        systemSummary summaryDetails = transactionInManager.generateSystemInboundSummary();
+        mav.addObject("summaryDetails", summaryDetails);
+	
+        return mav;
+    }
+    
+    /**
+     * The '/invalidIn' POST request will serve up the list of inbound batches that errored
+     *
+     *
+     * @param fromDate
+     * @param toDate
+     * @param DTS
+     * @param request
+     * @param response
+     * @param session
+     * @return 
+     * @Objects	(1) An object containing all the found invalidIn
+     *
+     * @throws Exception
+     */
+    @RequestMapping(value = "/invalidIn", method = RequestMethod.POST)
     public ModelAndView listInvalidInBatches(@RequestParam(value = "fromDate", required=false) Date fromDate,
-    		@RequestParam(value = "toDate", required=false) Date toDate,
+    		@RequestParam(value = "toDate", required=false) Date toDate, @RequestParam(value = "DTS", required=false) Integer DTS,
             HttpServletRequest request, HttpServletResponse response, HttpSession session) throws Exception {
-
+	
         int year = 114;
         int month = 0;
         int day = 1;
@@ -2399,6 +2418,7 @@ public class adminProcessingActivity {
         mav.addObject("fromDate", fromDate);
         mav.addObject("toDate", toDate);
         mav.addObject("originalDate", originalDate);
+	mav.addObject("DTS", DTS);
 	
 	/* Get system inbound summary */
         systemSummary summaryDetails = transactionInManager.generateSystemInboundSummary();
@@ -2451,12 +2471,18 @@ public class adminProcessingActivity {
 		Calendar cal = Calendar.getInstance();
 
 		invalidInboundBatches.stream().map((batch) -> {
-		    cal.setTime(batch.getStartDateTime());
-		    cal.add(Calendar.HOUR,-1);
-		    batch.setStartDateTime(cal.getTime());
-		    cal.setTime(batch.getEndDateTime());
-		    cal.add(Calendar.HOUR,-1);
-		    batch.setEndDateTime(cal.getTime());
+		    
+		    if(DTS != null) {
+			if(DTS == 1) {
+			    cal.setTime(batch.getStartDateTime());
+			    cal.add(Calendar.HOUR,-1);
+			    batch.setStartDateTime(cal.getTime());
+			    cal.setTime(batch.getEndDateTime());
+			    cal.add(Calendar.HOUR,-1);
+			    batch.setEndDateTime(cal.getTime());
+			}
+		    }
+		    
 		    //the count is in totalRecordCount already, can skip re-count
 		    // batch.settotalTransactions(transactionInManager.getRecordCounts(batch.getId(), statusIds, false, false));
 		    batch.setStatusValue(psMap.get(batch.getStatusId()));
@@ -2486,7 +2512,76 @@ public class adminProcessingActivity {
     }
     
     /**
-     * The '/invalidOut' GET / Post request will serve up the list of inbound batches that errored
+     * The '/invalidOut' GET  request will serve up the list of inbound batches that errored
+     *
+     *
+     * @param request
+     * @param response
+     * @param session
+     * @return 
+     * @Objects	(1) An object containing all the found invalidIn
+     *
+     * @throws Exception
+     */
+    @RequestMapping(value = "/invalidOut", method = RequestMethod.GET)
+    public ModelAndView listInvalidOutBatches(HttpServletRequest request, HttpServletResponse response, HttpSession session) throws Exception {
+
+    	int year = 114;
+        int month = 0;
+        int day = 1;
+        Date originalDate = new Date(year, month, day);
+	
+	Date fromDate;
+	Date toDate;
+	
+	searchParameters searchParameters = (searchParameters) session.getAttribute("searchParameters");
+	if(searchParameters.getfromDate() != null) {
+	    fromDate = searchParameters.getfromDate();
+	}
+	else {
+	    fromDate = getMonthDate("LAST30");
+	}
+	if(searchParameters.gettoDate() != null) {
+	    toDate = searchParameters.gettoDate();
+	}
+	else {
+	    toDate = getMonthDate("END-TODAY");
+	}
+	
+	searchParameters.setfromDate(fromDate);
+        searchParameters.settoDate(toDate);
+       
+	String searchTerm = "";
+	
+        if ("".equals(searchParameters.getsection()) || !"invalidOut".equals(searchParameters.getsection())) {
+            searchParameters.setsection("invalidOut");
+	    searchParameters.setsearchTerm("");
+	    session.setAttribute("searchParameters", searchParameters);
+        } else {
+	    searchTerm = searchParameters.getsearchTerm().trim();
+	    
+	    searchParameters.setsearchTerm("");
+	    session.setAttribute("searchParameters", searchParameters);
+        }
+
+        ModelAndView mav = new ModelAndView();
+        mav.setViewName("/administrator/processing-activity/invalidOut");
+	mav.addObject("searchFilter", searchTerm);
+        mav.addObject("fromDate", fromDate);
+        mav.addObject("toDate", toDate);
+        mav.addObject("originalDate", originalDate);
+	mav.addObject("DTS", "");
+	
+	/* Get system inbound summary */
+        systemSummary summaryDetails = transactionInManager.generateSystemInboundSummary();
+        mav.addObject("summaryDetails", summaryDetails);
+	
+        return mav;
+
+    }
+    
+    /**
+     * The '/invalidOut' Post request will serve up the list of inbound batches that errored
      *
      *
      * @param fromDate
@@ -2499,10 +2594,10 @@ public class adminProcessingActivity {
      *
      * @throws Exception
      */
-    @RequestMapping(value = "/invalidOut", method = {RequestMethod.GET, RequestMethod.POST})
+    @RequestMapping(value = "/invalidOut", method = RequestMethod.POST)
     public ModelAndView listInvalidOutBatches(
     		@RequestParam(value = "fromDate", required=false) Date fromDate,
-    		@RequestParam(value = "toDate", required=false) Date toDate,
+    		@RequestParam(value = "toDate", required=false) Date toDate, @RequestParam(value = "DTS", required=false) Integer DTS,
             HttpServletRequest request, HttpServletResponse response, HttpSession session) throws Exception {
 
     	int year = 114;
@@ -2540,6 +2635,7 @@ public class adminProcessingActivity {
         mav.addObject("fromDate", fromDate);
         mav.addObject("toDate", toDate);
         mav.addObject("originalDate", originalDate);
+	mav.addObject("DTS", DTS);
 	
 	/* Get system inbound summary */
         systemSummary summaryDetails = transactionInManager.generateSystemInboundSummary();
@@ -2587,8 +2683,21 @@ public class adminProcessingActivity {
 		users.forEach((user) -> {
 		    userMap.put(user.getId(), (user.getFirstName() + " " + user.getLastName()));
 		});
+		
+		Calendar cal = Calendar.getInstance();
 
                 for (batchDownloads batch : invalidOutboundBatches) {
+		    
+		    if(DTS != null) {
+			if(DTS == 1) {
+			    cal.setTime(batch.getStartDateTime());
+			    cal.add(Calendar.HOUR,-1);
+			    batch.setStartDateTime(cal.getTime());
+			    cal.setTime(batch.getEndDateTime());
+			    cal.add(Calendar.HOUR,-1);
+			    batch.setEndDateTime(cal.getTime());
+			}
+		    }
 
 		    String fileDownloadExt = batch.getOutputFileName().substring(batch.getOutputFileName().lastIndexOf(".") + 1);
 		    String newfileName = new StringBuilder().append(batch.getUtBatchName()).append(".").append(fileDownloadExt).toString();
@@ -2623,7 +2732,6 @@ public class adminProcessingActivity {
             throw new Exception("Error occurred viewing the all downloaded batches. Error:" + e.getMessage(), e);
         }
        
-        
         return mav;
 
     }
@@ -3207,6 +3315,9 @@ public class adminProcessingActivity {
 	    else if (batchOption.equalsIgnoreCase("reset")) {
                 strBatchOption = "Reset Outbound Batch";
 		
+		//Clear Batch Activity Log table
+		transactionOutManager.clearBatchActivityLogTable(batchId);
+		
 		//Delete all target tables
 		transactionOutManager.deleteBatchDownloadTables(batchId);
 		
@@ -3661,6 +3772,8 @@ public class adminProcessingActivity {
 	    List reportableFields = null;
 	    Integer batchId = 0;
 	    
+	    utConfiguration configDetails = null;
+	    
 	    if("inbound".equals(type)) {
 		
 		/* Get the details of the batch */
@@ -3675,7 +3788,10 @@ public class adminProcessingActivity {
 
 		//Check to see if we have any dropped values
 		inboundDroppedValues = transactionInManager.getBatchDroppedValues(batchId);
-
+		
+		if(batchDetails.getConfigId() > 0) {
+		    configDetails = configurationManager.getConfigurationById(batchDetails.getConfigId());
+		}
 	    }
 	    else {
 		batchDownloads batchDetails = transactionOutManager.getBatchDetailsByBatchName(batchName);
@@ -3689,13 +3805,22 @@ public class adminProcessingActivity {
 
 		//Check to see if we have any dropped values
 		outboundDroppedValues = transactionOutManager.getBatchDroppedValues(batchDetails.getId());
+		
+		if(batchDetails.getConfigId() > 0) {
+		    configDetails = configurationManager.getConfigurationById(batchDetails.getConfigId());
+		}
 	    }
 	    
 	    DateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmm");
 	    Date date = new Date();
-
-	    fileName = batchName + "-auditErrors";
 	    
+	    if(configDetails != null) {
+		fileName = configDetails.getconfigName().toLowerCase().replaceAll(" ","-")+"-"+batchName;
+	    }
+	    else {
+		fileName = batchName + "-auditErrors";
+	    }
+
 	    File file = new File("/tmp/" + fileName + ".xlsx");
 	    file.createNewFile();
 
@@ -4279,6 +4404,8 @@ public class adminProcessingActivity {
 	List<batchDownloadDroppedValues> outboundDroppedValues = null;
 	List reportableFields = null;
 	Integer batchId = 0;
+	utConfiguration configDetails = null;
+	Organization orgDetails = null;
 
 	if("inbound".equals(type)) {
 
@@ -4294,6 +4421,14 @@ public class adminProcessingActivity {
 
 	    //Check to see if we have any dropped values
 	    inboundDroppedValues = transactionInManager.getBatchDroppedValues(batchId);
+	    
+	    if(batchDetails.getConfigId() > 0) {
+		configDetails = configurationManager.getConfigurationById(batchDetails.getConfigId());
+	    }
+	    
+	    if(batchDetails.getOrgId() > 0) {
+		orgDetails = organizationmanager.getOrganizationById(batchDetails.getOrgId());
+	    }
 
 	}
 	else {
@@ -4308,10 +4443,26 @@ public class adminProcessingActivity {
 
 	    //Check to see if we have any dropped values
 	    outboundDroppedValues = transactionOutManager.getBatchDroppedValues(batchDetails.getId());
+	    
+	    if(batchDetails.getConfigId() > 0) {
+		configDetails = configurationManager.getConfigurationById(batchDetails.getConfigId());
+	    }
+	    
+	    if(batchDetails.getOrgId() > 0) {
+		orgDetails = organizationmanager.getOrganizationById(batchDetails.getOrgId());
+	    }
 	}
 	
 	String auditReportDetailFile = "/tmp/" + batchName + "-auditErrors.txt";
-	String auditReportPrintFile = "/tmp/" + batchName + "-auditErrors.pdf";
+	
+	String auditReportPrintFile = "/tmp/";
+	
+	if(configDetails != null) {
+	    auditReportPrintFile = auditReportPrintFile + configDetails.getconfigName().toLowerCase().replaceAll(" ","-")+"-"+batchName + ".pdf";
+	}
+	else {
+	    auditReportPrintFile = auditReportPrintFile + batchName + "-auditErrors.pdf";
+	}
 	
 	File detailsFile = new File(auditReportDetailFile);
 	detailsFile.delete();
@@ -4328,6 +4479,25 @@ public class adminProcessingActivity {
 	
 	List errors = null;
 	String sql = "";
+	
+	if(orgDetails != null) {
+	    reportBody.append("<div style='padding-top:10px;'>");
+	    reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 16px;'><strong>Sending Organization:</strong></span><br />");
+	    reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 16px;'>"+orgDetails.getOrgName()+"</span><br />");
+	    reportBody.append("</div>");
+	}
+	
+	if(configDetails != null) {
+	    reportBody.append("<div style='padding-top:10px;'>");
+	    reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 16px;'><strong>Configuration Name:</strong></span><br />");
+	    reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 16px;'>"+configDetails.getconfigName()+"</span><br />");
+	    reportBody.append("</div>");
+	}
+	
+	reportBody.append("<div style='padding-top:10px;'>");
+	reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 16px;'><strong>Batch Id:</strong></span><br />");
+	reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 16px;'>"+batchName+"</span><br />");
+	reportBody.append("</div>");
 	
 	if(inboundDroppedValues != null) {
 	    if(!inboundDroppedValues.isEmpty()) {
@@ -4821,8 +4991,14 @@ public class adminProcessingActivity {
 	
 	File auditReportDetailsFile = new File(auditReportDetailFile);
 	auditReportDetailsFile.delete();
+	
+	if(configDetails != null) {
+	    return configDetails.getconfigName().toLowerCase().replaceAll(" ","-")+"-"+batchName;
+	}
+	else {
+	    return batchName + "-auditErrors";
+	}
 
-	return batchName + "-auditErrors";
     }
     
     @RequestMapping(value = "/printAuditErrorsToPDF/{file}", method = RequestMethod.GET)

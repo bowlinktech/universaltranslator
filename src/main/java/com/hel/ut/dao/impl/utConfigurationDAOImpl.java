@@ -48,9 +48,8 @@ import org.springframework.stereotype.Repository;
 import com.hel.ut.dao.utConfigurationDAO;
 import com.hel.ut.dao.utConfigurationTransportDAO;
 import com.hel.ut.model.configurationFormFields;
-import java.util.Calendar;
+import com.hel.ut.model.configurationUpdateLogs;
 import org.apache.poi.ss.usermodel.CellStyle;
-import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.DateUtil;
 
 @Repository
@@ -2244,22 +2243,56 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
     @Override
     @Transactional(readOnly = true)
     public List<utConfiguration>  getAllSourceConfigurations() throws Exception {
-	Query query = sessionFactory.getCurrentSession().createQuery("from utConfiguration where deleted = 0 and type = 1");
+	
+	String sql = "select *, (select dateCreated from configurationupdatelogs where configId = configurations.id order by id desc limit 1) as dateUpdated " 
+	    + "from configurations where deleted = 0 and type = 1";
+	
+	Query query = sessionFactory.getCurrentSession().createSQLQuery(sql)
+	    .addScalar("id", StandardBasicTypes.INTEGER)
+	    .addScalar("type", StandardBasicTypes.INTEGER)
+	    .addScalar("orgId", StandardBasicTypes.INTEGER)
+	    .addScalar("messageTypeId", StandardBasicTypes.INTEGER)
+	    .addScalar("configName", StandardBasicTypes.STRING)
+	    .addScalar("status", StandardBasicTypes.BOOLEAN)	
+	    .addScalar("dateCreated", StandardBasicTypes.TIMESTAMP)
+	    .addScalar("dateUpdated", StandardBasicTypes.TIMESTAMP)
+	    .setResultTransformer(Transformers.aliasToBean(utConfiguration.class));
+	
+	return query.list();
+	
+	//Query query = sessionFactory.getCurrentSession().createQuery("from utConfiguration where deleted = 0 and type = 1");
 
-        List<utConfiguration> sourceConfigurations = query.list();
-        return sourceConfigurations;
+        //List<utConfiguration> sourceConfigurations = query.list();
+        //return sourceConfigurations;
     }
     
     @Override
     @Transactional(readOnly = true)
     public List<utConfiguration>  getAllTargetConfigurations() throws Exception {
-	Query query = sessionFactory.getCurrentSession().createQuery("from utConfiguration where deleted = 0 and type = 2");
+	
+	String sql = "select *, (select dateCreated from configurationupdatelogs where configId = configurations.id order by id desc limit 1) as dateUpdated " 
+	    + "from configurations where deleted = 0 and type = 2";
+	
+	Query query = sessionFactory.getCurrentSession().createSQLQuery(sql)
+	    .addScalar("id", StandardBasicTypes.INTEGER)
+	    .addScalar("type", StandardBasicTypes.INTEGER)
+	    .addScalar("orgId", StandardBasicTypes.INTEGER)
+	    .addScalar("messageTypeId", StandardBasicTypes.INTEGER)
+	    .addScalar("configName", StandardBasicTypes.STRING)
+	    .addScalar("status", StandardBasicTypes.BOOLEAN)	
+	    .addScalar("dateCreated", StandardBasicTypes.TIMESTAMP)
+	    .addScalar("dateUpdated", StandardBasicTypes.TIMESTAMP)
+	    .setResultTransformer(Transformers.aliasToBean(utConfiguration.class));
+	
+	return query.list();
+	
+	/*Query query = sessionFactory.getCurrentSession().createQuery("from utConfiguration where deleted = 0 and type = 2");
 
         List<utConfiguration> targetConfigurations = query.list();
-        return targetConfigurations;
+        return targetConfigurations;*/
     }
     
-     @Override
+    @Override
     @Transactional(readOnly = false)
     public List getDTCWForDownload(String sqlStatement) throws Exception {
 	
@@ -2269,5 +2302,48 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
 	
 	return dataTranslations;
 	
+    }
+    
+    /**
+     * The 'saveConfigurationUpdateLog' function will save the configuration update log entry
+     *
+     * @param updateLog	the configurationUpdateLogs object
+     *
+     */
+    @Override
+    @Transactional(readOnly = false)
+    public void saveConfigurationUpdateLog(configurationUpdateLogs updateLog) {
+        sessionFactory.getCurrentSession().save(updateLog);
+    }
+    
+    /**
+     * The 'getLastConfigUpdateLog' function will return the last update log for the passed in configuration id.
+     *
+     * @Table	configurationUpdateLogs
+     *
+     * @param	configId
+     *
+     * @return	This function will return the latest configurationUpdateLogs object
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public configurationUpdateLogs getLastConfigUpdateLog(Integer configId) {
+       
+	String sql = "select * "
+		+ "from configurationUpdateLogs "
+		+ "where configId = :configId "
+		+ "order by dateCreated desc";
+	
+        Query query = sessionFactory.getCurrentSession().createSQLQuery(sql)
+	    .setParameter("configId", configId)
+	    .setResultTransformer(Transformers.aliasToBean(configurationUpdateLogs.class));
+	
+	if(query.list().size() > 0) {
+	    configurationUpdateLogs lastLog = (configurationUpdateLogs) query.list().get(0);
+	    return lastLog;
+	}
+	else {
+	    return null;
+	}
     }
 }

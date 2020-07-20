@@ -19,43 +19,65 @@ import org.springframework.format.annotation.DateTimeFormat;
  * @author chad
  */
 @Entity
-@Table(name = "TARGETOUTPUTRUNLOGS")
-public class targetOutputRunLogs {
+@Table(name = "configurationUpdateLogs")
+public class configurationUpdateLogs {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "ID", nullable = false)
+    @Column(name = "id;", nullable = false)
     private int id;
 
-    @Column(name = "CONFIGID", nullable = false)
+    @Column(name = "configId", nullable = false)
     private int configId;
-
+    
+    @Column(name = "userId", nullable = false)
+    private int userId;
+    
     @DateTimeFormat(pattern = "dd/MM/yyyy hh:mm:ss")
-    @Column(name = "LASTRUNTIME", nullable = true)
-    private Date lastRunTime = new Date();
+    @Column(name = "dateCreated", nullable = true)
+    private Date dateCreated = new Date();
+    
+    @Column(name = "updateMade", nullable = true)
+    private String updateMade;
 
     public int getId() {
-        return id;
+	return id;
     }
 
     public void setId(int id) {
-        this.id = id;
+	this.id = id;
     }
 
-    public int getconfigId() {
-        return configId;
+    public int getConfigId() {
+	return configId;
     }
 
-    public void setconfigId(int configId) {
-        this.configId = configId;
+    public void setConfigId(int configId) {
+	this.configId = configId;
     }
 
-    public Date getlastRunTime() {
-        return lastRunTime;
+    public int getUserId() {
+	return userId;
     }
 
-    public void setlastRunTimed(Date lastRunTime) {
-        this.lastRunTime = lastRunTime;
+    public void setUserId(int userId) {
+	this.userId = userId;
+    }
+
+    public Date getDateCreated() {
+	return dateCreated;
+    }
+
+    public void setDateCreated(Date dateCreated) {
+	this.dateCreated = dateCreated;
+    }
+
+    public String getUpdateMade() {
+	return updateMade;
+    }
+
+    public void setUpdateMade(String updateMade) {
+	this.updateMade = updateMade;
     }
 
 }

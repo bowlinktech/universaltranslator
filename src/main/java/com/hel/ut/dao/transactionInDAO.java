@@ -303,4 +303,6 @@ public interface transactionInDAO {
     List<batchUploads> findRejectedBatchesToCleanUp() throws Exception;
     
     void rejectedBatchUploadTableCleanUp(List<batchUploads> batchesToCleanup) throws Exception;
+    
+    void clearBatchActivityLogTable(Integer batchId) throws Exception;
 }

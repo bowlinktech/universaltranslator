@@ -45,6 +45,7 @@ import com.hel.ut.service.organizationManager;
 import com.hel.ut.service.messageTypeManager;
 import com.hel.ut.model.configurationTransport;
 import com.hel.ut.model.configurationTransportMessageTypes;
+import com.hel.ut.model.configurationUpdateLogs;
 import com.hel.ut.model.mainHL7Details;
 import com.hel.ut.model.mainHL7Elements;
 import com.hel.ut.model.mainHL7Segments;
@@ -89,6 +90,7 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Properties;
 import javax.annotation.Resource;
@@ -98,6 +100,7 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.security.core.Authentication;
 import org.springframework.util.FileCopyUtils;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.multipart.MultipartFile;
@@ -177,11 +180,13 @@ public class adminConfigController {
 
         Organization org;
         configurationTransport transportDetails;
-
+	
+	Calendar cal = Calendar.getInstance();
+	
         for (utConfiguration config : sourceconfigurations) {
             org = organizationmanager.getOrganizationById(config.getorgId());
             config.setOrgName(org.getOrgName());
-	   
+	    
             transportDetails = utconfigurationTransportManager.getTransportDetails(config.getId());
             if (transportDetails != null) {
                 config.settransportMethod(utconfigurationTransportManager.getTransportMethodById(transportDetails.gettransportMethodId()));
@@ -204,7 +209,7 @@ public class adminConfigController {
 	for (utConfiguration config : targetconfigurations) {
             org = organizationmanager.getOrganizationById(config.getorgId());
             config.setOrgName(org.getOrgName());
-	   
+	    
             transportDetails = utconfigurationTransportManager.getTransportDetails(config.getId());
             if (transportDetails != null) {
                 config.settransportMethod(utconfigurationTransportManager.getTransportMethodById(transportDetails.gettransportMethodId()));
@@ -256,7 +261,7 @@ public class adminConfigController {
      * @throws Exception
      */
     @RequestMapping(value = "/create", method = RequestMethod.POST)
-    public ModelAndView saveNewConfiguration(HttpSession session,@ModelAttribute(value = "configurationDetails") utConfiguration configurationDetails, BindingResult result, RedirectAttributes redirectAttr, @RequestParam String action) throws Exception {
+    public ModelAndView saveNewConfiguration(HttpSession session,@ModelAttribute(value = "configurationDetails") utConfiguration configurationDetails, BindingResult result, RedirectAttributes redirectAttr, @RequestParam String action, Authentication authentication) throws Exception {
 
         // Need to make sure the name isn't already taken for the org selected
         utConfiguration existing = utconfigurationmanager.getConfigurationByName(configurationDetails.getconfigName(), configurationDetails.getorgId());
@@ -281,6 +286,15 @@ public class adminConfigController {
         Integer id = utconfigurationmanager.createConfiguration(configurationDetails);
 
         session.setAttribute("manageconfigId", id);
+	
+	//Log the update
+	utUser userDetails = userManager.getUserByUserName(authentication.getName());
+	configurationUpdateLogs updateLog = new configurationUpdateLogs();
+	updateLog.setConfigId(id);
+	updateLog.setUserId(userDetails.getId());
+	updateLog.setUpdateMade("Configuration Created");
+	
+	utconfigurationmanager.saveConfigurationUpdateLog(updateLog);
 	
         //If the "Save" button was pressed 
         if (action.equals("save")) {
@@ -396,7 +410,7 @@ public class adminConfigController {
      *
      */
     @RequestMapping(value = "/details", method = RequestMethod.POST)
-    public ModelAndView updateConfigurationDetails(HttpSession session,@ModelAttribute(value = "configurationDetails") utConfiguration configurationDetails, BindingResult result, RedirectAttributes redirectAttr, @RequestParam String action) throws Exception {
+    public ModelAndView updateConfigurationDetails(HttpSession session,@ModelAttribute(value = "configurationDetails") utConfiguration configurationDetails, BindingResult result, RedirectAttributes redirectAttr, @RequestParam String action, Authentication authentication) throws Exception {
 
         //Need to get a list of active organizations.
         List<Organization> organizations = organizationmanager.getAllActiveOrganizations();
@@ -407,8 +421,16 @@ public class adminConfigController {
 	
         //submit the updates
 	utconfigurationmanager.updateConfiguration(configurationDetails);
+	
+	//Log the update
+	utUser userDetails = userManager.getUserByUserName(authentication.getName());
+	configurationUpdateLogs updateLog = new configurationUpdateLogs();
+	updateLog.setConfigId(configurationDetails.getId());
+	updateLog.setUserId(userDetails.getId());
+	updateLog.setUpdateMade("Configuration Details Updated");
+	
+	utconfigurationmanager.saveConfigurationUpdateLog(updateLog);
         
-
         //If the "Save" button was pressed 
         if (action.equals("save")) {
             ModelAndView mav = new ModelAndView();
@@ -667,7 +689,7 @@ public class adminConfigController {
      */
     @RequestMapping(value = "/transport", method = RequestMethod.POST)
     public ModelAndView updateTransportDetails(HttpSession session, @Valid @ModelAttribute(value = "transportDetails") configurationTransport transportDetails, BindingResult result, RedirectAttributes redirectAttr,
-            @RequestParam String action, @RequestParam(value = "domain1", required = false) String domain1
+            @RequestParam String action, @RequestParam(value = "domain1", required = false) String domain1, Authentication authentication
     ) throws Exception {
 	
 	Integer configId = 0;
@@ -693,6 +715,14 @@ public class adminConfigController {
 	
 	configurationDetails.setThreshold(transportDetails.getThreshold());
 	utconfigurationmanager.updateConfiguration(configurationDetails);
+	
+	//Log the update
+	utUser userDetails = userManager.getUserByUserName(authentication.getName());
+	configurationUpdateLogs updateLog = new configurationUpdateLogs();
+	updateLog.setConfigId(configurationDetails.getId());
+	updateLog.setUserId(userDetails.getId());
+	updateLog.setUpdateMade("Configuration Transport Method Updated");
+	utconfigurationmanager.saveConfigurationUpdateLog(updateLog);
 	
         if (transportDetails.getfileType() == 4 && configurationDetails.getType() == 2) {
             session.setAttribute("configHL7", true);
@@ -960,7 +990,7 @@ public class adminConfigController {
     @RequestMapping(value = "/messagespecs", method = RequestMethod.POST)
     public ModelAndView updateMessageSpecs(HttpSession session,
 	    @Valid @ModelAttribute(value = "messageSpecs") configurationMessageSpecs messageSpecs, 
-	    BindingResult result, RedirectAttributes redirectAttr, @RequestParam String action) throws Exception {
+	    BindingResult result, RedirectAttributes redirectAttr, @RequestParam String action, Authentication authentication) throws Exception {
 
 	
 	/**
@@ -996,6 +1026,14 @@ public class adminConfigController {
 	if(transportDetails.getfileType() == 11) {
 	    utconfigurationmanager.updateExcelConfigDetails(configDetails.getorgId(),messageSpecs);
 	}
+	
+	//Log the update
+	utUser userDetails = userManager.getUserByUserName(authentication.getName());
+	configurationUpdateLogs updateLog = new configurationUpdateLogs();
+	updateLog.setConfigId(configDetails.getId());
+	updateLog.setUserId(userDetails.getId());
+	updateLog.setUpdateMade("Configuration Message Specs Updated");
+	utconfigurationmanager.saveConfigurationUpdateLog(updateLog);
 
         /**
          * If the "Save" button was pressed
@@ -1081,7 +1119,7 @@ public class adminConfigController {
     public @ResponseBody
     Integer saveFormFields(HttpSession session,
 	    @ModelAttribute(value = "transportDetails") configurationTransport transportDetails, 
-	    RedirectAttributes redirectAttr, @RequestParam String action, @RequestParam int transportMethod, @RequestParam int errorHandling) throws Exception {
+	    RedirectAttributes redirectAttr, @RequestParam String action, @RequestParam int transportMethod, @RequestParam int errorHandling, Authentication authentication) throws Exception {
 
 	Integer configId = (Integer) session.getAttribute("manageconfigId");
 	
@@ -1126,6 +1164,14 @@ public class adminConfigController {
 		});
 	    }
 	}
+	
+	//Log the update
+	utUser userDetails = userManager.getUserByUserName(authentication.getName());
+	configurationUpdateLogs updateLog = new configurationUpdateLogs();
+	updateLog.setConfigId(configId);
+	updateLog.setUserId(userDetails.getId());
+	updateLog.setUpdateMade("Configuration Field Settings Updated");
+	utconfigurationmanager.saveConfigurationUpdateLog(updateLog);
 
         //If the "Save" button was pressed 
         if (action.equals("save")) {
@@ -1229,7 +1275,7 @@ public class adminConfigController {
      */
     @RequestMapping(value = "/getMacroDetails.do", method = RequestMethod.GET)
     public @ResponseBody
-    ModelAndView getMacroDetails(@RequestParam(value = "macroId", required = true) Integer macroId) throws Exception {
+    ModelAndView getMacroDetails(@RequestParam(value = "macroId", required = true) Integer macroId, HttpSession session) throws Exception {
 
         ModelAndView mav = new ModelAndView();
         mav.setViewName("/administrator/configurations/macroDetails");
@@ -1241,7 +1287,66 @@ public class adminConfigController {
         mav.addObject("Con1_Question", macroDetails.getcon1Question());
         mav.addObject("Con2_Question", macroDetails.getcon2Question());
         mav.addObject("populateFieldA", macroDetails.isPopulateFieldA());
+	
+	boolean questionContainsCW = false;
+	boolean con1ContainsCW = false;
+	boolean con2ContainsCW = false;
+	boolean fieldAContainsCW = false;
+	boolean fieldBContainsCW = false;
+	
+	if(macroDetails.getcon1Question() != null) {
+	    if(macroDetails.getcon1Question().contains("crosswalk")) {
+		questionContainsCW = true;
+		con1ContainsCW = true;
+		macroDetails.setCon1Question("Please select the crosswalk");
+	    }
+	}
+	
+	if(macroDetails.getcon2Question() != null) {
+	    if(macroDetails.getcon2Question().contains("crosswalk")) {
+		questionContainsCW = true;
+		con2ContainsCW = true;
+		macroDetails.setCon2Question("Please select the crosswalk");
+	    }
+	}
+	
+	if(macroDetails.getfieldAQuestion() != null) {
+	    if(macroDetails.getfieldAQuestion().contains("crosswalk")) {
+		questionContainsCW = true;
+		fieldAContainsCW = true;
+		macroDetails.setfieldAQuestion("Please select the crosswalk");
+	    }
+	}
+	
+	if(macroDetails.getfieldBQuestion() != null) {
+	    if(macroDetails.getfieldBQuestion().contains("crosswalk")) {
+		questionContainsCW = true;
+		fieldBContainsCW = true;
+		macroDetails.setfieldBQuestion("Please select the crosswalk");
+	    }
+	}
+	
+	mav.addObject("fieldA_Question", macroDetails.getfieldAQuestion());
+        mav.addObject("fieldB_Question", macroDetails.getfieldBQuestion());
+        mav.addObject("Con1_Question", macroDetails.getcon1Question());
+        mav.addObject("Con2_Question", macroDetails.getcon2Question());
+        mav.addObject("populateFieldA", macroDetails.isPopulateFieldA());
+	mav.addObject("con1ContainsCW", con1ContainsCW);
+	mav.addObject("con2ContainsCW", con2ContainsCW);
+	mav.addObject("fieldAContainsCW", fieldAContainsCW);
+	mav.addObject("fieldBContainsCW", fieldBContainsCW);
+	
+	if(questionContainsCW) {
+	   Integer configId = (Integer) session.getAttribute("manageconfigId");
+	
+	   utConfiguration configurationDetails = utconfigurationmanager.getConfigurationById(configId);
 
+	   //Return a list of available crosswalks
+	   List<Crosswalks> crosswalks = messagetypemanager.getCrosswalksForConfig(1, 0, configurationDetails.getorgId(),configurationDetails.getId()); 
+	    
+	   mav.addObject("crosswalks", crosswalks);
+	}
+	
         return mav;
     }
 
@@ -1255,7 +1360,7 @@ public class adminConfigController {
      */
     @RequestMapping(value = "/translations", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
     public @ResponseBody
-    Integer submitDataTranslations(HttpSession session, @RequestParam(value = "categoryId", required = true) Integer categoryId) throws Exception {
+    Integer submitDataTranslations(HttpSession session, @RequestParam(value = "categoryId", required = true) Integer categoryId, Authentication authentication) throws Exception {
 
         Integer configId = 0;
 	
@@ -1305,6 +1410,22 @@ public class adminConfigController {
 		}
 	    }
 	}
+	
+	//Log the update
+	utUser userDetails = userManager.getUserByUserName(authentication.getName());
+	configurationUpdateLogs updateLog = new configurationUpdateLogs();
+	updateLog.setConfigId(configId);
+	updateLog.setUserId(userDetails.getId());
+	if(categoryId == 1) {
+	    updateLog.setUpdateMade("Configuration Data Translations Updated");
+	}
+	else if(categoryId == 2) {
+	     updateLog.setUpdateMade("Configuration Pre-Process Macros Updated");
+	}
+	else {
+	     updateLog.setUpdateMade("Configuration Post-Process Macros Updated");
+	}
+	utconfigurationmanager.saveConfigurationUpdateLog(updateLog);
        
         return 1;
     }
@@ -1360,20 +1481,77 @@ public class adminConfigController {
             Map<String, String> defaultValues;
             String optionDesc;
             String optionValue;
+	    Integer cwId = 0;
 	    
             for (configurationDataTranslations translation : existingTranslations) {
+		cwId = 0;
+		
                 //Get the field name by id
                 fieldName = utconfigurationmanager.getFieldName(translation.getFieldId());
                 translation.setfieldName(fieldName);
+		
+		if (translation.getCrosswalkId() != 0) {
+		    cwId = translation.getCrosswalkId();
+		}
+		
+		//Get the macro name by id
+                if (translation.getMacroId() > 0) {
+                    Macros macroDetails = utconfigurationmanager.getMacroById(translation.getMacroId());
+                    macroName = macroDetails.getMacroName();
+                    if (macroName.contains("DATE")) {
+                        macroName = macroDetails.getMacroName()+ " " + macroDetails.getdateDisplay();
+                    }
+                    translation.setMacroName(macroName);
+		    
+		    if(macroDetails.getcon1Question() != null) {
+			if(macroDetails.getcon1Question().contains("crosswalk")) {
+			    if(translation.getConstant1() != null) {
+				if(!"".equals(translation.getConstant1())) {
+				    cwId = Integer.parseInt(translation.getConstant1());
+				}
+			    }
+			}
+		    }
 
+		    if(macroDetails.getcon2Question() != null) {
+			if(macroDetails.getcon2Question().contains("crosswalk")) {
+			    if(translation.getConstant2() != null) {
+				if(!"".equals(translation.getConstant2())) {
+				    cwId = Integer.parseInt(translation.getConstant2());
+				}
+			    }
+			}
+		    }
+
+		    if(macroDetails.getfieldAQuestion() != null) {
+			if(macroDetails.getfieldAQuestion().contains("crosswalk")) {
+			    if(translation.getFieldA() != null) {
+				if(!"".equals(translation.getFieldA())) {
+				    cwId = Integer.parseInt(translation.getFieldA());
+				}
+			    }
+			}
+		    }
+
+		    if(macroDetails.getfieldBQuestion() != null) {
+			if(macroDetails.getfieldBQuestion().contains("crosswalk")) {
+			    if(translation.getFieldB() != null) {
+				if(!"".equals(translation.getFieldB())) {
+				    cwId = Integer.parseInt(translation.getFieldB());
+				}
+			    }
+			}
+		    }
+                }
+		
                 //Get the crosswalk name by id
-                if (translation.getCrosswalkId() != 0) {
+                if (cwId > 0) {
                     defaultValues = new HashMap<>();
-                    crosswalkName = messagetypemanager.getCrosswalkName(translation.getCrosswalkId());
+                    crosswalkName = messagetypemanager.getCrosswalkName(cwId);
                     translation.setcrosswalkName(crosswalkName);
 
                     /* Get values of crosswalk */
-                    List crosswalkdata = messagetypemanager.getCrosswalkData(translation.getCrosswalkId());
+                    List crosswalkdata = messagetypemanager.getCrosswalkData(cwId);
 
                     Iterator cwDataIt = crosswalkdata.iterator();
                     while (cwDataIt.hasNext()) {
@@ -1388,15 +1566,6 @@ public class adminConfigController {
                     translation.setDefaultValues(defaultValues);
                 }
 
-                //Get the macro name by id
-                if (translation.getMacroId() > 0) {
-                    Macros macroDetails = utconfigurationmanager.getMacroById(translation.getMacroId());
-                    macroName = macroDetails.getMacroName();
-                    if (macroName.contains("DATE")) {
-                        macroName = macroDetails.getMacroName()+ " " + macroDetails.getdateDisplay();
-                    }
-                    translation.setMacroName(macroName);
-                }
 
                 translations.add(translation);
             }
@@ -1476,7 +1645,6 @@ public class adminConfigController {
         }
         if (cwId == null) {
             cwId = 0;
-            cwText = null;
         }
 	
         configurationDataTranslations translation = new configurationDataTranslations();
@@ -1685,12 +1853,17 @@ public class adminConfigController {
     /**
      * The '/scheduling' POST request will submit the scheduling settings for the selected utConfiguration.
      *
+     * @param session
      * @param scheduleDetails The object that will hold the scheduling form fields
+     * @param redirectAttr
+     * @param action
+     * @param authentication
      *
      * @return This method will redirect the user back to the scheduling form page.
+     * @throws java.lang.Exception
      */
     @RequestMapping(value = "/scheduling", method = RequestMethod.POST)
-    public ModelAndView submitConfigurationSchedules(HttpSession session,@ModelAttribute(value = "scheduleDetails") configurationSchedules scheduleDetails, RedirectAttributes redirectAttr, @RequestParam String action) throws Exception {
+    public ModelAndView submitConfigurationSchedules(HttpSession session,@ModelAttribute(value = "scheduleDetails") configurationSchedules scheduleDetails, RedirectAttributes redirectAttr, @RequestParam String action, Authentication authentication) throws Exception {
 
 	Integer configId = (Integer) session.getAttribute("manageconfigId");
 	
@@ -1729,6 +1902,14 @@ public class adminConfigController {
         }
 
         utconfigurationmanager.saveSchedule(scheduleDetails);
+	
+	//Log the update
+	utUser userDetails = userManager.getUserByUserName(authentication.getName());
+	configurationUpdateLogs updateLog = new configurationUpdateLogs();
+	updateLog.setConfigId(configId);
+	updateLog.setUserId(userDetails.getId());
+	updateLog.setUpdateMade("Configuration Schedule Updated");
+	utconfigurationmanager.saveConfigurationUpdateLog(updateLog);
 
         redirectAttr.addFlashAttribute("savedStatus", "updated");
 	
@@ -1912,9 +2093,13 @@ public class adminConfigController {
 
     /**
      * The '/HL7' POST request save all the hl7 custom settings
+     * @param HL7Details
+     * @param redirectAttr
+     * @return 
+     * @throws java.lang.Exception
      */
     @RequestMapping(value = "/HL7", method = RequestMethod.POST)
-    public ModelAndView saveHL7Customization(@ModelAttribute(value = "HL7Details") HL7Details HL7Details, RedirectAttributes redirectAttr) throws Exception {
+    public ModelAndView saveHL7Customization(@ModelAttribute(value = "HL7Details") HL7Details HL7Details, RedirectAttributes redirectAttr, Authentication authentication) throws Exception {
 
         /* Update the details of the hl7 */
         utconfigurationmanager.updateHL7Details(HL7Details);
@@ -1956,6 +2141,14 @@ public class adminConfigController {
         } catch (Exception e) {
 
         }
+	
+	//Log the update
+	utUser userDetails = userManager.getUserByUserName(authentication.getName());
+	configurationUpdateLogs updateLog = new configurationUpdateLogs();
+	updateLog.setConfigId(HL7Details.getconfigId());
+	updateLog.setUserId(userDetails.getId());
+	updateLog.setUpdateMade("Configuration HL7 section Updated");
+	utconfigurationmanager.saveConfigurationUpdateLog(updateLog);
 
         redirectAttr.addFlashAttribute("savedStatus", "updated");
         ModelAndView mav = new ModelAndView(new RedirectView("HL7"));
@@ -1967,7 +2160,10 @@ public class adminConfigController {
      * The '/newHL7Segment' GET request will be used to display the blank new HL7 Segment screen (In a modal)
      *
      *
+     * @param hl7Id
+     * @param nextPos
      * @return	The HL7 Segment blank form page
+     * @throws java.lang.Exception
      *
      * @Objects	An object that will hold all the form fields of a new HL7 Segment
      *
@@ -1992,7 +2188,6 @@ public class adminConfigController {
      * The '/saveHL7Segment' POST request will handle submitting the new HL7 Segment
      *
      * @param HL7SegmentDetails	The object containing the HL7 Segment form fields
-     * @param result	The validation result
      * @param redirectAttr	The variable that will hold values that can be read after the redirect
      *
      * @return	Will return the HL7 Customization page on "Save"
@@ -2013,7 +2208,11 @@ public class adminConfigController {
      * The '/newHL7Element' GET request will be used to display the blank new HL7 Segment Element screen (In a modal)
      *
      *
+     * @param hl7Id
+     * @param segmentId
+     * @param nextPos
      * @return	The HL7 Segment Element blank form page
+     * @throws java.lang.Exception
      *
      * @Objects	An object that will hold all the form fields of a new HL7 Segment Element
      *
@@ -2039,7 +2238,6 @@ public class adminConfigController {
      * The '/saveHL7Element' POST request will handle submitting the new HL7 Segment Element
      *
      * @param HL7ElementDetails	The object containing the HL7 Segment Element form fields
-     * @param result	The validation result
      * @param redirectAttr	The variable that will hold values that can be read after the redirect
      *
      * @return	Will return the HL7 Customization page on "Save"
@@ -2060,7 +2258,11 @@ public class adminConfigController {
      * The '/newHL7Component' GET request will be used to display the blank new HL7 Element Component screen (In a modal)
      *
      *
+     * @param session
+     * @param elementId
+     * @param nextPos
      * @return	The HL7 Element Component blank form page
+     * @throws java.lang.Exception
      *
      * @Objects	An object that will hold all the form fields of a new HL7 Element Component
      *
@@ -2095,7 +2297,6 @@ public class adminConfigController {
      * The '/saveHL7Component' POST request will handle submitting the new HL7 Segment Element
      *
      * @param HL7ComponentDetails The object containing the HL7 Element Component form fields
-     * @param result	The validation result
      * @param redirectAttr	The variable that will hold values that can be read after the redirect
      *
      * @return	Will return the HL7 Customization page on "Save"
@@ -2363,7 +2564,9 @@ public class adminConfigController {
     /**
      * The '/createNewCCDElement' function will handle displaying the create CCD Element screen.
      *
+     * @param session
      * @return This function will display the new ccd element overlay
+     * @throws java.lang.Exception
      */
     @RequestMapping(value = "/createNewCCDElement", method = RequestMethod.GET)
     public @ResponseBody
@@ -2443,10 +2646,10 @@ public class adminConfigController {
     /**
      * The '/changeConnectionStatus.do' POST request will update the passed in connection status.
      *
-     * @param connectionId The id for the connection to update the status for
-     * @param statusVal The new status for the connection
      *
+     * @param transportId
      * @return The method will return a 1 back to the calling ajax function.
+     * @throws java.lang.Exception
      */
     @RequestMapping(value = "/getDomainSenders.do", method = RequestMethod.POST)
     public @ResponseBody
@@ -2464,9 +2667,11 @@ public class adminConfigController {
     /**
      * The '/saveDomainSenders.do' POST request will update or add new senders.
      *
-     * @param configurationWebServiceFields It will have the transportId and the list of sender domains
      *
+     * @param request
+     * @param cwsf
      * @return The method will an updated configurationWebServiceFields containing new sender domains
+     * @throws java.lang.Exception
      */
     @RequestMapping(value = "/saveDomainSenders.do", method = RequestMethod.POST)
     public @ResponseBody
@@ -2680,7 +2885,7 @@ public class adminConfigController {
      * The '/getSourceConfigurationFields' GET request will return a list of available fields for the 
      * passed in HEL registry configuration
      *
-     * @param helConfigId
+     * @param sourceConfigId
      * @return The function will return a list of available fields for the passed in registry configurations
      * @throws java.lang.Exception
      */
@@ -2697,6 +2902,9 @@ public class adminConfigController {
     
     /**
      * The 'deleteConfiguration.do' method will makke the passed in configuration as deleted.
+     * @param configId
+     * @return 
+     * @throws java.lang.Exception
      */
     @RequestMapping(value = "/deleteConfiguration.do", method = RequestMethod.POST)
     public @ResponseBody
@@ -2827,6 +3035,7 @@ public class adminConfigController {
      * @param crosswalkDetails
      * @param result
      * @param redirectAttr
+     * @param orgId
      * @return 
      * @throws java.lang.Exception 
      * @Return The function will either return the crosswalk form on error or redirect to the data translation page.
@@ -2856,7 +3065,7 @@ public class adminConfigController {
             orgId = 0;
         }
 
-        Long nameExists = (Long) messagetypemanager.checkCrosswalkName(name, orgId);
+        Long nameExists = messagetypemanager.checkCrosswalkName(name, orgId);
 
         return nameExists;
 
@@ -3328,7 +3537,7 @@ public class adminConfigController {
 	Organization orgDetails = organizationmanager.getOrganizationById(configDetails.getorgId());
 	
 	String configDetailFile = "/tmp/configDetails-" + configId + ".txt";
-	String configPrintFile = "/tmp/UT-configuration-" + configId + ".pdf";
+	String configPrintFile = "/tmp/" + configDetails.getconfigName().toLowerCase().replaceAll(" ", "-") + ".pdf";
 	
 	File detailsFile = new File(configDetailFile);
 	detailsFile.delete();
@@ -3373,7 +3582,7 @@ public class adminConfigController {
 	File configDetailsFile = new File(configDetailFile);
 	configDetailsFile.delete();
 
-	return "UT-configuration-" + configId;
+	return configDetails.getconfigName().toLowerCase().replaceAll(" ", "-");
     }
 
     
@@ -3496,7 +3705,7 @@ public class adminConfigController {
 	    DateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmm");
 	    Date date = new Date();
 
-	    fileName = dateFormat.format(date) + "-" + configDetails.getconfigName().replace(" ", "-");
+	    fileName = dateFormat.format(date) + "-" + configDetails.getconfigName().toLowerCase().replace(" ", "-");
 
 	    File file = new File("/tmp/" + fileName + ".xlsx");
 	    file.createNewFile();

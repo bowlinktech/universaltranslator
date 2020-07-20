@@ -66,7 +66,7 @@
 var chartSpeed;*/
 
 require(['./main'], function () {
-	
+    
     getGenericMessages();
     getInboundMessages();
     getOutboundMessages();
@@ -131,6 +131,23 @@ function getGenericMessages() {
 }
 
 function getInboundMessages() {
+    
+    //CHeck if daylight savings time
+    Date.prototype.stdTimezoneOffset = function () {
+        var jan = new Date(this.getFullYear(), 0, 1);
+        var jul = new Date(this.getFullYear(), 6, 1);
+        return Math.max(jan.getTimezoneOffset(), jul.getTimezoneOffset());
+    }
+
+    Date.prototype.isDstObserved = function () {
+        return this.getTimezoneOffset() < this.stdTimezoneOffset();
+    }
+
+    var today = new Date();
+    var isDST = 0;
+    if (today.isDstObserved()) { 
+       isDST = 1;
+    }
   
     var fromDate = $('.daterange span').attr('rel');
     var toDate = $('.daterange span').attr('rel2');
@@ -266,7 +283,12 @@ function getInboundMessages() {
                     if(row.startDateTime != null) {
                         dateC = new Date(row.startDateTime);
                         minutes = dateC.getMinutes();
-                        hours = dateC.getHours()-1;
+                        if(isDST == 1) {
+                            hours = dateC.getHours() -1;
+                        }
+                        else {
+                            hours = dateC.getHours();
+                        }
                         ampm =  hours >= 12 ? 'pm' : 'am';
                         hours = hours % 12;
                         hours = hours ? hours : 12;
@@ -278,7 +300,12 @@ function getInboundMessages() {
                     if(row.endDateTime != null) {
                         dateC = new Date(row.endDateTime);
                         minutes = dateC.getMinutes();
-                        hours = dateC.getHours()-1;
+                        if(isDST == 1) {
+                            hours = dateC.getHours() -1;
+                        }
+                        else {
+                            hours = dateC.getHours();
+                        }
                         ampm =  hours >= 12 ? 'pm' : 'am';
                         hours = hours % 12;
                         hours = hours ? hours : 12;
@@ -443,6 +470,23 @@ function getInboundMessages() {
 
 function getOutboundMessages() {
     
+    //CHeck if daylight savings time
+    Date.prototype.stdTimezoneOffset = function () {
+        var jan = new Date(this.getFullYear(), 0, 1);
+        var jul = new Date(this.getFullYear(), 6, 1);
+        return Math.max(jan.getTimezoneOffset(), jul.getTimezoneOffset());
+    }
+
+    Date.prototype.isDstObserved = function () {
+        return this.getTimezoneOffset() < this.stdTimezoneOffset();
+    }
+
+    var today = new Date();
+    var isDST = 0;
+    if (today.isDstObserved()) { 
+       isDST = 1;
+    }
+    
     var fromDate = $('.daterange span').attr('rel');
     var toDate = $('.daterange span').attr('rel2');
     
@@ -564,11 +608,18 @@ function getOutboundMessages() {
 		    minutes = minutes < 10 ? '0'+minutes : minutes;
                     
                     var myDateFormatted = '';
-		    
+                    
+                    
+                    
                     if(row.startDateTime != null) {
                         dateC = new Date(row.startDateTime);
                         minutes = dateC.getMinutes();
-                        hours = dateC.getHours()-1;
+                        if(isDST == 1) {
+                            hours = dateC.getHours() -1;
+                        }
+                        else {
+                            hours = dateC.getHours();
+                        }
                         ampm =  hours >= 12 ? 'pm' : 'am';
                         hours = hours % 12;
                         hours = hours ? hours : 12;
@@ -580,7 +631,12 @@ function getOutboundMessages() {
                     if(row.endDateTime != null) {
                         dateC = new Date(row.endDateTime);
                         minutes = dateC.getMinutes();
-                        hours = dateC.getHours()-1;
+                        if(isDST == 1) {
+                            hours = dateC.getHours() -1;
+                        }
+                        else {
+                            hours = dateC.getHours();
+                        }
                         ampm =  hours >= 12 ? 'pm' : 'am';
                         hours = hours % 12;
                         hours = hours ? hours : 12;
