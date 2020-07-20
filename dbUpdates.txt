@@ -132,3 +132,17 @@ END IF;
 
  
 END
+
+CREATE TABLE `universaltranslator`.`configurationupdatelogs` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `configId` INT NOT NULL,
+  `userId` INT NOT NULL,
+  `dateCreated` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE INDEX `id_UNIQUE` (`id` ASC));
+
+ALTER TABLE `universaltranslator`.`configurationupdatelogs` 
+ADD INDEX `configid` (`configId` ASC);
+
+ALTER TABLE `universaltranslator`.`configurationupdatelogs` 
+ADD COLUMN `updateMade` VARCHAR(500) NULL AFTER `dateCreated`;
