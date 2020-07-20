@@ -1734,4 +1734,13 @@ public class transactionOutDAOImpl implements transactionOutDAO {
 	    return 0; //we return error count of 1 when error
 	}
     }
+    
+    @Override
+    @Transactional(readOnly = false)
+    public void clearBatchActivityLogTable(Integer batchDownloadId) {
+	Query deletActivityLog = sessionFactory.getCurrentSession().createQuery("delete from batchdownloadactivity where batchDownloadId = :batchDownloadId");
+	deletActivityLog.setParameter("batchDownloadId", batchDownloadId);
+
+	deletActivityLog.executeUpdate();
+    }
 }

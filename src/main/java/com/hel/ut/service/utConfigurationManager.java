@@ -18,6 +18,7 @@ import com.hel.ut.model.configurationDataTranslations;
 import com.hel.ut.model.configurationExcelDetails;
 import com.hel.ut.model.configurationMessageSpecs;
 import com.hel.ut.model.configurationSchedules;
+import com.hel.ut.model.configurationUpdateLogs;
 import com.hel.ut.model.watchlist;
 import com.hel.ut.model.watchlistEntry;
 import java.util.Date;
@@ -216,5 +217,7 @@ public interface utConfigurationManager {
     void updateConfigurationDirectories(List<Integer> configIds, String oldCleanURL, String newCleanURL) throws Exception;
     
     void generateMissingCrosswalk(String cleanURL, String fileName) throws Exception;
+    
+    void saveConfigurationUpdateLog(configurationUpdateLogs updateLog) throws Exception;
     
 }

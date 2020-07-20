@@ -343,4 +343,6 @@ public interface transactionInManager {
     Integer getTotalErroredRows(Integer batchUploadId) throws Exception;
     
     List<batchErrorSummary> getBatchSystemErrorSummary(int batchId, String inboundOutbound) throws Exception;
+    
+    void clearBatchActivityLogTable(Integer batchId) throws Exception;
 }

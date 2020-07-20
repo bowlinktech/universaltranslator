@@ -208,33 +208,51 @@ require(['./main'], function () {
 
     //Function that will take in the macro details
     $(document).on('click', '.submitMacroDetailsButton', function () {
+        var noErrors = 1;
+        
         var fieldA = $('#fieldAQuestion').val();
         var fieldB = $('#fieldBQuestion').val();
         var con1 = $('#Con1Question').val();
         var con2 = $('#Con2Question').val();
 
-        //Clear all fields
-        $('#fieldA').val("");
-        $('#fieldB').val("");
-        $('#constant1').val("");
-        $('#constant2').val("");
+        if(noErrors == 1) {
+            //Clear all fields
+            $('#fieldA').val("");
+            $('#fieldB').val("");
+            $('#constant1').val("");
+            $('#constant2').val("");
+            
+            if($('#Con1QuestionSelect').val() !== 'undefined') {
+                $('#constant1').attr('rel', $('#Con1Question option:selected').html());
+            }
+            if($('#Con2QuestionSelect').val() !== 'undefined') {
+                $('#constant2').attr('rel', $('#Con2Question option:selected').html());
+            }
+            if($('#fieldAQuestionSelect').val() !== 'undefined') {
+                $('#fieldA').attr('rel', $('#fieldAQuestion option:selected').html());
+            }
+            if($('#fieldBQuestionSelect').val() !== 'undefined') {
+                $('#fieldB').attr('rel', $('#fieldBQuestion option:selected').html());
+            }
+            
+            if (fieldA) {
+                $('#fieldA').val(fieldA);
+            }
+            if (fieldB) {
+                $('#fieldB').val(fieldB);
+            }
+            if (con1) {
+                $('#constant1').val(con1);
+            }
+            if (con2) {
+                $('#constant2').val(con2);
+            }
 
-        if (fieldA) {
-            $('#fieldA').val(fieldA);
+            //Close the modal window
+            $('#macroModal').modal('toggle');
+            $('#macroModal').modal('hide'); 
         }
-        if (fieldB) {
-            $('#fieldB').val(fieldB);
-        }
-        if (con1) {
-            $('#constant1').val(con1);
-        }
-        if (con2) {
-            $('#constant2').val(con2);
-        }
-
-        //Close the modal window
-        $('#macroModal').modal('toggle');
-        $('#macroModal').modal('hide');
+        
     });
 
 
@@ -418,7 +436,23 @@ require(['./main'], function () {
         var selectedCWText = $('#crosswalk').find(":selected").text();
         var selectedMacro = $('#macro').val();
         var selectedMacroText = $('#macro').find(":selected").text();
-
+        
+        if (typeof $('#constant1').attr('rel') !== 'undefined') {
+            selectedCWText = $('#constant1').attr('rel');
+        }
+        if (typeof $('#constant2').attr('rel') !== 'undefined') {
+            selectedCWText = $('#constant2').attr('rel');
+        }
+        if (typeof $('#constant1').attr('rel') !== 'undefined') {
+            selectedCWText = $('#constant1').attr('rel');
+        }
+        if (typeof $('#fieldA').attr('rel') !== 'undefined') {
+            selectedCWText = $('#fieldA').attr('rel');
+        }
+        if (typeof $('#fieldB').attr('rel') !== 'undefined') {
+            selectedCWText = $('#fieldB').attr('rel');
+        }
+        
         //Remove all error classes and error messages
         $('div').removeClass("has-error");
         $('span').html("");
@@ -462,6 +496,10 @@ require(['./main'], function () {
                     $('#fieldB').val("");
                     $('#constant1').val("");
                     $('#constant2').val("");
+                    $("#fieldA").removeAttr("rel");
+                    $("#fieldB").removeAttr("rel");
+                    $("#constant1").removeAttr("rel");
+                    $("#constant2").removeAttr("rel");
                 }
             });
         }

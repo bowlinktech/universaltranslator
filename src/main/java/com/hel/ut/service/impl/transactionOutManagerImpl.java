@@ -2761,4 +2761,9 @@ public class transactionOutManagerImpl implements transactionOutManager {
     public void updateMissingRequiredFieldStatus(Integer batchDownloadId) throws Exception {
 	transactionOutDAO.updateMissingRequiredFieldStatus(batchDownloadId);
     }
+    
+    @Override
+    public void clearBatchActivityLogTable(Integer batchId) throws Exception {
+	transactionInDAO.clearBatchActivityLogTable(batchId);
+    }
 }

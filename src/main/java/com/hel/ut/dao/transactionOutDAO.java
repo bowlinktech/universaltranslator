@@ -142,4 +142,6 @@ public interface transactionOutDAO {
     void updateMissingRequiredFieldStatus(Integer batchDownloadId) throws Exception;
     
     Integer genericValidation(configurationFormFields cff, Integer validationTypeId, Integer batchDownloadId, String regEx);
+    
+    void clearBatchActivityLogTable(Integer batchId) throws Exception;
 }
