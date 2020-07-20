@@ -62,8 +62,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import com.hel.ut.service.utConfigurationTransportManager;
-import java.text.DateFormat;
-import org.apache.poi.ss.usermodel.DateUtil;
+import org.hibernate.type.DateType;
 
 /**
  *
@@ -3292,7 +3291,8 @@ public class transactionInDAOImpl implements transactionInDAO {
 		+ "startDateTime,endDateTime,statusValue, endUserDisplayText, orgName, case when dmConfigKeyWord != '' then 'File Drop (Direct)' when transportMethod != 'Online Form' && restAPIUsername != '' then 'File Drop (Rest)' else transportMethod end as transportMethod, totalMessages, 'On Demand' as uploadType, dmConfigKeyWord "
 		+ "FROM ("
 		+ "select a.id, a.orgId, a.utBatchName, a.transportMethodId, a.originalFileName, a.totalRecordCount, a.errorRecordCount, b.configName, b.threshold, b.configurationType as inboundBatchConfigurationType,"
-		+ "a.statusId, a.dateSubmitted, a.startDateTime, a.endDateTime, c.displayCode as statusValue, c.endUserDisplayText as endUserDisplayText,d.orgName, e.transportMethod,"
+		+ "a.statusId, a.dateSubmitted, "
+		+ "a.startDateTime, a.endDateTime, c.displayCode as statusValue, c.endUserDisplayText as endUserDisplayText,d.orgName, e.transportMethod,"
 		+ "(select count(id) as total from batchuploads where "+dateSQLStringTotal+") as totalMessages, "
 		+ "(select count(distinct rowNumber) as totalRows from batchuploadauditerrors where batchUploadId = a.id) as totalErrorRows, "
 		+ "f.dmConfigKeyWord, f.restAPIUsername "
@@ -3624,6 +3624,15 @@ public class transactionInDAOImpl implements transactionInDAO {
 		}
 	    }
 	}
+    }
+    
+    @Override
+    @Transactional(readOnly = false)
+    public void clearBatchActivityLogTable(Integer batchUploadId) {
+	Query deletActivityLog = sessionFactory.getCurrentSession().createQuery("delete from batchuploadactivity where batchUploadId = :batchUploadId");
+	deletActivityLog.setParameter("batchUploadId", batchUploadId);
+
+	deletActivityLog.executeUpdate();
     }
 	
 }

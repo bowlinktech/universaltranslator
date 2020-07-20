@@ -30,6 +30,7 @@
                                 <input type="hidden" name="fromDate" id="fromDate" rel="<fmt:formatDate value="${fromDate}" type="date" pattern="MM/dd/yyyy" />" rel2="<fmt:formatDate value="${originalDate}" type="date" pattern="MM/dd/yyyy" />" value="${fromDate}" />
                                 <input type="hidden" name="toDate" id="toDate" rel="<fmt:formatDate value="${toDate}" type="date" pattern="MM/dd/yyyy" />" value="${toDate}" />
                                 <input type="hidden" name="page" id="page" value="${currentPage}" />
+                                <input type="hidden" name="DTS" id="DTS" value="${DTS}" />
                             </div>
                         </form:form>
                     </div>

@@ -92,6 +92,23 @@ require(['./main'], function () {
 
 function populateMessages(fromDate,toDate) {
     
+    //CHeck if daylight savings time
+    Date.prototype.stdTimezoneOffset = function () {
+        var jan = new Date(this.getFullYear(), 0, 1);
+        var jul = new Date(this.getFullYear(), 6, 1);
+        return Math.max(jan.getTimezoneOffset(), jul.getTimezoneOffset());
+    }
+
+    Date.prototype.isDstObserved = function () {
+        return this.getTimezoneOffset() < this.stdTimezoneOffset();
+    }
+
+    var today = new Date();
+    var isDST = 0;
+    if (today.isDstObserved()) { 
+       isDST = 1;
+    }
+    
     var batchName = $('#batchName').val();
     
     var userRole = $('#userRole').val();
@@ -228,17 +245,26 @@ function populateMessages(fromDate,toDate) {
 		"render": function ( data, type, row, meta ) {
 		    var dateC = new Date(data);
 		    var minutes = dateC.getMinutes();
-		    var hours = dateC.getHours();
+                    var hours = dateC.getHours();
 		    var ampm =  hours >= 12 ? 'pm' : 'am';
 		    hours = hours % 12;
 		    hours = hours ? hours : 12;
 		    minutes = minutes < 10 ? '0'+minutes : minutes;
 		    var myDateFormatted = ((dateC.getMonth()*1)+1)+'/'+dateC.getDate()+'/'+dateC.getFullYear() + ' ' + hours+':'+minutes+ ' ' + ampm;
                    
+                    
                     if(row.startDateTime != null) {
+                        
                         dateC = new Date(row.startDateTime);
                         minutes = dateC.getMinutes();
-                        hours = dateC.getHours()-1;
+                        
+                        if(isDST == 1) {
+                            hours = dateC.getHours() -1;
+                        }
+                        else {
+                            hours = dateC.getHours();
+                        }
+                        
                         ampm =  hours >= 12 ? 'pm' : 'am';
                         hours = hours % 12;
                         hours = hours ? hours : 12;
@@ -250,7 +276,12 @@ function populateMessages(fromDate,toDate) {
                     if(row.endDateTime != null) {
                         dateC = new Date(row.endDateTime);
                         minutes = dateC.getMinutes();
-                        hours = dateC.getHours()-1;
+                        if(isDST == 1) {
+                            hours = dateC.getHours() -1;
+                        }
+                        else {
+                            hours = dateC.getHours();
+                        }
                         ampm =  hours >= 12 ? 'pm' : 'am';
                         hours = hours % 12;
                         hours = hours ? hours : 12;

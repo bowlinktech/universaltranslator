@@ -84,12 +84,47 @@ require(['./main'], function () {
         }
 
     });
+    
+    $(document).ready(function() {
+         var isDST = $('#DTS').val();
+         
+         if(isDST === '') {
+            //CHeck if daylight savings time
+            Date.prototype.stdTimezoneOffset = function () {
+                var jan = new Date(this.getFullYear(), 0, 1);
+                var jul = new Date(this.getFullYear(), 6, 1);
+                return Math.max(jan.getTimezoneOffset(), jul.getTimezoneOffset());
+            }
+
+            Date.prototype.isDstObserved = function () {
+                return this.getTimezoneOffset() < this.stdTimezoneOffset();
+            }
+
+            var today = new Date();
+            var isDST = 0;
+            if (today.isDstObserved()) { 
+               isDST = 1;
+            }
+            $('#DTS').val(isDST);
+            searchByDateRange();
+         }
+         
+    });
+    
 });
 
 
 function searchByDateRange() {
     var fromDate = $('.daterange span').attr('rel');
     var toDate = $('.daterange span').attr('rel2');
+    
+    if(!fromDate) {
+       fromDate = $('#fromDate').attr('rel');
+   }
+   
+   if(!toDate) {
+       toDate = $('#toDate').attr('rel');
+   }
 
     $('#fromDate').val(fromDate);
     $('#toDate').val(toDate);

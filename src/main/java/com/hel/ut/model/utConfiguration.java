@@ -27,6 +27,9 @@ public class utConfiguration {
     @Transient
     private List<configurationConnection> connections = null;
     
+    @Transient
+    private Date dateUpdated = null;
+    
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "ID", nullable = false)
@@ -208,6 +211,14 @@ public class utConfiguration {
 
     public void setFileDropLocation(String fileDropLocation) {
 	this.fileDropLocation = fileDropLocation;
+    }
+
+    public Date getDateUpdated() {
+	return dateUpdated;
+    }
+
+    public void setDateUpdated(Date dateUpdated) {
+	this.dateUpdated = dateUpdated;
     }
 
     
