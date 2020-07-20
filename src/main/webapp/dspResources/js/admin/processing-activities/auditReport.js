@@ -331,13 +331,13 @@ require(['./main'], function () {
 
         var batchName = $(this).attr('rel');
 
-        if(confirm("Are you sure you want to remove this inbound batch?")) {
+        if(confirm("Are you sure you want to remove this batch?")) {
 
             $('body').overlay({
                 glyphicon : 'floppy-disk',
                 message : 'Deleting...'
             });
-
+            
             $.ajax({
                 url: '../../deleteBatch.do',
                 data: {
@@ -345,10 +345,20 @@ require(['./main'], function () {
                 },
                 type: 'POST',
                 success: function(data) {
-                   location.reload();
+                   if(window.location.href.indexOf('invalidIn') > -1) {
+                        window.location.href = '/administrator/processing-activity/invalidIn';
+                   }
+                   else if(window.location.href.indexOf('inbound') > -1) {
+                        window.location.href = '/administrator/processing-activity/inbound';
+                   }
+                   else if(window.location.href.indexOf('outbound') > -1) {
+                        window.location.href = '/administrator/processing-activity/outbound';
+                   }
+                   else if(window.location.href.indexOf('rejected') > -1) {
+                        window.location.href = '/administrator/processing-activity/rejected';
+                   }
                 }
             });
-
         }
 
     });

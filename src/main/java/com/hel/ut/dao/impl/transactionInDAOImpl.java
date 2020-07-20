@@ -62,8 +62,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import com.hel.ut.service.utConfigurationTransportManager;
-import java.text.DateFormat;
-import org.apache.poi.ss.usermodel.DateUtil;
+import org.hibernate.type.DateType;
 
 /**
  *
@@ -486,9 +485,86 @@ public class transactionInDAOImpl implements transactionInDAO {
     @Override
     @Transactional(readOnly = true)
     public List<batchUploads> getAllRejectedBatches(Date fromDate, Date toDate, Integer fetchSize) throws Exception {
+	
+	String dateSQLString = "";
+	String dateSQLStringTotal = "";
+	
+	if(fromDate !=  null && toDate != null) {
+	    
+	    if(!"".equals(fromDate)) {
+		dateSQLString += "a.dateSubmitted between '"+mysqlDateFormat.format(fromDate)+" 00:00:00' ";
+		dateSQLStringTotal += "dateSubmitted between '"+mysqlDateFormat.format(fromDate)+" 00:00:00' ";
+
+		if(!"".equals(toDate)) {
+		    dateSQLString += "AND '"+mysqlDateFormat.format(toDate)+" 23:59:59'";
+		    dateSQLStringTotal += "AND '"+mysqlDateFormat.format(toDate)+" 23:59:59'";
+		}
+		else {
+		    dateSQLString += "AND '"+mysqlDateFormat.format(fromDate)+" 23:59:59'";
+		    dateSQLStringTotal += "AND '"+mysqlDateFormat.format(fromDate)+" 23:59:59'";
+		}
+	    }
+	    else {
+		if(!"".equals(toDate)) {
+		    dateSQLString += "a.dateSubmitted between '"+mysqlDateFormat.format(toDate)+" 00:00:00' ";
+		    dateSQLString += "AND '"+mysqlDateFormat.format(toDate)+" 23:59:59'";
+		}
+		else {
+		    dateSQLString += "a.id > 0";
+		}
+	    }
+	}
+	else {
+	    dateSQLString += "a.id > 0";
+	}
+	
+	String sqlQuery = "select id, orgId, utBatchName, transportMethodId, originalFileName, totalRecordCount, errorRecordCount, totalErrorRows, configName, threshold, inboundBatchConfigurationType, statusId, dateSubmitted,"
+	    + "startDateTime,endDateTime,statusValue, endUserDisplayText, orgName, case when dmConfigKeyWord != '' then 'File Drop (Direct)' when transportMethod != 'Online Form' && restAPIUsername != '' then 'File Drop (Rest)' else transportMethod end as transportMethod, totalMessages, 'On Demand' as uploadType, dmConfigKeyWord "
+	    + "FROM ("
+	    + "select a.id, a.orgId, a.utBatchName, a.transportMethodId, a.originalFileName, a.totalRecordCount, a.errorRecordCount, b.configName, b.threshold, b.configurationType as inboundBatchConfigurationType,"
+	    + "a.statusId, a.dateSubmitted, a.startDateTime, a.endDateTime, c.displayCode as statusValue, c.endUserDisplayText as endUserDisplayText,d.orgName, e.transportMethod,"
+	    + "(select count(id) as total from batchuploads where "+dateSQLStringTotal+") as totalMessages, "
+	    + "(select count(distinct rowNumber) as totalRows from batchuploadauditerrors where batchUploadId = a.id) as totalErrorRows, "
+	    + "f.dmConfigKeyWord, f.restAPIUsername "
+	    + "FROM batchuploads a inner join "
+	    + "configurations b on b.id = a.configId inner join "
+	    + "lu_processstatus c on c.id = a.statusId inner join "
+	    + "organizations d on d.id = a.orgId inner join "
+	    + "ref_transportmethods e on e.id = a.transportMethodId inner join "
+	    + "configurationtransportdetails f on f.configId = b.id "
+	    + "where " + dateSQLString + " and a.errorRecordCount > 0) as inboundBatches ";
+	
+	Query query = sessionFactory.getCurrentSession().createSQLQuery(sqlQuery)
+	    .addScalar("id", StandardBasicTypes.INTEGER)
+	    .addScalar("orgId", StandardBasicTypes.INTEGER)
+	    .addScalar("utBatchName", StandardBasicTypes.STRING)
+	    .addScalar("transportMethodId", StandardBasicTypes.INTEGER)
+	    .addScalar("originalFileName", StandardBasicTypes.STRING)
+	    .addScalar("totalRecordCount", StandardBasicTypes.INTEGER)
+	    .addScalar("errorRecordCount", StandardBasicTypes.INTEGER)
+	    .addScalar("totalErrorRows", StandardBasicTypes.INTEGER)
+	    .addScalar("configName", StandardBasicTypes.STRING)
+	    .addScalar("threshold", StandardBasicTypes.INTEGER)
+	    .addScalar("inboundBatchConfigurationType", StandardBasicTypes.INTEGER)
+	    .addScalar("statusId", StandardBasicTypes.INTEGER)
+	    .addScalar("dateSubmitted", StandardBasicTypes.TIMESTAMP)
+	    .addScalar("startDateTime", StandardBasicTypes.TIMESTAMP)
+	    .addScalar("endDateTime", StandardBasicTypes.TIMESTAMP)
+	    .addScalar("statusValue", StandardBasicTypes.STRING)
+	    .addScalar("orgName", StandardBasicTypes.STRING)
+	    .addScalar("transportMethod", StandardBasicTypes.STRING)
+	    .addScalar("totalMessages", StandardBasicTypes.INTEGER)
+	    .addScalar("uploadType", StandardBasicTypes.STRING)
+	    .addScalar("endUserDisplayText", StandardBasicTypes.STRING)
+	    .addScalar("dmConfigKeyWord", StandardBasicTypes.STRING)
+	    .setResultTransformer(Transformers.aliasToBean(batchUploads.class));
+	
+	List<batchUploads> batchUploadMessages = query.list();
+	
+        return batchUploadMessages;
 
 
-	Criteria findBatches = sessionFactory.getCurrentSession().createCriteria(batchUploads.class);
+	/*Criteria findBatches = sessionFactory.getCurrentSession().createCriteria(batchUploads.class);
 	findBatches.add(Restrictions.ne("errorRecordCount", 0));
 
 	if (fromDate != null) {
@@ -512,7 +588,7 @@ public class transactionInDAOImpl implements transactionInDAO {
 	    findBatches.setMaxResults(fetchSize);
 	}
 
-	return findBatches.list();
+	return findBatches.list();*/
     }
 
     /**
@@ -3181,8 +3257,6 @@ public class transactionInDAOImpl implements transactionInDAO {
 	String dateSQLString = "";
 	String dateSQLStringTotal = "";
 	
-	
-	
 	if(fromDate !=  null && toDate != null) {
 	    
 	    if(!"".equals(fromDate)) {
@@ -3217,7 +3291,8 @@ public class transactionInDAOImpl implements transactionInDAO {
 		+ "startDateTime,endDateTime,statusValue, endUserDisplayText, orgName, case when dmConfigKeyWord != '' then 'File Drop (Direct)' when transportMethod != 'Online Form' && restAPIUsername != '' then 'File Drop (Rest)' else transportMethod end as transportMethod, totalMessages, 'On Demand' as uploadType, dmConfigKeyWord "
 		+ "FROM ("
 		+ "select a.id, a.orgId, a.utBatchName, a.transportMethodId, a.originalFileName, a.totalRecordCount, a.errorRecordCount, b.configName, b.threshold, b.configurationType as inboundBatchConfigurationType,"
-		+ "a.statusId, a.dateSubmitted, a.startDateTime, a.endDateTime, c.displayCode as statusValue, c.endUserDisplayText as endUserDisplayText,d.orgName, e.transportMethod,"
+		+ "a.statusId, a.dateSubmitted, "
+		+ "a.startDateTime, a.endDateTime, c.displayCode as statusValue, c.endUserDisplayText as endUserDisplayText,d.orgName, e.transportMethod,"
 		+ "(select count(id) as total from batchuploads where "+dateSQLStringTotal+") as totalMessages, "
 		+ "(select count(distinct rowNumber) as totalRows from batchuploadauditerrors where batchUploadId = a.id) as totalErrorRows, "
 		+ "f.dmConfigKeyWord, f.restAPIUsername "
@@ -3501,4 +3576,63 @@ public class transactionInDAOImpl implements transactionInDAO {
 	List<batchDownloads> dlBatchesList = dlBatches.list();
 	return dlBatchesList;
     }
+    
+    @Override
+    @Transactional(readOnly = true) 
+    public List<batchUploads> findRejectedBatchesToCleanUp() throws Exception {
+	
+	String sql = "select * from batchuploads where statusId = 7 and id not in (select batchUploadId from batchuploadactivity where activity like '%Cleaned up tables for rejected batch utBatchName: %')";
+	
+	Query query = sessionFactory.getCurrentSession().createSQLQuery(sql)
+		.setResultTransformer(Transformers.aliasToBean(batchUploads.class));
+	
+	return query.list();
+    }
+    
+    @Override
+    @Transactional(readOnly = false)
+    public void rejectedBatchUploadTableCleanUp(List<batchUploads> batchesToCleanup) throws Exception {
+	
+	if(batchesToCleanup != null) {
+	    
+	    if(!batchesToCleanup.isEmpty()) {
+		
+		String deleteSQL = "";
+		Query deleteQuery;
+		
+		for(batchUploads batch : batchesToCleanup) {
+		     
+		    if(batch.getId() > 0 && batch.getStatusId() == 7) {
+			deleteSQL += "DROP TABLE IF EXISTS `transactiontranslatedin_" + batch.getId() + "`;";
+			deleteSQL += "DROP TABLE IF EXISTS `transactionindetailauditerrors_" + batch.getId() + "`;";
+			deleteSQL += "DROP TABLE IF EXISTS `transactiontranslatedlistin_" + batch.getId() + "`;";
+			deleteSQL += "DROP TABLE IF EXISTS `transactioninrecords_" + batch.getId() + "`;";
+			deleteSQL += "DROP TABLE IF EXISTS `transactioninmacrodroppedvalues_" + batch.getId() + "`;";
+			deleteSQL += "DROP TABLE IF EXISTS `transactioninmacrokeptvalues_" + batch.getId() + "`;";
+			
+			batchuploadactivity ba = new batchuploadactivity();
+			ba.setActivity("Cleaned up tables for rejected batch utBatchName: " + batch.getUtBatchName() + ".");
+			ba.setBatchUploadId(batch.getId());
+			submitBatchActivityLog(ba);
+			
+		    }
+		}
+		
+		if(!"".equals(deleteSQL)) {
+		    deleteQuery = sessionFactory.getCurrentSession().createSQLQuery(deleteSQL);
+		    deleteQuery.executeUpdate();
+		}
+	    }
+	}
+    }
+    
+    @Override
+    @Transactional(readOnly = false)
+    public void clearBatchActivityLogTable(Integer batchUploadId) {
+	Query deletActivityLog = sessionFactory.getCurrentSession().createQuery("delete from batchuploadactivity where batchUploadId = :batchUploadId");
+	deletActivityLog.setParameter("batchUploadId", batchUploadId);
+
+	deletActivityLog.executeUpdate();
+    }
+	
 }

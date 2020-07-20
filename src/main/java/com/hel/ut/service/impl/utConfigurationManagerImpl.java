@@ -43,6 +43,7 @@ import com.hel.ut.model.configurationFTPFields;
 import com.hel.ut.model.configurationFileDropFields;
 import com.hel.ut.model.configurationFormFields;
 import com.hel.ut.model.configurationTransport;
+import com.hel.ut.model.configurationUpdateLogs;
 import com.hel.ut.model.configurationconnectionfieldmappings;
 import java.io.FileWriter;
 import java.text.DateFormat;
@@ -745,7 +746,11 @@ public class utConfigurationManagerImpl implements utConfigurationManager {
 	
 	configurationSchedules scheduleDetails = utConfigurationDAO.getScheduleDetails(configDetails.getId());
 	
+	//Get the last updated date for this configuration
+	configurationUpdateLogs lastConfigUpdatelog = utConfigurationDAO.getLastConfigUpdateLog(configDetails.getId());
+	
 	DateFormat df = new SimpleDateFormat("MM/dd/yyyy");
+	DateFormat dft = new SimpleDateFormat("MM/dd/yyyy h:mm a");
 	Date today = Calendar.getInstance().getTime();
 	
 	String configType = "Source Configuration";
@@ -766,16 +771,19 @@ public class utConfigurationManagerImpl implements utConfigurationManager {
 	if(!configDetails.getStatus()) {
 	    status = "Inactive";
 	}
-
+	
 	StringBuffer reportBody = new StringBuffer();
 	reportBody.append("<div style='text-align:center'>");
 	reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 16px;'>").append(configDetails.getconfigName()).append("</span><br />");
 	reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 14px;'>Organization: ").append(orgDetails.getOrgName()).append("</span><br />");
-	reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>This configuration was created on ").append(df.format(configDetails.getDateCreated())).append("</span><br /><br />");
+	reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>This configuration was created on ").append(dft.format(configDetails.getDateCreated())).append("</span><br />");
+	if(lastConfigUpdatelog != null) {
+	    reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>This configuration was last updated on ").append(dft.format(lastConfigUpdatelog.getDateCreated())).append("</span><br />");
+	}
 	reportBody.append("</div>");
 
 	reportBody.append("<div>");
-	reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 16px;'><strong>DETAILS</strong></span><br />");
+	reportBody.append("<br /><span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 16px;'><strong>DETAILS</strong></span><br />");
 	reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'><strong>Status: </strong>").append(status).append("</span><br /><br />");
 	reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'><strong>Configuration Type: </strong>").append(configType).append("</span><br /><br />");
 	reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'><strong>Message Type: </strong>").append(messageType).append("</span><br /><br />");
@@ -1682,6 +1690,11 @@ public class utConfigurationManagerImpl implements utConfigurationManager {
 	    }
 	}
 	
+    }
+    
+    @Override
+    public void saveConfigurationUpdateLog(configurationUpdateLogs updateLog) throws Exception {
+	utConfigurationDAO.saveConfigurationUpdateLog(updateLog);
     }
 }
 

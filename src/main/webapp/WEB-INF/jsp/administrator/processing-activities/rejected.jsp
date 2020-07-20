@@ -30,6 +30,7 @@
                                 <input type="hidden" name="fromDate" id="fromDate" rel="<fmt:formatDate value="${fromDate}" type="date" pattern="MM/dd/yyyy" />" rel2="<fmt:formatDate value="${originalDate}" type="date" pattern="MM/dd/yyyy" />" value="${fromDate}" />
                                 <input type="hidden" name="toDate" id="toDate" rel="<fmt:formatDate value="${toDate}" type="date" pattern="MM/dd/yyyy" />" value="${toDate}" />
                                 <input type="hidden" name="page" id="page" value="${currentPage}" />
+                                <input type="hidden" name="DTS" id="DTS" value="${DTS}" />
                             </div>
                         </form:form>
                     </div>
@@ -55,7 +56,7 @@
                             <thead>
                                 <tr>
                                     <th scope="col">Organization</th>
-                                    <th scope="col" style="width:50px">Batch Details</th>
+                                    <th scope="col" >Batch Details</th>
                                     <th scope="col" class="center-text">Transport Method</th>
                                     <th scope="col" class="center-text">Status</th>
                                     <th scope="col"># of Transactions</th>
@@ -75,26 +76,43 @@
 						<strong><c:choose><c:when test="${not empty batch.configName}">${batch.configName}</c:when><c:otherwise>Invalid File</c:otherwise></c:choose></strong><br />
                                                 ${batch.utBatchName}
                                                 <c:if test="${batch.transportMethodId != 2}">
+                                                  
                                                     <c:set var="text" value="${fn:split(batch.originalFileName,'.')}" />
                                                     <c:set var="ext" value="${text[fn:length(text)-1]}" />
-                                                    <br />
-                                                    <c:set var="hrefLink" value="/FileDownload/downloadFile.do?fromPage=rejected&filename=archive_${batch.utBatchName}.${ext}&foldername=archivesIn"/>
-
-                                                    <c:if test="${batch.transportMethodId == 6}">
-                                                        <c:set var="hrefLink" value="/FileDownload/downloadFile.do?fromPage=rejected&filename=${batch.utBatchName}_dec.${ext}&foldername=archivesIn"/>
-                                                    </c:if>
-						    <c:if test="${batch.transportMethodId == 10 || batch.transportMethodId == 6 || batch.transportMethodId == 9}">
-							<c:set var="hrefPipeLink" value="/FileDownload/downloadFile.do?fromPage=rejected&filename=${batch.utBatchName}_dec.txt&foldername=archivesIn"/>
-						    </c:if>
-
-                                                    <a href="${hrefLink}" title="View Original File">
+                                                    
+                                                    <c:choose>
+                                                         <c:when test="${batch.transportMethodId == 9 || batch.transportMethodId == 12}">
+                                                              <c:set var="hrefLink" value="/FileDownload/downloadFile.do?fromPage=rejected&filename=${batch.utBatchName}.${ext}&foldername=archivesIn"/>
+                                                         </c:when>
+                                                         <c:when test="${batch.transportMethodId == 6}">
+                                                              <c:set var="hrefLink" value="/FileDownload/downloadFile.do?fromPage=rejected&filename=${batch.utBatchName}_dec.${ext}&foldername=archivesIn"/>
+                                                         </c:when>
+                                                         <c:when test="${batch.transportMethodId == 13}">
+                                                              <c:set var="hrefLink" value="/FileDownload/downloadFile.do?fromPage=rejected&filename=archive_${batch.utBatchName}.${ext}&foldername=archivesIn&orgId=${batch.orgId}"/>
+                                                         </c:when>
+                                                         <c:otherwise>
+                                                              <c:set var="hrefLink" value="/FileDownload/downloadFile.do?fromPage=rejected&filename=encoded_${batch.utBatchName}.${ext}&foldername=input files&orgId=${batch.orgId}"/>
+                                                         </c:otherwise>
+                                                     </c:choose>
+                                                   
+                                                    <br/>
+                                                    <a href="${hrefLink}" title="View Submitted File">
                                                         Submitted File - ${batch.originalFileName}
                                                     </a>
-						    <br/>
-						    <c:if test="${(batch.transportMethodId == 10 || batch.transportMethodId == 6 || batch.transportMethodId == 9) && batch.statusId != 42}">
-							<a href="${hrefPipeLink}" title="View Internal Processing File">
-							    Internal File - ${batch.utBatchName}
-							</a>
+						    <c:if test="${ext != 'txt' && batch.inboundBatchConfigurationType == 1 && (batch.transportMethodId == 10 || batch.transportMethodId == 13)}">
+							<br/>
+                                                        <c:choose>
+                                                            <c:when test="${fn:contains(batch.transportMethod,'Direct') || fn:contains(batch.transportMethod,'File Drop')}">
+                                                                <a href="/FileDownload/downloadFile.do?fromPage=rejected&filename=${batch.utBatchName}.txt&foldername=loadFiles" title="View Internal Processing File">
+                                                                    Internal File - ${batch.utBatchName}.txt
+                                                                </a>
+                                                            </c:when>
+                                                            <c:otherwise>
+                                                                <a href="/FileDownload/downloadFile.do?fromPage=rejected&filename=archive_${batch.utBatchName}.${ext}&foldername=archivesIn" title="View Internal Processing File">
+                                                                    Internal File - ${batch.utBatchName}.txt
+                                                                </a>
+                                                            </c:otherwise>
+                                                        </c:choose>
 						    </c:if>
                                                 </c:if>
                                             </td>
@@ -114,9 +132,23 @@
                                             <td>
                                                 Total Transactions: <strong><fmt:formatNumber value = "${batch.totalRecordCount}" type = "number"/></strong>
 						<br />
-						Total Error Transactions: <strong><fmt:formatNumber value = "${batch.errorRecordCount}" type = "number"/></strong>
+						Total Errors: <strong><fmt:formatNumber value = "${batch.errorRecordCount}" type = "number"/></strong>
+                                                <c:if test="${batch.totalErrorRows > 0 && batch.errorRecordCount > 0}">
+                                                    <br />
+                                                    Total Rows with Errors: <strong><fmt:formatNumber value = "${batch.totalErrorRows}" type = "number"/></strong>
+                                                </c:if>
                                             </td>
-                                            <td class="center-text"><fmt:formatDate value="${batch.dateSubmitted}" type="both" pattern="M/dd/yyyy h:mm:ss a" /></td>
+                                            <td class="center-text">
+                                                <fmt:formatDate value="${batch.dateSubmitted}" type="both" pattern="M/dd/yyyy h:mm a" />
+                                                <c:if test="${not empty batch.startDateTime}">
+                                                    <br />
+                                                    Start: <fmt:formatDate value="${batch.startDateTime}" type="both" pattern="M/dd/yyyy h:mm a" />
+                                                </c:if>
+                                                <c:if test="${not empty batch.endDateTime}">
+                                                    <br />
+                                                    End <fmt:formatDate value="${batch.endDateTime}" type="both" pattern="M/dd/yyyy h:mm a" />
+                                                </c:if>   
+                                            </td>
                                             <td>
 						<div class="dropdown pull-left">
 						    <button class="btn btn-sm btn-default dropdown-toggle" type="button" data-toggle="dropdown">
@@ -125,14 +157,14 @@
 						    <ul class="dropdown-menu pull-right">
 							<c:if test="${batch.transportMethodId != 2}">
 							    <li>
-								<a href="<c:url value='/administrator/processing-activity/inbound/batchActivities/${batch.utBatchName}'/>" class="viewBatchActivities" title="View Batch Activities">
+								<a href="<c:url value='/administrator/processing-activity/rejected/batchActivities/${batch.utBatchName}'/>" class="viewBatchActivities" title="View Batch Activities">
 								    <span class="glyphicon glyphicon-edit"></span>
 								    View Batch Activities
 								</a>
 							    </li>
 							    <li class="divider"></li>
 							    <li>
-								<a href="<c:url value='/administrator/processing-activity/inbound/auditReport/${batch.utBatchName}' />" title="View Audit Report">
+								<a href="<c:url value='/administrator/processing-activity/rejected/auditReport/${batch.utBatchName}' />" title="View Audit Report">
 								    <span class="glyphicon glyphicon-edit"></span>
 								    View Audit Report
 								</a>

@@ -17,6 +17,7 @@ import com.hel.ut.model.configurationDataTranslations;
 import com.hel.ut.model.configurationExcelDetails;
 import com.hel.ut.model.configurationMessageSpecs;
 import com.hel.ut.model.configurationSchedules;
+import com.hel.ut.model.configurationUpdateLogs;
 import com.hel.ut.model.watchlist;
 import com.hel.ut.model.watchlistEntry;
 import java.util.Date;
@@ -200,4 +201,8 @@ public interface utConfigurationDAO {
     List<utConfiguration>  getAllTargetConfigurations() throws Exception;
     
     List getDTCWForDownload(String sqlStatement) throws Exception;
+    
+    void saveConfigurationUpdateLog(configurationUpdateLogs updateLog) throws Exception;
+    
+    configurationUpdateLogs getLastConfigUpdateLog(Integer configId) throws Exception;
 }
