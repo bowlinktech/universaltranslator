@@ -284,7 +284,13 @@ function getInboundMessages() {
                         dateC = new Date(row.startDateTime);
                         minutes = dateC.getMinutes();
                         if(isDST == 1) {
-                            hours = dateC.getHours() -1;
+                            hours = dateC.getHours()-1;
+                            if(hours < 0) {
+                                hours = 11;
+                            }
+                            else if(hours == 0) {
+                                hours = 12;
+                            }
                         }
                         else {
                             hours = dateC.getHours();
@@ -301,7 +307,13 @@ function getInboundMessages() {
                         dateC = new Date(row.endDateTime);
                         minutes = dateC.getMinutes();
                         if(isDST == 1) {
-                            hours = dateC.getHours() -1;
+                            hours = dateC.getHours()-1;
+                            if(hours < 0) {
+                                hours = 11;
+                            }
+                            else if(hours == 0) {
+                                hours = 12;
+                            }
                         }
                         else {
                             hours = dateC.getHours();
@@ -615,7 +627,13 @@ function getOutboundMessages() {
                         dateC = new Date(row.startDateTime);
                         minutes = dateC.getMinutes();
                         if(isDST == 1) {
-                            hours = dateC.getHours() -1;
+                            hours = dateC.getHours()-1;
+                            if(hours < 0) {
+                                hours = 11;
+                            }
+                            else if(hours == 0) {
+                                hours = 12;
+                            }
                         }
                         else {
                             hours = dateC.getHours();
@@ -632,7 +650,13 @@ function getOutboundMessages() {
                         dateC = new Date(row.endDateTime);
                         minutes = dateC.getMinutes();
                         if(isDST == 1) {
-                            hours = dateC.getHours() -1;
+                            hours = dateC.getHours()-1;
+                            if(hours < 0) {
+                                hours = 11;
+                            }
+                            else if(hours == 0) {
+                                hours = 12;
+                            }
                         }
                         else {
                             hours = dateC.getHours();

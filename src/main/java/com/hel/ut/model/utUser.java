@@ -26,7 +26,7 @@ public class utUser {
     private String orgName, password, roleType, lastLogInDate = "";
 
     @Transient
-    private Date dateOrgWasCreated = null;
+    private Date dateOrgWasCreated = null, dateLastLoggedIn = null;
 
     @Transient
     private Integer orgType, timesloggedIn, totalTimeLoggedIn, totalLogins;
@@ -438,5 +438,14 @@ public class utUser {
     public void setLastLogInDate(String lastLogInDate) {
 	this.lastLogInDate = lastLogInDate;
     }
+
+    public Date getDateLastLoggedIn() {
+	return dateLastLoggedIn;
+    }
+
+    public void setDateLastLoggedIn(Date dateLastLoggedIn) {
+	this.dateLastLoggedIn = dateLastLoggedIn;
+    }
+    
     
 }
