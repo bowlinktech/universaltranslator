@@ -82,5 +82,9 @@ public class utUserLogin {
 	this.logInDate = logInDate;
     }
 
+    public void setDateCreated(Date dateCreated) {
+	this.dateCreated = dateCreated;
+    }
+
     
 }

@@ -202,7 +202,7 @@ public interface utConfigurationManager {
   
     List getCrosswalksForDownload (Integer configId) throws Exception;
     
-    StringBuffer printDetailsSection(utConfiguration configDetails, Organization orgDetails) throws Exception;
+    StringBuffer printDetailsSection(utConfiguration configDetails, Organization orgDetails, String siteTimeZone) throws Exception;
     
     StringBuffer printTransportMethodSection(utConfiguration configDetails) throws Exception;
     

@@ -102,6 +102,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.text.ParseException;
 import java.util.Iterator;
 import java.util.Properties;
 import javax.annotation.Resource;
@@ -109,6 +110,7 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.util.FileCopyUtils;
 
 /**
@@ -118,6 +120,9 @@ import org.springframework.util.FileCopyUtils;
 @Controller
 @RequestMapping("/administrator/processing-activity")
 public class adminProcessingActivity {
+    
+    @Value("${siteTimeZone}")
+    private String siteTimeZone; 
     
     @Autowired
     private transactionInManager transactionInManager;
@@ -400,6 +405,28 @@ public class adminProcessingActivity {
 	    totalRecords = batchUploadList.get(0).getTotalMessages();
 	}
 	
+	TimeZone timeZone = TimeZone.getTimeZone(siteTimeZone);
+	DateFormat requiredFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	DateFormat dft = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	requiredFormat.setTimeZone(timeZone);
+	String dateinTZ = "";
+	
+	for (batchUploads batch : batchUploadList) {
+	    dateinTZ = requiredFormat.format(batch.getDateSubmitted());
+	    
+	    batch.setDateSubmitted(dft.parse(dateinTZ));
+	    
+	    if(batch.getStartDateTime()!= null) {
+		dateinTZ = requiredFormat.format(batch.getStartDateTime());
+		batch.setStartDateTime(dft.parse(dateinTZ));
+	    }
+	    
+	    if(batch.getEndDateTime()!= null) {
+		dateinTZ = requiredFormat.format(batch.getEndDateTime());
+		batch.setEndDateTime(dft.parse(dateinTZ));
+	    }
+        }
+	
 	jsonResponse.addProperty("sEcho", sEcho);
         jsonResponse.addProperty("iTotalRecords", totalRecords);
         jsonResponse.addProperty("iTotalDisplayRecords", totalRecords);
@@ -506,6 +533,28 @@ public class adminProcessingActivity {
 	else {
 	    totalRecords = batchDownloadList.get(0).getTotalMessages();
 	}
+	
+	TimeZone timeZone = TimeZone.getTimeZone(siteTimeZone);
+	DateFormat requiredFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	DateFormat dft = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	requiredFormat.setTimeZone(timeZone);
+	String dateinTZ = "";
+	
+	for (batchDownloads batch : batchDownloadList) {
+	    dateinTZ = requiredFormat.format(batch.getDateCreated());
+	    
+	    batch.setDateCreated(dft.parse(dateinTZ));
+	    
+	    if(batch.getStartDateTime()!= null) {
+		dateinTZ = requiredFormat.format(batch.getStartDateTime());
+		batch.setStartDateTime(dft.parse(dateinTZ));
+	    }
+	    
+	    if(batch.getEndDateTime()!= null) {
+		dateinTZ = requiredFormat.format(batch.getEndDateTime());
+		batch.setEndDateTime(dft.parse(dateinTZ));
+	    }
+        } 
 	
 	jsonResponse.addProperty("sEcho", sEcho);
         jsonResponse.addProperty("iTotalRecords", totalRecords);
@@ -734,7 +783,19 @@ public class adminProcessingActivity {
 		mav.addObject("batchDetails", batchDetails);
 
 		try {
+		    
+		    TimeZone timeZone = TimeZone.getTimeZone(siteTimeZone);
+		    DateFormat requiredFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		    DateFormat dft = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		    requiredFormat.setTimeZone(timeZone);
+		    String dateinTZ = "";
+		    
 		    List<batchuploadactivity> batchActivities = transactionInManager.getBatchActivities(batchDetails);
+
+		    for (batchuploadactivity batchActivity : batchActivities) {
+			batchActivity.setDateCreated(dft.parse(requiredFormat.format(batchActivity.getDateCreated())));
+		    }
+		    
 		    mav.addObject("batchActivities", batchActivities);
 
 		} catch (Exception e) {
@@ -754,6 +815,17 @@ public class adminProcessingActivity {
 
 		try {
 		    List<batchdownloadactivity> batchActivities = transactionOutManager.getBatchActivities(batchDetails);
+		    
+		    TimeZone timeZone = TimeZone.getTimeZone(siteTimeZone);
+		    DateFormat requiredFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		    DateFormat dft = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		    requiredFormat.setTimeZone(timeZone);
+		    String dateinTZ = "";
+		    
+		    for (batchdownloadactivity batchActivity : batchActivities) {
+			batchActivity.setDateCreated(dft.parse(requiredFormat.format(batchActivity.getDateCreated())));
+		    }
+		    
 		    mav.addObject("batchActivities", batchActivities);
 
 		} catch (Exception e) {
@@ -865,6 +937,7 @@ public class adminProcessingActivity {
 		if(!associatedDownloadBatches.isEmpty()) {
 		    
 		    for(batchDownloads batchDownload : associatedDownloadBatches) {
+			
 			Organization tgtOrgDetails = organizationmanager.getOrganizationById(batchDownload.getOrgId());
 			File targetFile = null;
 			//Check if target file has been generated
@@ -928,6 +1001,15 @@ public class adminProcessingActivity {
             } else {
                 batchDetails.setConfigName("Multiple Message Types");
             }
+	    
+	    TimeZone timeZone = TimeZone.getTimeZone(siteTimeZone);
+	    DateFormat requiredFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	    DateFormat dft = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	    requiredFormat.setTimeZone(timeZone);
+	    String dateinTZ = "";
+
+	    batchDetails.setDateSubmitted(dft.parse(requiredFormat.format(batchDetails.getDateSubmitted())));
+	  
             mav.addObject("batchDetails", batchDetails);
 	    
             if (batchDetails.getErrorRecordCount() > 0) {
@@ -1511,8 +1593,27 @@ public class adminProcessingActivity {
 		});
 		
 		Calendar cal = Calendar.getInstance();
+		
+		TimeZone timeZone = TimeZone.getTimeZone(siteTimeZone);
+		DateFormat requiredFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		DateFormat dft = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		requiredFormat.setTimeZone(timeZone);
+		String dateinTZ = "";
 
 		rejectedBatches.stream().map((batch) -> {
+		   
+		    try {
+			batch.setDateSubmitted(dft.parse(requiredFormat.format(batch.getDateSubmitted())));
+
+			if(batch.getStartDateTime() != null) {
+			    batch.setStartDateTime(dft.parse(requiredFormat.format(batch.getStartDateTime())));
+			}
+
+			if(batch.getEndDateTime() != null) {
+			    batch.setEndDateTime(dft.parse(requiredFormat.format(batch.getEndDateTime())));
+			}
+		    }
+		    catch (ParseException ex) {}
 		    
 		    if(DTS != null) {
 			if(DTS == 1) {
@@ -2468,8 +2569,27 @@ public class adminProcessingActivity {
 		});
 		
 		Calendar cal = Calendar.getInstance();
+		
+		TimeZone timeZone = TimeZone.getTimeZone(siteTimeZone);
+		DateFormat requiredFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		DateFormat dft = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		requiredFormat.setTimeZone(timeZone);
+		String dateinTZ = "";
 
 		invalidInboundBatches.stream().map((batch) -> {
+		    
+		    try {
+			batch.setDateSubmitted(dft.parse(requiredFormat.format(batch.getDateSubmitted())));
+
+			if(batch.getStartDateTime() != null) {
+			    batch.setStartDateTime(dft.parse(requiredFormat.format(batch.getStartDateTime())));
+			}
+
+			if(batch.getEndDateTime() != null) {
+			    batch.setEndDateTime(dft.parse(requiredFormat.format(batch.getEndDateTime())));
+			}
+		    }
+		    catch (ParseException ex) {}
 		    
 		    if(DTS != null) {
 			if(DTS == 1) {
@@ -2684,8 +2804,27 @@ public class adminProcessingActivity {
 		});
 		
 		Calendar cal = Calendar.getInstance();
+		
+		TimeZone timeZone = TimeZone.getTimeZone(siteTimeZone);
+		DateFormat requiredFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		DateFormat dft = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		requiredFormat.setTimeZone(timeZone);
+		String dateinTZ = "";
 
                 for (batchDownloads batch : invalidOutboundBatches) {
+		    
+		    try {
+			batch.setDateCreated(dft.parse(requiredFormat.format(batch.getDateCreated())));
+
+			if(batch.getStartDateTime() != null) {
+			    batch.setStartDateTime(dft.parse(requiredFormat.format(batch.getStartDateTime())));
+			}
+
+			if(batch.getEndDateTime() != null) {
+			    batch.setEndDateTime(dft.parse(requiredFormat.format(batch.getEndDateTime())));
+			}
+		    }
+		    catch (ParseException ex) {}
 		    
 		    if(DTS != null) {
 			if(DTS == 1) {
@@ -2998,6 +3137,12 @@ public class adminProcessingActivity {
 	
 	List<batchUploads> batchUploadsToReturn = new ArrayList<>();
 	
+	TimeZone timeZone = TimeZone.getTimeZone(siteTimeZone);
+	DateFormat requiredFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	DateFormat dft = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	requiredFormat.setTimeZone(timeZone);
+	String dateinTZ = "";
+	
 	if(batchUploadList.isEmpty()) {
 	    totalRecords = 0;
 	}
@@ -3005,6 +3150,19 @@ public class adminProcessingActivity {
 	    totalRecords = batchUploadList.get(0).getTotalMessages();
 	    
 	    for(batchUploads batchUpload : batchUploadList) {
+		dateinTZ = requiredFormat.format(batchUpload.getDateSubmitted());
+	    
+		batchUpload.setDateSubmitted(dft.parse(dateinTZ));
+
+		if(batchUpload.getStartDateTime()!= null) {
+		    dateinTZ = requiredFormat.format(batchUpload.getStartDateTime());
+		    batchUpload.setStartDateTime(dft.parse(dateinTZ));
+		}
+
+		if(batchUpload.getEndDateTime()!= null) {
+		    dateinTZ = requiredFormat.format(batchUpload.getEndDateTime());
+		    batchUpload.setEndDateTime(dft.parse(dateinTZ));
+		}
 		batchUploadsToReturn.add(batchUpload);
 	    }
 	}
@@ -3078,6 +3236,29 @@ public class adminProcessingActivity {
 	    totalRecords = 0;
 	}
 	else {
+	    
+	    TimeZone timeZone = TimeZone.getTimeZone(siteTimeZone);
+	    DateFormat requiredFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	    DateFormat dft = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	    requiredFormat.setTimeZone(timeZone);
+	    String dateinTZ = "";
+
+	    for(batchDownloads batchDownload : outboundBatches) {
+		dateinTZ = requiredFormat.format(batchDownload.getDateCreated());
+
+		batchDownload.setDateCreated(dft.parse(dateinTZ));
+
+		if(batchDownload.getStartDateTime()!= null) {
+		    dateinTZ = requiredFormat.format(batchDownload.getStartDateTime());
+		    batchDownload.setStartDateTime(dft.parse(dateinTZ));
+		}
+
+		if(batchDownload.getEndDateTime()!= null) {
+		    dateinTZ = requiredFormat.format(batchDownload.getEndDateTime());
+		    batchDownload.setEndDateTime(dft.parse(dateinTZ));
+		}
+	    }
+	    
 	    totalRecords = outboundBatches.get(0).getTotalMessages();
 	}
 	
@@ -3114,12 +3295,12 @@ public class adminProcessingActivity {
 	
         searchParameters.setfromDate(fromDate);
         searchParameters.settoDate(toDate);
-        searchParameters.setsection("himdashboard");
+        searchParameters.setsection("dashboard");
 	
         /* Get all inbound transactions */
         toDate = DateUtils.addDays(toDate, 1);
 	
-	//try {
+	try {
 	    
 	    List<batchUploads> dashboardUploads = new ArrayList<>();
 
@@ -3148,12 +3329,26 @@ public class adminProcessingActivity {
 		    });
 		}
 	    }
+	    
+	    if(!dashboardUploads.isEmpty()) {
+		TimeZone timeZone = TimeZone.getTimeZone(siteTimeZone);
+		DateFormat requiredFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		DateFormat dft = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		requiredFormat.setTimeZone(timeZone);
+		String dateinTZ = "";
+
+		for(batchUploads watchListEntry : dashboardUploads) {
+		    dateinTZ = requiredFormat.format(watchListEntry.getDateSubmitted());
+
+		    watchListEntry.setDateSubmitted(dft.parse(dateinTZ));
+		}
+	    }
 
             mav.addObject("genericbatches", dashboardUploads);
 
-        //} catch (Exception e) {
-            //throw new Exception("Error occurred viewing the dashboard inbound messages.", e);
-       // }
+        } catch (Exception e) {
+            throw new Exception("Error occurred viewing the dashboard inbound messages.", e);
+        }
 
         return mav;
     }
@@ -3241,6 +3436,13 @@ public class adminProcessingActivity {
 	    }
 	    
             batchDetails.setConfigName(configurationManager.getMessageTypeNameByConfigId(batchDetails.getConfigId()));
+	    
+	    TimeZone timeZone = TimeZone.getTimeZone(siteTimeZone);
+	    DateFormat requiredFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	    DateFormat dft = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	    requiredFormat.setTimeZone(timeZone);
+
+	    batchDetails.setDateCreated(dft.parse(requiredFormat.format(batchDetails.getDateCreated())));
             
             mav.addObject("batchDetails", batchDetails);
 	    
