@@ -23,7 +23,7 @@
     </context-param>
     <context-param>
         <param-name>siteTimeZone</param-name>
-        <param-value>US/Pacific</param-value>
+        <param-value>US/Eastern</param-value>
     </context-param>
     <!--  Set the default timeout setting for a logged in user/admin -->
     <session-config>
