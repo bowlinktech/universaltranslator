@@ -1,5 +1,30 @@
 
 require(['./main'], function () {
+    
+    $(document).on('click','.printMacros',function() {
+       $('body').overlay({
+           glyphicon : 'print',
+           message : 'Gathering Details...'
+       });
+       $('.overlay').show();
+       
+       $.ajax({
+            url: '/administrator/sysadmin/createMacroExcelFile.do',
+            data: {},
+            type: "GET",
+            dataType : 'text',
+            contentType : 'application/json;charset=UTF-8',
+            success: function(data) {
+                $('.overlay').hide();
+                if(data !== '') {
+                    window.location.href = '/administrator/sysadmin/printMacroExcelFile/'+ data;
+                }
+                else {
+                    alert("An error occurred creating the macro list file. A Health-e-Link system administrator has been notified.");
+                }
+            }
+        });
+   });
 
     //Fade out the updated/created message after being displayed.
     if ($('.alert').length > 0) {

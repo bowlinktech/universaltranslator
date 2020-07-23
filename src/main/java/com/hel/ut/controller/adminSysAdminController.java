@@ -26,7 +26,9 @@ import com.hel.ut.model.custom.LookUpTable;
 import com.hel.ut.model.custom.TableData;
 import com.hel.ut.model.hisps;
 import com.hel.ut.model.lutables.lu_ProcessStatus;
+import com.hel.ut.model.mailMessage;
 import com.hel.ut.model.utUserLogin;
+import com.hel.ut.service.emailMessageManager;
 import com.hel.ut.service.hispManager;
 
 import org.springframework.security.core.Authentication;
@@ -42,13 +44,30 @@ import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.servlet.view.RedirectView;
 import com.hel.ut.service.utConfigurationManager;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.Properties;
+import java.util.TimeZone;
+import javax.annotation.Resource;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.util.FileCopyUtils;
 
 @Controller
 @RequestMapping("/administrator/sysadmin")
 public class adminSysAdminController {
+    
+    @Value("${siteTimeZone}")
+    private String siteTimeZone; 
 
     @Autowired
     private sysAdminManager sysAdminManager;
@@ -61,10 +80,15 @@ public class adminSysAdminController {
     
     @Autowired
     private hispManager hispsmanager;
+    
+    @Autowired
+    private emailMessageManager emailMessageManager;
 
     @Autowired
     private ServletContext servletContext;
-
+    
+    @Resource(name = "myProps")
+    private Properties myProps;
 
     /**
      * This shows a dashboard with info for sysadmin components. *
@@ -671,6 +695,20 @@ public class adminSysAdminController {
         mav.setViewName("/administrator/sysadmin/moveFilePaths");
         //we get list of programs
         List<MoveFilesLog> pathList = sysAdminManager.getMoveFilesLog(1);
+	
+	Calendar cal = Calendar.getInstance();
+	TimeZone timeZone = TimeZone.getTimeZone(siteTimeZone);
+	DateFormat requiredFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	DateFormat dft = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	requiredFormat.setTimeZone(timeZone);
+	String dateinTZ = "";
+	
+	if(!pathList.isEmpty()) {
+	    for(MoveFilesLog path : pathList) {
+		path.setStartDateTime(dft.parse(requiredFormat.format(path.getStartDateTime())));
+		path.setEndDateTime(dft.parse(requiredFormat.format(path.getEndDateTime())));
+	    }
+	}
         mav.addObject("pathList", pathList);
         
         return mav;
@@ -700,6 +738,24 @@ public class adminSysAdminController {
         mav.setViewName("/administrator/sysadmin/systemadmins");
 
 	List<utUser> systemAdmins = usermanager.getUsersByOrganizationWithLogins(1);
+	
+	if(!systemAdmins.isEmpty()) {
+	    Calendar cal = Calendar.getInstance();
+	    TimeZone timeZone = TimeZone.getTimeZone(siteTimeZone);
+	    DateFormat requiredFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	    DateFormat dft = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	    requiredFormat.setTimeZone(timeZone);
+	    String dateinTZ = "";
+	    for(utUser user : systemAdmins) {
+		user.setDateLastLoggedIn(dft.parse(requiredFormat.format(user.getDateLastLoggedIn())));
+		
+		if(timeZone.getDSTSavings() == 3600000) {
+		    cal.setTime(user.getDateLastLoggedIn());
+		    cal.add(Calendar.HOUR,-1);
+		    user.setDateLastLoggedIn(cal.getTime());
+		}
+	    }
+	}
 	mav.addObject("systemAdmins", systemAdmins);
 
         return mav;
@@ -722,6 +778,22 @@ public class adminSysAdminController {
         mav.setViewName("/administrator/sysadmin/adminInfo/logins");
 	
 	List<utUserLogin> systemAdminLogins = usermanager.getUserLogins(adminId);
+	
+	Calendar cal = Calendar.getInstance();
+	TimeZone timeZone = TimeZone.getTimeZone(siteTimeZone);
+	DateFormat requiredFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	DateFormat dft = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	requiredFormat.setTimeZone(timeZone);
+	String dateinTZ = "";
+	for(utUserLogin userLogin : systemAdminLogins) {
+	   userLogin.setDateCreated(dft.parse(requiredFormat.format(userLogin.getDateCreated())));
+	   
+	   if(timeZone.getDSTSavings() == 3600000) {
+		cal.setTime(userLogin.getDateCreated());
+		cal.add(Calendar.HOUR,-1);
+		userLogin.setDateCreated(cal.getTime());
+	    }
+	}
 	
         mav.addObject("systemAdminLogins", systemAdminLogins);
         return mav;
@@ -824,4 +896,157 @@ public class adminSysAdminController {
 
         return mav;
     }
+    
+    /**
+     * The 'createMacroExcelFile.do' method will print a list of macros in excel file.
+     * @return 
+     * @throws java.lang.Exception
+     */
+    @RequestMapping(value = "/createMacroExcelFile.do", method = RequestMethod.GET)
+    @ResponseBody
+    public String createMacroExcelFile() throws Exception {
+	String fileName = "macro-list";
+	
+	try {
+	    List<Macros> macroList = sysAdminManager.getMarcoList("%");
+
+	    File file = new File("/tmp/" + fileName + ".xlsx");
+	    file.createNewFile();
+
+	    FileInputStream fileInput = null;
+	    fileInput = new FileInputStream(file);
+
+	    FileWriter fw = null;
+
+	    try {
+		fw = new FileWriter(file, true);
+	    } catch (IOException ex) {
+
+	    }
+
+	    StringBuilder exportRow = new StringBuilder();
+
+	    Workbook wb = new XSSFWorkbook();
+	    Sheet sheet = wb.createSheet("sheet1");
+
+	    Integer rowNum = 0;
+	    Integer cellNum = 0;
+
+	    Row currentRow = sheet.createRow(rowNum);
+	    currentRow.createCell(cellNum).setCellValue("Name");
+	    cellNum++;
+	    currentRow.createCell(cellNum).setCellValue("Short Name");
+	    cellNum++;
+	    currentRow.createCell(cellNum).setCellValue("Stored Procedure Name");
+	    cellNum++;
+	    currentRow.createCell(cellNum).setCellValue("Field A Question");
+	    cellNum++;
+	    currentRow.createCell(cellNum).setCellValue("Field B Question");
+	    cellNum++;
+	    currentRow.createCell(cellNum).setCellValue("Constant 1 Question");
+	    cellNum++;
+	    currentRow.createCell(cellNum).setCellValue("Constant 2 Question");
+	    cellNum++;
+	    currentRow.createCell(cellNum).setCellValue("Description");
+
+	    if(macroList != null) {
+		if(!macroList.isEmpty()) {
+		    for(Macros macro : macroList) {
+			rowNum++;
+			currentRow = sheet.createRow(rowNum);
+			cellNum = 0;
+
+			currentRow.createCell(cellNum).setCellValue(macro.getMacroName().trim());
+			cellNum++;
+			currentRow.createCell(cellNum).setCellValue(macro.getMacroShortName().trim());
+			cellNum++;
+			currentRow.createCell(cellNum).setCellValue(macro.getFormula().trim());
+			cellNum++;
+			if(macro.getFieldAQuestion() == null) {
+			    currentRow.createCell(cellNum).setCellValue("");
+			}
+			else {
+			    currentRow.createCell(cellNum).setCellValue(macro.getFieldAQuestion().trim());
+			}
+			cellNum++;
+			if(macro.getFieldBQuestion() == null) {
+			    currentRow.createCell(cellNum).setCellValue("");
+			}
+			else {
+			    currentRow.createCell(cellNum).setCellValue(macro.getFieldBQuestion().trim());
+			}
+			cellNum++;
+			if(macro.getCon1Question() == null) {
+			    currentRow.createCell(cellNum).setCellValue("");
+			}
+			else {
+			    currentRow.createCell(cellNum).setCellValue(macro.getCon1Question().trim());
+			}
+			cellNum++;
+			if(macro.getCon2Question() == null) {
+			    currentRow.createCell(cellNum).setCellValue("");
+			}
+			else {
+			    currentRow.createCell(cellNum).setCellValue(macro.getCon2Question().trim());
+			}
+			cellNum++;
+			if(macro.getMacroDesc() == null) {
+			    currentRow.createCell(cellNum).setCellValue("");
+			}
+			else {
+			    currentRow.createCell(cellNum).setCellValue(macro.getMacroDesc().trim());
+			}
+		    }
+		    
+		    sheet.autoSizeColumn(0);
+		    sheet.autoSizeColumn(1);
+		    sheet.autoSizeColumn(2);
+		    sheet.autoSizeColumn(3);
+		    sheet.autoSizeColumn(4);
+		    sheet.autoSizeColumn(5);
+		    sheet.autoSizeColumn(6);
+		    sheet.autoSizeColumn(7);
+		}
+	    }
+
+	    try (OutputStream stream = new FileOutputStream(file)) {
+		wb.write(stream);
+	    }
+	}
+	catch (Exception ex) {
+	    System.out.println(ex.getMessage());
+	    //we notify admin
+	    mailMessage mail = new mailMessage();
+	    mail.settoEmailAddress(myProps.getProperty("admin.email"));
+	    mail.setfromEmailAddress("support@health-e-link.net");
+	    mail.setmessageSubject("Error creating the macro list excel file - " + " " + myProps.getProperty("server.identity"));
+	    StringBuilder emailBody = new StringBuilder();
+	    emailBody.append("There was an error creating the macro list excel file.");
+	    emailBody.append("<br/><br/>" + ex.getMessage());
+	    emailBody.append("<br/><br/>" + ex.getStackTrace());
+	    mail.setmessageBody(emailBody.toString());
+	    emailMessageManager.sendEmail(mail);
+	    fileName = "";
+	}
+
+	return fileName;
+    }
+
+    
+    @RequestMapping(value = "/printMacroExcelFile/{file}", method = RequestMethod.GET)
+    public void printMacroExcelFile(@PathVariable("file") String file,HttpServletResponse response
+    ) throws Exception {
+	
+	File templatePrintFile = new File ("/tmp/" + file + ".xlsx");
+	InputStream is = new FileInputStream(templatePrintFile);
+
+	response.setHeader("Content-Disposition", "attachment; filename=\"" + file + ".xlsx\"");
+	FileCopyUtils.copy(is, response.getOutputStream());
+
+	//Delete the file
+	templatePrintFile.delete();
+
+	 // close stream and return to view
+	response.flushBuffer();
+    } 
 }

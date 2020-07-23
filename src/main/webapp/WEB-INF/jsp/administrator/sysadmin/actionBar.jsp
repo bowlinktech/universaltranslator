@@ -42,15 +42,19 @@
                 <c:when test="${param['page'] == 'logos'}">
                     <li><a href="javascript:void(0);" id="saveDetails" title="Save logo(s)"><span class="glyphicon glyphicon-ok icon-stacked"></span> Save </a></li>
                     <li><a href="<c:url value='/administrator/sysadmin/' />" title="Cancel"><span class="glyphicon icon-stacked custom-icon icon-cancel"></span>Cancel</a></li>
-                    </c:when>    
-                    <c:when test="${param['page'] == 'hl7List'}">
+                </c:when>    
+                <c:when test="${param['page'] == 'hl7List'}">
                     <li><a href="<c:url value='/administrator/sysadmin/hl7/create' />" title="Create New HL7 Version" role="button"><span class="glyphicon icon-stacked glyphicon glyphicon-plus"></span>Create New</a></li>
-                    </c:when>
-                    <c:when test="${param['page'] == 'hl7Details'}">
+                </c:when>
+                <c:when test="${param['page'] == 'hl7Details'}">
                     <li><a href="javascript:void(0);" id="saveDetails" title="Save this Configuration initial setup" role="button"><span class="glyphicon glyphicon-ok icon-stacked"></span> Save </a></li>
-                    </c:when>
-                </c:choose>
-
+                </c:when>
+                <c:when test="${param['page'] == 'macros'}">
+                     <li>
+                        <a href="javascript:void(0);" class="printMacros" title="Print Full Macro List" role="button"><span class="glyphicon glyphicon-print icon-stacked"></span> Print Macros</a>
+                    </li>
+                </c:when>
+            </c:choose>
         </ul>
     </div>
 </nav>

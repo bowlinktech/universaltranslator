@@ -21,6 +21,10 @@
         <param-name>contentLabelForReport</param-name>
         <param-value></param-value>
     </context-param>
+    <context-param>
+        <param-name>siteTimeZone</param-name>
+        <param-value>US/Eastern</param-value>
+    </context-param>
     <!--  Set the default timeout setting for a logged in user/admin -->
     <session-config>
         <session-timeout>30</session-timeout>
