@@ -1621,9 +1621,12 @@ public class adminProcessingActivity {
 			    cal.setTime(batch.getStartDateTime());
 			    cal.add(Calendar.HOUR,-1);
 			    batch.setStartDateTime(cal.getTime());
-			    cal.setTime(batch.getEndDateTime());
-			    cal.add(Calendar.HOUR,-1);
-			    batch.setEndDateTime(cal.getTime());
+			    
+			    if(batch.getEndDateTime() != null) {
+				cal.setTime(batch.getEndDateTime());
+				cal.add(Calendar.HOUR,-1);
+				batch.setEndDateTime(cal.getTime());
+			    }
 			}
 		    }
 		    
@@ -2597,9 +2600,11 @@ public class adminProcessingActivity {
 			    cal.setTime(batch.getStartDateTime());
 			    cal.add(Calendar.HOUR,-1);
 			    batch.setStartDateTime(cal.getTime());
-			    cal.setTime(batch.getEndDateTime());
-			    cal.add(Calendar.HOUR,-1);
-			    batch.setEndDateTime(cal.getTime());
+			    if(batch.getEndDateTime() != null) {
+				cal.setTime(batch.getEndDateTime());
+				cal.add(Calendar.HOUR,-1);
+				batch.setEndDateTime(cal.getTime());
+			    }
 			}
 		    }
 		    
@@ -2832,9 +2837,11 @@ public class adminProcessingActivity {
 			    cal.setTime(batch.getStartDateTime());
 			    cal.add(Calendar.HOUR,-1);
 			    batch.setStartDateTime(cal.getTime());
-			    cal.setTime(batch.getEndDateTime());
-			    cal.add(Calendar.HOUR,-1);
-			    batch.setEndDateTime(cal.getTime());
+			    if(batch.getEndDateTime() != null) {
+				cal.setTime(batch.getEndDateTime());
+				cal.add(Calendar.HOUR,-1);
+				batch.setEndDateTime(cal.getTime());
+			    }
 			}
 		    }
 
