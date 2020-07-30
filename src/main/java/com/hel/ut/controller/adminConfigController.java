@@ -90,6 +90,7 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Base64;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Properties;
@@ -3095,7 +3096,8 @@ public class adminConfigController {
 	
 	if(crosswalkDetails.getOrgId() > 0) {
 	    Organization organizationDetails = organizationmanager.getOrganizationById(crosswalkDetails.getOrgId());
-	    mav.addObject("cleanOrgURL",organizationDetails.getCleanURL());
+	    String cwURL = organizationDetails.getCleanURL() + "/crosswalks";
+	    mav.addObject("cleanOrgURL",Base64.getEncoder().encodeToString(cwURL.getBytes()));
 	}
 
         //Get the data associated with the selected crosswalk
