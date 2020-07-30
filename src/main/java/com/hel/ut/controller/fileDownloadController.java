@@ -77,6 +77,13 @@ public class fileDownloadController {
 	    HttpServletResponse response, RedirectAttributes redirectAttr, HttpSession session) throws Exception {
 	
 	String desc = "";
+	
+	//Check to see if foldername is Base64 encoded
+	if("config".equals(fromPage) && Base64.isBase64(foldername)) {
+	    byte[] decodedBytes = Base64.decodeBase64(foldername);
+	    foldername = new String(decodedBytes);;
+	}
+	
 	try {
 
 	    utUser userDetails = usermanager.getUserByUserName(authentication.getName());
