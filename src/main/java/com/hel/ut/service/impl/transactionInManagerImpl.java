@@ -3677,7 +3677,7 @@ public class transactionInManagerImpl implements transactionInManager {
 
 		batchId = submitBatchUpload(batchInfo);
 		
-		updateBatchStatus(batchId, 4, "startDateTime");
+		updateBatchStatus(batchId, statusId, "startDateTime");
 		
 		createBatchTables(batchId, configId);
 
