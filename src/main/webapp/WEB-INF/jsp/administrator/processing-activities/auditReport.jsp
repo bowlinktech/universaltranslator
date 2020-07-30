@@ -269,7 +269,7 @@
 						    <br />Batch is ready to be processed
 						</c:when>
 						<c:otherwise>
-						    <br />Could not generate target file(s) because of errors 
+						    <br />The processing of the outbound batch has not started yet. 
 						</c:otherwise>
 					    </c:choose>
 					</p> 
