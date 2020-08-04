@@ -1560,14 +1560,19 @@ public class transactionOutManagerImpl implements transactionOutManager {
 			if(macroError == 9999999) {
 			    systemErrorCount++; 
 			}
-			else if(macroError > 0) {
-			    totalErrorCount = totalErrorCount + macroError;
+			else {
+			    //Check if there is a logged error for the macro
+			    macroError = transactionInDAO.getMacroErrorRecordCountForTable(batchDownload.getId(), true, batchDownload.getConfigId(), cdt.getMacroId());
+			    
+			    if(macroError > 0) {
+				totalErrorCount = totalErrorCount + macroError;
 
-			    //log batch activity
-			    ba = new batchdownloadactivity();
-			    ba.setActivity("Macro Error. macroId:" + cdt.getMacroId() + " for configId:" + batchDownload.getConfigId());
-			    ba.setBatchDownloadId(batchDownload.getId());
-			    transactionOutDAO.submitBatchActivityLog(ba);
+				//log batch activity
+				ba = new batchdownloadactivity();
+				ba.setActivity("Macro Error. macroId:" + cdt.getMacroId() + " for configId:" + batchDownload.getConfigId() + " total records with Macro error: " + macroError);
+				ba.setBatchDownloadId(batchDownload.getId());
+				transactionOutDAO.submitBatchActivityLog(ba);
+			    }
 			}
 		    }
 		} 

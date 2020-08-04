@@ -103,7 +103,6 @@ function checkform() {
     
     var selectedType = $('.type:checked').val();
     
-
     //Check to make sure an organization is selected
     if ($('#organization').val() === '') {
         $('#orgDiv').addClass("has-error");
@@ -112,7 +111,6 @@ function checkform() {
         errorFound = 1;
     }
     
-
     //Check to make sure a configuration name is entered
     if ($('#configName').val() === '') {
         $('#configNameDiv').addClass("has-error");
@@ -120,9 +118,18 @@ function checkform() {
         $('#configNameMsg').html('The configuration name is a required field.');
         errorFound = 1;
     }
+    else {
+        //Check to see if organization name contains any special characters
+        var configName = $('#configName').val();
+        if(/^[a-zA-Z0-9- ]*$/.test(configName) == false) {
+            $('#configNameDiv').addClass("has-error");
+            $('#configNameMsg').addClass("has-error");
+            $('#configNameMsg').html('The configuration name contains illegal characters. Only letters and numbers are accepted.');
+            errorFound = 1;
+        }
+    }
     
     return errorFound;
-
 }
 
 

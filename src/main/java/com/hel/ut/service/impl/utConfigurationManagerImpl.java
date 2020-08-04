@@ -1328,7 +1328,7 @@ public class utConfigurationManagerImpl implements utConfigurationManager {
 	
 	List<Crosswalks> crosswalks = messageTypeDAO.getCrosswalks(1, 0, configDetails.getorgId());
 	
-	List crosswalksWithData = messageTypeDAO.getCrosswalksWithData(configDetails.getorgId());
+	List crosswalksWithData = messageTypeDAO.getConfigCrosswalksWithData(configDetails.getorgId(),configDetails.getId());
 	
 	StringBuffer reportBody = new StringBuffer();
 	reportBody.append("<div style='padding-top:10px;'>");
@@ -1384,8 +1384,8 @@ public class utConfigurationManagerImpl implements utConfigurationManager {
 		    }
 		    reportBody.append("<td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>").append(dt.getFieldA()).append("</td>");
 		    reportBody.append("<td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>").append(dt.getFieldB()).append("</td>");
-		    reportBody.append("<td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>").append(dt.getConstant1().replaceAll("[:\\\\/*\"?|<>']", " ")).append("</td>");
-		    reportBody.append("<td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>").append(dt.getConstant2().replaceAll("[:\\\\/*\"?|<>']", " ")).append("</td>");
+		    reportBody.append("<td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>").append(dt.getConstant1().replaceAll("[:*\"?|<>']", " ")).append("</td>");
+		    reportBody.append("<td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>").append(dt.getConstant2().replaceAll("[:*\"?|<>']", " ")).append("</td>");
 		    reportBody.append("<td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>").append(dt.getProcessOrder()).append("</td>");
 		    reportBody.append("</tr>");
 		}
@@ -1402,7 +1402,7 @@ public class utConfigurationManagerImpl implements utConfigurationManager {
 	}
 	
 	reportBody.append("<div style='padding-top:10px;'>");
-	reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 16px;'><strong>ORGANIZATION CROSSWALKS</strong></span><br /><br />");
+	reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 16px;'><strong>CONFIGURATION CROSSWALKS</strong></span><br /><br />");
 	
 	if(crosswalksWithData != null) {
 	    if(!crosswalksWithData.isEmpty()) {
@@ -1439,11 +1439,11 @@ public class utConfigurationManagerImpl implements utConfigurationManager {
 		    }
 		   
 		    reportBody.append("<tr><td>")
-			.append(cwData[1].toString().replaceAll("[:\\\\/*\"?|<>']", " "))
+			.append(cwData[1].toString().replaceAll("[:*\"?|<>']", " "))
 			.append("</td><td>")
-			.append(cwData[2].toString().replaceAll("[:\\\\/*\"?|<>']", " "))
+			.append(cwData[2].toString().replaceAll("[:*\"?|<>']", " "))
 			.append("</td><td>")
-			.append(cwData[3].toString().replaceAll("[:\\\\/*\"?|<>']", " "))
+			.append(cwData[3].toString().replaceAll("[:*\"?|<>']", " "))
 			.append("</td></tr>");
 		    
 		}
