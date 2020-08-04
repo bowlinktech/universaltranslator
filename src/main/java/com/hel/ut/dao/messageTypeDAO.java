@@ -58,4 +58,6 @@ public interface messageTypeDAO {
     List<Crosswalks> getCrosswalksForConfig(int page, int maxCrosswalks, int orgId, int configId);
     
     List getCrosswalksWithDataByFileName(Integer orgId, String fileName);
+    
+    List getConfigCrosswalksWithData(Integer orgId, Integer configId);
 }

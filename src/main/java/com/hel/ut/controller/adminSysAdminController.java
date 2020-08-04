@@ -50,18 +50,24 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Properties;
+import java.util.TimeZone;
 import javax.annotation.Resource;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.util.FileCopyUtils;
 
 @Controller
 @RequestMapping("/administrator/sysadmin")
 public class adminSysAdminController {
+    
+    @Value("${siteTimeZone}")
+    private String siteTimeZone; 
 
     @Autowired
     private sysAdminManager sysAdminManager;
@@ -689,6 +695,20 @@ public class adminSysAdminController {
         mav.setViewName("/administrator/sysadmin/moveFilePaths");
         //we get list of programs
         List<MoveFilesLog> pathList = sysAdminManager.getMoveFilesLog(1);
+	
+	Calendar cal = Calendar.getInstance();
+	TimeZone timeZone = TimeZone.getTimeZone(siteTimeZone);
+	DateFormat requiredFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	DateFormat dft = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	requiredFormat.setTimeZone(timeZone);
+	String dateinTZ = "";
+	
+	if(!pathList.isEmpty()) {
+	    for(MoveFilesLog path : pathList) {
+		path.setStartDateTime(dft.parse(requiredFormat.format(path.getStartDateTime())));
+		path.setEndDateTime(dft.parse(requiredFormat.format(path.getEndDateTime())));
+	    }
+	}
         mav.addObject("pathList", pathList);
         
         return mav;
@@ -718,6 +738,24 @@ public class adminSysAdminController {
         mav.setViewName("/administrator/sysadmin/systemadmins");
 
 	List<utUser> systemAdmins = usermanager.getUsersByOrganizationWithLogins(1);
+	
+	if(!systemAdmins.isEmpty()) {
+	    Calendar cal = Calendar.getInstance();
+	    TimeZone timeZone = TimeZone.getTimeZone(siteTimeZone);
+	    DateFormat requiredFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	    DateFormat dft = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	    requiredFormat.setTimeZone(timeZone);
+	    String dateinTZ = "";
+	    for(utUser user : systemAdmins) {
+		user.setDateLastLoggedIn(dft.parse(requiredFormat.format(user.getDateLastLoggedIn())));
+		
+		if(timeZone.getDSTSavings() == 3600000) {
+		    cal.setTime(user.getDateLastLoggedIn());
+		    cal.add(Calendar.HOUR,-1);
+		    user.setDateLastLoggedIn(cal.getTime());
+		}
+	    }
+	}
 	mav.addObject("systemAdmins", systemAdmins);
 
         return mav;
@@ -740,6 +778,22 @@ public class adminSysAdminController {
         mav.setViewName("/administrator/sysadmin/adminInfo/logins");
 	
 	List<utUserLogin> systemAdminLogins = usermanager.getUserLogins(adminId);
+	
+	Calendar cal = Calendar.getInstance();
+	TimeZone timeZone = TimeZone.getTimeZone(siteTimeZone);
+	DateFormat requiredFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	DateFormat dft = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	requiredFormat.setTimeZone(timeZone);
+	String dateinTZ = "";
+	for(utUserLogin userLogin : systemAdminLogins) {
+	   userLogin.setDateCreated(dft.parse(requiredFormat.format(userLogin.getDateCreated())));
+	   
+	   if(timeZone.getDSTSavings() == 3600000) {
+		cal.setTime(userLogin.getDateCreated());
+		cal.add(Calendar.HOUR,-1);
+		userLogin.setDateCreated(cal.getTime());
+	    }
+	}
 	
         mav.addObject("systemAdminLogins", systemAdminLogins);
         return mav;

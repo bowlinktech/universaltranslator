@@ -90,9 +90,11 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Base64;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Properties;
+import java.util.TimeZone;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
@@ -100,6 +102,7 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.util.FileCopyUtils;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -109,6 +112,9 @@ import org.springframework.web.multipart.MultipartFile;
 @RequestMapping("/administrator/configurations")
 
 public class adminConfigController {
+    
+    @Value("${siteTimeZone}")
+    private String siteTimeZone; 
 
     @Autowired
     private utConfigurationManager utconfigurationmanager;
@@ -183,7 +189,22 @@ public class adminConfigController {
 	
 	Calendar cal = Calendar.getInstance();
 	
+	TimeZone timeZone = TimeZone.getTimeZone(siteTimeZone);
+	DateFormat requiredFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	DateFormat dft = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	requiredFormat.setTimeZone(timeZone);
+	String dateinTZ = "";
+	
         for (utConfiguration config : sourceconfigurations) {
+	    dateinTZ = requiredFormat.format(config.getDateCreated());
+	    
+	    config.setDateCreated(dft.parse(dateinTZ));
+	    
+	    if(config.getDateUpdated() != null) {
+		dateinTZ = requiredFormat.format(config.getDateUpdated());
+	    }
+	    config.setDateUpdated(dft.parse(dateinTZ));
+	    
             org = organizationmanager.getOrganizationById(config.getorgId());
             config.setOrgName(org.getOrgName());
 	    
@@ -207,6 +228,15 @@ public class adminConfigController {
 	mav.addObject("sourceconfigurations", sourceconfigurations);
 	
 	for (utConfiguration config : targetconfigurations) {
+	    dateinTZ = requiredFormat.format(config.getDateCreated());
+	    
+	    config.setDateCreated(dft.parse(dateinTZ));
+	    
+	    if(config.getDateUpdated() != null) {
+		dateinTZ = requiredFormat.format(config.getDateUpdated());
+	    }
+	    config.setDateUpdated(dft.parse(dateinTZ));
+	    
             org = organizationmanager.getOrganizationById(config.getorgId());
             config.setOrgName(org.getOrgName());
 	    
@@ -3095,7 +3125,8 @@ public class adminConfigController {
 	
 	if(crosswalkDetails.getOrgId() > 0) {
 	    Organization organizationDetails = organizationmanager.getOrganizationById(crosswalkDetails.getOrgId());
-	    mav.addObject("cleanOrgURL",organizationDetails.getCleanURL());
+	    String cwURL = organizationDetails.getCleanURL() + "/crosswalks";
+	    mav.addObject("cleanOrgURL",Base64.getEncoder().encodeToString(cwURL.getBytes()));
 	}
 
         //Get the data associated with the selected crosswalk
@@ -3552,7 +3583,7 @@ public class adminConfigController {
 	PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(configDetailFile, true)));
 	out.println("<html><body>");
 	
-	reportBody.append(utconfigurationmanager.printDetailsSection(configDetails,orgDetails));
+	reportBody.append(utconfigurationmanager.printDetailsSection(configDetails,orgDetails,siteTimeZone));
 	reportBody.append(utconfigurationmanager.printTransportMethodSection(configDetails));
 	reportBody.append(utconfigurationmanager.printMessageSpecsSection(configDetails));
 	reportBody.append(utconfigurationmanager.printFieldSettingsSection(configDetails));

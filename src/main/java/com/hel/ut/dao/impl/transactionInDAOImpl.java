@@ -1018,8 +1018,8 @@ public class transactionInDAOImpl implements transactionInDAO {
 		query.setParameter("fieldA", ("F" + cdt.getFieldNo()));
 	    }
 	    query.setParameter("fieldB", ("F" + cdt.getFieldB()));
-	    query.setParameter("con1", cdt.getConstant1());
-	    query.setParameter("con2", cdt.getConstant2());
+	    query.setParameter("con1", cdt.getConstant1().trim());
+	    query.setParameter("con2", cdt.getConstant2().trim());
 	    query.setParameter("macroId", cdt.getMacroId());
 	    query.setParameter("foroutboundProcessing", foroutboundProcessing);
 	    query.setParameter("passClear", cdt.getPassClear());
@@ -2809,7 +2809,7 @@ public class transactionInDAOImpl implements transactionInDAO {
 
     }
  
-   @Override
+    @Override
     @Transactional(readOnly = true)
     public Integer getRecordCountForTable(String tableName, String colName, int matchId) throws Exception {
 	String sql = "select count(id) as total from " + tableName + " where " + colName + " = :matchId limit 1";
@@ -3635,4 +3635,24 @@ public class transactionInDAOImpl implements transactionInDAO {
 	deletActivityLog.executeUpdate();
     }
 	
+    @Override
+    @Transactional(readOnly = true)
+    public Integer getMacroErrorRecordCountForTable(Integer batchId, boolean forOutboundProcessing, Integer configId, Integer macroId) throws Exception {
+	
+	String tableName = "transactioninerrors";
+	
+	if(forOutboundProcessing) {
+	    tableName = "transactionouterrors";
+	}
+	
+	String sql = "select count(id) as total from " + tableName + "_"+batchId+" where configId = :configId and macroId = :macroId";
+	Query query = sessionFactory
+	    .getCurrentSession()
+	    .createSQLQuery(sql).addScalar("total", StandardBasicTypes.INTEGER);
+	query.setParameter("configId", configId);
+	query.setParameter("macroId", macroId);
+	
+	return (Integer) query.list().get(0);
+
+    }
 }
