@@ -146,3 +146,125 @@ ADD INDEX `configid` (`configId` ASC);
 
 ALTER TABLE `universaltranslator`.`configurationupdatelogs` 
 ADD COLUMN `updateMade` VARCHAR(500) NULL AFTER `dateCreated`;
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `MatchFAUpdateSF`(in configId int, 
+in batchId int, in srcField varchar(10),
+in fieldA varchar(10), in fieldB varchar(10), in con1 varchar(255), 
+in con2 varchar(255), in macroId int, in foroutboundProcessing boolean, in passClear int, in transactionId int)
+proc_main:begin
+
+
+
+call setInboundOutBoundTables (foroutboundProcessing,batchId);
+select @translatedTable, @transactionTable, @batchTable, @batchIdType , @errorTable
+into @translatedTable, @transactionTable, @batchTable, @batchIdType , @errorTable;
+
+call getFinalStatusIds;
+select @finalStatusIds into @finalStatusIds;
+
+if (transactionId = 0) then
+	BEGIN
+		set @stmt = concat("update ",@translatedTable, " set ",srcField," = '",con2,"' where trim(REPLACE(CONVERT(",fieldA," USING ASCII), '?','')) = '",con1,"'
+		and  configId = ",configId," and ", @batchIdType," = ",batchId," and statusId not in (", @finalStatusIds, ");");
+	END;
+END if;
+
+if (transactionId != 0) then
+	BEGIN
+		set @stmt = concat("update ",@translatedTable, " set ",srcField," = '",con2,"' where trim(REPLACE(CONVERT(",fieldA," USING ASCII), '?','')) = '",con1,"'
+		and ",@transactionTable,"Id = ", transactionId, ";");
+	END;
+END if;
+
+
+
+PREPARE stmt from @stmt;
+EXECUTE stmt;
+
+
+if (passClear = 2) THEN
+BEGIN
+
+if (transactionId = 0) then
+	BEGIN
+		set @stmt = concat("update ",@translatedTable, " set ",srcField," = null where trim(REPLACE(CONVERT(",fieldA," USING ASCII), '?','')) != '",con1,"'
+		and  configId = ",configId," and ", @batchIdType," = ",batchId," and statusId not in (", @finalStatusIds, ");");
+	END;
+END if;
+
+if (transactionId != 0) then
+	BEGIN
+		set @stmt = concat("update ",@translatedTable, " set ",srcField," = null where trim(REPLACE(CONVERT(",fieldA," USING ASCII), '?','')) != '",con1,"'
+		and ",@transactionTable,"Id = ", transactionId, ";");
+	END;
+END if;
+
+END;
+
+END if;
+
+
+select '';
+end proc_main
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `MatchSrcFieldUpdateFieldB`(in configId int, 
+in batchId int, in srcField varchar(10),
+in fieldA varchar(10), in fieldB varchar(10), in con1 varchar(255), 
+in con2 varchar(255), in macroId int, in foroutboundProcessing boolean, in passClear int, in transactionId int)
+proc_main:begin
+
+
+
+call setInboundOutBoundTables (foroutboundProcessing,batchId);
+select @translatedTable, @transactionTable, @batchTable, @batchIdType , @errorTable
+into @translatedTable, @transactionTable, @batchTable, @batchIdType , @errorTable;
+
+call getFinalStatusIds;
+select @finalStatusIds into @finalStatusIds;
+
+
+if (transactionId = 0) then
+	BEGIN
+	set @stmt = concat("update ",@translatedTable, " set ",fieldB," = '",con2,"' where trim(REPLACE(CONVERT(",srcField," USING ASCII), '?','')) = '",con1,"'
+				and  configId = ",configId," and ", @batchIdType," = ",batchId," and statusId not in (",@finalStatusIds ,");");
+	END;
+	END if;
+
+if (transactionId != 0) then
+	BEGIN
+	set @stmt = concat("update ",@translatedTable, " set ",fieldB," = '",con2,"' where trim(REPLACE(CONVERT(",srcField," USING ASCII), '?','')) = '",con1,"'
+				and ",@transactionTable,"Id = ", transactionId, ";");
+	END;
+	END if;
+
+PREPARE stmt from @stmt;
+EXECUTE stmt;
+
+
+if (passClear = 2) THEN
+BEGIN
+if (transactionId = 0) then
+	BEGIN
+	set @stmt = concat("update ",@translatedTable, " set ",fieldB," = null where trim(REPLACE(CONVERT(",fieldB," USING ASCII), '?','')) != '",con2,"'
+	and ",@transactionTable,"Id in (select id from ",@transactionTable,
+	" where configId = ",configId," and ", @batchIdType," = ",batchId," and statusId not in (",@finalStatusIds,"));");
+	PREPARE stmt from @stmt;
+	EXECUTE stmt;
+	END;
+	END if;
+
+if (transactionId != 0) then
+	BEGIN
+	set @stmt = concat("update ",@translatedTable, " set ",fieldB," = null where trim(REPLACE(CONVERT(",fieldB," USING ASCII), '?','')) != '",con2,"'
+	and ",@transactionTable,"Id = ", transactionId, ";");
+	PREPARE stmt from @stmt;
+	EXECUTE stmt;
+	END;
+	END if;
+
+END;
+END IF;
+
+
+select '';
+end proc_main
