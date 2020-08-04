@@ -53,5 +53,6 @@ public interface messageTypeManager {
     List<Crosswalks> getCrosswalksForConfig(int page, int maxCrosswalks, int orgId, int configId);
     
     void deleteCrosswalk(Integer cwId) throws Exception;
-
+    
+    List getConfigCrosswalksWithData(Integer orgId, Integer configId);
 }

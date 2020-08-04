@@ -339,7 +339,10 @@ public class messageTypeManagerImpl implements messageTypeManager {
             e.printStackTrace();
             throw new Exception(e);
         }
-
-        
+    }
+    
+    @Override
+    public List getConfigCrosswalksWithData(Integer orgId, Integer configId) {
+	return getConfigCrosswalksWithData(orgId,configId);
     }
 }

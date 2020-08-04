@@ -248,6 +248,15 @@ function populateHELRegistryOrgs(selRegistry) {
 	
 function checkFormFields() {
     var hasErrors = 0;
+    
+    //Check to see if organization name contains any special characters
+    var orgName = $('#orgName').val();
+    if(/^[a-zA-Z0-9- ]*$/.test(orgName) == false) {
+        $('#orgNameDiv').addClass("has-error");
+        $('#orgNameErrorMsg').addClass("has-error");
+        $('#orgNameErrorMsg').html('The organization name contains illegal characters. Only letters and numbers are accepted.');
+        hasErrors = 1;
+    }
 
     if ($('#file').length > 1) {
 

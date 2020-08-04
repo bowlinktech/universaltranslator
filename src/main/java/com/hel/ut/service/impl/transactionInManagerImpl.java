@@ -561,7 +561,7 @@ public class transactionInManagerImpl implements transactionInManager {
 	    int sysError = 0;
 		
 	    // we expect the target field back so we can figure out clear pass option
-	    sysError = sysError + executeMacro(configId, batchId, cdt, foroutboundProcessing, macro);
+	    sysError = executeMacro(configId, batchId, cdt, foroutboundProcessing, macro);
 	    // insert macro errors
 	    Integer intMacroReturn = flagMacroErrors(configId, batchId, cdt, foroutboundProcessing);
 
@@ -3033,12 +3033,17 @@ public class transactionInManagerImpl implements transactionInManager {
 			    if(macroError == 9999999) {
 				systemErrorCount++; 
 			    }
-			    else if(macroError > 0) {
-				//log batch activity
-				ba = new batchuploadactivity();
-				ba.setActivity("Macro Error. macroId:" + cdt.getMacroId() + " for configId:" + batch.getConfigId());
-				ba.setBatchUploadId(batchUploadId);
-				transactionInDAO.submitBatchActivityLog(ba);
+			    else {
+				//Check if there is a logged error for the macro
+				macroError = transactionInDAO.getMacroErrorRecordCountForTable(batchUploadId, false, batch.getConfigId(), cdt.getMacroId());
+				
+				if(macroError > 0) {
+				    //log batch activity
+				    ba = new batchuploadactivity();
+				    ba.setActivity("Macro Error. macroId:" + cdt.getMacroId() + " for configId:" + batch.getConfigId() + " total records with Macro error: " + macroError);
+				    ba.setBatchUploadId(batchUploadId);
+				    transactionInDAO.submitBatchActivityLog(ba);
+				}
 			    }
 			}
 		    }

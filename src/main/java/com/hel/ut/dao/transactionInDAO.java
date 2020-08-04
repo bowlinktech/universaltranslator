@@ -305,4 +305,6 @@ public interface transactionInDAO {
     void rejectedBatchUploadTableCleanUp(List<batchUploads> batchesToCleanup) throws Exception;
     
     void clearBatchActivityLogTable(Integer batchId) throws Exception;
+    
+    Integer getMacroErrorRecordCountForTable(Integer batchId, boolean forOutboundProcessing, Integer configId, Integer macroId) throws Exception;
 }

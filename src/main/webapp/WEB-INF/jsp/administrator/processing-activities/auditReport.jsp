@@ -216,7 +216,7 @@
                                             <c:set var="text" value="${fn:split(batchDetails.outputFileName,'.')}" />
                                             <c:set var="ext" value="${text[fn:length(text)-1]}" />
                                             <c:url value="/FileDownload/downloadFile.do" var="hrefLink">
-                                                <c:param name="fromPage" value="inboundAudit" />
+                                                <c:param name="fromPage" value="outboundAudit" />
                                                 <c:param name="filename" value="${batchDetails.outputFileName}" />
                                                 <c:param name="foldername" value="archivesOut" />
                                                 <c:param name="orgId" value="${batchDetails.orgId}" />
@@ -269,7 +269,7 @@
 						    <br />Batch is ready to be processed
 						</c:when>
 						<c:otherwise>
-						    <br />Could not generate target file(s) because of errors 
+						    <br />The processing of the outbound batch has not started yet. 
 						</c:otherwise>
 					    </c:choose>
 					</p> 
