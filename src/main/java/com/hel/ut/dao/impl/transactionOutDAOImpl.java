@@ -1366,6 +1366,13 @@ public class transactionOutDAOImpl implements transactionOutDAO {
 	    + ") ";
 	}	
 	
+	if("errorRecordCount".equals(sortColumnName)) {
+	    sortColumnName = "totalErrorCount";
+	}
+	else if("uploadType".equals(sortColumnName)) {
+	    sortColumnName = "threshold";
+	}
+	
 	sqlQuery += "order by "+sortColumnName+" "+sortDirection;
         sqlQuery += " limit " + displayStart + ", " + displayRecords;
 	
