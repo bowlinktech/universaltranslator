@@ -147,6 +147,10 @@ ADD INDEX `configid` (`configId` ASC);
 ALTER TABLE `universaltranslator`.`configurationupdatelogs` 
 ADD COLUMN `updateMade` VARCHAR(500) NULL AFTER `dateCreated`;
 
+USE `universaltranslator`;
+DROP procedure IF EXISTS `MatchFAUpdateSF`;
+
+DELIMITER $$
 CREATE DEFINER=`root`@`localhost` PROCEDURE `MatchFAUpdateSF`(in configId int, 
 in batchId int, in srcField varchar(10),
 in fieldA varchar(10), in fieldB varchar(10), in con1 varchar(255), 
@@ -205,8 +209,13 @@ END if;
 
 
 select '';
-end proc_main
+end proc_main$$
+DELIMITER ;
 
+USE `universaltranslator`;
+DROP procedure IF EXISTS `MatchSrcFieldUpdateFieldB`;
+
+DELIMITER $$
 CREATE DEFINER=`root`@`localhost` PROCEDURE `MatchSrcFieldUpdateFieldB`(in configId int, 
 in batchId int, in srcField varchar(10),
 in fieldA varchar(10), in fieldB varchar(10), in con1 varchar(255), 
@@ -267,4 +276,5 @@ END IF;
 
 
 select '';
-end proc_main
+end proc_main$$
+DELIMITER ;
