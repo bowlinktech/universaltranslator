@@ -3313,6 +3313,11 @@ public class transactionInDAOImpl implements transactionInDAO {
 	    + "OR statusValue like '%"+searchTerm+"%' "
 	    + "OR transportMethod like '%"+searchTerm+"%'"
 	    + ") ";
+	}
+	
+	
+	if("uploadType".equals(sortColumnName)) {
+	    sortColumnName = "threshold";
 	}	
 	
 	sqlQuery += "order by "+sortColumnName+" "+sortDirection;
