@@ -6,36 +6,33 @@
 
 
 require(['./main'], function () {
-    require(['jquery'], function ($) {
 
-        $("input:text,form").attr("autocomplete", "off");
+    $("input:text,form").attr("autocomplete", "off");
 
-        //This function will launch the status detail overlay with the selected
-        //status
-        $(document).on('click', '.viewPayload', function (event) {
-            var wsId = $(this).attr('rel');
-            $.ajax({
-                url: 'wsmessage/viewPayload.do',
-                type: "POST",
-                data: {'wsId': wsId},
-                success: function (data) {
-                    $("#payloadModal").html(data);
-                }
-            });
+    //This function will launch the status detail overlay with the selected
+    //status
+    $(document).on('click', '.viewPayload', function (event) {
+        var wsId = $(this).attr('rel');
+        $.ajax({
+            url: 'wsmessage/viewPayload.do',
+            type: "POST",
+            data: {'wsId': wsId},
+            success: function (data) {
+                $("#payloadModal").html(data);
+            }
         });
+    });
 
 
-        //This will change between inbound and outbound
-        $(document).on('change', '#wsDirection', function (event) {
-            window.location.href = "wsmessageOut";
-
-        });
-
-        var oSettings = datatable.fnSettings();
-
-        datatable.fnSort([[7, 'desc']]);
+    //This will change between inbound and outbound
+    $(document).on('change', '#wsDirection', function (event) {
+        window.location.href = "wsmessageOut";
 
     });
+
+    var oSettings = datatable.fnSettings();
+
+    datatable.fnSort([[7, 'desc']]);
 });
 
 
