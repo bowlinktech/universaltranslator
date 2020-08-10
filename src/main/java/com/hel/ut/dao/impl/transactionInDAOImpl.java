@@ -1011,15 +1011,25 @@ public class transactionInDAOImpl implements transactionInDAO {
 	    query.setParameter("configId", configId);
 	    query.setParameter("batchId", batchId);
 	    query.setParameter("srcField", ("F" + cdt.getFieldNo()));
-	  
+	    
 	    if (!cdt.getFieldA().equalsIgnoreCase("")) {
 		query.setParameter("fieldA", ("F" + cdt.getFieldA()));
 	    } else {
 		query.setParameter("fieldA", ("F" + cdt.getFieldNo()));
 	    }
 	    query.setParameter("fieldB", ("F" + cdt.getFieldB()));
-	    query.setParameter("con1", cdt.getConstant1().trim());
-	    query.setParameter("con2", cdt.getConstant2().trim());
+	    if(!", ".equals(cdt.getConstant1())) {
+		query.setParameter("con1", cdt.getConstant1().trim());
+	    }
+	    else {
+		query.setParameter("con1", cdt.getConstant1());
+	    }
+	    if(!", ".equals(cdt.getConstant2())) {
+		query.setParameter("con2", cdt.getConstant2().trim());
+	    }
+	    else {
+		query.setParameter("con2", cdt.getConstant2());
+	    }
 	    query.setParameter("macroId", cdt.getMacroId());
 	    query.setParameter("foroutboundProcessing", foroutboundProcessing);
 	    query.setParameter("passClear", cdt.getPassClear());
@@ -1029,14 +1039,12 @@ public class transactionInDAOImpl implements transactionInDAO {
 	    return 0;
 	    
 	} catch (Exception ex) {
-	    
 	    //insert system error
 	    insertProcessingError(processingSysErrorId, configId, batchId, cdt.getFieldNo(),cdt.getMacroId(), null, null,false, foroutboundProcessing, ("executeMacro " + ex.getCause().toString()));
 	    System.err.println("executeMacro -"+ macro.getFormula() + " for " + inboundOutbound + " batch (Id: " + batchId + ") " + ex.getCause());
 	    ex.printStackTrace();
 	    return 9999999;
 	}
-
     }
 
     @Override
