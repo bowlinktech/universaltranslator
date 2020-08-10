@@ -330,18 +330,18 @@ function getInboundMessages() {
 		}
 	    },
 	    {
-		"mData": "uploadType", 
+		"mData": "utBatchName", 
 		"defaultContent": "",
 		"bSortable":true,
 		"sWidth": "10%",
 		"render": function ( data, type, row, meta ) {
 		    var returnData = '';
 		    
-		    if(data === 'Watch List Entry') {
+		    if(row.uploadType === 'Watch List Entry') {
 			returnData = 'N/A';
 		    }
 		    else {
-			returnData = '<a href="/administrator/processing-activity/inbound/'+row.utBatchName+'" class="dashboard-link" title="View Inbound Batch" role="button">'+row.utBatchName+'</a>';
+			returnData = '<a href="/administrator/processing-activity/inbound/'+data+'" class="dashboard-link" title="View Inbound Batch" role="button">'+data+'</a>';
 		    }
 		    return returnData;
 		}
@@ -374,7 +374,7 @@ function getInboundMessages() {
 		}
 	    },
 	    {
-		"mData": "uploadType", 
+		"mData": "totalRecordCount", 
 		"defaultContent": "",
 		"bSortable":true,
 		"sWidth": "10%",
@@ -382,17 +382,17 @@ function getInboundMessages() {
 		"render": function ( data, type, row, meta ) {
 		    var returnData = '';
 		    
-		    if(data === 'Watch List Entry') {
+		    if(row.uploadType === 'Watch List Entry') {
 			returnData = 'N/A';
 		    }
 		    else {
-			returnData = commaSeparateNumber(row.totalRecordCount);
+			returnData = commaSeparateNumber(data);
 		    }
 		    return returnData;
 		}
 	    },
 	    {
-		"mData": "uploadType", 
+		"mData": "errorRecordCount", 
 		"defaultContent": "",
 		"bSortable":true,
 		"sWidth": "10%",
@@ -400,24 +400,24 @@ function getInboundMessages() {
 		"render": function ( data, type, row, meta ) {
 		    var returnData = '';
 		    
-		    if(data === 'Watch List Entry') {
+		    if(row.uploadType === 'Watch List Entry') {
 			returnData = 'N/A';
 		    }
 		    else {
-			returnData = commaSeparateNumber(row.errorRecordCount);
+			returnData = commaSeparateNumber(data);
 		    }
 		    return returnData;
 		}
 	    },
 	    {
-		"mData": "uploadType", 
+		"mData": "threshold", 
 		"defaultContent": "",
 		"bSortable":true,
 		"sWidth": "5%",
 		"className": "center-text",
 		"render": function ( data, type, row, meta ) {
                     var returnData = ''
-                    if(data === 'Watch List Entry') {
+                    if(row.uploadType === 'Watch List Entry') {
                         returnData = 'N/A';
                     }
                     else {
@@ -426,7 +426,7 @@ function getInboundMessages() {
                             percent = 100;
                         }
                         returnData = '<figure class="highcharts-figure"><div id="threshold-chart-'+row.id+'" rel1="'+row.id+'" rel2="'+percent+'" rel3="'+row.threshold+'" class="inrecords chart-container"></div></figure>'; */
-                        returnData = row.threshold + '%';
+                        returnData = data + '%';
                     }
 		    
 		    return returnData;
@@ -732,14 +732,14 @@ function getOutboundMessages() {
 		}
 	    },
 	    {
-		"mData": "uploadType", 
+		"mData": "threshold", 
 		"defaultContent": "",
 		"bSortable":true,
 		"sWidth": "5%",
 		"className": "center-text",
 		"render": function ( data, type, row, meta ) {
                     var returnData = ''
-                    if(data === 'Watch List Entry') {
+                    if(row.uploadType === 'Watch List Entry') {
                         returnData = 'N/A';
                     }
                     else {
@@ -748,7 +748,7 @@ function getOutboundMessages() {
                             percent = 100;
                         }
                         //returnData = '<figure class="highcharts-figure"><div id="out-threshold-chart-'+row.id+'" rel1="'+row.id+'" rel2="'+percent+'" rel3="'+row.threshold+'" class="outrecords chart-container"></div></figure>'; 
-                        returnData = Math.round(percent) + '% of ' + row.threshold + '%';
+                        returnData = Math.round(percent) + '% of ' + data + '%';
                     }
 		    
 		    return returnData;
