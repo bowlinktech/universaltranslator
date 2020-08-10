@@ -3107,12 +3107,18 @@ public class transactionInManagerImpl implements transactionInManager {
 			if(postMacroError == 9999999) {
 			    systemErrorCount++; 
 			}
-			else if(postMacroError > 0) {
-			    //log batch activity
-			    ba = new batchuploadactivity();
-			    ba.setActivity("Post Macro Error. macroId:" + cdt.getMacroId() + " for configId:" + batch.getConfigId());
-			    ba.setBatchUploadId(batchUploadId);
-			    transactionInDAO.submitBatchActivityLog(ba);
+			else {
+			    //Check if there is a logged error for the macro
+			    postMacroError = transactionInDAO.getMacroErrorRecordCountForTable(batchUploadId, false, batch.getConfigId(), cdt.getMacroId());
+			    
+			    if(postMacroError > 0) {
+
+				//log batch activity
+				ba = new batchuploadactivity();
+				ba.setActivity("Macro Error. macroId:" + cdt.getMacroId() + " for configId:" + batch.getConfigId() + " total records with Macro error: " + postMacroError);
+				ba.setBatchUploadId(batchUploadId);
+				transactionInDAO.submitBatchActivityLog(ba);
+			    }
 			}
 		    }
 		}
@@ -3131,6 +3137,10 @@ public class transactionInManagerImpl implements transactionInManager {
 		
 		//populate dropped values 
 		populateDroppedValues(batch.getId(), batch.getConfigId(), false);
+		
+		updateRecordCounts(batchUploadId, new ArrayList<Integer>(), false, "totalRecordCount");
+
+		updateRecordCounts(batchUploadId, errorStatusIds, false, "errorRecordCount");
 		
 		//log batch activity
 		ba = new batchuploadactivity();
@@ -3224,16 +3234,6 @@ public class transactionInManagerImpl implements transactionInManager {
 		    //log batch activity
 		    batchuploadactivity ba = new batchuploadactivity();
 		    ba.setActivity("BatchId:" + batchUploadId + " was rejected because error handling is set to 'Reject entire file on a single transaction error' and has a total of " + updatedBatchDetails.getErrorRecordCount() + " errors.");
-		    ba.setBatchUploadId(batchUploadId);
-		    transactionInDAO.submitBatchActivityLog(ba);
-		}
-		else if(totalErrorRows >= updatedBatchDetails.getTotalRecordCount()) {
-		    batchStatusId = 7;
-		    updateBatchStatus(batchUploadId, batchStatusId, "endDateTime");
-		    
-		    //log batch activity
-		    batchuploadactivity ba = new batchuploadactivity();
-		    ba.setActivity("BatchId:" + batchUploadId + " was rejected because all the rows in the submitted file contained an error.");
 		    ba.setBatchUploadId(batchUploadId);
 		    transactionInDAO.submitBatchActivityLog(ba);
 		}

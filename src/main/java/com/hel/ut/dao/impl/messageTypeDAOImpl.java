@@ -428,6 +428,7 @@ public class messageTypeDAOImpl implements messageTypeDAO {
 	    .addScalar("orgId", StandardBasicTypes.INTEGER)
 	    .addScalar("dtsId", StandardBasicTypes.INTEGER)
 	    .addScalar("name", StandardBasicTypes.STRING)
+	    .addScalar("dateCreated", StandardBasicTypes.TIMESTAMP)
 	    .setResultTransformer( Transformers.aliasToBean(Crosswalks.class))
 	    .setParameter("orgId", orgId).setParameter("configId", configId);
 	

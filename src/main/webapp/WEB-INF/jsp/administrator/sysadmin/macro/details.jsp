@@ -11,6 +11,7 @@
 	<div class="modal-body">
 	    <form:form id="macroform" commandName="Macros" modelAttribute="macroDetails"  method="post" role="form">
 		<form:hidden path="id" id="id" />
+                <form:hidden path="populateFieldA" id="populateFieldA" />
 		<div class="form-container">
 		    <div class="row col-lg-12">
 			<div class="col-lg-6">
@@ -43,7 +44,7 @@
 				    <form:errors path="formula" cssClass="control-label" element="label" />
 				</div>
 			    </spring:bind> 
-			    <div class="form-group">
+			    <%--<div class="form-group">
 				<label for="status">Pre-Populate Field A with Source Field No.</label>
 				<div>
 				    <label class="radio-inline">
@@ -54,7 +55,7 @@
 				    </label>
 				</div>         
 				<br/> 
-			    </div>     
+			    </div>--%>
 			</div>
 			<div class="col-lg-6">
 			    <spring:bind path="fieldAQuestion">

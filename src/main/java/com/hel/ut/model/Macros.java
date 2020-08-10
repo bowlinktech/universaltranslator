@@ -20,12 +20,10 @@ public class Macros {
     private int id;
 
     @NotEmpty
-    @NoHtml
     @Column(name = "MACRO_NAME", nullable = false)
     private String macroName;
 
     @NotEmpty
-    @NoHtml
     @Column(name = "MACRO_SHORT_NAME", nullable = false)
     private String macroShortName;
 
@@ -45,19 +43,15 @@ public class Macros {
     @Column(name = "INVALID_WHEN", nullable = true)
     private String invalidWhen = null;
 
-    @NoHtml
     @Column(name = "FIELDA_QUESTION", nullable = true)
     private String fieldAQuestion = null;
 
-    @NoHtml
     @Column(name = "FIELDB_QUESTION", nullable = true)
     private String fieldBQuestion = null;
 
-    @NoHtml
     @Column(name = "CON1_QUESTION", nullable = true)
     private String con1Question = null;
 
-    @NoHtml
     @Column(name = "CON2_QUESTION", nullable = true)
     private String con2Question = null;
 
