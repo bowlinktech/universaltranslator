@@ -5,38 +5,35 @@
  */
 
 require(['./main'], function () {
-    require(['jquery'], function($) {
 
-        //Fade out the updated/created message after being displayed.
-        if ($('.alert').length > 0) {
-            $('.alert').delay(2000).fadeOut(10000);
+    //Fade out the updated/created message after being displayed.
+    if ($('.alert').length > 0) {
+        $('.alert').delay(2000).fadeOut(10000);
+    }
+
+    $("input:text,form").attr("autocomplete", "off");
+
+ // Delete Path 
+  //Function to delete the message 
+    $(document).on('click', '.deleteFilePath', function() {
+
+        var confirmed = confirm("Are you sure you want to delete this path?");
+
+        if (confirmed) {
+
+            var pathId = $(this).attr('rel');
+
+            $.ajax({
+                url: 'moveFilePaths',
+                type: 'POST',
+                data: {'pathId': pathId},
+                success: function(data) {
+                    window.location.href='moveFilePaths?msg=deleted'
+
+                }
+            });
         }
 
-        $("input:text,form").attr("autocomplete", "off");
-
-     // Delete Path 
-      //Function to delete the message 
-        $(document).on('click', '.deleteFilePath', function() {
-
-            var confirmed = confirm("Are you sure you want to delete this path?");
-
-            if (confirmed) {
-
-            	var pathId = $(this).attr('rel');
-
-                $.ajax({
-                    url: 'moveFilePaths',
-                    type: 'POST',
-                    data: {'pathId': pathId},
-                    success: function(data) {
-                    	window.location.href='moveFilePaths?msg=deleted'
-
-                    }
-                });
-            }
-
-        });
-        
     });
 });
 
