@@ -949,9 +949,7 @@ public class transactionInDAOImpl implements transactionInDAO {
 		    + ", 4, " + cdt.getMacroId() + ",b.F"+cdt.getFieldNo()+"," + cdt.isRequiredField() +" from transactiontranslatedin_"+batchId+" a inner join "
 		    + "transactioninrecords_"+batchId+" b on a.transactionInRecordsId = b.id "
 		    + "where a.configId = :configId "
-		    + "and a.forcw = 'MACRO_ERROR' and (a.statusId is null or a.statusId not in (:transRELId)) "
-		    + "and a.transactionInRecordsId in (select id from transactioninrecords_"+batchId
-		    + " where configId = :configId);";
+		    + "and a.forcw = 'MACRO_ERROR' and (a.statusId is null or a.statusId not in (:transRELId));";
 	    } 
 	    else { 
 		sql = "insert into transactionouterrors_"+batchId+" (batchDownloadId, configId, "
@@ -960,9 +958,7 @@ public class transactionInDAOImpl implements transactionInDAO {
 		    + ", 4, " + cdt.getMacroId() + ",b.F"+cdt.getFieldNo()+"," + cdt.isRequiredField() +" from transactiontranslatedout_"+batchId+" a inner join "
 		    + "transactionoutrecords_"+batchId+" b on a.transactionOutRecordsId = b.id "
 		    + "where a.configId = :configId "
-		    + "and a.forcw = 'MACRO_ERROR' and (a.statusId is null or a.statusId not in (:transRELId)) "
-		    + "and a.transactionOutRecordsId in (select id from transactionoutrecords_"+batchId
-		    + " where configId = :configId);";
+		    + "and a.forcw = 'MACRO_ERROR' and (a.statusId is null or a.statusId not in (:transRELId));";
 	    } 
 
 	    Query updateData = sessionFactory.getCurrentSession().createSQLQuery(sql)
