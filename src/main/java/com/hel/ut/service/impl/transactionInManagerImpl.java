@@ -562,13 +562,14 @@ public class transactionInManagerImpl implements transactionInManager {
 		
 	    // we expect the target field back so we can figure out clear pass option
 	    sysError = executeMacro(configId, batchId, cdt, foroutboundProcessing, macro);
+	    
 	    // insert macro errors
-	    Integer intMacroReturn = flagMacroErrors(configId, batchId, cdt, foroutboundProcessing);
+	    Integer macroErrors = flagMacroErrors(configId, batchId, cdt, foroutboundProcessing);
 
 	    //flag as error in transactionIn or transactionOut table (Only updating REQUIRED records from transactioninerrors)
 	    updateStatusForErrorTrans(batchId, 14, foroutboundProcessing);
 
-	    return sysError;
+	    return macroErrors;
 	    
 	} catch (Exception e) {
 	   e.printStackTrace();
@@ -2905,6 +2906,9 @@ public class transactionInManagerImpl implements transactionInManager {
 	Integer batchStatusId = 29;
 	List<Integer> errorStatusIds = Arrays.asList(11, 13, 14, 16);
 	
+	//Get a full list of macros
+	List<Macros> macroList = configurationManager.getMacros();
+	
 	//get batch details
 	batchUploads batch = getBatchDetails(batchUploadId);
 
@@ -3008,6 +3012,7 @@ public class transactionInManagerImpl implements transactionInManager {
 		if(!dataTranslations.isEmpty()) {
 		    Integer crosswalkErrors = 0;
 		    Integer macroError = 0;
+		    String macroName = "";
 		    
 		    for (configurationDataTranslations cdt : dataTranslations) {
 			crosswalkErrors = 0;
@@ -3028,22 +3033,26 @@ public class transactionInManagerImpl implements transactionInManager {
 			    }
 			} 
 			else if (cdt.getMacroId() != 0) {
+			    macroName = "";
 			    macroError = processMacro(batch.getConfigId(), batchUploadId, cdt, false);
 			    
 			    if(macroError == 9999999) {
 				systemErrorCount++; 
 			    }
-			    else {
-				//Check if there is a logged error for the macro
-				macroError = transactionInDAO.getMacroErrorRecordCountForTable(batchUploadId, false, batch.getConfigId(), cdt.getMacroId());
-				
-				if(macroError > 0) {
-				    //log batch activity
-				    ba = new batchuploadactivity();
-				    ba.setActivity("Macro Error. macroId:" + cdt.getMacroId() + " for configId:" + batch.getConfigId() + " total records with Macro error: " + macroError);
-				    ba.setBatchUploadId(batchUploadId);
-				    transactionInDAO.submitBatchActivityLog(ba);
+			    else if(macroError > 0) {
+				if(!macroList.isEmpty()) {
+				    for(Macros macro : macroList) {
+					if(macro.getId() == cdt.getMacroId()) {
+					    macroName = macro.getMacroName().trim();
+					}
+				    }
 				}
+				
+				//log batch activity
+				ba = new batchuploadactivity();
+				ba.setActivity("Macro Error. macro: " + macroName + " macroId: " + cdt.getMacroId() + " for configId:" + batch.getConfigId() + " total records with Macro error: " + macroError);
+				ba.setBatchUploadId(batchUploadId);
+				transactionInDAO.submitBatchActivityLog(ba);
 			    }
 			}
 		    }
@@ -3099,26 +3108,29 @@ public class transactionInManagerImpl implements transactionInManager {
 	    if(postDataTranslations != null) {
 		if(!postDataTranslations.isEmpty()) {
 		    Integer postMacroError = 0;
+		    String macroName = "";
 		    
 		    for (configurationDataTranslations cdt : postDataTranslations) {
-			
+			macroName = "";
 			postMacroError = processMacro(batch.getConfigId(), batchUploadId, cdt, false);
 			    
 			if(postMacroError == 9999999) {
 			    systemErrorCount++; 
 			}
-			else {
-			    //Check if there is a logged error for the macro
-			    postMacroError = transactionInDAO.getMacroErrorRecordCountForTable(batchUploadId, false, batch.getConfigId(), cdt.getMacroId());
-			    
-			    if(postMacroError > 0) {
-
-				//log batch activity
-				ba = new batchuploadactivity();
-				ba.setActivity("Macro Error. macroId:" + cdt.getMacroId() + " for configId:" + batch.getConfigId() + " total records with Macro error: " + postMacroError);
-				ba.setBatchUploadId(batchUploadId);
-				transactionInDAO.submitBatchActivityLog(ba);
+			else if(postMacroError > 0) {
+			    if(!macroList.isEmpty()) {
+				for(Macros macro : macroList) {
+				    if(macro.getId() == cdt.getMacroId()) {
+					macroName = macro.getMacroName().trim();
+				    }
+				}
 			    }
+
+			    //log batch activity
+			    ba = new batchuploadactivity();
+			    ba.setActivity("Post Macro Error. macro: " + macroName + " macroId: " + cdt.getMacroId() + " for configId:" + batch.getConfigId() + " total records with Macro error: " + postMacroError);
+			    ba.setBatchUploadId(batchUploadId);
+			    transactionInDAO.submitBatchActivityLog(ba);
 			}
 		    }
 		}

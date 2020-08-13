@@ -13,6 +13,7 @@ import com.hel.ut.model.HL7Details;
 import com.hel.ut.model.HL7ElementComponents;
 import com.hel.ut.model.HL7Elements;
 import com.hel.ut.model.HL7Segments;
+import com.hel.ut.model.Macros;
 import com.hel.ut.model.Organization;
 import com.hel.ut.model.Transaction;
 import com.hel.ut.model.batchDLRetry;
@@ -1432,6 +1433,9 @@ public class transactionOutManagerImpl implements transactionOutManager {
 	String patientFirstname = "";
 	String patientLastname = "";
 	
+	//Get a full list of macros
+	List<Macros> macroList = configurationManager.getMacros();
+	
 	try {
 	    ba = new batchdownloadactivity();
 	    ba.setActivity("processMassOutputBatch for batch (Id: " + batchDownload.getId() + ")");
@@ -1532,6 +1536,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
 	    if(!dataTranslations.isEmpty()) {
 		Integer crosswalkErrors = 0;
 		Integer macroError = 0;
+		String macroName = "";
 		
 		for (configurationDataTranslations cdt : dataTranslations) {
 		    crosswalkErrors = 0;
@@ -1554,25 +1559,28 @@ public class transactionOutManagerImpl implements transactionOutManager {
 			} 	
 		    }	
 		    else if (cdt.getMacroId() != 0) {
-				
+			macroName = "";
 			macroError = transactionInManager.processMacro(batchDownload.getConfigId(), batchDownload.getId(), cdt, true);
 
 			if(macroError == 9999999) {
 			    systemErrorCount++; 
 			}
-			else {
-			    //Check if there is a logged error for the macro
-			    macroError = transactionInDAO.getMacroErrorRecordCountForTable(batchDownload.getId(), true, batchDownload.getConfigId(), cdt.getMacroId());
+			else if(macroError > 0) {
+			    totalErrorCount = totalErrorCount + macroError;
 			    
-			    if(macroError > 0) {
-				totalErrorCount = totalErrorCount + macroError;
-
-				//log batch activity
-				ba = new batchdownloadactivity();
-				ba.setActivity("Macro Error. macroId:" + cdt.getMacroId() + " for configId:" + batchDownload.getConfigId() + " total records with Macro error: " + macroError);
-				ba.setBatchDownloadId(batchDownload.getId());
-				transactionOutDAO.submitBatchActivityLog(ba);
+			    if(!macroList.isEmpty()) {
+				for(Macros macro : macroList) {
+				    if(macro.getId() == cdt.getMacroId()) {
+					macroName = macro.getMacroName().trim();
+				    }
+				}
 			    }
+
+			    //log batch activity
+			    ba = new batchdownloadactivity();
+			    ba.setActivity("Macro Error. macro: " + macroName + " macroId: " + cdt.getMacroId() + " for configId:" + batchDownload.getConfigId() + " total records with Macro error: " + macroError);
+			    ba.setBatchDownloadId(batchDownload.getId());
+			    transactionOutDAO.submitBatchActivityLog(ba);
 			}
 		    }
 		} 
