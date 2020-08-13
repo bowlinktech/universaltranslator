@@ -939,6 +939,8 @@ public class transactionInDAOImpl implements transactionInDAO {
 	
 	String inboundOutbound = "Inbound";
 	
+	Integer totalMacroErrors = 0;
+	
 	try {
 	    String sql;
 	    Integer id = batchId;
@@ -966,12 +968,25 @@ public class transactionInDAOImpl implements transactionInDAO {
 		.setParameterList("transRELId", transRELId);
 	    
 	    updateData.executeUpdate();
-	} catch (Exception ex) {
 	    
+	    if (foroutboundProcessing == false) {
+		sql = "select count(id) as total from transactioninerrors_" + batchId + " where errorId = 4 and macroId = " + cdt.getMacroId();
+	    }
+	    else {
+		sql = "select count(id) as total from transactionouterrors_" + batchId + " where errorId = 4 and macroId = " + cdt.getMacroId();
+	    }
+
+	    Query query = sessionFactory.getCurrentSession().createSQLQuery(sql).addScalar("total", StandardBasicTypes.INTEGER);
+
+	    totalMacroErrors = (Integer) query.list().get(0);
+	    
+	} catch (Exception ex) {
+	    totalMacroErrors = 9999999;
 	    System.err.println("flagMacroErrors for " + inboundOutbound + " batch (Id: " + batchId + ") " + ex.getCause());
 	    ex.printStackTrace();
 	}
-	return 0;
+	
+	return totalMacroErrors;
     }
 
 
@@ -1035,10 +1050,20 @@ public class transactionInDAOImpl implements transactionInDAO {
 	    return 0;
 	    
 	} catch (Exception ex) {
+	    //Insert macro error
+	   String updateTableName = "transactiontranslatedin_"+batchId;
+	    
+	    if (foroutboundProcessing == true) {
+		 updateTableName = "transactiontranslatedout_"+batchId;
+	    }
+	    
+	    String updateSQL = "update " + updateTableName + " set forcw = 'MACRO_ERROR', statusId = 14";
+	    Query query = sessionFactory.getCurrentSession().createSQLQuery(updateSQL);
+	    query.executeUpdate();
+	    
 	    //insert system error
 	    insertProcessingError(processingSysErrorId, configId, batchId, cdt.getFieldNo(),cdt.getMacroId(), null, null,false, foroutboundProcessing, ("executeMacro " + ex.getCause().toString()));
-	    System.err.println("executeMacro -"+ macro.getFormula() + " for " + inboundOutbound + " batch (Id: " + batchId + ") " + ex.getCause());
-	    ex.printStackTrace();
+	   
 	    return 9999999;
 	}
     }
