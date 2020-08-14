@@ -52,7 +52,7 @@ USE `universaltranslator`;
 DROP procedure IF EXISTS `CheckListLengthIfGTError`;
 
 DELIMITER $$
-USE `universaltranslatorca`$$
+USE `universaltranslator`$$
 CREATE DEFINER=`root`@`localhost` PROCEDURE `CheckListLengthIfGTError`(in configId int, 
 in batchId int, in srcField varchar(10),
 in fieldA varchar(10), in fieldB varchar(10), in con1 varchar(255), 
