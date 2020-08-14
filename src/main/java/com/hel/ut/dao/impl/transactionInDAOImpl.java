@@ -939,6 +939,8 @@ public class transactionInDAOImpl implements transactionInDAO {
 	
 	String inboundOutbound = "Inbound";
 	
+	Integer totalMacroErrors = 0;
+	
 	try {
 	    String sql;
 	    Integer id = batchId;
@@ -949,9 +951,7 @@ public class transactionInDAOImpl implements transactionInDAO {
 		    + ", 4, " + cdt.getMacroId() + ",b.F"+cdt.getFieldNo()+"," + cdt.isRequiredField() +" from transactiontranslatedin_"+batchId+" a inner join "
 		    + "transactioninrecords_"+batchId+" b on a.transactionInRecordsId = b.id "
 		    + "where a.configId = :configId "
-		    + "and a.forcw = 'MACRO_ERROR' and (a.statusId is null or a.statusId not in (:transRELId)) "
-		    + "and a.transactionInRecordsId in (select id from transactioninrecords_"+batchId
-		    + " where configId = :configId);";
+		    + "and a.forcw = 'MACRO_ERROR' and (a.statusId is null or a.statusId not in (:transRELId));";
 	    } 
 	    else { 
 		sql = "insert into transactionouterrors_"+batchId+" (batchDownloadId, configId, "
@@ -960,9 +960,7 @@ public class transactionInDAOImpl implements transactionInDAO {
 		    + ", 4, " + cdt.getMacroId() + ",b.F"+cdt.getFieldNo()+"," + cdt.isRequiredField() +" from transactiontranslatedout_"+batchId+" a inner join "
 		    + "transactionoutrecords_"+batchId+" b on a.transactionOutRecordsId = b.id "
 		    + "where a.configId = :configId "
-		    + "and a.forcw = 'MACRO_ERROR' and (a.statusId is null or a.statusId not in (:transRELId)) "
-		    + "and a.transactionOutRecordsId in (select id from transactionoutrecords_"+batchId
-		    + " where configId = :configId);";
+		    + "and a.forcw = 'MACRO_ERROR' and (a.statusId is null or a.statusId not in (:transRELId));";
 	    } 
 
 	    Query updateData = sessionFactory.getCurrentSession().createSQLQuery(sql)
@@ -970,12 +968,25 @@ public class transactionInDAOImpl implements transactionInDAO {
 		.setParameterList("transRELId", transRELId);
 	    
 	    updateData.executeUpdate();
-	} catch (Exception ex) {
 	    
+	    if (foroutboundProcessing == false) {
+		sql = "select count(id) as total from transactioninerrors_" + batchId + " where errorId = 4 and macroId = " + cdt.getMacroId();
+	    }
+	    else {
+		sql = "select count(id) as total from transactionouterrors_" + batchId + " where errorId = 4 and macroId = " + cdt.getMacroId();
+	    }
+
+	    Query query = sessionFactory.getCurrentSession().createSQLQuery(sql).addScalar("total", StandardBasicTypes.INTEGER);
+
+	    totalMacroErrors = (Integer) query.list().get(0);
+	    
+	} catch (Exception ex) {
+	    totalMacroErrors = 9999999;
 	    System.err.println("flagMacroErrors for " + inboundOutbound + " batch (Id: " + batchId + ") " + ex.getCause());
 	    ex.printStackTrace();
 	}
-	return 0;
+	
+	return totalMacroErrors;
     }
 
 
@@ -1039,10 +1050,20 @@ public class transactionInDAOImpl implements transactionInDAO {
 	    return 0;
 	    
 	} catch (Exception ex) {
+	    //Insert macro error
+	   String updateTableName = "transactiontranslatedin_"+batchId;
+	    
+	    if (foroutboundProcessing == true) {
+		 updateTableName = "transactiontranslatedout_"+batchId;
+	    }
+	    
+	    String updateSQL = "update " + updateTableName + " set forcw = 'MACRO_ERROR', statusId = 14";
+	    Query query = sessionFactory.getCurrentSession().createSQLQuery(updateSQL);
+	    query.executeUpdate();
+	    
 	    //insert system error
-	    insertProcessingError(processingSysErrorId, configId, batchId, cdt.getFieldNo(),cdt.getMacroId(), null, null,false, foroutboundProcessing, ("executeMacro " + ex.getCause().toString()));
-	    System.err.println("executeMacro -"+ macro.getFormula() + " for " + inboundOutbound + " batch (Id: " + batchId + ") " + ex.getCause());
-	    ex.printStackTrace();
+	    insertProcessingError(processingSysErrorId, configId, batchId, cdt.getFieldNo(),cdt.getMacroId(), null, null,true, foroutboundProcessing, ("executeMacro " + ex.getCause().toString()));
+	   
 	    return 9999999;
 	}
     }
@@ -2983,6 +3004,7 @@ public class transactionInDAOImpl implements transactionInDAO {
 		    + "`reportField3Data` varchar(45) DEFAULT NULL," 
 		    + "`reportField4Data` varchar(45) DEFAULT NULL," 
 		    + "`transactionInErrorId` int(11) DEFAULT '0'," 
+		    + "`required` bit(1) DEFAULT NULL,"
 		    + " PRIMARY KEY (`id`)," 
 		    + " KEY `auditKeyError_idx` (`batchUploadId`)," 
 		    + " CONSTRAINT `auditErrorKey_"+batchUploadId+"_FK` FOREIGN KEY (`batchUploadId`) REFERENCES `batchuploads` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION" 
