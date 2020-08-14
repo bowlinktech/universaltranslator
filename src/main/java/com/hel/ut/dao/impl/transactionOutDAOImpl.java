@@ -997,6 +997,7 @@ public class transactionOutDAOImpl implements transactionOutDAO {
 		    + "`reportField3Data` varchar(45) DEFAULT NULL," 
 		    + "`reportField4Data` varchar(45) DEFAULT NULL," 
 		    + "`transactionOutErrorId` int(11) DEFAULT '0'," 
+		    + "`required` bit(1) DEFAULT NULL,"
 		    + " PRIMARY KEY (`id`)," 
 		    + " KEY `ttoauditKeyError_idx` (`batchDownloadId`)," 
 		    + " CONSTRAINT `ttoauditErrorKey_"+batchDownloadId+"_FK` FOREIGN KEY (`batchDownloadId`) REFERENCES `batchDownloads` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION" 
