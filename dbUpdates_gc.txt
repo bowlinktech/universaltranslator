@@ -1,5 +1,351 @@
 /** Handling Rejects - on stage 20200813 **/
 
+
+drop procedure if exists createTempErrorTable;
+
+DELIMITER $$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `createTempErrorTable`(in inBatchId int)
+proc_main:begin
+
+
+SET @stmt = CONCAT("drop TABLE if exists transactionoutdetailauditerrorsforinbound_",inBatchId);
+
+			PREPARE stmt from @stmt;
+			EXECUTE stmt;
+			DEALLOCATE PREPARE stmt;
+
+
+SET @stmt = CONCAT("
+CREATE TABLE transactionoutdetailauditerrorsforinbound_",inBatchId," (
+  id int(11) NOT NULL AUTO_INCREMENT,
+  batchDownloadId int(11) NOT NULL,
+  configId int(11) NOT NULL,
+  transactionOutRecordsId int(11) NOT NULL,
+  fieldNo int(11) NOT NULL,
+  fieldName varchar(45) DEFAULT NULL,
+  errorId int(11) NOT NULL,
+  errorDetails varchar(200) DEFAULT NULL COMMENT 'This field is used to update cw name, validation type name, macro name',
+  errorData text,
+  reportField1Data varchar(45) DEFAULT NULL,
+  reportField2Data varchar(45) DEFAULT NULL,
+  reportField3Data varchar(45) DEFAULT NULL,
+  reportField4Data varchar(45) DEFAULT NULL,
+  transactionOutErrorId int(11) DEFAULT '0',
+  required bit(1) default null,
+  PRIMARY KEY (id),
+  KEY ttoauditKey",inBatchId,"Error_idx (batchDownloadId)
+  ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
+");
+
+			PREPARE stmt from @stmt;
+			EXECUTE stmt;
+			DEALLOCATE PREPARE stmt;
+
+
+end proc_main$$
+DELIMITER ;
+
+
+/** macro changes  - on stage 20200813 **/
+
+USE `universaltranslator`;
+DROP procedure IF EXISTS `CheckListLengthIfGTError`;
+
+DELIMITER $$
+USE `universaltranslatorca`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `CheckListLengthIfGTError`(in configId int, 
+in batchId int, in srcField varchar(10),
+in fieldA varchar(10), in fieldB varchar(10), in con1 varchar(255), 
+in con2 varchar(255), in macroId int, in foroutboundProcessing boolean, in passClear int, in transactionId int)
+proc_main:begin
+
+call setInboundOutBoundTables (foroutboundProcessing,batchId);
+SELECT 
+    @translatedTable,
+    @transactionTable,
+    @batchTable,
+    @batchIdType,
+    @errorTable,
+    @translateCol
+INTO @translatedTable , @transactionTable , @batchTable , @batchIdType , @errorTable, @translateCol;
+
+call getFinalStatusIds;
+SELECT @finalStatusIds INTO @finalStatusIds;
+
+set @errorCode='52';
+
+if (transactionId = 0) then
+	set @whereString = concat("  configId = ",configId," and ", @batchIdType," = ",batchId," and statusId not in (",@finalStatusIds ,");");
+end if;
+
+if (transactionId != 0) then
+	set @whereString = concat("  ",	@transactionTable,"Id = ", transactionId,";");
+end if;
+
+	set @requiredField = false;
+     
+     if (con2 = 'Y') then
+		set @requiredField = true;
+     	set @stmt = concat("update ", @translatedTable, " set statusId = 14 where  LENGTH(",srcField,") - LENGTH(REPLACE( ",srcField,", ',', '')) + 1 > ",con1," and ", 
+		@whereString);
+		
+        PREPARE stmt from @stmt;
+		EXECUTE stmt;
+		DEALLOCATE PREPARE stmt;
+     
+     end if ;
+     
+     set @stmt = concat("insert into ", @errorTable , " (" , @batchIdColumn, ", configId, " , @translateCol, 
+    ", fieldNo, errorId, macroId, fieldValue, required) select ",@batchIdType,", configId, id, replace('",srcField,"', 'F', ''), ", @errorCode, 
+    ", ",macroId,",",srcField,", ",@requiredField," from ", @translatedTable, " where  LENGTH(",srcField,") - LENGTH(REPLACE( ",srcField,", ',', '')) + 1 > ",con1," and ", 
+    @whereString);
+	
+    PREPARE stmt from @stmt;
+	EXECUTE stmt;
+    DEALLOCATE PREPARE stmt;
+     
+     
+if (passClear = 2) THEN
+BEGIN
+
+END;
+END IF;
+
+
+select '';
+end proc_main$$
+
+DELIMITER ;
+
+USE `universaltranslator`;
+DROP procedure IF EXISTS `DOBCheck`;
+
+DELIMITER $$
+USE `universaltranslator`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `DOBCheck`(in configId int, 
+in batchId int, in srcField varchar(10),
+in fieldA varchar(10), in fieldB varchar(10), in con1 varchar(255), 
+in con2 varchar(255), in macroId int, in foroutboundProcessing boolean, in passClear int, in transactionId int)
+proc_main:begin
+
+
+call setInboundOutBoundTables (foroutboundProcessing,batchId);
+select @translatedTable, @transactionTable, @batchTable, @batchIdType , @errorTable, @batchIdColumn,@translateCol
+into @translatedTable, @transactionTable, @batchTable, @batchIdType , @errorTable, @batchIdColumn,@translateCol;
+
+
+call getFinalStatusIds;
+select @finalStatusIds into @finalStatusIds;
+
+
+set @stmt = concat("select group_concat(id) from " , @translatedTable, " where
+ ((Date(",srcField,") is null and length(",srcField,") > 0)  or  (Date(",fieldA,") is null and length(",fieldA,") > 0 ))
+ or (YEAR(",fieldA,") - YEAR(",srcField,") < ",con1,") 
+ or (YEAR(",fieldA,") - YEAR(",srcField,") = ",con1," && DATE_FORMAT(",srcField,", '%m%d') < DATE_FORMAT(",fieldA,", '%m%d'))
+ and  configId = ",configId," and ", @batchIdType," = ",batchId," and statusId not in (",@finalStatusIds ,") into @errorIds");
+
+
+PREPARE stmt from @stmt;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+if (@errorIds is not null) then
+
+	begin
+
+		set @stmt = concat("update " , @translatedTable, "  set forCW = 'MACRO_ERROR' where id in (",@errorIds,")");
+
+		PREPARE stmt from @stmt;
+		EXECUTE stmt;
+		DEALLOCATE PREPARE stmt;
+
+
+		if (passClear = 2) THEN
+			BEGIN
+
+				set @stmt = concat("update " , @translatedTable, " set ", srcField ,"  = null where  forCW = 'MACRO_ERROR' and id in (",@errorIds,")");
+
+				PREPARE stmt from @stmt;
+				EXECUTE stmt;
+				DEALLOCATE PREPARE stmt;
+			END;
+		END IF;
+
+	end;
+end if;
+
+
+
+set @errorIds = '';
+
+
+
+select '';
+end proc_main$$
+
+DELIMITER ;
+
+
+/** 20200814 **/
+USE `universaltranslator`;
+DROP procedure IF EXISTS `populateAuditReport`;
+
+DELIMITER $$
+USE `universaltranslator`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `populateAuditReport`(in inConfigId int, in inBatchId int)
+proc_main:begin
+
+SET @stmt = CONCAT('delete from transactionindetailauditerrors_',inBatchId,' where configId = ',inConfigId);
+PREPARE stmt from @stmt;
+EXECUTE stmt;
+
+SELECT concat('F',rptField1),concat('F',rptField2),concat('F',rptField3),concat('F',rptField4) INTO @rptField1, @rptField2,@rptField3,@rptField4 
+FROM configurationmessagespecs where configId = inConfigId LIMIT 1;
+
+if(@rptField1 = 'F0') then 
+	set @rptField1 = "F1";
+end if;
+
+if(@rptField2 = 'F0') then 
+	set @rptField2 = "F2";
+end if;
+
+if(@rptField3 = 'F0') then 
+	set @rptField3 = "F3";
+end if;
+
+if(@rptField4 = 'F0') then 
+	set @rptField4 = "F4";
+end if;
+
+
+SET @stmt = CONCAT('insert into transactionindetailauditerrors_',inBatchId,' 
+(required, batchUploadId, configId, transactionInRecordsId, fieldNo, errorId, transactionInErrorId,errorData, reportField1Data, reportField2Data, reportField3Data, reportField4Data)
+select a.required, a.batchUploadId,a.configId,a.transactionInRecordsId,a.fieldno,a.errorId,a.id,a.fieldValue,b.',@rptField1,',b.',@rptField2,',b.',@rptField3,',b.',@rptField4,'
+from transactioninerrors_',inBatchId,' a inner join 
+transactioninrecords_',inBatchId,' b on a.transactionInRecordsId = b.id
+where a.configId = ',inConfigId);
+
+PREPARE stmt from @stmt;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+
+SET @stmt = CONCAT('UPDATE transactionIndetailauditerrors_',inBatchId,' JOIN (select fieldNo matchid, macro_Name as label 
+from macro_names, transactioninerrors_',inBatchId,' where macro_Names.id = transactioninerrors_',inBatchId,'.macroId) tbl_concat
+     ON transactionIndetailauditerrors_',inBatchId,'.fieldNo = tbl_concat.matchid
+SET transactionIndetailauditerrors_',inBatchId,'.errorDetails = tbl_concat.label WHERE errorId = 4');
+
+PREPARE stmt from @stmt;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+
+SET @stmt = CONCAT('UPDATE transactionindetailauditerrors_',inBatchId,'
+  JOIN (select fieldNo matchid, name as label 
+from crosswalks, transactioninerrors_',inBatchId,' where crosswalks.id = transactioninerrors_',inBatchId,'.cwId) tbl_concat
+     ON transactionIndetailauditerrors_',inBatchId,'.fieldNo = tbl_concat.matchid
+SET transactionIndetailauditerrors_',inBatchId,'.errorDetails = tbl_concat.label WHERE errorId = 3');
+
+PREPARE stmt from @stmt;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+SET @stmt = CONCAT('UPDATE transactionIndetailauditerrors_',inBatchId,'
+  JOIN (select fieldNo matchid, validationType as label 
+from ref_validationtypes, transactioninerrors_',inBatchId,' where ref_validationtypes.id = transactioninerrors_',inBatchId,'.validationTypeId) tbl_concat
+     ON transactionIndetailauditerrors_',inBatchId,'.fieldNo = tbl_concat.matchid
+SET transactionIndetailauditerrors_',inBatchId,'.errorDetails = tbl_concat.label WHERE errorId = 2');
+
+PREPARE stmt from @stmt;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+
+SET @stmt = CONCAT('UPDATE transactionIndetailauditerrors_',inBatchId,'
+  JOIN (select fieldNo as matchid, fieldDesc as label from configurationformfields where configId = ',inConfigId,') tbl_concat
+     ON transactionIndetailauditerrors_',inBatchId,'.fieldNo = tbl_concat.matchid
+SET transactionIndetailauditerrors_',inBatchId,'.fieldName = tbl_concat.label');
+
+PREPARE stmt from @stmt;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+
+SET @stmt = CONCAT('insert into transactionindetailauditerrors_',inBatchId,' 
+(batchUploadId, configId, transactionInRecordsId, fieldNo, errorId, transactionInErrorId,errorData, required)
+select batchUploadId,configId,0,fieldno,errorId,id,stackTrace, required from transactioninerrors_',inBatchId,' 
+where errorId = 5 and configId = ',inConfigId);
+
+PREPARE stmt from @stmt;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+
+SET @stmt = CONCAT("select group_concat(distinct concat('F', fieldNo)) from transactionindetailauditerrors_",inBatchId," 
+where batchUPloadId = ",inBatchId,"  and errorData is null and configId = ",inConfigId," into @fieldNos;
+");
+
+PREPARE stmt from @stmt;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+
+
+
+if (@fieldNos is not null) then
+
+	begin
+    
+    SET @stmt = CONCAT("
+		select distinct group_concat(concat('when fieldNo = ', fieldNo , ' then ', concat('F', fieldNo)) separator ' ' ) from transactionindetailauditerrors_",inBatchId,"
+        where batchUPloadId = ",inBatchId," and errorData is null and configId = ",inConfigId," into @updateStmts;
+	 ");
+
+		
+		PREPARE stmt from @stmt;
+		EXECUTE stmt;
+		DEALLOCATE PREPARE stmt;
+       
+        
+   if (@updateStmts is not null) then 
+    begin
+   
+	   SET @stmt = CONCAT("
+			update transactionindetailauditerrors_",inBatchId," tiae join (
+			select id, ", @fieldNos," from transactioninrecords_",inBatchId,") tir
+			on tiae.transactionInRecordsId = tir.id
+			set errordata = case ",@updateStmts," end
+			where batchUPloadId = ",inBatchId,"  and errorData is null  and configId = ",inConfigId," ;
+		");
+			
+            
+			PREPARE stmt from @stmt;
+			EXECUTE stmt;
+			DEALLOCATE PREPARE stmt;
+	end;
+    end if;
+
+	end;
+
+end if;
+
+
+SET @stmt = CONCAT('INSERT INTO batchuploadauditerrors (batchuploadId, configId, fieldNo, fieldName, errorId, errorDetails, errorData, reportField1Data, reportField2Data, reportField3Data, reportField4Data, rownumber, required) 
+select batchUploadId, configId, table1.fieldNo, fieldName, errorId, errorDetails, errorData, reportField1Data, reportField2Data, reportField3Data, reportField4Data, transactionInRecordsId, required 
+from transactionIndetailauditerrors_',inBatchId, " table1");
+
+PREPARE stmt from @stmt;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+
+select '';
+
+end proc_main$$
+
+DELIMITER ;
+
 USE `universaltranslator`;
 DROP procedure IF EXISTS `populateOutboundAuditReport`;
 
@@ -39,7 +385,6 @@ if(@rptField4 = 'F0') then
 end if;
 
 
-
 SET @stmt = CONCAT('insert into transactionoutdetailauditerrors_',inBatchId,' 
 (required, batchDownloadId, configId, transactionOutRecordsId, fieldNo, errorId, transactionOutErrorId,errorData, reportField1Data, reportField2Data, reportField3Data, reportField4Data)
 select a.required, a.batchDownloadId,a.configId,a.transactionOutRecordsId,a.fieldno,a.errorId,a.id,a.fieldValue,b.',@rptField1,',b.',@rptField2,',b.',@rptField3,',b.',@rptField4,'
@@ -54,7 +399,7 @@ DEALLOCATE PREPARE stmt;
 SET @stmt = CONCAT('UPDATE transactionoutdetailauditerrors_',inBatchId,' JOIN (select fieldNo matchid, macro_Name as label 
 from macro_names, transactionouterrors_',inBatchId,' where macro_Names.id = transactionouterrors_',inBatchId,'.macroId) tbl_concat
      ON transactionoutdetailauditerrors_',inBatchId,'.fieldNo = tbl_concat.matchid
-SET transactionoutdetailauditerrors_',inBatchId,'.errorDetails = tbl_concat.label WHERE macroId is not null');
+SET transactionoutdetailauditerrors_',inBatchId,'.errorDetails = tbl_concat.label WHERE errorId in (4,5)');
 
 PREPARE stmt from @stmt;
 EXECUTE stmt;
@@ -64,7 +409,7 @@ SET @stmt = CONCAT('UPDATE transactionoutdetailauditerrors_',inBatchId,'
   JOIN (select fieldNo matchid, name as label 
 from crosswalks, transactionouterrors_',inBatchId,' where crosswalks.id = transactionouterrors_',inBatchId,'.cwId) tbl_concat
      ON transactionoutdetailauditerrors_',inBatchId,'.fieldNo = tbl_concat.matchid
-SET transactionoutdetailauditerrors_',inBatchId,'.errorDetails = tbl_concat.label WHERE crosswalkId is not null');
+SET transactionoutdetailauditerrors_',inBatchId,'.errorDetails = tbl_concat.label WHERE errorId = 3');
 
 PREPARE stmt from @stmt;
 EXECUTE stmt;
@@ -320,53 +665,6 @@ end proc_main$$
 DELIMITER ;
 
 
-
-
-
-drop procedure if exists createTempErrorTable;
-
-DELIMITER $$
-CREATE DEFINER=`root`@`localhost` PROCEDURE `createTempErrorTable`(in inBatchId int)
-proc_main:begin
-
-
-SET @stmt = CONCAT("drop TABLE if exists transactionoutdetailauditerrorsforinbound_",inBatchId);
-
-			PREPARE stmt from @stmt;
-			EXECUTE stmt;
-			DEALLOCATE PREPARE stmt;
-
-
-SET @stmt = CONCAT("
-CREATE TABLE transactionoutdetailauditerrorsforinbound_",inBatchId," (
-  id int(11) NOT NULL AUTO_INCREMENT,
-  batchDownloadId int(11) NOT NULL,
-  configId int(11) NOT NULL,
-  transactionOutRecordsId int(11) NOT NULL,
-  fieldNo int(11) NOT NULL,
-  fieldName varchar(45) DEFAULT NULL,
-  errorId int(11) NOT NULL,
-  errorDetails varchar(200) DEFAULT NULL COMMENT 'This field is used to update cw name, validation type name, macro name',
-  errorData text,
-  reportField1Data varchar(45) DEFAULT NULL,
-  reportField2Data varchar(45) DEFAULT NULL,
-  reportField3Data varchar(45) DEFAULT NULL,
-  reportField4Data varchar(45) DEFAULT NULL,
-  transactionOutErrorId int(11) DEFAULT '0',
-  required bit(1) default null,
-  PRIMARY KEY (id),
-  KEY ttoauditKey",inBatchId,"Error_idx (batchDownloadId)
-  ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
-");
-
-			PREPARE stmt from @stmt;
-			EXECUTE stmt;
-			DEALLOCATE PREPARE stmt;
-
-
-end proc_main$$
-DELIMITER ;
-
 USE `universaltranslator`;
 DROP procedure IF EXISTS `populateOutboundAuditReport`;
 
@@ -406,7 +704,6 @@ if(@rptField4 = 'F0') then
 end if;
 
 
-
 SET @stmt = CONCAT('insert into transactionoutdetailauditerrors_',inBatchId,' 
 (required, batchDownloadId, configId, transactionOutRecordsId, fieldNo, errorId, transactionOutErrorId,errorData, reportField1Data, reportField2Data, reportField3Data, reportField4Data)
 select a.required, a.batchDownloadId,a.configId,a.transactionOutRecordsId,a.fieldno,a.errorId,a.id,a.fieldValue,b.',@rptField1,',b.',@rptField2,',b.',@rptField3,',b.',@rptField4,'
@@ -417,6 +714,18 @@ where a.configId = ',inConfigId);
 PREPARE stmt from @stmt;
 EXECUTE stmt;
 DEALLOCATE PREPARE stmt;
+
+
+SET @stmt = CONCAT("UPDATE transactionouterrors_",inBatchId," JOIN (select id as matchId, macro_Name as label 
+from macro_names) tbl_concat
+     ON transactionouterrors_",inBatchId,".macroId = tbl_concat.matchid
+SET transactionouterrors_",inBatchId,".stackTrace = concat(label, ' - ' , stackTrace)  WHERE errorId = 5");
+
+
+PREPARE stmt from @stmt;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
 
 SET @stmt = CONCAT('UPDATE transactionoutdetailauditerrors_',inBatchId,' JOIN (select fieldNo matchid, macro_Name as label 
 from macro_names, transactionouterrors_',inBatchId,' where macro_Names.id = transactionouterrors_',inBatchId,'.macroId) tbl_concat
@@ -644,8 +953,6 @@ if (@populateInboundAuditReport) then
 				delete from batchuploadauditerrors where fromOutboundConfig = true and batchUploadId = ",inBatchUpoadId," and configId = ",inBatchUploadConfigId,"
 			");
             
-             
-			
             PREPARE stmt from @stmt;
 			EXECUTE stmt;
 			DEALLOCATE PREPARE stmt;
@@ -664,8 +971,6 @@ if (@populateInboundAuditReport) then
 			EXECUTE stmt;
             DEALLOCATE PREPARE stmt; 
             
-            
-    
             end;
     end if;
     
@@ -682,310 +987,6 @@ end if;
 
 select '';
 
-end proc_main$$
-
-DELIMITER ;
-
-USE `universaltranslator`;
-DROP procedure IF EXISTS `populateAuditReport`;
-
-DELIMITER $$
-USE `universaltranslator`$$
-CREATE DEFINER=`root`@`localhost` PROCEDURE `populateAuditReport`(in inConfigId int, in inBatchId int)
-proc_main:begin
-
-SET @stmt = CONCAT('delete from transactionindetailauditerrors_',inBatchId,' where configId = ',inConfigId);
-PREPARE stmt from @stmt;
-EXECUTE stmt;
-
-
-SELECT concat('F',rptField1),concat('F',rptField2),concat('F',rptField3),concat('F',rptField4) INTO @rptField1, @rptField2,@rptField3,@rptField4 
-FROM configurationmessagespecs where configId = inConfigId LIMIT 1;
-
-if(@rptField1 = 'F0') then 
-	set @rptField1 = "F1";
-end if;
-
-if(@rptField2 = 'F0') then 
-	set @rptField2 = "F2";
-end if;
-
-if(@rptField3 = 'F0') then 
-	set @rptField3 = "F3";
-end if;
-
-if(@rptField4 = 'F0') then 
-	set @rptField4 = "F4";
-end if;
-
-
-SET @stmt = CONCAT('insert into transactionindetailauditerrors_',inBatchId,' 
-(required, batchUploadId, configId, transactionInRecordsId, fieldNo, errorId, transactionInErrorId,errorData, reportField1Data, reportField2Data, reportField3Data, reportField4Data)
-select a.required, a.batchUploadId,a.configId,a.transactionInRecordsId,a.fieldno,a.errorId,a.id,a.fieldValue,b.',@rptField1,',b.',@rptField2,',b.',@rptField3,',b.',@rptField4,'
-from transactioninerrors_',inBatchId,' a inner join 
-transactioninrecords_',inBatchId,' b on a.transactionInRecordsId = b.id
-where a.configId = ',inConfigId);
-
-PREPARE stmt from @stmt;
-EXECUTE stmt;
-DEALLOCATE PREPARE stmt;
-
-
-SET @stmt = CONCAT('UPDATE transactionIndetailauditerrors_',inBatchId,' JOIN (select fieldNo matchid, macro_Name as label 
-from macro_names, transactioninerrors_',inBatchId,' where macro_Names.id = transactioninerrors_',inBatchId,'.macroId) tbl_concat
-     ON transactionIndetailauditerrors_',inBatchId,'.fieldNo = tbl_concat.matchid
-SET transactionIndetailauditerrors_',inBatchId,'.errorDetails = tbl_concat.label WHERE errorId = 4');
-
-PREPARE stmt from @stmt;
-EXECUTE stmt;
-DEALLOCATE PREPARE stmt;
-
-
-SET @stmt = CONCAT('UPDATE transactionindetailauditerrors_',inBatchId,'
-  JOIN (select fieldNo matchid, name as label 
-from crosswalks, transactioninerrors_',inBatchId,' where crosswalks.id = transactioninerrors_',inBatchId,'.cwId) tbl_concat
-     ON transactionIndetailauditerrors_',inBatchId,'.fieldNo = tbl_concat.matchid
-SET transactionIndetailauditerrors_',inBatchId,'.errorDetails = tbl_concat.label WHERE errorId = 3');
-
-PREPARE stmt from @stmt;
-EXECUTE stmt;
-DEALLOCATE PREPARE stmt;
-
-SET @stmt = CONCAT('UPDATE transactionIndetailauditerrors_',inBatchId,'
-  JOIN (select fieldNo matchid, validationType as label 
-from ref_validationtypes, transactioninerrors_',inBatchId,' where ref_validationtypes.id = transactioninerrors_',inBatchId,'.validationTypeId) tbl_concat
-     ON transactionIndetailauditerrors_',inBatchId,'.fieldNo = tbl_concat.matchid
-SET transactionIndetailauditerrors_',inBatchId,'.errorDetails = tbl_concat.label WHERE errorId = 2');
-
-PREPARE stmt from @stmt;
-EXECUTE stmt;
-DEALLOCATE PREPARE stmt;
-
-
-SET @stmt = CONCAT('UPDATE transactionIndetailauditerrors_',inBatchId,'
-  JOIN (select fieldNo as matchid, fieldDesc as label from configurationformfields where configId = ',inConfigId,') tbl_concat
-     ON transactionIndetailauditerrors_',inBatchId,'.fieldNo = tbl_concat.matchid
-SET transactionIndetailauditerrors_',inBatchId,'.fieldName = tbl_concat.label');
-
-PREPARE stmt from @stmt;
-EXECUTE stmt;
-DEALLOCATE PREPARE stmt;
-
-
-SET @stmt = CONCAT('insert into transactionindetailauditerrors_',inBatchId,' 
-(batchUploadId, configId, transactionInRecordsId, fieldNo, errorId, transactionInErrorId,errorData, required)
-select batchUploadId,configId,0,fieldno,errorId,id,stackTrace, required from transactioninerrors_',inBatchId,' 
-where errorId = 5 and configId = ',inConfigId);
-
-PREPARE stmt from @stmt;
-EXECUTE stmt;
-DEALLOCATE PREPARE stmt;
-
-
-SET @stmt = CONCAT("select group_concat(distinct concat('F', fieldNo)) from transactionindetailauditerrors_",inBatchId," 
-where batchUPloadId = ",inBatchId,"  and errorData is null and configId = ",inConfigId," into @fieldNos;
-");
-
-PREPARE stmt from @stmt;
-EXECUTE stmt;
-DEALLOCATE PREPARE stmt;
-
-
-
-
-if (@fieldNos is not null) then
-
-	begin
-    
-    SET @stmt = CONCAT("
-		select distinct group_concat(concat('when fieldNo = ', fieldNo , ' then ', concat('F', fieldNo)) separator ' ' ) from transactionindetailauditerrors_",inBatchId,"
-        where batchUPloadId = ",inBatchId," and errorData is null and configId = ",inConfigId," into @updateStmts;
-	 ");
-
-		
-		PREPARE stmt from @stmt;
-		EXECUTE stmt;
-		DEALLOCATE PREPARE stmt;
-       
-        
-   if (@updateStmts is not null) then 
-    begin
-   
-	   SET @stmt = CONCAT("
-			update transactionindetailauditerrors_",inBatchId," tiae join (
-			select id, ", @fieldNos," from transactioninrecords_",inBatchId,") tir
-			on tiae.transactionInRecordsId = tir.id
-			set errordata = case ",@updateStmts," end
-			where batchUPloadId = ",inBatchId,"  and errorData is null  and configId = ",inConfigId," ;
-		");
-			
-            
-			PREPARE stmt from @stmt;
-			EXECUTE stmt;
-			DEALLOCATE PREPARE stmt;
-	end;
-    end if;
-
-	end;
-
-end if;
-
-
-SET @stmt = CONCAT('INSERT INTO batchuploadauditerrors (batchuploadId, configId, fieldNo, fieldName, errorId, errorDetails, errorData, reportField1Data, reportField2Data, reportField3Data, reportField4Data, rownumber, required) 
-select batchUploadId, configId, table1.fieldNo, fieldName, errorId, errorDetails, errorData, reportField1Data, reportField2Data, reportField3Data, reportField4Data, transactionInRecordsId, required 
-from transactionIndetailauditerrors_',inBatchId, " table1");
-
-PREPARE stmt from @stmt;
-EXECUTE stmt;
-DEALLOCATE PREPARE stmt;
-
-
-select '';
-
-end proc_main$$
-
-DELIMITER ;
-
-
-
-
-
-
-/** macro changes  - on stage 20200813 **/
-
-USE `universaltranslator`;
-DROP procedure IF EXISTS `CheckListLengthIfGTError`;
-
-DELIMITER $$
-USE `universaltranslatorca`$$
-CREATE DEFINER=`root`@`localhost` PROCEDURE `CheckListLengthIfGTError`(in configId int, 
-in batchId int, in srcField varchar(10),
-in fieldA varchar(10), in fieldB varchar(10), in con1 varchar(255), 
-in con2 varchar(255), in macroId int, in foroutboundProcessing boolean, in passClear int, in transactionId int)
-proc_main:begin
-
-call setInboundOutBoundTables (foroutboundProcessing,batchId);
-SELECT 
-    @translatedTable,
-    @transactionTable,
-    @batchTable,
-    @batchIdType,
-    @errorTable,
-    @translateCol
-INTO @translatedTable , @transactionTable , @batchTable , @batchIdType , @errorTable, @translateCol;
-
-call getFinalStatusIds;
-SELECT @finalStatusIds INTO @finalStatusIds;
-
-set @errorCode='52';
-
-if (transactionId = 0) then
-	set @whereString = concat("  configId = ",configId," and ", @batchIdType," = ",batchId," and statusId not in (",@finalStatusIds ,");");
-end if;
-
-if (transactionId != 0) then
-	set @whereString = concat("  ",	@transactionTable,"Id = ", transactionId,";");
-end if;
-
-	set @requiredField = false;
-     
-     if (con2 = 'Y') then
-		set @requiredField = true;
-     	set @stmt = concat("update ", @translatedTable, " set statusId = 14 where  LENGTH(",srcField,") - LENGTH(REPLACE( ",srcField,", ',', '')) + 1 > ",con1," and ", 
-		@whereString);
-		
-        PREPARE stmt from @stmt;
-		EXECUTE stmt;
-		DEALLOCATE PREPARE stmt;
-     
-     end if ;
-     
-     set @stmt = concat("insert into ", @errorTable , " (" , @batchIdColumn, ", configId, " , @translateCol, 
-    ", fieldNo, errorId, macroId, fieldValue, required) select ",@batchIdType,", configId, id, replace('",srcField,"', 'F', ''), ", @errorCode, 
-    ", ",macroId,",",srcField,", ",@requiredField," from ", @translatedTable, " where  LENGTH(",srcField,") - LENGTH(REPLACE( ",srcField,", ',', '')) + 1 > ",con1," and ", 
-    @whereString);
-	
-    PREPARE stmt from @stmt;
-	EXECUTE stmt;
-    DEALLOCATE PREPARE stmt;
-     
-     
-if (passClear = 2) THEN
-BEGIN
-
-END;
-END IF;
-
-
-select '';
-end proc_main$$
-
-DELIMITER ;
-
-USE `universaltranslator`;
-DROP procedure IF EXISTS `DOBCheck`;
-
-DELIMITER $$
-USE `universaltranslator`$$
-CREATE DEFINER=`root`@`localhost` PROCEDURE `DOBCheck`(in configId int, 
-in batchId int, in srcField varchar(10),
-in fieldA varchar(10), in fieldB varchar(10), in con1 varchar(255), 
-in con2 varchar(255), in macroId int, in foroutboundProcessing boolean, in passClear int, in transactionId int)
-proc_main:begin
-
-
-call setInboundOutBoundTables (foroutboundProcessing,batchId);
-select @translatedTable, @transactionTable, @batchTable, @batchIdType , @errorTable, @batchIdColumn,@translateCol
-into @translatedTable, @transactionTable, @batchTable, @batchIdType , @errorTable, @batchIdColumn,@translateCol;
-
-
-call getFinalStatusIds;
-select @finalStatusIds into @finalStatusIds;
-
-
-set @stmt = concat("select group_concat(id) from " , @translatedTable, " where
- ((Date(",srcField,") is null and length(",srcField,") > 0)  or  (Date(",fieldA,") is null and length(",fieldA,") > 0 ))
- or (YEAR(",fieldA,") - YEAR(",srcField,") < ",con1,") 
- or (YEAR(",fieldA,") - YEAR(",srcField,") = ",con1," && DATE_FORMAT(",srcField,", '%m%d') < DATE_FORMAT(",fieldA,", '%m%d'))
- and  configId = ",configId," and ", @batchIdType," = ",batchId," and statusId not in (",@finalStatusIds ,") into @errorIds");
-
-
-PREPARE stmt from @stmt;
-EXECUTE stmt;
-DEALLOCATE PREPARE stmt;
-
-if (@errorIds is not null) then
-
-	begin
-
-		set @stmt = concat("update " , @translatedTable, "  set forCW = 'MACRO_ERROR' where id in (",@errorIds,")");
-
-		PREPARE stmt from @stmt;
-		EXECUTE stmt;
-		DEALLOCATE PREPARE stmt;
-
-
-		if (passClear = 2) THEN
-			BEGIN
-
-				set @stmt = concat("update " , @translatedTable, " set ", srcField ,"  = null where  forCW = 'MACRO_ERROR' and id in (",@errorIds,")");
-
-				PREPARE stmt from @stmt;
-				EXECUTE stmt;
-				DEALLOCATE PREPARE stmt;
-			END;
-		END IF;
-
-	end;
-end if;
-
-
-
-set @errorIds = '';
-
-
-
-select '';
 end proc_main$$
 
 DELIMITER ;
