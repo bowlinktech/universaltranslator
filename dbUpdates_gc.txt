@@ -273,8 +273,8 @@ DEALLOCATE PREPARE stmt;
 
 
 SET @stmt = CONCAT('insert into transactionindetailauditerrors_',inBatchId,' 
-(batchUploadId, configId, transactionInRecordsId, fieldNo, errorId, transactionInErrorId,errorData, required)
-select batchUploadId,configId,0,fieldno,errorId,id,stackTrace, required from transactioninerrors_',inBatchId,' 
+(required, batchUploadId, configId, transactionInRecordsId, fieldNo, errorId, transactionInErrorId,errorData, required)
+select required, batchUploadId,configId,0,fieldno,errorId,id,stackTrace, required from transactioninerrors_',inBatchId,' 
 where errorId = 5 and configId = ',inConfigId);
 
 PREPARE stmt from @stmt;
@@ -438,8 +438,8 @@ DEALLOCATE PREPARE stmt;
 
 
 SET @stmt = CONCAT('insert into transactionoutdetailauditerrors_',inBatchId,' 
-(batchDownloadId, configId, transactionOutRecordsId, fieldNo, errorId, transactionOutErrorId,errorData)
-select batchDownloadId,configId,0,fieldno,errorId,id,stackTrace
+(required, batchDownloadId, configId, transactionOutRecordsId, fieldNo, errorId, transactionOutErrorId,errorData)
+select required, batchDownloadId,configId,0,fieldno,errorId,id,stackTrace
 from transactionouterrors_',inBatchId,' 
 where errorId = 5 and configId = ',inConfigId);
 
@@ -769,8 +769,8 @@ DEALLOCATE PREPARE stmt;
 
 
 SET @stmt = CONCAT('insert into transactionoutdetailauditerrors_',inBatchId,' 
-(batchDownloadId, configId, transactionOutRecordsId, fieldNo, errorId, transactionOutErrorId,errorData)
-select batchDownloadId,configId,0,fieldno,errorId,id,stackTrace
+(required,batchDownloadId, configId, transactionOutRecordsId, fieldNo, errorId, transactionOutErrorId,errorData)
+select required, batchDownloadId,configId,0,fieldno,errorId,id,stackTrace
 from transactionouterrors_',inBatchId,' 
 where errorId = 5 and configId = ',inConfigId);
 
