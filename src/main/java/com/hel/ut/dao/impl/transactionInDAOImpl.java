@@ -1062,7 +1062,7 @@ public class transactionInDAOImpl implements transactionInDAO {
 	    query.executeUpdate();
 	    
 	    //insert system error
-	    insertProcessingError(processingSysErrorId, configId, batchId, cdt.getFieldNo(),cdt.getMacroId(), null, null,false, foroutboundProcessing, ("executeMacro " + ex.getCause().toString()));
+	    insertProcessingError(processingSysErrorId, configId, batchId, cdt.getFieldNo(),cdt.getMacroId(), null, null,true, foroutboundProcessing, ("executeMacro " + ex.getCause().toString()));
 	   
 	    return 9999999;
 	}
@@ -3004,6 +3004,7 @@ public class transactionInDAOImpl implements transactionInDAO {
 		    + "`reportField3Data` varchar(45) DEFAULT NULL," 
 		    + "`reportField4Data` varchar(45) DEFAULT NULL," 
 		    + "`transactionInErrorId` int(11) DEFAULT '0'," 
+		    + "`required` bit(1) DEFAULT NULL,"
 		    + " PRIMARY KEY (`id`)," 
 		    + " KEY `auditKeyError_idx` (`batchUploadId`)," 
 		    + " CONSTRAINT `auditErrorKey_"+batchUploadId+"_FK` FOREIGN KEY (`batchUploadId`) REFERENCES `batchuploads` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION" 
