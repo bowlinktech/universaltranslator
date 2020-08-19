@@ -448,9 +448,56 @@ public class adminConfigController {
         //Need to get a list of organization users 
         List<utUser> users = userManager.getUsersByOrganization(configurationDetails.getorgId());
 	
+	boolean configNameChanged = false;
+	
+	utConfiguration currentConfigDetails = utconfigurationmanager.getConfigurationById(configurationDetails.getId());
+	
+	if(!currentConfigDetails.getconfigName().trim().equals(configurationDetails.getconfigName().trim())) {
+	    configNameChanged = true;
+	}
 	
         //submit the updates
 	utconfigurationmanager.updateConfiguration(configurationDetails);
+	
+	if(configNameChanged) {
+	    configurationTransport transportDetails = utconfigurationTransportManager.getTransportDetails(configurationDetails.getId());
+	    
+	    if(transportDetails != null) {
+		//get file drop fields
+		List<configurationFileDropFields> fileDropFields = utconfigurationTransportManager.getTransFileDropDetails(transportDetails.getId());
+		
+		Organization orgDetails = organizationmanager.getOrganizationById(configurationDetails.getorgId());
+		
+		if(!fileDropFields.isEmpty()) {
+		    String fileLocationConfigName = "";
+		    try {
+			for(configurationFileDropFields fileDropField : fileDropFields) {
+			    if(fileDropField.getDirectory().contains("/HELProductSuite/universalTranslator/")) {
+				fileLocationConfigName = fileDropField.getDirectory().substring(fileDropField.getDirectory().lastIndexOf("/input files/"), fileDropField.getDirectory().length()-1);
+				fileLocationConfigName = fileLocationConfigName.replace("/input files/","");
+				
+				if(!"".equals(fileLocationConfigName)) {
+				    if(!fileLocationConfigName.equals(configurationDetails.getconfigName().toLowerCase().replace(" ", ""))) {
+					//Create new directory
+					String directory = myProps.getProperty("ut.directory.utRootDir");
+					fileSystem dir = new fileSystem();
+					dir.createFileDroppedDirectory(directory.replace("/home/","/") + orgDetails.getcleanURL() + "/input files/"+configurationDetails.getconfigName().toLowerCase().replace(" ", "")+"/");
+					
+					//Remove old directory
+					dir.deleteDirectory(directory.replace("/home/","/") + orgDetails.getcleanURL() + "/input files/"+fileLocationConfigName);
+
+					//Update file drop location
+					fileDropField.setDirectory(directory.replace("/home/","/") + orgDetails.getcleanURL() + "/input files/"+configurationDetails.getconfigName().toLowerCase().replace(" ", "")+"/");
+					utconfigurationTransportManager.saveTransportFileDrop(fileDropField);
+				    }
+				}
+			    }
+			}
+		    }
+		    catch (Exception ex) {}
+		}
+	    }
+	}
 	
 	//Log the update
 	utUser userDetails = userManager.getUserByUserName(authentication.getName());
@@ -623,6 +670,34 @@ public class adminConfigController {
 
             transportDetails.setFileDropFields(emptyFileDropFields);
         } else {
+	   
+	    //Check that the file drop location has the current configuration name
+	    String fileLocationConfigName = "";
+	    try {
+		for(configurationFileDropFields fileDropField : fileDropFields) {
+		    if(fileDropField.getDirectory().contains("/HELProductSuite/universalTranslator/")) {
+			fileLocationConfigName = fileDropField.getDirectory().substring(fileDropField.getDirectory().lastIndexOf("/input files/"), fileDropField.getDirectory().length()-1);
+			fileLocationConfigName = fileLocationConfigName.replace("/input files/","");
+			if(!"".equals(fileLocationConfigName)) {
+			    if(!fileLocationConfigName.equals(configurationDetails.getconfigName().toLowerCase().replace(" ", ""))) {
+				//Create new directory
+				String directory = myProps.getProperty("ut.directory.utRootDir");
+				fileSystem dir = new fileSystem();
+				dir.createFileDroppedDirectory(directory.replace("/home/","/") + orgDetails.getcleanURL() + "/input files/"+configurationDetails.getconfigName().toLowerCase().replace(" ", "")+"/");
+				
+				//Remove old directory
+				dir.deleteDirectory(directory.replace("/home/","/") + orgDetails.getcleanURL() + "/input files/"+fileLocationConfigName);
+				
+				//Update file drop location
+				fileDropField.setDirectory(directory.replace("/home/","/") + orgDetails.getcleanURL() + "/input files/"+configurationDetails.getconfigName().toLowerCase().replace(" ", "")+"/");
+				utconfigurationTransportManager.saveTransportFileDrop(fileDropField);
+			    }
+			}
+		    }
+		}
+	    }
+	    catch (Exception ex) {}
+	    
             transportDetails.setFileDropFields(fileDropFields);
         }
 

@@ -220,4 +220,5 @@ public interface utConfigurationManager {
     
     void saveConfigurationUpdateLog(configurationUpdateLogs updateLog) throws Exception;
     
+    void checkForUnusedFolders() throws Exception;
 }
