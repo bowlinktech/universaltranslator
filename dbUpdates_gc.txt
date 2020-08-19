@@ -992,6 +992,175 @@ end proc_main$$
 DELIMITER ;
 
 
+/** zip code macro change 20200818 **/
+
+USE `universaltranslator`;
+DROP procedure IF EXISTS `ZipCodeCheck`;
+
+DELIMITER $$
+USE `universaltranslator`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `ZipCodeCheck`(in configId int, 
+in batchId int, in srcField varchar(10),
+in fieldA varchar(10), in fieldB varchar(10), in con1 varchar(255), 
+in con2 varchar(255), in macroId int, in foroutboundProcessing boolean, in passClear int, in transactionId int)
+proc_main:begin
+
+call setInboundOutBoundTables (foroutboundProcessing,batchId);
+SELECT 
+    @translatedTable,
+    @transactionTable,
+    @batchTable,
+    @batchIdType,
+    @errorTable,
+    @translateCol
+INTO @translatedTable , @transactionTable , @batchTable , @batchIdType , @errorTable, @translateCol;
+
+call getFinalStatusIds;
+SELECT @finalStatusIds INTO @finalStatusIds;
+
+set @errorCode = '41';
+
+
+				set @stmt = concat("update  ", @translatedTable , " set forcw = ",srcField);
+				PREPARE stmt from @stmt;
+				EXECUTE stmt;
+				DEALLOCATE PREPARE stmt;
+
+
+
+set @whereClause = concat("  (",srcField," REGEXP '^[0-9]{5}$' != 1) 
+    and ",srcField," is not null and length(",srcField,") > 0 ");
+
+if (transactionId = 0) then
+	set @whereStmt =  concat(" and configId = ",configId," and ", @batchIdType," = ",batchId," and statusId not in (",@finalStatusIds ,");");
+	set @whereString = concat(@whereClause , @whereStmt);
+end if;
+
+if (transactionId != 0) then
+	set @whereStmt = concat( " and  ",	@transactionTable,".id = ", transactionId,";");
+    set @whereString = concat(@whereClause , @whereStmt);
+end if;
+				
+                set @stmt = concat("update  ", @translatedTable , " set ",srcField," = replace(",srcField,", '-', '') where (length(", srcField,") != 0 or ",srcField," is not null )", @whereStmt);
+				PREPARE stmt from @stmt;
+				EXECUTE stmt;
+				DEALLOCATE PREPARE stmt;
+                
+
+if (con2 = 'Y') then
+begin
+
+				set @stmt = concat("update  ", @translatedTable , " set ",srcField," = 
+                case 
+                when (length(",srcField,") = 4 or length(",srcField,") = 8) then concat('0', ",srcField,") 
+                when (length(",srcField,") = 3 or length(",srcField,") = 7)  then concat('00', ",srcField,") 
+                when (length(",srcField,") = 2  or length(",srcField,") = 6)  then concat('000', ",srcField,") 
+                when length(",srcField,") = 1 then concat('0000', ",srcField,") 
+                end
+                where (length(", srcField,") < 5 or length(", srcField,") between 6 and 9)", @whereStmt);
+                
+                PREPARE stmt from @stmt;
+				EXECUTE stmt;
+				DEALLOCATE PREPARE stmt;
+end;
+end if;
+
+if (length(con1) > 0) then
+				set @stmt = concat("select case when required = 1 then 1 else 0 end  from configurationformfields where fieldno = ",replace(srcField, 'F', '')," and configId = ",configId," into @required ;");
+				
+                PREPARE stmt from @stmt;
+				EXECUTE stmt;
+				DEALLOCATE PREPARE stmt;
+                
+                if (@required = 1) then
+					
+					set @stmt = concat("update  ", @translatedTable , " set ",srcField," = '",con1,"' where (length(", srcField,") != 0 or ",srcField," is not null ) and ", @whereString);
+					
+                    PREPARE stmt from @stmt;
+					EXECUTE stmt;
+					DEALLOCATE PREPARE stmt;
+				
+                else 
+					set @stmt = concat("update  ", @translatedTable , " set ",srcField," = '",con1,"' where (length(", srcField,") = 0 or ",srcField," is null ) or ", @whereString);
+
+                    PREPARE stmt from @stmt;
+					EXECUTE stmt;
+					DEALLOCATE PREPARE stmt;
+                
+                end if;
+                
+
+end if;
+
+				set @stmt = concat("update  ", @translatedTable , " set ",srcField," = left(",srcField,", 5) where length(", srcField,") > 5", @whereStmt);
+				PREPARE stmt from @stmt;
+				EXECUTE stmt;
+				DEALLOCATE PREPARE stmt;
+                
+			
+			SET @stmt = CONCAT("
+					select fieldDesc from configurationformfields where fieldNo = replace('",srcField,"', 'F', '') and configId = ",configId," into @fieldName;
+			");
+				
+                PREPARE stmt from @stmt;
+				EXECUTE stmt;
+				DEALLOCATE PREPARE stmt;
+            
+				set @stmt = concat("insert into ", @errorTable , " (" , @batchIdColumn, ", configId, " , @translateCol, 
+				", fieldNo, errorId, macroId, fieldValue, fieldLabel) select ",@batchIdColumn,", configId, id, replace('",srcField,"', 'F', ''), '", @errorCode, 
+				"', ",macroId,", ","forCW",", '",@fieldName,"' from ", @translatedTable, " where  ", @whereString);
+				
+                PREPARE stmt from @stmt;
+				EXECUTE stmt;
+				DEALLOCATE PREPARE stmt;
+
+if (passClear = 2) THEN
+			BEGIN
+			set @dvTableName = "batchuploaddroppedvalues";
+			set @colDirection = "in";
+
+			if (foroutboundProcessing)  then
+					set @dvTableName = "batchdownloaddroppedvalues";
+					set @colDirection = "out";
+			end if;
+			
+			SET @stmt = CONCAT("
+				select fieldDesc from configurationformfields where fieldNo = replace('",srcField,"', 'F', '') and configId = ",configId," into @fieldName;
+			");
+         
+			PREPARE stmt from @stmt;
+			EXECUTE stmt;
+			DEALLOCATE PREPARE stmt;
+            
+			SET @stmt = CONCAT("
+			insert into ",@dvTableName ," (",@batchIdType,", transaction",@colDirection,"recordsId, fieldNo, configId, fieldName, fieldValue)
+			select ",batchId,", transaction",@colDirection,"RecordsId, replace('",srcField,"', 'F', ''), ",configId,", '", @fieldName, "' , forCW 
+            from ", @translatedTable, " where ",@whereString
+			);
+
+			PREPARE stmt from @stmt;
+			EXECUTE stmt;
+			DEALLOCATE PREPARE stmt;
+        
+			set @stmt = concat("update ",@translatedTable, " set ", srcField ," = null  where " , @whereString);
+
+			PREPARE stmt from @stmt;
+			EXECUTE stmt;
+			DEALLOCATE PREPARE stmt;
+        
+END;
+END IF;
+				
+				set @stmt = concat("update  ", @translatedTable , " set forcw = null");
+				PREPARE stmt from @stmt;
+				EXECUTE stmt;
+				DEALLOCATE PREPARE stmt;
+
+select '';
+end proc_main$$
+
+DELIMITER ;
+
 
 
 
