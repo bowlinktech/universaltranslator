@@ -45,9 +45,13 @@ import com.hel.ut.model.configurationFormFields;
 import com.hel.ut.model.configurationTransport;
 import com.hel.ut.model.configurationUpdateLogs;
 import com.hel.ut.model.configurationconnectionfieldmappings;
+import com.hel.ut.model.mailMessage;
+import com.hel.ut.service.emailMessageManager;
 import java.io.FileWriter;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Properties;
 import java.util.TimeZone;
@@ -72,6 +76,9 @@ public class utConfigurationManagerImpl implements utConfigurationManager {
     
     @Autowired
     private messageTypeDAO messageTypeDAO;
+    
+     @Autowired
+    private emailMessageManager emailMessageManager;
     
     @Resource(name = "myProps")
     private Properties myProps;
@@ -1703,6 +1710,66 @@ public class utConfigurationManagerImpl implements utConfigurationManager {
     @Override
     public void saveConfigurationUpdateLog(configurationUpdateLogs updateLog) throws Exception {
 	utConfigurationDAO.saveConfigurationUpdateLog(updateLog);
+    }
+    
+    @Override
+    public void checkForUnusedFolders() throws Exception {
+	
+	//Get folder structures no longer in use
+	ArrayList invalidFoldernames = new ArrayList();
+	
+	List<Organization> orgs = organizationDAO.getOrganizations();
+	
+	if(!orgs.isEmpty()) {
+	    String[] validDirectories = {"medAlliesArchives","massoutputfiles","archivesOut","sFTP","archivesIn","loadFiles","webServicesIn","bowlink","libraryFiles"};
+	    List<String> dirToSkip = Arrays.asList(validDirectories);  
+	    
+	    String UTDirectory = myProps.getProperty("ut.directory.utRootDir");
+	    File[] directories = new File(UTDirectory.replace("/home/","/")).listFiles(File::isDirectory);
+	    boolean folderFound = false;
+	    boolean checkFolder = true;
+	    
+	    List<String> unUsedFolders = new ArrayList();
+	    
+	    for(File dir : directories) {
+		checkFolder = true;
+		
+		if(dirToSkip.stream().anyMatch(s -> s.equals(dir.getName()))) {
+		    checkFolder = false;
+		}
+		
+		if(checkFolder) {
+		    folderFound = false;
+		    for(Organization org : orgs) {
+			if(dir.getName().equals(org.getCleanURL())) {
+			    folderFound = true;
+			    break;
+			}
+		    }
+		    if(!folderFound) {
+			unUsedFolders.add(dir.getAbsolutePath());
+		    }
+		}
+	    }
+	    
+	    if(!unUsedFolders.isEmpty()) {
+		mailMessage messageDetails = new mailMessage();
+
+		messageDetails.settoEmailAddress("cmccue@health-e-link.net");
+		messageDetails.setmessageSubject("Unused Folders on UT");
+
+		StringBuilder sb = new StringBuilder();
+		
+		for(String unUsedFolder: unUsedFolders) {
+		    sb.append(unUsedFolder + "<br />");
+		}
+		
+		messageDetails.setmessageBody(sb.toString());
+		messageDetails.setfromEmailAddress("support@health-e-link.net");
+		
+		emailMessageManager.sendEmail(messageDetails);
+	    }
+	}
     }
 }
 

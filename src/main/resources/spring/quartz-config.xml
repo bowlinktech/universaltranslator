@@ -178,4 +178,23 @@
         </trigger>
     </schedule>-->
     
+    <!-- Check for unUsed folders -->
+    <schedule>
+        <job>
+            <name>checkForUnusedFolders</name>
+            <group>processGroup</group>
+            <description>This process will run at 8:30 AM on the 1st of every month and email a list of unused organization folders on the server</description>
+            <job-class>com.hel.ut.jobs.checkForUnusedFolders</job-class>
+        </job>
+ 
+        <trigger>
+            <cron>
+                <name>checkForUnusedFoldersTrigger</name>
+                <job-name>checkForUnusedFolders</job-name>
+                <job-group>processGroup</job-group>
+                <cron-expression>0 30 08 1 * ? *</cron-expression>
+            </cron>
+        </trigger>
+    </schedule>
+    
 </job-scheduling-data>

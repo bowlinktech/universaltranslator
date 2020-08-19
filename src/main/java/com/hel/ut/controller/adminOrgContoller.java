@@ -32,7 +32,10 @@ import com.registryKit.registry.tiers.tierOrganizationDetails;
 import com.registryKit.registry.tiers.tiers;
 import com.hel.ut.service.utConfigurationManager;
 import com.hel.ut.service.utConfigurationTransportManager;
+import java.io.File;
+import java.util.Properties;
 import java.util.stream.Collectors;
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -68,6 +71,9 @@ public class adminOrgContoller {
     
     @Autowired
     private tierManager tiermanager;
+    
+    @Resource(name = "myProps")
+    private Properties myProps;
     
 
     /**
@@ -296,9 +302,16 @@ public class adminOrgContoller {
         Organization currentOrg = organizationManager.getOrganizationById(organization.getId());
 	
 	boolean updatedName = false;
-
+	
+	//Update the organization
+	String orgCleanURL = organization.getOrgName().replace(" ", "");
+	
+	if(!orgCleanURL.equals(organization.getCleanURL())) {
+	    organization.setcleanURL(orgCleanURL);
+	}
+	
         if (!currentOrg.getcleanURL().trim().equals(organization.getcleanURL().trim())) {
-            List<Organization> existing = organizationManager.getOrganizationByName(organization.getcleanURL());
+	    List<Organization> existing = organizationManager.getOrganizationByName(organization.getcleanURL());
 	    updatedName = true;
             if (!existing.isEmpty()) {
                 ModelAndView mav = new ModelAndView();
@@ -312,8 +325,14 @@ public class adminOrgContoller {
                 return mav;
             }
         }
+	
+	//Make sure the organization folder name exists
+	String UTDirectory = myProps.getProperty("ut.directory.utRootDir");
+	File directory = new File(UTDirectory.replace("/home/","/") + organization.getcleanURL());
+	if (!directory.exists()) {
+	    updatedName = true;
+	}
 
-        //Update the organization
         organizationManager.updateOrganization(organization);
 	
 	//If updated name, need to check if any configurations are set up for this or
@@ -329,6 +348,7 @@ public class adminOrgContoller {
 		}
 	    }
 	}
+	
 
         //This variable will be used to display the message on the details form
         redirectAttr.addFlashAttribute("savedStatus", "updated");
