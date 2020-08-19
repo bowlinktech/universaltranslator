@@ -281,4 +281,16 @@ public class fileSystem {
             e.printStackTrace();
         }
     }
+    
+    public void deleteDirectory(String directory) {
+
+        try {
+            File directoryFolder = new File(directory);
+	    delete(directoryFolder);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
 }
