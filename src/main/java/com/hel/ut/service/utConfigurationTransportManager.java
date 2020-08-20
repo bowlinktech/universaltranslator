@@ -145,4 +145,8 @@ public interface utConfigurationTransportManager {
     List<configurationFTPFields> getFTPSourceConfigurations() throws Exception;
     
     configurationFormFields getConfigurationFieldById(int fieldId) throws Exception;
+    
+    List<configurationconnectionfieldmappings> getTargetConfigurationFieldsToCopy(Integer targetConfigId) throws Exception;
+    
+    void executeConfigTransportSQL(String sqlStatement) throws Exception;
 }
