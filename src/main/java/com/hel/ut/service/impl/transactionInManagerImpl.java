@@ -2668,6 +2668,10 @@ public class transactionInManagerImpl implements transactionInManager {
 
 			// we trim all values
 			trimFieldValues(batchId, false, batch.getConfigId(), true);
+			ba = new batchuploadactivity();
+			ba.setActivity("All batch entries were trimmed for batchId: " + batchId);
+			ba.setBatchUploadId(batchId);
+			transactionInDAO.submitBatchActivityLog(ba);
 
 			//now that we have our config, we will apply pre-processing cw and macros to manipulate our data
 			//1. find all configs for batch, loop and process
@@ -3058,6 +3062,13 @@ public class transactionInManagerImpl implements transactionInManager {
 		    }
 		}
 	    }
+	    
+	    //Trim all field values again
+	    trimFieldValues(batchUploadId, false, batch.getConfigId(), true);
+	    ba = new batchuploadactivity();
+	    ba.setActivity("All final batch entries were trimmed for batchId: " + batchUploadId);
+	    ba.setBatchUploadId(batchUploadId);
+	    transactionInDAO.submitBatchActivityLog(ba);
 	   
 	    //Step 3: Check validation errors
 	    Integer validationErrors = runValidations(batchUploadId, batch.getConfigId());
