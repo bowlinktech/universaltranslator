@@ -1717,11 +1717,13 @@ public class transactionInDAOImpl implements transactionInDAO {
 	});
 
 	String tableName = "transactiontranslatedin_"+batchId;
-
-	if(!foroutboundProcessing) {
-	    sql = "update "+tableName + " set " + tableFields;
-	    sql += "configId = LTRIM(RTRIM(configId))";
+	
+	if(foroutboundProcessing) {
+	    tableName = "transactiontranslatedout_"+batchId;
 	}
+
+	sql = "update "+tableName + " set " + tableFields;
+	sql += "configId = LTRIM(RTRIM(configId))";
 	
 	Query updateData = sessionFactory.getCurrentSession().createSQLQuery(sql);
 
