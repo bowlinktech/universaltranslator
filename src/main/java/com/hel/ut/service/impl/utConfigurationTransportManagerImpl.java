@@ -736,9 +736,18 @@ public class utConfigurationTransportManagerImpl implements utConfigurationTrans
 	return configurationTransportDAO.getFTPSourceConfigurations();
     }
 
-	@Override
-	public configurationFormFields getConfigurationFieldById(int fieldId) throws Exception {
-		 return configurationTransportDAO.getConfigurationFieldById(fieldId);
-	}
-      
+    @Override
+    public configurationFormFields getConfigurationFieldById(int fieldId) throws Exception {
+	return configurationTransportDAO.getConfigurationFieldById(fieldId);
+    }
+    
+    @Override
+    public List<configurationconnectionfieldmappings> getTargetConfigurationFieldsToCopy(Integer targetConfigId) throws Exception {
+	return configurationTransportDAO.getTargetConfigurationFieldsToCopy(targetConfigId);
+    }
+    
+    @Override
+    public void executeConfigTransportSQL(String sqlStatement) throws Exception {
+	configurationTransportDAO.executeConfigTransportSQL(sqlStatement);
+    }
 }

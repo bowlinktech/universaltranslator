@@ -58,6 +58,7 @@ import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.InitBinder;
 
 import com.hel.ut.model.configurationWebServiceFields;
+import com.hel.ut.model.configurationconnectionfieldmappings;
 import com.hel.ut.model.hisps;
 import com.hel.ut.model.mailMessage;
 import com.hel.ut.model.organizationDirectDetails;
@@ -1270,6 +1271,43 @@ public class adminConfigController {
 	    }
 	}
 	
+	//For a target configuration we need to check to see if default values were added/changed
+	//if so we need to modify the association connection fields so the defaultValues are also updated
+	if(configurationDetails.getType() == 2) {
+	    //Get a list of connection field mappings
+	    List<configurationconnectionfieldmappings> connectionFieldMappings = utconfigurationTransportManager.getTargetConfigurationFieldsToCopy(configId);
+	    
+	    //Get a list of fields
+	    List<configurationFormFields> configurationFields = utconfigurationTransportManager.getConfigurationFields(configId, transportDetails.getId());
+	    
+	    if(!connectionFieldMappings.isEmpty() && !configurationFields.isEmpty()) {
+		String updateSQLStatement = "";
+		for(configurationFormFields configField : configurationFields) {
+		    for(configurationconnectionfieldmappings connectionField : connectionFieldMappings) {
+			if(connectionField.getAssociatedFieldNo() == 0) {
+			    if(connectionField.getFieldNo() == configField.getFieldNo()) {
+				if("".equals(configField.getDefaultValue()) && connectionField.getDefaultValue() != null) {
+				    updateSQLStatement += "update configurationconnectionfieldmappings set defaultValue = null where id = " + connectionField.getId() + ";";
+				}
+				else if(!"".equals(configField.getDefaultValue()) && (connectionField.getDefaultValue() == null || !connectionField.getDefaultValue().equals(configField.getDefaultValue()))) {
+				    updateSQLStatement += "update configurationconnectionfieldmappings set defaultValue = " + configField.getDefaultValue() + " where id = " + connectionField.getId() + ";";
+				}
+			    }
+			}
+		    }
+		}
+		
+		if(!"".equals(updateSQLStatement)) {
+		    try {
+			utconfigurationTransportManager.executeConfigTransportSQL(updateSQLStatement);
+		    }
+		    catch (Exception ex) {
+			
+		    }
+		}
+	    }
+	}
+	
 	//Log the update
 	utUser userDetails = userManager.getUserByUserName(authentication.getName());
 	configurationUpdateLogs updateLog = new configurationUpdateLogs();
@@ -1290,7 +1328,6 @@ public class adminConfigController {
             }
 
         }
-
     }
 
     /**
