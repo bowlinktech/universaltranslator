@@ -3797,8 +3797,8 @@ public class adminConfigController {
 		try {
 		    inputStream = file.getInputStream();
 		    File newFile = null;
-
-		    newFile = new File(myProps.getProperty("ut.directory.utRootDir") + fileDropLocation.replace("/HELProductSuite/universalTranslator/", "") + fileName);
+		    
+		    newFile = new File(myProps.getProperty("ut.directory.utRootDir") + fileDropLocation.replace("/Applications/HELProductSuite/universalTranslator/", "").replace("/HELProductSuite/universalTranslator/", "") + fileName);
 		    newFile.createNewFile();
 
 		    outputStream = new FileOutputStream(newFile);

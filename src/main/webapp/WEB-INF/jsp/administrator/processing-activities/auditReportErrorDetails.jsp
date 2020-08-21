@@ -41,7 +41,16 @@
                     <tr <c:if test="${errorRow[0] == 'true'}">bgcolor="#ffe3a4"</c:if>>
 			<c:forEach varStatus="i" var="colValue" items="${customCols}">
                             <c:if test="${i.index > 0}">
-                                 <td scope="row">${errorRow[i.index]}</td>
+                                 <td scope="row">
+                                     <c:choose>
+                                         <c:when test="${colValue == 'Row No.' && errorRow[i.index] == 0}">
+                                             All Rows
+                                         </c:when>
+                                         <c:otherwise>
+                                             ${errorRow[i.index]}
+                                         </c:otherwise>
+                                     </c:choose>
+                                 </td>
                             </c:if>
 			</c:forEach>
 		    </tr>
