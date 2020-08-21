@@ -524,7 +524,7 @@ public class transactionInDAOImpl implements transactionInDAO {
 	    + "select a.id, a.orgId, a.utBatchName, a.transportMethodId, a.originalFileName, a.totalRecordCount, a.errorRecordCount, b.configName, b.threshold, b.configurationType as inboundBatchConfigurationType,"
 	    + "a.statusId, a.dateSubmitted, a.startDateTime, a.endDateTime, c.displayCode as statusValue, c.endUserDisplayText as endUserDisplayText,d.orgName, e.transportMethod,"
 	    + "(select count(id) as total from batchuploads where "+dateSQLStringTotal+") as totalMessages, "
-	    + "(select count(distinct rowNumber) as totalRows from batchuploadauditerrors where batchUploadId = a.id) as totalErrorRows, "
+	    + "(select count(distinct rowNumber) as totalRows from batchuploadauditerrors where batchUploadId = a.id and rowNumber > 0) as totalErrorRows, "
 	    + "f.dmConfigKeyWord, f.restAPIUsername "
 	    + "FROM batchuploads a inner join "
 	    + "configurations b on b.id = a.configId inner join "
@@ -1101,16 +1101,16 @@ public class transactionInDAOImpl implements transactionInDAO {
 		+ ":cwId,:macroId,:validationTypeId,:stackTrace,:transactionId);";
 
 	Query updateData = sessionFactory.getCurrentSession().createSQLQuery(sql)
-		.setParameter("errorId", errorId)
-		.setParameter("batchId", batchId)
-		.setParameter("configId", configId)
-		.setParameter("fieldNo", fieldNo)
-		.setParameter("required", required)
-		.setParameter("validationTypeId", validationTypeId)
-		.setParameter("cwId", cwId)
-		.setParameter("macroId", macroId)
-		.setParameter("stackTrace", stackTrace.toString())
-		.setParameter("transactionId", transactionId);
+	    .setParameter("errorId", errorId)
+	    .setParameter("batchId", batchId)
+	    .setParameter("configId", configId)
+	    .setParameter("fieldNo", fieldNo)
+	    .setParameter("required", required)
+	    .setParameter("validationTypeId", validationTypeId)
+	    .setParameter("cwId", cwId)
+	    .setParameter("macroId", macroId)
+	    .setParameter("stackTrace", stackTrace.toString())
+	    .setParameter("transactionId", transactionId);
 	try {
 	    updateData.executeUpdate();
 	} catch (Exception ex) {
@@ -1712,7 +1712,7 @@ public class transactionInDAOImpl implements transactionInDAO {
 	
 	configFormFields.forEach(field -> {
 	    if(field.getUseField()) {
-		tableFields.append("F").append(field.getFieldNo()).append(" = LTRIM(RTRIM(F").append(field.getFieldNo()).append(")),");
+		tableFields.append("F").append(field.getFieldNo()).append(" = TRIM(F").append(field.getFieldNo()).append("),");
 	    }
 	});
 
@@ -1723,7 +1723,7 @@ public class transactionInDAOImpl implements transactionInDAO {
 	}
 
 	sql = "update "+tableName + " set " + tableFields;
-	sql += "configId = LTRIM(RTRIM(configId))";
+	sql += "configId = TRIM(configId)";
 	
 	Query updateData = sessionFactory.getCurrentSession().createSQLQuery(sql);
 
@@ -3326,7 +3326,7 @@ public class transactionInDAOImpl implements transactionInDAO {
 		+ "a.statusId, a.dateSubmitted, "
 		+ "a.startDateTime, a.endDateTime, c.displayCode as statusValue, c.endUserDisplayText as endUserDisplayText,d.orgName, e.transportMethod,"
 		+ "(select count(id) as total from batchuploads where "+dateSQLStringTotal+") as totalMessages, "
-		+ "(select count(distinct rowNumber) as totalRows from batchuploadauditerrors where batchUploadId = a.id) as totalErrorRows, "
+		+ "(select count(distinct rowNumber) as totalRows from batchuploadauditerrors where batchUploadId = a.id and rowNumber > 0) as totalErrorRows, "
 		+ "f.dmConfigKeyWord, f.restAPIUsername "
 		+ "FROM batchuploads a inner join "
 		+ "configurations b on b.id = a.configId inner join "
@@ -3555,7 +3555,7 @@ public class transactionInDAOImpl implements transactionInDAO {
 	    totalErrors = (Integer) query.list().get(0);
 	}
 	catch (Exception ex) {
-	    sql = "select count(distinct rowNumber) as totalErrorRows from batchuploadauditerrors where batchUploadId = :batchUploadId";
+	    sql = "select count(distinct rowNumber) as totalErrorRows from batchuploadauditerrors where batchUploadId = :batchUploadId and rowNumber > 0";
 	    query = sessionFactory.getCurrentSession().createSQLQuery(sql).addScalar("totalErrorRows", StandardBasicTypes.INTEGER);
 	    query.setParameter("batchUploadId", batchUploadId);
 	    totalErrors = (Integer) query.list().get(0);
