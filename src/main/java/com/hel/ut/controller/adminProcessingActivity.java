@@ -2241,6 +2241,7 @@ public class adminProcessingActivity {
 	
 	String sql = "";
 	
+	
 	customCols.add("From Outbound");
 	customCols.add("Row No.");
 	customCols.add("Field No.");
@@ -2264,7 +2265,7 @@ public class adminProcessingActivity {
 		    customCols.add("Field Value");
 		
 		    sql = "select fromOutboundConfig, a.rownumber as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name,a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
-			+ "from batchuploadauditerrors a left outer  join "
+			+ "from batchuploadauditerrors a left outer join "
 			+ "configurationmessagespecs b on a.configId = b.configId "
 			+ "where a.batchUploadId = " + batchId + " and a.errorId = " + errorId + " order by a.rownumber asc";
 		}
@@ -2272,7 +2273,7 @@ public class adminProcessingActivity {
 		    customCols.add("Field Value");
 		
 		    sql = "select 'false' as fromOutboundConfig,a.rownumber as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name,a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
-			+ "from batchdownloadauditerrors a left outer  join "
+			+ "from batchdownloadauditerrors a left outer join "
 			+ "configurationmessagespecs b on a.configId = b.configId "
 			+ "where a.batchDownloadId = " + batchId + " and a.errorId = " + errorId + " order by a.rownumber asc";
 		}
@@ -2286,7 +2287,7 @@ public class adminProcessingActivity {
 		    customCols.add("Field Value");
 
 		    sql = "select fromOutboundConfig, a.rownumber as rownumber, a.fieldNo as fieldNumber, a.fieldName as column_name, a.errorDetails as validation_type, a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
-			+ "from batchuploadauditerrors a left outer  join "
+			+ "from batchuploadauditerrors a left outer join "
 			+ "configurationmessagespecs b on a.configId = b.configId "
 			+ "where a.batchUploadId = " + batchId + " and a.errorId = " + errorId + " order by a.rownumber asc";
 		}
@@ -2294,7 +2295,7 @@ public class adminProcessingActivity {
 		    customCols.add("Field Value");
 
 		    sql = "select 'false' as fromOutboundConfig,a.rownumber as rownumber, a.fieldNo as fieldNumber, a.fieldName as column_name, a.errorDetails as validation_type, a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
-			+ "from batchdownloadauditerrors a left outer  join "
+			+ "from batchdownloadauditerrors a left outer join "
 			+ "configurationmessagespecs b on a.configId = b.configId "
 			+ "where a.batchDownloadId = " + batchId + " and a.errorId = " + errorId + " order by a.rownumber asc";
 		}
@@ -2316,7 +2317,7 @@ public class adminProcessingActivity {
 		    customCols.add("Field Value");	
 		    
 		    sql = "select 'false' as fromOutboundConfig,a.rownumber as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name, a.errorDetails as crosswalk, a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
-			+ "from batchdownloadauditerrors a left outer join "
+			+ "from batchdownloadauditerrors a left outerjoin "
 			+ "configurationmessagespecs b on a.configId = b.configId "
 			+ "where a.batchDownloadId = " + batchId + " and a.errorId = " + errorId + " order by a.rownumber asc";
 		}
@@ -2329,7 +2330,7 @@ public class adminProcessingActivity {
 		    customCols.add("Field Value");
 
 		    sql = "select fromOutboundConfig, a.rownumber as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name,a.errorDetails as macro, a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
-			+ "from batchuploadauditerrors a left outer  join "
+			+ "from batchuploadauditerrors a left outer join "
 			+ "configurationmessagespecs b on a.configId = b.configId "
 			+ "where a.batchUploadId = " + batchId + " and a.errorId = " + errorId + " order by a.rownumber asc";
 		}
@@ -2337,7 +2338,7 @@ public class adminProcessingActivity {
 		    customCols.add("Field Value");
 
 		    sql = "select 'false' as fromOutboundConfig,a.rownumber as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name,a.errorDetails as macro, a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
-			+ "from batchdownloadauditerrors a left outer  join "
+			+ "from batchdownloadauditerrors a left outer join "
 			+ "configurationmessagespecs b on a.configId = b.configId "
 			+ "where a.batchDownloadId = " + batchId + " and a.errorId = " + errorId + " order by a.rownumber asc";
 		}
@@ -2346,18 +2347,28 @@ public class adminProcessingActivity {
 		
 	    default:
 		if("inbound".equals(type)) {
-		    customCols.add("Field Value");
+		    if(errorId == 5) {
+			customCols.add("Error");
+		    }
+		    else {
+			customCols.add("Field Value");
+		    }
 
-		    sql = "select fromOutboundConfig, a.rownumber as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name,a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
-			+ "from batchuploadauditerrors a left outer  join "
+		    sql = "select fromOutboundConfig, a.rownumber as rownumber, a.fieldNo as fieldNumber,CASE WHEN a.fieldName IS NULL THEN (select fieldDesc from configurationformfields where configId = a.configId and fieldNo = a.fieldNo) ELSE a.fieldName END as column_name,a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
+			+ "from batchuploadauditerrors a left outer join "
 			+ "configurationmessagespecs b on a.configId = b.configId "
 			+ "where a.batchUploadId = " + batchId + " and a.errorId = " + errorId + " order by a.rownumber asc";
 		}
 		else {
-		    customCols.add("Field Value");
+		    if(errorId == 5) {
+			customCols.add("Error");
+		    }
+		    else {
+			customCols.add("Field Value");
+		    }
 
-		    sql = "select 'false' as fromOutboundConfig,a.rownumber as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name,a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
-			+ "from batchdownloadauditerrors a left outer  join "
+		    sql = "select 'false' as fromOutboundConfig,a.rownumber as rownumber, a.fieldNo as fieldNumber,CASE WHEN a.fieldName IS NULL THEN (select fieldDesc from configurationformfields where configId = a.configId and fieldNo = a.fieldNo) ELSE a.fieldName END as column_name,a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
+			+ "from batchdownloadauditerrors a left outer join "
 			+ "configurationmessagespecs b on a.configId = b.configId "
 			+ "where a.batchDownloadId = " + batchId + " and a.errorId = " + errorId + " order by a.rownumber asc";
 		}
@@ -2365,7 +2376,7 @@ public class adminProcessingActivity {
 		break;
 	}
 	
-	if(reportableFields != null) {
+	if(reportableFields != null && errorId != 5) {
 	    Iterator reportableFieldsIt = reportableFields.iterator();
 	
 	    while (reportableFieldsIt.hasNext()) {
@@ -4335,21 +4346,36 @@ public class adminProcessingActivity {
 				currentRow.createCell(cellNum).setCellValue("");
 				cellNum++;
 			    }
-			    currentRow.createCell(cellNum).setCellValue("Field Value");
+			    
+			    if(errorId == 5) {
+				currentRow.createCell(cellNum).setCellValue("Error");
+				
+				if(reportableFields != null) {
+				     Iterator reportableFieldsIt = reportableFields.iterator();
+				      while (reportableFieldsIt.hasNext()) {
+					Object rptFieldrow[] = (Object[]) reportableFieldsIt.next();  
+					cellNum++;
+					currentRow.createCell(cellNum).setCellValue("");
+				      }
+				}
+			    }
+			    else {
+				currentRow.createCell(cellNum).setCellValue("Field Value");
 
-			    if(reportableFields != null) {
-				Iterator reportableFieldsIt = reportableFields.iterator();
+				if(reportableFields != null) {
+				    Iterator reportableFieldsIt = reportableFields.iterator();
 
-				while (reportableFieldsIt.hasNext()) {
-				    Object rptFieldrow[] = (Object[]) reportableFieldsIt.next();
-				    cellNum++;
-				    currentRow.createCell(cellNum).setCellValue(rptFieldrow[0].toString());
-				    cellNum++;
-				    currentRow.createCell(cellNum).setCellValue(rptFieldrow[1].toString());
-				    cellNum++;
-				    currentRow.createCell(cellNum).setCellValue(rptFieldrow[2].toString());
-				    cellNum++;
-				    currentRow.createCell(cellNum).setCellValue(rptFieldrow[3].toString());
+				    while (reportableFieldsIt.hasNext()) {
+					Object rptFieldrow[] = (Object[]) reportableFieldsIt.next();
+					cellNum++;
+					currentRow.createCell(cellNum).setCellValue(rptFieldrow[0].toString());
+					cellNum++;
+					currentRow.createCell(cellNum).setCellValue(rptFieldrow[1].toString());
+					cellNum++;
+					currentRow.createCell(cellNum).setCellValue(rptFieldrow[2].toString());
+					cellNum++;
+					currentRow.createCell(cellNum).setCellValue(rptFieldrow[3].toString());
+				    }
 				}
 			    }
 			}
@@ -4431,6 +4457,24 @@ public class adminProcessingActivity {
 				
 				break;
 				
+			    case 5:
+				errorType = "System Error";
+			    
+				if("inbound".equals(type)) {
+				    sql = "select fromOutboundConfig, a.rownumber as rownumber, a.fieldNo as fieldNumber,CASE WHEN a.fieldName IS NULL THEN (select fieldDesc from configurationformfields where configId = a.configId and fieldNo = a.fieldNo) ELSE a.fieldName END as column_name,'' as errorType, a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
+					+ "from batchuploadauditerrors a left outer join "
+					+ "configurationmessagespecs b on a.configId = b.configId "
+					+ "where a.batchUploadId = " + batchId + " and a.errorId = " + error.getErrorId() + " order by a.rownumber asc";
+				}
+				else {
+				    sql = "select 'true' as fromOutboundConfig,a.rownumber as rownumber, a.fieldNo as fieldNumber,CASE WHEN a.fieldName IS NULL THEN (select fieldDesc from configurationformfields where configId = a.configId and fieldNo = a.fieldNo) ELSE a.fieldName END as column_name,'' as errorType, a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
+					+ "from batchdownloadauditerrors a left outer join "
+					+ "configurationmessagespecs b on a.configId = b.configId "
+					+ "where a.batchDownloadId = " + batchId + " and a.errorId = " + error.getErrorId() + " order by a.rownumber asc";
+				}
+
+				break;
+				
 			    case 41:
 				errorType = "Zip Code Check";
 
@@ -4493,13 +4537,18 @@ public class adminProcessingActivity {
 					    currentRow.createCell(cellNum).setCellValue("source");
 					}
 					cellNum++;
-					currentRow.createCell(cellNum).setCellValue(errorsRow[1].toString());
+					if("0".equals(errorsRow[1].toString())) {
+					    currentRow.createCell(cellNum).setCellValue("All Rows");
+					}
+					else {
+					    currentRow.createCell(cellNum).setCellValue(errorsRow[1].toString());
+					}
 					cellNum++;
 					currentRow.createCell(cellNum).setCellValue(errorsRow[2].toString());
 					cellNum++;
 					currentRow.createCell(cellNum).setCellValue(errorsRow[3].toString());
 					cellNum++;
-					if(errorId != 1 && errorId != 41 && errorId != 46) {
+					if(errorId != 1 && errorId != 5 && errorId != 41 && errorId != 46) {
 					    currentRow.createCell(cellNum).setCellValue(errorsRow[4].toString());
 					    cellNum++;
 					}
@@ -4560,6 +4609,7 @@ public class adminProcessingActivity {
 	    }
 	}
 	catch (Exception ex) {
+	    System.out.println(ex.getMessage());
 	    //we notify admin
 	    mailMessage mail = new mailMessage();
 	    mail.settoEmailAddress(myProps.getProperty("admin.email"));
@@ -4570,7 +4620,6 @@ public class adminProcessingActivity {
 	    emailBody.append("<br/>Batch Name: " + batchName);
 	    emailBody.append("<br/>Type: " + type);
 	    emailBody.append("<br/><br/>: " + ex.getMessage());
-	    emailBody.append("<br/><br/>" + ex.getStackTrace());
 	    mail.setmessageBody(emailBody.toString());
 	    emailMessageManager.sendEmail(mail);
 	    fileName = "";
@@ -4921,7 +4970,6 @@ public class adminProcessingActivity {
 		Integer errorId = 0;
 
 		for(batchErrorSummary error : batchErrorSummary) {
-
 		    if(errorId == 0 || errorId != error.getErrorId()) {
 			
 			if(errorId > 0) {
@@ -4948,6 +4996,11 @@ public class adminProcessingActivity {
 			else if(errorId == 3) {
 			    reportBody.append("<div style='padding-top:10px;'>");
 			    reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 16px;'><strong>Error: Failed Macro</strong></span><br /><br />");
+			    reportBody.append("</div>");
+			}
+			else if(errorId == 5) {
+			    reportBody.append("<div style='padding-top:10px;'>");
+			    reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 16px;'><strong>Error: System Error</strong></span><br /><br />");
 			    reportBody.append("</div>");
 			}
 			else if(errorId == 41) {
@@ -4977,20 +5030,25 @@ public class adminProcessingActivity {
 			else if(errorId == 4) {
 			    reportBody.append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Macro</th>");
 			}
+			
+			if(errorId == 5) {
+			    reportBody.append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Error</th>");
+			}
+			else {
+			    reportBody.append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Field Value</th>");
+			    if(reportableFields != null) {
+				Iterator reportableFieldsIt = reportableFields.iterator();
 
-			reportBody.append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Field Value</th>");
-		
-			if(reportableFields != null) {
-			    Iterator reportableFieldsIt = reportableFields.iterator();
-
-			    while (reportableFieldsIt.hasNext()) {
-				Object rptFieldrow[] = (Object[]) reportableFieldsIt.next();
-				reportBody.append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>"+rptFieldrow[0].toString()+"</th>")
-				.append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>"+rptFieldrow[1].toString()+"</th>")
-				.append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>"+rptFieldrow[2].toString()+"</th>")
-				.append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>"+rptFieldrow[3].toString()+"</th>");
+				while (reportableFieldsIt.hasNext()) {
+				    Object rptFieldrow[] = (Object[]) reportableFieldsIt.next();
+				    reportBody.append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>"+rptFieldrow[0].toString()+"</th>")
+				    .append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>"+rptFieldrow[1].toString()+"</th>")
+				    .append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>"+rptFieldrow[2].toString()+"</th>")
+				    .append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>"+rptFieldrow[3].toString()+"</th>");
+				}
 			    }
 			}
+			
 			reportBody.append("</tr></thead><tbody>");
 		    }
 		    
@@ -5065,6 +5123,23 @@ public class adminProcessingActivity {
 			    }
 
 			    break;
+			    
+			case 5:
+			    
+			    if("inbound".equals(type)) {
+				sql = "select fromOutboundConfig, a.rownumber as rownumber, a.fieldNo as fieldNumber,CASE WHEN a.fieldName IS NULL THEN (select fieldDesc from configurationformfields where configId = a.configId and fieldNo = a.fieldNo) ELSE a.fieldName END as column_name,'' as errorType, a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
+				    + "from batchuploadauditerrors a left outer join "
+				    + "configurationmessagespecs b on a.configId = b.configId "
+				    + "where a.batchUploadId = " + batchId + " and a.errorId = " + error.getErrorId() + " order by a.rownumber asc";
+			    }
+			    else {
+				sql = "select 'true' as fromOutboundConfig,a.rownumber as rownumber, a.fieldNo as fieldNumber,CASE WHEN a.fieldName IS NULL THEN (select fieldDesc from configurationformfields where configId = a.configId and fieldNo = a.fieldNo) ELSE a.fieldName END as column_name,'' as errorType, a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
+				    + "from batchdownloadauditerrors a left outer join "
+				    + "configurationmessagespecs b on a.configId = b.configId "
+				    + "where a.batchDownloadId = " + batchId + " and a.errorId = " + error.getErrorId() + " order by a.rownumber asc";
+			    }
+			    
+			    break;
 			
 			case 41:
 
@@ -5120,15 +5195,22 @@ public class adminProcessingActivity {
 					reportBody.append("source");
 				    }
 				    
+				    reportBody.append("</td><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>");
+				    
+				    if("0".equals(errorsRow[1].toString())) {
+					reportBody.append("All Rows");
+				    }
+				    else {
+					reportBody.append(errorsRow[1].toString());
+				    }
+				    
 				    reportBody.append("</td><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>")
-				    .append(errorsRow[1].toString())
-				    .append("</td><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>")
 				    .append(errorsRow[2].toString())
 				    .append("</td><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>")
 				    .append(errorsRow[3].toString())
 				    .append("</td>");
 				    
-				    if(errorId != 1 && errorId != 41 && errorId != 46) {
+				    if(errorId != 1 && errorId != 5 && errorId != 41 && errorId != 46) {
 					reportBody.append("<td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>")
 					.append(errorsRow[4].toString().replace("<","&#60;").replace(">","&#62;")).append("</td>");
 				    }
@@ -5139,34 +5221,39 @@ public class adminProcessingActivity {
 				    else {
 					reportBody.append("");
 				    }
-				    reportBody.append("</td><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>");
-				    if(errorsRow[6] != null) {
-					reportBody.append(errorsRow[6].toString().replace("<","&#60;").replace(">","&#62;"));
+				    if(errorId == 5) {
+					reportBody.append("</td></tr>");
 				    }
 				    else {
-					reportBody.append("");
-				    }
-				    reportBody.append("</td><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>");
-				    if(errorsRow[7] != null) {
-					reportBody.append(errorsRow[7].toString().replace("<","&#60;").replace(">","&#62;"));
-				    }
-				    else {
-					reportBody.append("");
-				    }
-				    reportBody.append("</td><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>");
-				    if(errorsRow[8] != null) {
-					reportBody.append(errorsRow[8].toString().replace("<","&#60;").replace(">","&#62;"));
-				    }
-				    else {
-					reportBody.append("");
-				    }
-				    reportBody.append("</td><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>");
-				    
-				    if(errorsRow[9] != null) {
-					reportBody.append(errorsRow[9].toString().replace("<","&#60;").replace(">","&#62;")).append("</td></tr>");
-				    }
-				    else {
-					reportBody.append("").append("</td></tr>");
+					reportBody.append("</td><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>");
+					if(errorsRow[6] != null) {
+					    reportBody.append(errorsRow[6].toString().replace("<","&#60;").replace(">","&#62;"));
+					}
+					else {
+					    reportBody.append("");
+					}
+					reportBody.append("</td><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>");
+					if(errorsRow[7] != null) {
+					    reportBody.append(errorsRow[7].toString().replace("<","&#60;").replace(">","&#62;"));
+					}
+					else {
+					    reportBody.append("");
+					}
+					reportBody.append("</td><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>");
+					if(errorsRow[8] != null) {
+					    reportBody.append(errorsRow[8].toString().replace("<","&#60;").replace(">","&#62;"));
+					}
+					else {
+					    reportBody.append("");
+					}
+					reportBody.append("</td><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>");
+
+					if(errorsRow[9] != null) {
+					    reportBody.append(errorsRow[9].toString().replace("<","&#60;").replace(">","&#62;")).append("</td></tr>");
+					}
+					else {
+					    reportBody.append("").append("</td></tr>");
+					}
 				    }
 				}
 			    }
