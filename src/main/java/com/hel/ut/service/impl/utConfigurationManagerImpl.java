@@ -1756,7 +1756,7 @@ public class utConfigurationManagerImpl implements utConfigurationManager {
 		mailMessage messageDetails = new mailMessage();
 
 		messageDetails.settoEmailAddress("cmccue@health-e-link.net");
-		messageDetails.setmessageSubject("Unused Folders on UT");
+		messageDetails.setmessageSubject("Unused Folders on UT" + myProps.getProperty("server.identity"));
 
 		StringBuilder sb = new StringBuilder();
 		

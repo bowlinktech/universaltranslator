@@ -1479,12 +1479,20 @@ public class transactionOutManagerImpl implements transactionOutManager {
 	ba.setActivity("All target tables were loaded for batchId: " + batchDownload.getId());
 	ba.setBatchDownloadId(batchDownload.getId());
 	transactionOutDAO.submitBatchActivityLog(ba);
-
+	
+	//Trim all field values again
+	transactionInManager.trimFieldValues(batchDownload.getId(), true, batchDownload.getConfigId(), true);
+	
+	ba = new batchdownloadactivity();
+	ba.setActivity("All target entries were trimmed for batchId: " + batchDownload.getId());
+	ba.setBatchDownloadId(batchDownload.getId());
+	transactionOutDAO.submitBatchActivityLog(ba);
+	
 	//Delete all batch upload tables
 	transactionOutDAO.deleteBatchUploadTables(batchDownload.getBatchUploadId());
 	
 	ba = new batchdownloadactivity();
-	ba.setActivity("All batch upload tables  were deleted for upload batchId: " + batchDownload.getBatchUploadId());
+	ba.setActivity("All batch upload tables were deleted for upload batchId: " + batchDownload.getBatchUploadId());
 	ba.setBatchDownloadId(batchDownload.getId());
 	transactionOutDAO.submitBatchActivityLog(ba);
 
@@ -1589,6 +1597,14 @@ public class transactionOutManagerImpl implements transactionOutManager {
 	
 	//Step 3: Check validation errors
 	Integer validationErrors = runValidations(batchDownload.getId(), batchDownload.getConfigId());
+	
+	//Trim all field values again
+	transactionInManager.trimFieldValues(batchDownload.getId(), true, batchDownload.getConfigId(), true);
+	
+	ba = new batchdownloadactivity();
+	ba.setActivity("All final target entries were trimmed for batchId: " + batchDownload.getId());
+	ba.setBatchDownloadId(batchDownload.getId());
+	transactionOutDAO.submitBatchActivityLog(ba);
 	
 	// update status of the failed records to ERR - 14 (Only updating REQUIRED records from transactionouterrors)
 	transactionInManager.updateStatusForErrorTrans(batchDownload.getId(), 14, true);

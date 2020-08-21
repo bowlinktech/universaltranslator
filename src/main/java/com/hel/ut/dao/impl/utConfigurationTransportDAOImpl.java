@@ -1355,7 +1355,7 @@ public class utConfigurationTransportDAOImpl implements utConfigurationTransport
 	
     }
     
-     /**
+    /**
      * The 'getConfigurationFieldsToCopy' function will return a list of saved form fields for the selected configuration.
      *
      * @param targetConfigId
@@ -1378,7 +1378,6 @@ public class utConfigurationTransportDAOImpl implements utConfigurationTransport
            
         return query.list();
     }
-    
     
     @Override
     @Transactional(readOnly = false)
@@ -1431,6 +1430,28 @@ public class utConfigurationTransportDAOImpl implements utConfigurationTransport
                 .add(Restrictions.eq("id", fieldId));
 
         return (configurationFormFields) criteria.uniqueResult();
+    }
+    
+    /**
+     * The 'getTargetConfigurationFieldsToCopy' function will return a list of saved form fields for the selected configuration.
+     *
+     * @param targetConfigId
+     *
+     * @return	This function will return a list of configuration form fields
+     */
+    @SuppressWarnings("unchecked")
+    @Override
+    @Transactional(readOnly = true)
+    public List<configurationconnectionfieldmappings> getTargetConfigurationFieldsToCopy(Integer targetConfigId) {
+        
+	String sql = "select * "
+	    + "from configurationconnectionfieldmappings "
+	    + "where targetConfigId = " + targetConfigId + " "
+	    + "order by fieldNo asc";
+	
+	Query query = sessionFactory.getCurrentSession().createSQLQuery(sql).setResultTransformer(Transformers.aliasToBean(configurationconnectionfieldmappings.class));
+           
+        return query.list();
     }
 }
 
