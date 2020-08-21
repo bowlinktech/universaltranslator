@@ -1,0 +1,520 @@
+/** TO DO **/
+/**
+Login to admin and re
+
+
+**/
+
+/** 20200820 macro changes **/
+USE `universaltranslatorca`;
+DROP procedure IF EXISTS `MatchFAUpdateSF`;
+
+DELIMITER $$
+USE `universaltranslatorca`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `MatchFAUpdateSF`(in configId int, 
+in batchId int, in srcField varchar(10),
+in fieldA varchar(10), in fieldB varchar(10), in con1 varchar(255), 
+in con2 varchar(255), in macroId int, in foroutboundProcessing boolean, in passClear int, in transactionId int)
+proc_main:begin
+
+
+call setInboundOutBoundTables (foroutboundProcessing,batchId);
+select @translatedTable, @transactionTable, @batchTable, @batchIdType , @errorTable
+into @translatedTable, @transactionTable, @batchTable, @batchIdType , @errorTable;
+
+call getFinalStatusIds;
+select @finalStatusIds into @finalStatusIds;
+
+
+set @stmt = concat("update ",@translatedTable, " set ",srcField," = '",con2,"' where trim(REPLACE(CONVERT(",fieldA," USING ASCII), '?','')) = '",con1,"'
+and  configId = ",configId," and ", @batchIdType," = ",batchId," and statusId not in (", @finalStatusIds, ");");
+
+PREPARE stmt from @stmt;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt; 
+
+
+end proc_main$$
+
+DELIMITER ;
+
+
+DELIMITER $$
+
+DROP FUNCTION IF EXISTS `replace_ci`$$
+CREATE FUNCTION `replace_ci` ( str TEXT,needle CHAR(255),str_rep CHAR(255))
+    RETURNS TEXT
+    DETERMINISTIC
+    BEGIN
+        DECLARE return_str TEXT DEFAULT '';
+        DECLARE lower_str TEXT;
+        DECLARE lower_needle TEXT;
+        DECLARE pos INT DEFAULT 1;
+        DECLARE old_pos INT DEFAULT 1;
+
+        SELECT lower(str) INTO lower_str;
+        SELECT lower(needle) INTO lower_needle;
+        SELECT locate(lower_needle, lower_str, pos) INTO pos;
+        WHILE pos > 0 DO
+            SELECT concat(return_str, substr(str, old_pos, pos-old_pos), str_rep) INTO return_str;
+            SELECT pos + char_length(needle) INTO pos;
+            SELECT pos INTO old_pos;
+            SELECT locate(lower_needle, lower_str, pos) INTO pos;
+        END WHILE;
+        SELECT concat(return_str, substr(str, old_pos, char_length(str))) INTO return_str;
+        RETURN return_str;
+END$$
+
+DELIMITER ;
+
+
+USE `universaltranslatorca`;
+DROP procedure IF EXISTS `replacechars`;
+
+DELIMITER $$
+USE `universaltranslatorca`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `replacechars`(in configId int, 
+in batchId int, in srcField varchar(10),
+in fieldA varchar(10), in fieldB varchar(10), in con1 varchar(255), 
+in con2 varchar(255), in macroId int, in foroutboundProcessing boolean, in passClear int, in transactionId int)
+proc_main:begin
+
+
+call setInboundOutBoundTables (foroutboundProcessing,batchId);
+select @translatedTable, @transactionTable, @batchTable, @batchIdType , @errorTable
+into @translatedTable, @transactionTable, @batchTable, @batchIdType , @errorTable;
+
+call getFinalStatusIds;
+select @finalStatusIds into @finalStatusIds;
+
+
+			set @stmt = concat("update ",@translatedTable, " set ",fieldA," = replace_ci(",fieldA,", '",con1,"','",con2,"') 
+			where  configId = ",configId," and ", @batchIdType," = ",batchId," and statusId not in (",@finalStatusIds ,");");
+
+			PREPARE stmt from @stmt;
+			EXECUTE stmt;
+			DEALLOCATE PREPARE stmt;
+
+end proc_main$$
+
+DELIMITER ;
+
+USE `universaltranslatorca`;
+DROP procedure IF EXISTS `replacechars`;
+
+DELIMITER $$
+USE `universaltranslatorca`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `replacechars`(in configId int, 
+in batchId int, in srcField varchar(10),
+in fieldA varchar(10), in fieldB varchar(10), in con1 varchar(255), 
+in con2 varchar(255), in macroId int, in foroutboundProcessing boolean, in passClear int, in transactionId int)
+proc_main:begin
+
+
+call setInboundOutBoundTables (foroutboundProcessing,batchId);
+select @translatedTable, @transactionTable, @batchTable, @batchIdType , @errorTable
+into @translatedTable, @transactionTable, @batchTable, @batchIdType , @errorTable;
+
+call getFinalStatusIds;
+select @finalStatusIds into @finalStatusIds;
+
+
+			set @stmt = concat("update ",@translatedTable, " set ",srcField," = replace_ci(",srcField,", '",con1,"','",con2,"') 
+			where  configId = ",configId," and ", @batchIdType," = ",batchId," and statusId not in (",@finalStatusIds ,");");
+
+			PREPARE stmt from @stmt;
+			EXECUTE stmt;
+			DEALLOCATE PREPARE stmt;
+
+end proc_main$$
+
+DELIMITER ;
+
+/** trim whitespaces macro removal **/
+delete from macro_names where id = 73;
+
+/** concatFieldToList **/
+USE `universaltranslatorca`;
+DROP procedure IF EXISTS `concatFieldToList`;
+
+DELIMITER $$
+USE `universaltranslatorca`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `concatFieldToList`(in configId int, 
+in batchId int, in srcField varchar(10),
+in fieldA varchar(10), in fieldB varchar(10), in con1 varchar(255), 
+in con2 varchar(255), in macroId int, in foroutboundProcessing boolean, in passClear int, in transactionId int)
+proc_main:begin
+
+
+call setInboundOutBoundTables (foroutboundProcessing,batchId);
+select @translatedTable, @transactionTable, @batchTable, @batchIdType , @errorTable
+into @translatedTable, @transactionTable, @batchTable, @batchIdType , @errorTable;
+
+call getFinalStatusIds;
+select @finalStatusIds into @finalStatusIds;
+
+set @fields = concat('F', replace(replace(con2, ' ', ''), ',', ',F'));
+set @sql = concat("concat_ws('",con1,"', " , @fields , ")");
+
+
+		set @stmt = concat("update " ,@translatedTable,  " set ", srcField, " = ", @sql , 
+		" where configId = ",configId," and ",@batchIdType," = ",batchId," and statusId not in (",@finalStatusIds,");");
+
+		PREPARE stmt from @stmt;
+		EXECUTE stmt;
+		DEALLOCATE PREPARE stmt;
+
+
+end proc_main$$
+
+DELIMITER ;
+
+/** replaceBlanksWithChars **/
+
+USE `universaltranslatorca`;
+DROP procedure IF EXISTS `replaceBlanksWithChars`;
+
+DELIMITER $$
+USE `universaltranslatorca`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `replaceBlanksWithChars`(in configId int, 
+in batchId int, in srcField varchar(10),
+in fieldA varchar(10), in fieldB varchar(10), in con1 varchar(255), 
+in con2 varchar(255), in macroId int, in foroutboundProcessing boolean, in passClear int, in transactionId int)
+proc_main:begin
+
+
+call setInboundOutBoundTables (foroutboundProcessing,batchId);
+select @translatedTable, @transactionTable, @batchTable, @batchIdType , @errorTable
+into @translatedTable, @transactionTable, @batchTable, @batchIdType , @errorTable;
+
+call getFinalStatusIds;
+select @finalStatusIds into @finalStatusIds;
+
+	set @stmt = concat("update ",@translatedTable, " set ",srcField," = '" ,con1,  "' where (",srcField, " is null  
+	or length(REPLACE(REPLACE(", srcField, ", ""\n"", """"), ""\r"", """")) = 0) and 
+	configId = ",configId," and ",@batchIdType," = ",batchId," and statusId not in (",@finalStatusIds ,");");
+
+	PREPARE stmt from @stmt;
+	EXECUTE stmt;
+	DEALLOCATE PREPARE stmt;
+
+end proc_main$$
+
+DELIMITER ;
+
+
+
+USE `universaltranslatorca`;
+DROP procedure IF EXISTS `appendPrependString`;
+
+DELIMITER $$
+USE `universaltranslatorca`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `appendPrependString`(in configId int, 
+in batchId int, in srcField varchar(10),
+in fieldA varchar(10), in fieldB varchar(10), in con1 varchar(255), 
+in con2 varchar(255), in macroId int, in foroutboundProcessing boolean, in passClear int, in transactionId int)
+proc_main:begin
+
+call setInboundOutBoundTables (foroutboundProcessing,batchId);
+select @translatedTable, @transactionTable, @batchTable, @batchIdType , @errorTable
+into @translatedTable, @transactionTable, @batchTable, @batchIdType , @errorTable;
+
+call getFinalStatusIds;
+select @finalStatusIds into @finalStatusIds;
+
+
+set @stmt = concat("update ", @translatedTable," set ",srcField,
+" = concat('", con1, "', ", srcField, ", '", con2,"') where ",
+"configId = ",configId," and ",@batchIdType," = ",batchId," and statusId not in (",@finalStatusIds,");");
+
+PREPARE stmt from @stmt;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+end proc_main$$
+
+DELIMITER ;
+
+
+USE `universaltranslatorca`;
+DROP procedure IF EXISTS `appendPrependString`;
+
+DELIMITER $$
+USE `universaltranslatorca`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `appendPrependString`(in configId int, 
+in batchId int, in srcField varchar(10),
+in fieldA varchar(10), in fieldB varchar(10), in con1 varchar(255), 
+in con2 varchar(255), in macroId int, in foroutboundProcessing boolean, in passClear int, in transactionId int)
+proc_main:begin
+
+call setInboundOutBoundTables (foroutboundProcessing,batchId);
+select @translatedTable, @transactionTable, @batchTable, @batchIdType , @errorTable
+into @translatedTable, @transactionTable, @batchTable, @batchIdType , @errorTable;
+
+call getFinalStatusIds;
+select @finalStatusIds into @finalStatusIds;
+
+
+set @stmt = concat("update ", @translatedTable," set ",srcField,
+" = case when ",srcField," is null then '", con1, con2, "' else concat('", con1, "', ", srcField, ", '", con2,"') end where ",
+"configId = ",configId," and ",@batchIdType," = ",batchId," and statusId not in (",@finalStatusIds,");");
+
+PREPARE stmt from @stmt;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+end proc_main$$
+
+DELIMITER ;
+
+
+
+USE `universaltranslatorca`;
+DROP procedure IF EXISTS `copyColumn`;
+
+DELIMITER $$
+USE `universaltranslatorca`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `copyColumn`(in configId int, 
+in batchId int, in srcField varchar(10),
+in fieldA varchar(10), in fieldB varchar(10), in con1 varchar(255), 
+in con2 varchar(255), in macroId int, in foroutboundProcessing boolean, in passClear int, in transactionId int)
+proc_main:begin
+
+
+call setInboundOutBoundTables (foroutboundProcessing,batchId);
+select @translatedTable, @transactionTable, @batchTable, @batchIdType , @errorTable
+into @translatedTable, @transactionTable, @batchTable, @batchIdType , @errorTable;
+
+call getFinalStatusIds;
+select @finalStatusIds into @finalStatusIds;
+
+	set @stmt = concat("update ",@translatedTable, " set ",srcField," = ", fieldB, 
+    " where configId = ",configId," and ", @batchIdColumn, " = ",batchId," and statusId not in (",@finalStatusIds,");");	
+    
+	PREPARE stmt from @stmt;
+	EXECUTE stmt;
+	DEALLOCATE PREPARE stmt;
+
+end proc_main$$
+
+DELIMITER ;
+
+
+USE `universaltranslatorca`;
+DROP procedure IF EXISTS `ifSFMatchCon1ThenCon2ElseNull`;
+
+DELIMITER $$
+USE `universaltranslatorca`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `ifSFMatchCon1ThenCon2ElseNull`(in configId int, 
+in batchId int, in srcField varchar(10),
+in fieldA varchar(10), in fieldB varchar(10), in con1 varchar(255), 
+in con2 varchar(255), in macroId int, in foroutboundProcessing boolean, in passClear int, in transactionId int)
+proc_main:begin
+
+
+call setInboundOutBoundTables (foroutboundProcessing,batchId);
+select @translatedTable, @transactionTable, @batchTable, @batchIdType , @errorTable
+into @translatedTable, @transactionTable, @batchTable, @batchIdType , @errorTable;
+
+call getFinalStatusIds;
+select @finalStatusIds into @finalStatusIds;
+
+		set @stmt = concat("update ",@translatedTable, " set ",srcField, " = case when ", srcField, " = '",con1,"' then '", con2 , "' else NULL end",
+		" where  configId = ",configId," and ", @batchIdType," = ",batchId," and statusId not in (",@finalStatusIds ,");");
+		
+        PREPARE stmt from @stmt;
+		EXECUTE stmt;
+		DEALLOCATE PREPARE stmt;
+
+
+end proc_main$$
+
+DELIMITER ;
+
+USE `universaltranslatorca`;
+DROP procedure IF EXISTS `IfSFNullOrEmptySetToFieldAValue`;
+
+DELIMITER $$
+USE `universaltranslatorca`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `IfSFNullOrEmptySetToFieldAValue`(in configId int, 
+in batchId int, in srcField varchar(10),
+in fieldA varchar(10), in fieldB varchar(10), in con1 varchar(255), 
+in con2 varchar(255), in macroId int, in foroutboundProcessing boolean, in passClear int, in transactionId int)
+proc_main:begin
+
+
+call setInboundOutBoundTables (foroutboundProcessing,batchId);
+select @translatedTable, @transactionTable, @batchTable, @batchIdType , @errorTable
+into @translatedTable, @transactionTable, @batchTable, @batchIdType , @errorTable;
+
+call getFinalStatusIds;
+select @finalStatusIds into @finalStatusIds;
+	
+    set @stmt = concat("update ",@translatedTable, " set ",srcField," = ",fieldA, " 
+     where (length(",srcField, ") = 0 or ", srcField ," is null) and configId = ",configId," and ", @batchIdType," = ",batchId," and statusId not in (",@finalStatusIds ,") ");
+
+	PREPARE stmt from @stmt;
+	EXECUTE stmt;
+	DEALLOCATE PREPARE stmt;
+
+end proc_main$$
+
+DELIMITER ;
+
+USE `universaltranslatorca`;
+DROP procedure IF EXISTS `PopulateFPRaceIdAndFields`;
+
+DELIMITER $$
+USE `universaltranslatorca`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `PopulateFPRaceIdAndFields`(in configId int, 
+in batchId int, in srcField varchar(10),
+in fieldA varchar(10), in fieldB varchar(10), in con1 varchar(255), 
+in con2 varchar(255), in macroId int, in foroutboundProcessing boolean, in passClear int, in transactionId int)
+proc_main:begin
+
+
+
+call setInboundOutBoundTables (foroutboundProcessing,batchId);
+select @translatedTable, @transactionTable, @batchTable, @batchIdType , @errorTable, @batchIdColumn, @listTable, @translateCol
+into @translatedTable, @transactionTable, @batchTable, @batchIdType , @errorTable, @batchIdColumn, @listTable, @translateCol;
+
+call getFinalStatusIds;
+select @finalStatusIds into @finalStatusIds;
+
+
+			set @whereString = concat("  where configId = ",configId," and ", @batchIdType," = ",batchId," and statusId not in (",@finalStatusIds ,")");
+			
+			set @stmt = concat("
+				select length(concat_ws('', F17,F18,F19,F20,F21,F22,F23,F30)) fieldLen from ",@translatedTable, @whereString, " order by fieldLen desc limit 1 into @fieldLen;
+			");
+    
+			PREPARE stmt from @stmt;
+			EXECUTE stmt;
+			DEALLOCATE PREPARE stmt;
+         
+    
+        if (@fieldLen = 0) then
+    
+    
+		begin
+				set @stmt = concat("update ",@translatedTable," set F17 = case when concat(',', ",srcField,", ',') like '%,1,%' then '",con1,"' else null end",@whereString,";");
+				PREPARE stmt from @stmt;
+				EXECUTE stmt;
+				DEALLOCATE PREPARE stmt;
+				
+				set @stmt = concat("update ",@translatedTable," set F18 = case when concat(',', ",srcField,", ',') like '%,2,%' then '",con1,"' else null end",@whereString,";");
+                PREPARE stmt from @stmt;
+				EXECUTE stmt;
+				DEALLOCATE PREPARE stmt;
+                
+				set @stmt = concat("update ",@translatedTable," set F19 = case when concat(',', ",srcField,", ',') like '%,3,%' then '",con1,"' else null end",@whereString,";");
+				PREPARE stmt from @stmt;
+				EXECUTE stmt;
+				DEALLOCATE PREPARE stmt;
+                
+                set @stmt = concat("update ",@translatedTable," set F20 = case when concat(',', ",srcField,", ',') like '%,4,%' then '",con1,"' else null end",@whereString,";");
+				PREPARE stmt from @stmt;
+				EXECUTE stmt;
+				DEALLOCATE PREPARE stmt;
+                
+                set @stmt = concat("update ",@translatedTable," set F21 = case when concat(',', ",srcField,", ',') like '%,5,%' then '",con1,"'  else null end",@whereString,";");
+				PREPARE stmt from @stmt;
+				EXECUTE stmt;
+				DEALLOCATE PREPARE stmt;
+                
+                set @stmt = concat("update ",@translatedTable," set F22 = case when concat(',', ",srcField,", ',') like '%,7,%' then '",con1,"'  else null end",@whereString,";");
+				PREPARE stmt from @stmt;
+				EXECUTE stmt;
+				DEALLOCATE PREPARE stmt;
+                
+                set @stmt = concat("update ",@translatedTable," set F23 = case when concat(',', ",srcField,", ',') like '%,6,%' then '",con1,"' else null end",@whereString,";");
+				PREPARE stmt from @stmt;
+				EXECUTE stmt;
+				DEALLOCATE PREPARE stmt;
+                
+                set @stmt = concat("update ",@translatedTable," set F30 = case when concat(',', ",srcField,", ',') like '%,8,%' then'",con1,"'  else null end ",@whereString,";");
+				PREPARE stmt from @stmt;
+				EXECUTE stmt;
+				DEALLOCATE PREPARE stmt;
+	
+    end;
+    
+    end if;
+				
+                set @stmt = concat("
+				update ",@translatedTable," set ",fieldA," =  case 
+				when ( length(concat_ws('', F17,F18,F19,F20,F21,F23)) > 1)  and  (length(concat_ws('', F22, F30)) = 0) then 6 
+				when (F22 = '",con1,"' and length(concat_ws('', F17,F18,F19,F20,F21, F23, F30)) = 0) then 7
+				when (F30 ='",con1,"' and length(concat_ws('', F17,F18,F19,F20, F21, F23, F22)) = 0) then 8
+				when (F17 = '",con1,"' and length(concat_ws('', F22,F30)) = 0) then 1  when (F18 = '",con1,"' and length(concat_ws('', F22,F30)) = 0) then 2 
+				when (F19 = '",con1,"' and length(concat_ws('', F22,F30)) = 0) then 3 when (F20 = '",con1,"' and length(concat_ws('', F22,F30)) = 0)then 4 
+				when (F21 = '",con1,"' and length(concat_ws('', F22,F30)) = 0)then 5 when (F23 = '",con1,"' and length(concat_ws('', F22,F30)) = 0)  then 6
+				else null end ",@whereString,"
+			");
+            
+            PREPARE stmt from @stmt;
+			EXECUTE stmt;
+			DEALLOCATE PREPARE stmt;
+
+end proc_main$$
+
+DELIMITER ;
+
+USE `universaltranslatorca`;
+DROP procedure IF EXISTS `mergeTransactions`;
+
+DELIMITER $$
+USE `universaltranslatorca`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `mergeTransactions`(in configId int, 
+in batchId int, in srcField varchar(10),
+in fieldA varchar(10), in fieldB varchar(10), in con1 varchar(255), 
+in con2 varchar(255), in macroId int, in foroutboundProcessing boolean, in passClear int, in transactionId int)
+proc_main:begin
+
+
+call setInboundOutBoundTables (foroutboundProcessing,batchId);
+select @translatedTable, @transactionTable, @batchTable, @batchIdType , @errorTable
+into @translatedTable, @transactionTable, @batchTable, @batchIdType , @errorTable;
+
+call getFinalStatusIds;
+select @finalStatusIds into @finalStatusIds;
+
+
+set @con1 = concat('F', con1);
+set @con2 = concat('F', con2);
+
+
+set @stmt = concat("update ",@translatedTable," set forcw = concat_ws('', ",fieldA,", '_', ",fieldB,", '_', ",@con1,");");
+
+PREPARE stmt from @stmt;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;  
+
+
+set @stmt = concat("update ",@translatedTable," tt 
+join  (select group_concat(",@con2,") mser, forcw from ",@translatedTable," group by forcw)  ms on ms.forcw = tt.forcw set ",@con2," =ms.mser;");
+
+PREPARE stmt from @stmt;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt; 
+
+
+set @stmt = concat("delete table1 from    ",@translatedTable," table1  left join (SELECT id as idsToKeep FROM ",@translatedTable," tt
+						INNER JOIN (SELECT forcw, min(id) AS keepId FROM ",@translatedTable,"  GROUP BY forcw) groupedtt 
+						ON tt.forcw = groupedtt.forcw  AND tt.id = groupedtt.keepId ) keepIds
+                        on keepIds.idsToKeep = table1.id where idsToKeep is null;
+                        ");
+
+PREPARE stmt from @stmt;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt; 
+
+
+end proc_main$$
+
+DELIMITER ;
+
+
+
+
+
