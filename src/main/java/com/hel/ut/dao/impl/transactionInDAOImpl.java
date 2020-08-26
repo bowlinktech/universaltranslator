@@ -1712,22 +1712,26 @@ public class transactionInDAOImpl implements transactionInDAO {
 	
 	configFormFields.forEach(field -> {
 	    if(field.getUseField()) {
-		tableFields.append("F").append(field.getFieldNo()).append(" = TRIM(F").append(field.getFieldNo()).append("),");
+		tableFields.append("F").append(field.getFieldNo()).append(" = TRIM(replace(F").append(field.getFieldNo()).append(", char(13), '')),");
 	    }
 	});
-
+	
+	String trimTableFields = tableFields.toString().substring(0,  tableFields.length()-1).toString();
+	
 	String tableName = "transactiontranslatedin_"+batchId;
 	
 	if(foroutboundProcessing) {
 	    tableName = "transactiontranslatedout_"+batchId;
 	}
 
-	sql = "update "+tableName + " set " + tableFields;
-	sql += "configId = TRIM(configId)";
+	sql = "update "+tableName + " set " + trimTableFields;
+	sql += " where configId = :configId";
 	
 	Query updateData = sessionFactory.getCurrentSession().createSQLQuery(sql);
+	updateData.setParameter("configId", configId);
 
 	try {
+		
 	    updateData.executeUpdate();
 	} catch (Exception ex) {
 	    System.err.println("trimFieldValues for table " +tableName+ " " + ex.getCause());
