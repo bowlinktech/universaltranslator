@@ -957,5 +957,38 @@ end proc_main$$
 
 DELIMITER ;
 
+/** 20200902 **/
+USE `healthelink`;
+DROP procedure IF EXISTS `IfMatchFieldAAndTFBlankSetTFValue`;
+
+DELIMITER $$
+USE `healthelink`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `IfMatchFieldAAndTFBlankSetTFValue`(in configId int, 
+in batchId int, in srcField varchar(10),
+in fieldA varchar(10), in fieldB varchar(10), in con1 varchar(255), 
+in con2 varchar(255), in macroId int, in foroutboundProcessing boolean, in passClear int, in transactionId int)
+proc_main:begin
+
+
+call setInboundOutBoundTables (foroutboundProcessing);
+select @translatedTable, @transactionTable, @batchTable, @batchIdType , @errorTable
+into @translatedTable, @transactionTable, @batchTable, @batchIdType , @errorTable;
+
+call getFinalStatusIds;
+select @finalStatusIds into @finalStatusIds;
+
+
+	set @stmt = concat("update ",@translatedTable, " set ",fieldB," = '",con2, "' 
+     where " ,fieldA, " = '",con1, "' and (length(",fieldB,") = 0 or ",fieldB," is null) and configId = ",configId," and ", @batchIdType," = ",batchId," and statusId not in (",@finalStatusIds ,");");
+
+
+PREPARE stmt from @stmt;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+end proc_main$$
+
+DELIMITER ;
+
 
 
