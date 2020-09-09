@@ -307,4 +307,6 @@ public interface transactionInDAO {
     void clearBatchActivityLogTable(Integer batchId) throws Exception;
     
     Integer getMacroErrorRecordCountForTable(Integer batchId, boolean forOutboundProcessing, Integer configId, Integer macroId) throws Exception;
+    
+    void executePassClearLogic(Integer batchId, configurationDataTranslations cdt, boolean foroutboundProcessing) throws Exception;
 }

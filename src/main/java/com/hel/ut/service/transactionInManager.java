@@ -345,4 +345,6 @@ public interface transactionInManager {
     List<batchErrorSummary> getBatchSystemErrorSummary(int batchId, String inboundOutbound) throws Exception;
     
     void clearBatchActivityLogTable(Integer batchId) throws Exception;
+    
+    void executePassClearLogic(Integer batchId, configurationDataTranslations cdt, boolean foroutboundProcessing) throws Exception;
 }
