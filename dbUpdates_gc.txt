@@ -1132,9 +1132,754 @@ DELIMITER ;
 
 
 
+/** 09082020 **/
+
+USE `universaltranslatorca`;
+DROP procedure IF EXISTS `dateddmonyyWithDashesToyyyymmdd`;
+
+DELIMITER $$
+USE `universaltranslatorca`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `dateddmonyyWithDashesToyyyymmdd`(in configId int, 
+in batchId int, in srcField varchar(10),
+in fieldA varchar(10), in fieldB varchar(10), in con1 varchar(10), 
+in con2 varchar(10), in macroId int, in foroutboundProcessing boolean, in passClear int, in transactionId int)
+proc_main:begin
+
+call setInboundOutBoundTables (foroutboundProcessing,batchId);
+select @translatedTable, @transactionTable, @batchTable, @batchIdType , @errorTable, @batchIdColumn,@translateCol
+into @translatedTable, @transactionTable, @batchTable, @batchIdType , @errorTable, @batchIdColumn,@translateCol;
+
+call getFinalStatusIds;
+select @finalStatusIds into @finalStatusIds;
+
+		set @stmt = concat("update ",@translatedTable, " set forcw = null;");
+
+		PREPARE stmt from @stmt;
+		EXECUTE stmt;
+		DEALLOCATE PREPARE stmt;
 
 
+		set @mysqlDateFormat = concat('%Y-%m-%d');
+		set @inboundDateFormat = concat('%d-%b-%y');
+        set @outboundDateFormat = concat('%Y%m%d');
+		
+         -- check to make sure it is two digit years
+        set @errorIds = '';
+		set @stmt = concat("select group_concat(id) from ",@translatedTable, " where left(right(F1, 3), 1) != '-' 
+					and ",srcField," is not null and length(",srcField,") > 0 and forcw is null
+					and configId = ",configId," and ", @batchIdType," = ",batchId," and statusId not in (",@finalStatusIds ,") into @errorIds");
+        
+		PREPARE stmt from @stmt;
+		EXECUTE stmt;
+		DEALLOCATE PREPARE stmt;
 
+		if (@errorIds is not null) then
+
+		begin
+
+				set @stmt = concat("update ",@translatedTable, " set forcw = 'MACRO_ERROR' where id in (",@errorIds,")");
+		
+				PREPARE stmt from @stmt;
+				EXECUTE stmt;
+				DEALLOCATE PREPARE stmt;
+				
+		end;
+		end if;
+        
+
+--  check inbound date formats and log
+		set @errorIds = "";
+		set @stmt = concat("select group_concat(id) from ",@translatedTable, " where str_to_date(",srcField,", '",@inboundDateFormat,"') is null
+					and ",srcField," is not null and length(",srcField,") > 0
+					and configId = ",configId," and ", @batchIdType," = ",batchId," and statusId not in (",@finalStatusIds ,") into @errorIds");
+        
+        PREPARE stmt from @stmt;
+		EXECUTE stmt;
+		DEALLOCATE PREPARE stmt;
+
+		if (@errorIds is not null) then
+
+		begin
+				set @stmt = concat("update ",@translatedTable, " set forcw = 'MACRO_ERROR' where id in (",@errorIds,")");
+				
+                PREPARE stmt from @stmt;
+				EXECUTE stmt;
+				DEALLOCATE PREPARE stmt;
+		end;
+		end if;
+
+
+		-- update it to valid mysql date fomat
+		set @stmt = concat("update ",@translatedTable, " set forcw = str_to_date(",srcField,", '",@inboundDateFormat,"') where forcw is null
+					and ",srcField," is not null and length(",srcField,") > 0 
+					and configId = ",configId," and ", @batchIdType," = ",batchId," and statusId not in (",@finalStatusIds ,")");
+                    
+            PREPARE stmt from @stmt;
+			EXECUTE stmt;
+			DEALLOCATE PREPARE stmt;
+      
+
+		-- recheck to log invalid dates such as 1997-02-29
+		set @errorIds = "";
+		set @stmt = concat("select group_concat(id) from ",@translatedTable, " where date(forcw) is null
+					and ",srcField," is not null and length(",srcField,") > 0  and forcw != 'MACRO_ERROR'  and forcw is not null
+					and configId = ",configId," and ", @batchIdType," = ",batchId," and statusId not in (",@finalStatusIds ,") into @errorIds");
+       
+        PREPARE stmt from @stmt;
+		EXECUTE stmt;
+		DEALLOCATE PREPARE stmt;
+
+		if (@errorIds is not null) then
+
+		begin	
+				set @stmt = concat("update ",@translatedTable, " set forcw = 'MACRO_ERROR' where id in (",@errorIds,")");
+				 
+				PREPARE stmt from @stmt;
+				EXECUTE stmt;
+				DEALLOCATE PREPARE stmt;
+				
+		end;
+		end if;
+        
+        
+		set @goodIds = "";
+
+		set @stmt = concat("select group_concat(id) from ",@translatedTable, " where  ",srcField," is not null and length(",srcField,") > 0  
+					and (forcw != 'MACRO_ERROR' or forcw is null)
+					and configId = ",configId," and ", @batchIdType," = ",batchId," and statusId not in (",@finalStatusIds ,") into @goodIds");
+        
+        PREPARE stmt from @stmt;
+		EXECUTE stmt;
+		DEALLOCATE PREPARE stmt;
+
+		-- recheck to log invalid dates such as 1997-02-29
+		if (@goodIds is not null) then
+
+		begin
+
+		-- now we reformat to mmddyyyy with con1
+		set @stmt = concat("update ",@translatedTable, " set ",srcField," = date_format(forcw, '",@outboundDateFormat,"') where id in (",@goodIds,") ");
+				
+                PREPARE stmt from @stmt;
+				EXECUTE stmt;
+				DEALLOCATE PREPARE stmt;
+				
+		end;
+		end if;
+
+		-- now we handle the two digit years that are converted to future MySQL dates
+		call fix2DigitMySQLYears(configId, batchId, srcField, fieldA, fieldB, con1, con2, macroId, foroutboundProcessing, passClear, transactionId);
+
+		if (passClear = 2) THEN
+			BEGIN
+			
+				set @stmt = concat("update ",@translatedTable, " set ",srcField,"  = null  where forCW= 'MACRO_ERROR';");
+				
+                PREPARE stmt from @stmt;
+				EXECUTE stmt;
+				DEALLOCATE PREPARE stmt;
+			
+			END;
+		END IF;
+
+end proc_main$$
+
+DELIMITER ;
+
+USE `universaltranslatorca`;
+DROP procedure IF EXISTS `datemddyyyyWithSlashesToyyyymmdd`;
+
+DELIMITER $$
+USE `universaltranslatorca`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `datemddyyyyWithSlashesToyyyymmdd`(in configId int, 
+in batchId int, in srcField varchar(10),
+in fieldA varchar(10), in fieldB varchar(10), in con1 varchar(10), 
+in con2 varchar(10), in macroId int, in foroutboundProcessing boolean, in passClear int, in transactionId int)
+proc_main:begin
+
+call setInboundOutBoundTables (foroutboundProcessing,batchId);
+select @translatedTable, @transactionTable, @batchTable, @batchIdType , @errorTable, @batchIdColumn,@translateCol
+into @translatedTable, @transactionTable, @batchTable, @batchIdType , @errorTable, @batchIdColumn,@translateCol;
+
+call getFinalStatusIds;
+select @finalStatusIds into @finalStatusIds;
+
+		set @stmt = concat("update ",@translatedTable, " set forcw = null;");
+
+		PREPARE stmt from @stmt;
+		EXECUTE stmt;
+		DEALLOCATE PREPARE stmt;
+
+		set @mysqlDateFormat = concat('%Y-%m-%d');
+		set @inboundDateFormat = concat('%c/%d/%Y');
+        set @outboundDateFormat = concat('%Y%m%d');
+		
+         -- check to make sure it is two digit years
+        set @errorIds = '';
+		set @stmt = concat("select group_concat(id) from ",@translatedTable, " where left(right(F1, 5), 1) != '/' 
+					and ",srcField," is not null and length(",srcField,") > 0 and forcw is null
+					and configId = ",configId," and ", @batchIdType," = ",batchId," and statusId not in (",@finalStatusIds ,") into @errorIds");
+        
+		PREPARE stmt from @stmt;
+		EXECUTE stmt;
+		DEALLOCATE PREPARE stmt;
+
+		if (@errorIds is not null) then
+
+		begin
+
+				set @stmt = concat("update ",@translatedTable, " set forcw = 'MACRO_ERROR' where id in (",@errorIds,")");
+		
+				PREPARE stmt from @stmt;
+				EXECUTE stmt;
+				DEALLOCATE PREPARE stmt;
+				
+		end;
+		end if;
+        
+
+--  check inbound date formats and log
+		set @errorIds = "";
+		set @stmt = concat("select group_concat(id) from ",@translatedTable, " where str_to_date(",srcField,", '",@inboundDateFormat,"') is null
+					and ",srcField," is not null and length(",srcField,") > 0
+					and configId = ",configId," and ", @batchIdType," = ",batchId," and statusId not in (",@finalStatusIds ,") into @errorIds");
+        
+        PREPARE stmt from @stmt;
+		EXECUTE stmt;
+		DEALLOCATE PREPARE stmt;
+
+		if (@errorIds is not null) then
+
+		begin
+				set @stmt = concat("update ",@translatedTable, " set forcw = 'MACRO_ERROR' where id in (",@errorIds,")");
+				
+                PREPARE stmt from @stmt;
+				EXECUTE stmt;
+				DEALLOCATE PREPARE stmt;
+		end;
+		end if;
+
+
+		-- update it to valid mysql date fomat
+		set @stmt = concat("update ",@translatedTable, " set forcw = str_to_date(",srcField,", '",@inboundDateFormat,"') where forcw is null
+					and ",srcField," is not null and length(",srcField,") > 0 
+					and configId = ",configId," and ", @batchIdType," = ",batchId," and statusId not in (",@finalStatusIds ,")");
+                    
+            PREPARE stmt from @stmt;
+			EXECUTE stmt;
+			DEALLOCATE PREPARE stmt;
+      
+
+		-- recheck to log invalid dates such as 1997-02-29
+		set @errorIds = "";
+		set @stmt = concat("select group_concat(id) from ",@translatedTable, " where date(forcw) is null
+					and ",srcField," is not null and length(",srcField,") > 0  and forcw != 'MACRO_ERROR'  and forcw is not null
+					and configId = ",configId," and ", @batchIdType," = ",batchId," and statusId not in (",@finalStatusIds ,") into @errorIds");
+       
+        PREPARE stmt from @stmt;
+		EXECUTE stmt;
+		DEALLOCATE PREPARE stmt;
+
+		if (@errorIds is not null) then
+
+		begin	
+				set @stmt = concat("update ",@translatedTable, " set forcw = 'MACRO_ERROR' where id in (",@errorIds,")");
+				 
+				PREPARE stmt from @stmt;
+				EXECUTE stmt;
+				DEALLOCATE PREPARE stmt;
+				
+		end;
+		end if;
+        
+        
+		set @goodIds = "";
+
+		set @stmt = concat("select group_concat(id) from ",@translatedTable, " where  ",srcField," is not null and length(",srcField,") > 0  
+					and (forcw != 'MACRO_ERROR' or forcw is null)
+					and configId = ",configId," and ", @batchIdType," = ",batchId," and statusId not in (",@finalStatusIds ,") into @goodIds");
+        
+        PREPARE stmt from @stmt;
+		EXECUTE stmt;
+		DEALLOCATE PREPARE stmt;
+
+		-- recheck to log invalid dates such as 1997-02-29
+		if (@goodIds is not null) then
+
+		begin
+
+		-- now we reformat to mmddyyyy with con1
+		set @stmt = concat("update ",@translatedTable, " set ",srcField," = date_format(forcw, '",@outboundDateFormat,"') where id in (",@goodIds,") ");
+				
+                PREPARE stmt from @stmt;
+				EXECUTE stmt;
+				DEALLOCATE PREPARE stmt;
+				
+		end;
+		end if;
+
+		if (passClear = 2) THEN
+			BEGIN
+			
+				set @stmt = concat("update ",@translatedTable, " set ",srcField,"  = null  where forCW= 'MACRO_ERROR';");
+				
+                PREPARE stmt from @stmt;
+				EXECUTE stmt;
+				DEALLOCATE PREPARE stmt;
+			
+			END;
+		END IF;
+
+end proc_main$$
+
+DELIMITER ;
+
+
+USE `universaltranslator`;
+DROP procedure IF EXISTS `datemmdyyyyWithSlashesToyyyymmdd`;
+
+DELIMITER $$
+USE `universaltranslator`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `datemmdyyyyWithSlashesToyyyymmdd`(in configId int, 
+in batchId int, in srcField varchar(10),
+in fieldA varchar(10), in fieldB varchar(10), in con1 varchar(10), 
+in con2 varchar(10), in macroId int, in foroutboundProcessing boolean, in passClear int, in transactionId int)
+proc_main:begin
+
+call setInboundOutBoundTables (foroutboundProcessing,batchId);
+select @translatedTable, @transactionTable, @batchTable, @batchIdType , @errorTable, @batchIdColumn,@translateCol
+into @translatedTable, @transactionTable, @batchTable, @batchIdType , @errorTable, @batchIdColumn,@translateCol;
+
+call getFinalStatusIds;
+select @finalStatusIds into @finalStatusIds;
+
+		set @stmt = concat("update ",@translatedTable, " set forcw = null;");
+
+		PREPARE stmt from @stmt;
+		EXECUTE stmt;
+		DEALLOCATE PREPARE stmt;
+
+		set @mysqlDateFormat = concat('%Y-%m-%d');
+		set @inboundDateFormat = concat('%m/%e/%Y');
+        set @outboundDateFormat = concat('%Y%m%d');
+		
+         -- check to make sure it is two digit years
+        set @errorIds = '';
+		set @stmt = concat("select group_concat(id) from ",@translatedTable, " where left(right(F1, 5), 1) != '/' 
+					and ",srcField," is not null and length(",srcField,") > 0 and forcw is null
+					and configId = ",configId," and ", @batchIdType," = ",batchId," and statusId not in (",@finalStatusIds ,") into @errorIds");
+        
+		PREPARE stmt from @stmt;
+		EXECUTE stmt;
+		DEALLOCATE PREPARE stmt;
+
+		if (@errorIds is not null) then
+
+		begin
+
+				set @stmt = concat("update ",@translatedTable, " set forcw = 'MACRO_ERROR' where id in (",@errorIds,")");
+		
+				PREPARE stmt from @stmt;
+				EXECUTE stmt;
+				DEALLOCATE PREPARE stmt;
+				
+		end;
+		end if;
+        
+--  check inbound date formats and log
+		set @errorIds = "";
+		set @stmt = concat("select group_concat(id) from ",@translatedTable, " where str_to_date(",srcField,", '",@inboundDateFormat,"') is null
+					and ",srcField," is not null and length(",srcField,") > 0
+					and configId = ",configId," and ", @batchIdType," = ",batchId," and statusId not in (",@finalStatusIds ,") into @errorIds");
+        
+        PREPARE stmt from @stmt;
+		EXECUTE stmt;
+		DEALLOCATE PREPARE stmt;
+
+		if (@errorIds is not null) then
+
+		begin
+				set @stmt = concat("update ",@translatedTable, " set forcw = 'MACRO_ERROR' where id in (",@errorIds,")");
+				
+                PREPARE stmt from @stmt;
+				EXECUTE stmt;
+				DEALLOCATE PREPARE stmt;
+		end;
+		end if;
+
+
+		-- update it to valid mysql date fomat
+		set @stmt = concat("update ",@translatedTable, " set forcw = str_to_date(",srcField,", '",@inboundDateFormat,"') where forcw is null
+					and ",srcField," is not null and length(",srcField,") > 0 
+					and configId = ",configId," and ", @batchIdType," = ",batchId," and statusId not in (",@finalStatusIds ,")");
+                    
+            PREPARE stmt from @stmt;
+			EXECUTE stmt;
+			DEALLOCATE PREPARE stmt;
+      
+
+		-- recheck to log invalid dates such as 1997-02-29
+		set @errorIds = "";
+		set @stmt = concat("select group_concat(id) from ",@translatedTable, " where date(forcw) is null
+					and ",srcField," is not null and length(",srcField,") > 0  and forcw != 'MACRO_ERROR'  and forcw is not null
+					and configId = ",configId," and ", @batchIdType," = ",batchId," and statusId not in (",@finalStatusIds ,") into @errorIds");
+       
+        PREPARE stmt from @stmt;
+		EXECUTE stmt;
+		DEALLOCATE PREPARE stmt;
+
+		if (@errorIds is not null) then
+
+		begin	
+				set @stmt = concat("update ",@translatedTable, " set forcw = 'MACRO_ERROR' where id in (",@errorIds,")");
+				 
+				PREPARE stmt from @stmt;
+				EXECUTE stmt;
+				DEALLOCATE PREPARE stmt;
+				
+		end;
+		end if;
+        
+        
+		set @goodIds = "";
+
+		set @stmt = concat("select group_concat(id) from ",@translatedTable, " where  ",srcField," is not null and length(",srcField,") > 0  
+					and (forcw != 'MACRO_ERROR' or forcw is null)
+					and configId = ",configId," and ", @batchIdType," = ",batchId," and statusId not in (",@finalStatusIds ,") into @goodIds");
+        
+        PREPARE stmt from @stmt;
+		EXECUTE stmt;
+		DEALLOCATE PREPARE stmt;
+
+		-- recheck to log invalid dates such as 1997-02-29
+		if (@goodIds is not null) then
+
+		begin
+
+		-- now we reformat to mmddyyyy with con1
+		set @stmt = concat("update ",@translatedTable, " set ",srcField," = date_format(forcw, '",@outboundDateFormat,"') where id in (",@goodIds,") ");
+				
+                PREPARE stmt from @stmt;
+				EXECUTE stmt;
+				DEALLOCATE PREPARE stmt;
+				
+		end;
+		end if;
+
+		if (passClear = 2) THEN
+			BEGIN
+			
+				set @stmt = concat("update ",@translatedTable, " set ",srcField,"  = null  where forCW= 'MACRO_ERROR';");
+				
+                PREPARE stmt from @stmt;
+				EXECUTE stmt;
+				DEALLOCATE PREPARE stmt;
+			
+			END;
+		END IF;
+
+end proc_main$$
+
+DELIMITER ;
+
+
+USE `universaltranslatorca`;
+DROP procedure IF EXISTS `datemddyyyyToyyyymmdd`;
+
+DELIMITER $$
+USE `universaltranslatorca`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `datemddyyyyToyyyymmdd`(in configId int, 
+in batchId int, in srcField varchar(10),
+in fieldA varchar(10), in fieldB varchar(10), in con1 varchar(10), 
+in con2 varchar(10), in macroId int, in foroutboundProcessing boolean, in passClear int, in transactionId int)
+proc_main:begin
+
+
+call setInboundOutBoundTables (foroutboundProcessing,batchId);
+select @translatedTable, @transactionTable, @batchTable, @batchIdType , @errorTable, @batchIdColumn,@translateCol
+into @translatedTable, @transactionTable, @batchTable, @batchIdType , @errorTable, @batchIdColumn,@translateCol;
+
+call getFinalStatusIds;
+select @finalStatusIds into @finalStatusIds;
+
+		set @stmt = concat("update ",@translatedTable, " set forcw = null;");
+
+		PREPARE stmt from @stmt;
+		EXECUTE stmt;
+		DEALLOCATE PREPARE stmt;
+
+		set @mysqlDateFormat = concat('%Y-%m-%d');
+		set @inboundDateFormat = concat('%Y-%m-%d');
+        set @outboundDateFormat = concat('%Y%m%d');
+
+                set @stmt = concat("update ",@translatedTable, " set forcw = 'MACRO_ERROR' where length(",srcField,") !=7 and length(",srcField,") !=8
+                and ",srcField," is not null and length(",srcField,") > 0");
+				
+                PREPARE stmt from @stmt;
+				EXECUTE stmt;
+				DEALLOCATE PREPARE stmt;
+		
+				/**
+					manually add slashes to make it mysql date format since mysql has trouble understanding dates without date separator
+					if 7 digits we insert one-two-four
+                    if 8 digits we insert two-two-four
+                
+                **/
+                
+				set @stmt = concat("update ",@translatedTable, " set forcw = concat(right(",srcField,", 4), '',  '-0', left(",srcField,", 1), '-', substring(",srcField,", 2,2)) 
+                where length(",srcField,") =7 and forcw != 'MACRO_ERROR' or forcw is null
+                and ",srcField," is not null and length(",srcField,") > 0");
+				
+                PREPARE stmt from @stmt;
+				EXECUTE stmt;
+				DEALLOCATE PREPARE stmt;
+                
+                
+                set @stmt = concat("update ",@translatedTable, " set forcw = concat(right(",srcField,", 4), '-',left(",srcField,", 2) , '-', substring(",srcField,", 2,2))
+                where length(",srcField,") =8 and forcw != 'MACRO_ERROR' or forcw is null
+                and ",srcField," is not null and length(",srcField,") > 0");
+				
+                PREPARE stmt from @stmt;
+				EXECUTE stmt;
+				DEALLOCATE PREPARE stmt;
+		
+				--  check inbound date formats and log
+				set @errorIds = "";
+				set @stmt = concat("select group_concat(id) from ",@translatedTable, " where str_to_date(forcw, '",@inboundDateFormat,"') is null
+					and ",srcField," is not null and length(",srcField,") > 0
+					and configId = ",configId," and ", @batchIdType," = ",batchId," and statusId not in (",@finalStatusIds ,") into @errorIds");
+				
+                PREPARE stmt from @stmt;
+				EXECUTE stmt;
+				DEALLOCATE PREPARE stmt;
+
+		if (@errorIds is not null) then
+
+		begin
+				set @stmt = concat("update ",@translatedTable, " set forcw = 'MACRO_ERROR' where id in (",@errorIds,")");
+				
+                PREPARE stmt from @stmt;
+				EXECUTE stmt;
+				DEALLOCATE PREPARE stmt;
+		end;
+		end if;
+
+		
+		-- recheck to log invalid dates such as 1997-02-29
+		set @errorIds = "";
+		set @stmt = concat("select group_concat(id) from ",@translatedTable, " where date(forcw) is null
+					and ",srcField," is not null and length(",srcField,") > 0 and forcw != 'MACRO_ERROR' and forcw is not null
+					and configId = ",configId," and ", @batchIdType," = ",batchId," and statusId not in (",@finalStatusIds ,") into @errorIds");
+       
+        PREPARE stmt from @stmt;
+		EXECUTE stmt;
+		DEALLOCATE PREPARE stmt;
+
+		if (@errorIds is not null) then
+
+		begin	
+				set @stmt = concat("update ",@translatedTable, " set forcw = 'MACRO_ERROR' where id in (",@errorIds,")");
+				 
+				PREPARE stmt from @stmt;
+				EXECUTE stmt;
+				DEALLOCATE PREPARE stmt;
+				
+		end;
+		end if;
+        
+        
+		set @goodIds = "";
+
+		set @stmt = concat("select group_concat(id) from ",@translatedTable, " where  ",srcField," is not null and length(",srcField,") > 0  
+					and (forcw != 'MACRO_ERROR' or forcw is null)
+					and configId = ",configId," and ", @batchIdType," = ",batchId," and statusId not in (",@finalStatusIds ,") into @goodIds");
+        
+        PREPARE stmt from @stmt;
+		EXECUTE stmt;
+		DEALLOCATE PREPARE stmt;
+
+		-- recheck to log invalid dates such as 1997-02-29
+		if (@goodIds is not null) then
+
+		begin
+
+		-- now we reformat to mddyyyy with con1
+		set @stmt = concat("update ",@translatedTable, " set ",srcField," = date_format(forcw, '",@outboundDateFormat,"') where id in (",@goodIds,") ");
+				
+                PREPARE stmt from @stmt;
+				EXECUTE stmt;
+				DEALLOCATE PREPARE stmt;
+				
+		end;
+		end if;
+
+		if (passClear = 2) THEN
+			BEGIN
+			
+				set @stmt = concat("update ",@translatedTable, " set ",srcField,"  = null  where forCW= 'MACRO_ERROR';");
+				 
+                PREPARE stmt from @stmt;
+				EXECUTE stmt;
+				DEALLOCATE PREPARE stmt;
+			
+			END;
+		END IF;
+
+end proc_main$$
+
+DELIMITER ;
+
+
+USE `universaltranslatorca`;
+DROP procedure IF EXISTS `datemmddyyWithSlashesToyyyymmdd`;
+
+DELIMITER $$
+USE `universaltranslatorca`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `datemmddyyWithSlashesToyyyymmdd`(in configId int, 
+in batchId int, in srcField varchar(10),
+in fieldA varchar(10), in fieldB varchar(10), in con1 varchar(10), 
+in con2 varchar(10), in macroId int, in foroutboundProcessing boolean, in passClear int, in transactionId int)
+proc_main:begin
+
+call setInboundOutBoundTables (foroutboundProcessing,batchId);
+select @translatedTable, @transactionTable, @batchTable, @batchIdType , @errorTable, @batchIdColumn,@translateCol
+into @translatedTable, @transactionTable, @batchTable, @batchIdType , @errorTable, @batchIdColumn,@translateCol;
+
+call getFinalStatusIds;
+select @finalStatusIds into @finalStatusIds;
+
+		set @stmt = concat("update ",@translatedTable, " set forcw = null;");
+
+		PREPARE stmt from @stmt;
+		EXECUTE stmt;
+		DEALLOCATE PREPARE stmt;
+
+
+		set @mysqlDateFormat = concat('%Y-%m-%d');
+		set @inboundDateFormat = concat('%m/%d/%y');
+        set @outboundDateFormat = concat('%Y%m%d');
+		
+         -- check to make sure it is two digit years
+        set @errorIds = '';
+		set @stmt = concat("select group_concat(id) from ",@translatedTable, " where left(right(F1, 3), 1) != '/' 
+					and ",srcField," is not null and length(",srcField,") > 0 and forcw is null
+					and configId = ",configId," and ", @batchIdType," = ",batchId," and statusId not in (",@finalStatusIds ,") into @errorIds");
+        
+		PREPARE stmt from @stmt;
+		EXECUTE stmt;
+		DEALLOCATE PREPARE stmt;
+
+		if (@errorIds is not null) then
+
+		begin
+
+				set @stmt = concat("update ",@translatedTable, " set forcw = 'MACRO_ERROR' where id in (",@errorIds,")");
+		
+				PREPARE stmt from @stmt;
+				EXECUTE stmt;
+				DEALLOCATE PREPARE stmt;
+				
+		end;
+		end if;
+        
+--  check inbound date formats and log
+		set @errorIds = "";
+		set @stmt = concat("select group_concat(id) from ",@translatedTable, " where str_to_date(",srcField,", '",@inboundDateFormat,"') is null
+					and ",srcField," is not null and length(",srcField,") > 0
+					and configId = ",configId," and ", @batchIdType," = ",batchId," and statusId not in (",@finalStatusIds ,") into @errorIds");
+        
+        PREPARE stmt from @stmt;
+		EXECUTE stmt;
+		DEALLOCATE PREPARE stmt;
+
+		if (@errorIds is not null) then
+
+		begin
+				set @stmt = concat("update ",@translatedTable, " set forcw = 'MACRO_ERROR' where id in (",@errorIds,")");
+				
+                PREPARE stmt from @stmt;
+				EXECUTE stmt;
+				DEALLOCATE PREPARE stmt;
+		end;
+		end if;
+
+
+		-- update it to valid mysql date fomat
+		set @stmt = concat("update ",@translatedTable, " set forcw = str_to_date(",srcField,", '",@inboundDateFormat,"') where forcw is null
+					and ",srcField," is not null and length(",srcField,") > 0 
+					and configId = ",configId," and ", @batchIdType," = ",batchId," and statusId not in (",@finalStatusIds ,")");
+                    
+            PREPARE stmt from @stmt;
+			EXECUTE stmt;
+			DEALLOCATE PREPARE stmt;
+      
+
+		-- recheck to log invalid dates such as 1997-02-29
+		set @errorIds = "";
+		set @stmt = concat("select group_concat(id) from ",@translatedTable, " where date(forcw) is null
+					and ",srcField," is not null and length(",srcField,") > 0  and forcw != 'MACRO_ERROR'  and forcw is not null
+					and configId = ",configId," and ", @batchIdType," = ",batchId," and statusId not in (",@finalStatusIds ,") into @errorIds");
+       
+        PREPARE stmt from @stmt;
+		EXECUTE stmt;
+		DEALLOCATE PREPARE stmt;
+
+		if (@errorIds is not null) then
+
+		begin	
+				set @stmt = concat("update ",@translatedTable, " set forcw = 'MACRO_ERROR' where id in (",@errorIds,")");
+				 
+				PREPARE stmt from @stmt;
+				EXECUTE stmt;
+				DEALLOCATE PREPARE stmt;
+				
+		end;
+		end if;
+        
+        
+		set @goodIds = "";
+
+		set @stmt = concat("select group_concat(id) from ",@translatedTable, " where  ",srcField," is not null and length(",srcField,") > 0  
+					and (forcw != 'MACRO_ERROR' or forcw is null)
+					and configId = ",configId," and ", @batchIdType," = ",batchId," and statusId not in (",@finalStatusIds ,") into @goodIds");
+        
+        PREPARE stmt from @stmt;
+		EXECUTE stmt;
+		DEALLOCATE PREPARE stmt;
+
+		-- recheck to log invalid dates such as 1997-02-29
+		if (@goodIds is not null) then
+
+		begin
+
+		-- now we reformat to mmddyyyy with con1
+		set @stmt = concat("update ",@translatedTable, " set ",srcField," = date_format(forcw, '",@outboundDateFormat,"') where id in (",@goodIds,") ");
+				
+                PREPARE stmt from @stmt;
+				EXECUTE stmt;
+				DEALLOCATE PREPARE stmt;
+				
+		end;
+		end if;
+
+		-- now we handle the two digit years that are converted to future MySQL dates
+		call fix2DigitMySQLYears(configId, batchId, srcField, fieldA, fieldB, con1, con2, macroId, foroutboundProcessing, passClear, transactionId);
+
+		if (passClear = 2) THEN
+			BEGIN
+			
+				set @stmt = concat("update ",@translatedTable, " set ",srcField,"  = null  where forCW= 'MACRO_ERROR';");
+				
+                PREPARE stmt from @stmt;
+				EXECUTE stmt;
+				DEALLOCATE PREPARE stmt;
+			
+			END;
+		END IF;
+
+end proc_main$$
+
+DELIMITER ;
 
 
 
