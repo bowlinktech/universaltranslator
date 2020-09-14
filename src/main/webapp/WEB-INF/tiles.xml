@@ -220,6 +220,17 @@
         <put-attribute name="body" value="/WEB-INF/jsp/administrator/configurations/domainSenders.jsp" />
         <put-attribute name="jscript" value="/dspResources/js/admin/configuration/domainSenders.js" />
     </definition>
+    
+    <definition name="/administrator/configurations/notes" extends="base.definition.admin">
+        <put-attribute name="page-id" value="configuration-notes" />
+        <put-attribute name="page-section" value="section-configurations" />
+        <put-attribute name="title" value="Administrator - Configuration Notes" />
+        <put-attribute name="header" value="/WEB-INF/jsp/common/adminHeader.jsp?sect=config" />
+        <put-attribute name="actions" value="/WEB-INF/jsp/administrator/configurations/actionBar.jsp?page=notes" />
+         <put-attribute name="menu" value="/WEB-INF/jsp/administrator/configurations/menu.jsp?page=notes" />
+        <put-attribute name="body" value="/WEB-INF/jsp/administrator/configurations/notes/list.jsp" />
+        <put-attribute name="jscript" value="/dspResources/js/admin/configuration/notes/list.js" />
+    </definition>
 
     <!-- Admin Organization Definitions -->
     <definition name="/administrator/organizations/listOrganizations" extends="base.definition.admin">

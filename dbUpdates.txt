@@ -1,0 +1,2 @@
+ALTER TABLE `universaltranslatorca`.`configurationupdatelogs` 
+CHANGE COLUMN `updateMade` `updateMade` MEDIUMTEXT NULL DEFAULT NULL ;

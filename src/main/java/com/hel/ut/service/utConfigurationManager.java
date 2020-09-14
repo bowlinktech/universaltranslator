@@ -221,4 +221,14 @@ public interface utConfigurationManager {
     void saveConfigurationUpdateLog(configurationUpdateLogs updateLog) throws Exception;
     
     void checkForUnusedFolders() throws Exception;
+    
+    List<configurationUpdateLogs> getConfigurationUpdateLogs(Integer configId) throws Exception;
+    
+    configurationUpdateLogs getConfigurationUpdateLog(Integer noteId) throws Exception;
+    
+    void updateConfigurationUpdateLog(configurationUpdateLogs updateLog) throws Exception;
+    
+    void deletConfigurationNote(Integer noteId) throws Exception;
+    
+    StringBuffer printConfigurationNotesSection(utConfiguration configDetails, String siteTimeZone) throws Exception;
 }

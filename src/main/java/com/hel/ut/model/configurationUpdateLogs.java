@@ -12,6 +12,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 import org.springframework.format.annotation.DateTimeFormat;
 
 /**
@@ -21,6 +22,9 @@ import org.springframework.format.annotation.DateTimeFormat;
 @Entity
 @Table(name = "configurationUpdateLogs")
 public class configurationUpdateLogs {
+    
+    @Transient
+    private String usersName;
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -78,6 +82,14 @@ public class configurationUpdateLogs {
 
     public void setUpdateMade(String updateMade) {
 	this.updateMade = updateMade;
+    }
+
+    public String getUsersName() {
+	return usersName;
+    }
+
+    public void setUsersName(String usersName) {
+	this.usersName = usersName;
     }
 
 }
