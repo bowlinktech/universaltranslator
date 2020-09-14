@@ -19,6 +19,7 @@
 	  </c:if>
 	   <li role="menuitem" ${param['page'] == 'preprocessing' ? 'class="active"' : ''} ${id > 0 and configurationDetails.configurationType == 1 and configurationDetails.stepsCompleted >= 5 ? '' : 'class="disabled"'}><a href="${param['page'] != 'preprocessing' and id > 0 and configurationDetails.stepsCompleted >= 5 ? 'preprocessing' : 'javascript:void(0);'}" title="Pre-Process Macros">Pre-Process Macros</a></li>
 	   <li role="menuitem" ${param['page'] == 'postprocessing' ? 'class="active"' : ''} ${id > 0 and configurationDetails.configurationType == 1 and configurationDetails.stepsCompleted >= 5 ? '' : 'class="disabled"'}><a href="${param['page'] != 'postprocessing' and id > 0 and configurationDetails.stepsCompleted >= 5 ? 'postprocessing' : 'javascript:void(0);'}" title="Post-Process Macros">Post-Process Macros</a></li>
+           <li role="menuitem" ${param['page'] == 'notes' ? 'class="active"' : ''} ${id > 0 ? '' : 'class="disabled"'}><a href="${param['page'] != 'notes' ? 'notes' : 'javascript:void(0);'}" title="Configuration Notes">Configuration Notes</a></li>
        </ul>
     </nav>
 </aside>

@@ -347,4 +347,6 @@ public interface transactionInManager {
     void clearBatchActivityLogTable(Integer batchId) throws Exception;
     
     void executePassClearLogic(Integer batchId, configurationDataTranslations cdt, boolean foroutboundProcessing) throws Exception;
+    
+    void insertMacroDroppedValues(Integer batchId, configurationDataTranslations cdt, boolean foroutboundProcessing) throws Exception;
 }

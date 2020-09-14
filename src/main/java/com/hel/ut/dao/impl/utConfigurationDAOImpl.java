@@ -2346,4 +2346,69 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
 	    return null;
 	}
     }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public List<configurationUpdateLogs> getConfigurationUpdateLogs(Integer configId) throws Exception {
+	
+	String sql = "select a.id, a.configId, a.userId, a.dateCreated, a.updateMade, concat(b.firstName, ' ',b.lastName) as usersName " 
+	    + "from configurationupdatelogs a inner join users b on b.id = a.userId where a.configId = :configId order by a.dateCreated desc";
+	
+	Query query = sessionFactory.getCurrentSession().createSQLQuery(sql)
+	    .addScalar("id", StandardBasicTypes.INTEGER)
+	    .addScalar("configId", StandardBasicTypes.INTEGER)
+	    .addScalar("userId", StandardBasicTypes.INTEGER)
+	    .addScalar("dateCreated", StandardBasicTypes.TIMESTAMP)
+	    .addScalar("updateMade", StandardBasicTypes.STRING)
+	    .addScalar("usersName", StandardBasicTypes.STRING)
+	    .setResultTransformer(Transformers.aliasToBean(configurationUpdateLogs.class));
+	
+	query.setParameter("configId", configId);
+	
+	return query.list();
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public configurationUpdateLogs getConfigurationUpdateLog(Integer noteId) throws Exception {
+	
+	String sql = "select * "
+		+ "from configurationUpdateLogs "
+		+ "where id = :noteId";
+	
+        Query query = sessionFactory.getCurrentSession().createSQLQuery(sql)
+	    .setParameter("noteId", noteId)
+	    .setResultTransformer(Transformers.aliasToBean(configurationUpdateLogs.class));
+	
+	if(query.list().size() > 0) {
+	    configurationUpdateLogs configurationLog = (configurationUpdateLogs) query.list().get(0);
+	    return configurationLog;
+	}
+	else {
+	    return null;
+	}
+    }
+    
+    @Override
+    @Transactional(readOnly = false)
+    public void updateConfigurationUpdateLog(configurationUpdateLogs updateLog) {
+	
+	String sql = "update configurationUpdateLogs set updateMade = :note where id = :noteId";
+	Query updateConfigurationNote = sessionFactory.getCurrentSession().createSQLQuery(sql);
+	updateConfigurationNote.setParameter("noteId",updateLog.getId());
+	updateConfigurationNote.setParameter("note",updateLog.getUpdateMade());
+	updateConfigurationNote.executeUpdate();
+    }
+    
+    @Override
+    @Transactional(readOnly = false)
+    public void deletConfigurationNote(Integer noteId) throws Exception {
+	
+	String sql = "delete from configurationUpdateLogs where id = :noteId";
+	
+	Query deleteConfigurationNote = sessionFactory.getCurrentSession().createSQLQuery(sql);
+	deleteConfigurationNote.setParameter("noteId",noteId);
+	
+        deleteConfigurationNote.executeUpdate();
+    }
 }
