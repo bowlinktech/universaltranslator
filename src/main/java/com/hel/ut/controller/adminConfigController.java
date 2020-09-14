@@ -3695,7 +3695,9 @@ public class adminConfigController {
 	PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(configDetailFile, true)));
 	out.println("<html><body>");
 	
+	
 	reportBody.append(utconfigurationmanager.printDetailsSection(configDetails,orgDetails,siteTimeZone));
+	reportBody.append(utconfigurationmanager.printConfigurationNotesSection(configDetails,siteTimeZone));
 	reportBody.append(utconfigurationmanager.printTransportMethodSection(configDetails));
 	reportBody.append(utconfigurationmanager.printMessageSpecsSection(configDetails));
 	reportBody.append(utconfigurationmanager.printFieldSettingsSection(configDetails));
@@ -4161,5 +4163,163 @@ public class adminConfigController {
 
 	 messagetypemanager.deleteCrosswalk(cwId);
 	 return 1;
+    }
+    
+    /**
+     * The '/notes' GET request will display all the notes for a configuration
+     *
+     * @return	The utConfiguration note list
+     *
+     * @Objects	(1) An object containing all the found configuration notes
+     *
+     * @throws Exception
+     */
+    @RequestMapping(value = "/notes", method = RequestMethod.GET)
+    public ModelAndView configurationNotes(HttpSession session) throws Exception {
+
+        ModelAndView mav = new ModelAndView();
+	
+	Integer configId = 0;
+	
+	if(session.getAttribute("manageconfigId") == null){  
+	    mav = new ModelAndView(new RedirectView("list"));
+            return mav;
+	}
+	else {
+	    configId = (Integer) session.getAttribute("manageconfigId");
+	}
+	
+        mav.setViewName("/administrator/configurations/notes");
+
+        //Get the utConfiguration details for the selected config
+        utConfiguration configurationDetails = utconfigurationmanager.getConfigurationById(configId);
+	mav.addObject("messageTypeId", configurationDetails.getMessageTypeId());
+	
+        // Get organization directory name
+        Organization orgDetails = organizationmanager.getOrganizationById(configurationDetails.getorgId());
+	
+	configurationDetails.setOrgName(orgDetails.getOrgName());
+	
+	mav.addObject("configurationDetails", configurationDetails);
+	mav.addObject("id", configId);
+	
+	//Get a list of configuration notes
+	List<configurationUpdateLogs> configurationNotes = utconfigurationmanager.getConfigurationUpdateLogs(configId);
+	
+	if(!configurationNotes.isEmpty()) {
+	    TimeZone timeZone = TimeZone.getTimeZone(siteTimeZone);
+	    DateFormat requiredFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	    DateFormat dft = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	    requiredFormat.setTimeZone(timeZone);
+	    String dateinTZ = "";
+	    for(configurationUpdateLogs note : configurationNotes) {
+		dateinTZ = requiredFormat.format(note.getDateCreated());
+		note.setDateCreated(dft.parse(dateinTZ));
+	    }
+	}
+	
+	mav.addObject("configurationNotes", configurationNotes);
+
+        return mav;
+
+    }
+    
+    /**
+     * The '/newConfigurationNote' function will return the configuration note form.
+     *
+     * @param configId
+     * @param authentication
+     * @return 
+     * @throws java.lang.Exception
+     */
+    @RequestMapping(value = "/newConfigurationNote", method = RequestMethod.GET)
+    public @ResponseBody
+    ModelAndView newConfigurationNote(Authentication authentication, @RequestParam(value = "configId", required = true) Integer configId) throws Exception {
+	
+        ModelAndView mav = new ModelAndView();
+        mav.setViewName("/administrator/configurations/notes/noteDetails");
+	
+	utUser userDetails = userManager.getUserByUserName(authentication.getName());
+	
+        //Get the details of the selected configuration note
+        configurationUpdateLogs configurationNote = new configurationUpdateLogs();
+	configurationNote.setConfigId(configId);
+	configurationNote.setUserId(userDetails.getId());
+	
+        mav.addObject("configurationNote", configurationNote);
+	
+        return mav;
+    }
+    
+    /**
+     * The '/editConfigurationNote' function will return the details of the selected configuration note.
+     *
+     * @param noteId
+     * @return 
+     * @throws java.lang.Exception
+     */
+    @RequestMapping(value = "/editConfigurationNote", method = RequestMethod.GET)
+    public @ResponseBody
+    ModelAndView editConfigurationNote(@RequestParam(value = "noteId", required = true) Integer noteId) throws Exception {
+	
+        ModelAndView mav = new ModelAndView();
+        mav.setViewName("/administrator/configurations/notes/noteDetails");
+	
+        //Get the details of the selected configuration note
+        configurationUpdateLogs configurationNote = utconfigurationmanager.getConfigurationUpdateLog(noteId);
+        mav.addObject("configurationNote", configurationNote);
+	
+        return mav;
+    }
+    
+    /**
+     *
+     * @param noteId
+     * @return 
+     * @throws java.lang.Exception
+     */
+    @RequestMapping(value = "/deleteConfigurationNote.do", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+    public @ResponseBody
+    Integer deleteConfigurationNote(@RequestParam(value = "noteId", required = true) Integer noteId) throws Exception {
+	 utconfigurationmanager.deletConfigurationNote(noteId);
+	 return 1;
+    }
+    
+    /**
+     * The '/newConfigurationNote' POST request will submit the new configuration note.
+     *
+     * @param session
+     * @param configurationNote	
+     * @param redirectAttr	
+     * @throws Exception
+     */
+    @RequestMapping(value = "/newConfigurationNote", method = RequestMethod.POST)
+    public ModelAndView saveNewConfigurationNote(HttpSession session,@ModelAttribute(value = "configurationNote") configurationUpdateLogs configurationNote, RedirectAttributes redirectAttr) throws Exception {
+
+	utconfigurationmanager.saveConfigurationUpdateLog(configurationNote);
+	
+	redirectAttr.addFlashAttribute("savedStatus", "created");
+	ModelAndView mav = new ModelAndView(new RedirectView("notes"));
+	return mav;
+
+    }
+    
+    /**
+     * The '/editConfigurationNote' POST request will submit the configuration note.
+     *
+     * @param session
+     * @param configurationNote	
+     * @param redirectAttr	
+     * @throws Exception
+     */
+    @RequestMapping(value = "/editConfigurationNote", method = RequestMethod.POST)
+    public ModelAndView editConfigurationNote(HttpSession session,@ModelAttribute(value = "configurationNote") configurationUpdateLogs configurationNote, RedirectAttributes redirectAttr) throws Exception {
+
+	utconfigurationmanager.updateConfigurationUpdateLog(configurationNote);
+	
+	redirectAttr.addFlashAttribute("savedStatus", "updated");
+	ModelAndView mav = new ModelAndView(new RedirectView("notes"));
+	return mav;
+
     }
 }
