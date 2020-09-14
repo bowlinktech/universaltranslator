@@ -309,4 +309,6 @@ public interface transactionInDAO {
     Integer getMacroErrorRecordCountForTable(Integer batchId, boolean forOutboundProcessing, Integer configId, Integer macroId) throws Exception;
     
     void executePassClearLogic(Integer batchId, configurationDataTranslations cdt, boolean foroutboundProcessing) throws Exception;
+    
+    void insertMacroDroppedValues(Integer batchId, configurationDataTranslations cdt, boolean foroutboundProcessing) throws Exception;
 }

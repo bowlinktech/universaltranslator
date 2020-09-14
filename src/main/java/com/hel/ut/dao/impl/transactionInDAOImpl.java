@@ -3697,14 +3697,38 @@ public class transactionInDAOImpl implements transactionInDAO {
     @Transactional(readOnly = false)
     public void executePassClearLogic(Integer batchId, configurationDataTranslations cdt, boolean foroutboundProcessing) throws Exception {
 	String sql;
+	String translatedTable = "transactiontranslatedin_"+batchId;
 	
-	if (foroutboundProcessing == false) {
-	    sql = "update transactiontranslatedin_"+batchId+ " set F"+cdt.getFieldNo()+" = null where forCW = 'MACRO_ERROR'";
+	if (foroutboundProcessing) {
+	    translatedTable = "transactiontranslatedout_"+batchId;
 	} 
-	else {
-	    sql = "update transactiontranslatedout_"+batchId+ " set F"+cdt.getFieldNo()+" = null where forCW = 'MACRO_ERROR'";
-	} 
+	
+	sql = "update " + translatedTable + " set F"+cdt.getFieldNo()+" = null where forCW = 'MACRO_ERROR'";
 
+	Query updateData = sessionFactory.getCurrentSession().createSQLQuery(sql);
+	updateData.executeUpdate();
+    }
+    
+    @Override
+    @Transactional(readOnly = false)
+    public void insertMacroDroppedValues(Integer batchId, configurationDataTranslations cdt, boolean foroutboundProcessing) throws Exception {
+	String sql;
+	String droppedTableName = "batchuploaddroppedvalues";
+	String translatedTable = "transactiontranslatedin_"+batchId;
+	String batchIdType = "batchUploadId";
+	String transactionRecordCol = "transactionInRecordsId";
+	
+	if (foroutboundProcessing) {
+	    droppedTableName = "batchdownloaddroppedvalues";
+	    translatedTable = "transactiontranslatedout_"+batchId;
+	    batchIdType = "batchDownloadId";
+	    transactionRecordCol = "transactionOutRecordsId";
+	} 
+	
+	sql = "insert into " + droppedTableName + " ("+batchIdType+"," + transactionRecordCol + ",fieldNo,configId,fieldName,fieldValue) ";
+	sql += "select " + batchId + "," + transactionRecordCol + "," + cdt.getFieldNo() + "," + cdt.getconfigId() + "," + cdt.getFieldDesc().trim() + ", F"+cdt.getFieldNo();
+	sql += " from " + translatedTable + " where forCW = 'MACRO_ERROR'";
+	
 	Query updateData = sessionFactory.getCurrentSession().createSQLQuery(sql);
 	updateData.executeUpdate();
     }
