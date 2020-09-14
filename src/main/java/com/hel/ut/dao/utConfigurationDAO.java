@@ -205,4 +205,12 @@ public interface utConfigurationDAO {
     void saveConfigurationUpdateLog(configurationUpdateLogs updateLog) throws Exception;
     
     configurationUpdateLogs getLastConfigUpdateLog(Integer configId) throws Exception;
+    
+    List<configurationUpdateLogs> getConfigurationUpdateLogs(Integer configId) throws Exception;
+    
+    configurationUpdateLogs getConfigurationUpdateLog(Integer noteId) throws Exception;
+    
+    void updateConfigurationUpdateLog(configurationUpdateLogs updateLog) throws Exception;
+    
+    void deletConfigurationNote(Integer noteId) throws Exception;
 }

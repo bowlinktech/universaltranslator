@@ -882,7 +882,7 @@ public class utConfigurationManagerImpl implements utConfigurationManager {
 	configurationTransport transportDetails = configurationTransportDAO.getTransportDetails(configDetails.getId());
 	
 	StringBuffer reportBody = new StringBuffer();
-	reportBody.append("<div>");
+	reportBody.append("<div style='padding-top:10px;'>");
 	reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 16px;'><strong>TRANSPORT METHOD</strong></span><br />");
 	
 	if(transportDetails != null) {
@@ -1770,6 +1770,68 @@ public class utConfigurationManagerImpl implements utConfigurationManager {
 		emailMessageManager.sendEmail(messageDetails);
 	    }
 	}
+    }
+    
+    @Override
+    public List<configurationUpdateLogs> getConfigurationUpdateLogs(Integer configId) throws Exception {
+	return utConfigurationDAO.getConfigurationUpdateLogs(configId);
+    }
+    
+    @Override
+    public configurationUpdateLogs getConfigurationUpdateLog(Integer noteId) throws Exception {
+	return utConfigurationDAO.getConfigurationUpdateLog(noteId);
+    }
+    
+    @Override
+    public void updateConfigurationUpdateLog(configurationUpdateLogs updateLog) throws Exception {
+	utConfigurationDAO.updateConfigurationUpdateLog(updateLog);
+    }
+    
+    @Override
+    public void deletConfigurationNote(Integer noteId) throws Exception {
+	utConfigurationDAO.deletConfigurationNote(noteId);
+    }
+    
+    @Override 
+    public StringBuffer printConfigurationNotesSection(utConfiguration configDetails, String siteTimeZone) throws Exception {
+	
+	List<configurationUpdateLogs> configurationNotes = utConfigurationDAO.getConfigurationUpdateLogs(configDetails.getId());
+	
+	StringBuffer reportBody = new StringBuffer();
+	reportBody.append("<div>");
+	reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 16px;'><strong>CONFIGURATION NOTES</strong></span><br />");
+	
+	
+	if(!configurationNotes.isEmpty()) {
+	    TimeZone timeZone = TimeZone.getTimeZone(siteTimeZone);
+	    DateFormat requiredFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	    DateFormat dft = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	    requiredFormat.setTimeZone(timeZone);
+	    String dateinTZ = "";
+	    Date createDate;
+	    
+	    reportBody.append("</div>");
+	    reportBody.append("<div><table border='1' cellpadding='1' cellspacing='1' width='100%'>");
+	    reportBody.append("<thead><tr><th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px; width:80%'>Note</th><th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px; width:20%'>Created By</th><th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px; width:20%'>Date Created</th>");
+	    reportBody.append("</tr></thead><tbody>");
+	    for(configurationUpdateLogs note : configurationNotes) {
+		
+		dateinTZ = requiredFormat.format(note.getDateCreated());
+		createDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(dateinTZ);
+		
+		reportBody.append("<tr><td valign='top' style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>").append(note.getUpdateMade()).append("</td>");
+		reportBody.append("<td valign='top' style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>").append(note.getUsersName()).append("</td>");
+		reportBody.append("<td valign='top' style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>").append(new SimpleDateFormat("M/dd/yyyy h:mm a").format(createDate)).append("</td>");
+		reportBody.append("</tr>");
+	    }
+	    reportBody.append("</tbody></table></div>");
+	}
+	else {
+	   reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 16px;'>No notes have been made for this configuration.</span><br />");
+	   reportBody.append("</div>");
+	}
+	
+	return reportBody;
     }
 }
 
