@@ -3489,54 +3489,52 @@ public class transactionInDAOImpl implements transactionInDAO {
 	List<directmessagesin> directmessagesin = query.list();
 	
         return directmessagesin;
-
     }
 
-	@Override
-	@Transactional(readOnly = false)
-	public void insertCWDroppedValues(Integer configId, Integer batchId, configurationDataTranslations cdt, boolean foroutboundProcessing) throws Exception {
-		String sql;
-		if (foroutboundProcessing == false) {
-		    sql = "insert into batchuploaddroppedvalues (batchUploadId, configId, "
-			+ "transactionInRecordsId, fieldNo, fieldname, fieldValue)"
-			+ " select " + batchId + ", " + configId + ",a.transactionInRecordsId, " + cdt.getFieldNo() 
-			+ ", '" + cdt.getFieldDesc() + "', b.F"+cdt.getFieldNo()+" from transactiontranslatedin_"+batchId+" a "
-			+ "inner join transactioninrecords_"+batchId+" b on a.transactionInRecordsId = b.id where "
-			+ "a.configId = :configId "
-			+ "and (a.F" + cdt.getFieldNo() + " is not null and length(a.F" + cdt.getFieldNo() + ") != 0  and a.forcw is null)"
-			+ "and a.transactionInRecordsId in (select id from transactioninrecords_"+batchId+ " "
-			+ "where configId = :configId and F"+cdt.getFieldNo()+" is not null and length(F"+cdt.getFieldNo()+") > 0 and (statusId is null or statusId not in (:transRELId)));";
-		    
-		} 
-		else {
-		    
-		    sql = "insert into batchdownloaddroppedvalues  (batchDownloadId, configId, "
-			+ "transactionOutRecordsId, fieldNo, fieldname, fieldValue)"
-			+ " select " + batchId + ", " + configId + ",a.transactionOutRecordsId, " + cdt.getFieldNo()
-			+ ", '" + cdt.getFieldDesc() + "', b.F"+cdt.getFieldNo()+" from transactiontranslatedout_"+batchId+" a "
-			+ "inner join transactionoutrecords_"+batchId+" b on a.transactionOutRecordsId = b.id where "
-			+ "a.configId = :configId "
-			+ "and (a.F" + cdt.getFieldNo() + " is not null and length(a.F" + cdt.getFieldNo() + ") != 0  and a.forcw is null)"
-			+ "and a.transactionOutRecordsId in (select id from transactionoutrecords_"+batchId+ " "
-			+ "where configId = :configId and F"+cdt.getFieldNo()+" is not null and length(F"+cdt.getFieldNo()+") > 0 and (statusId is null or statusId not in (:transRELId)));";
-		} 
+    @Override
+    @Transactional(readOnly = false)
+    public void insertCWDroppedValues(Integer configId, Integer batchId, configurationDataTranslations cdt, boolean foroutboundProcessing) throws Exception {
+	    String sql;
+	    if (foroutboundProcessing == false) {
+		sql = "insert into batchuploaddroppedvalues (batchUploadId, configId, "
+		    + "transactionInRecordsId, fieldNo, fieldname, fieldValue)"
+		    + " select " + batchId + ", " + configId + ",a.transactionInRecordsId, " + cdt.getFieldNo() 
+		    + ", '" + cdt.getFieldDesc() + "', b.F"+cdt.getFieldNo()+" from transactiontranslatedin_"+batchId+" a "
+		    + "inner join transactioninrecords_"+batchId+" b on a.transactionInRecordsId = b.id where "
+		    + "a.configId = :configId "
+		    + "and (a.F" + cdt.getFieldNo() + " is not null and length(a.F" + cdt.getFieldNo() + ") != 0  and a.forcw is null)"
+		    + "and a.transactionInRecordsId in (select id from transactioninrecords_"+batchId+ " "
+		    + "where configId = :configId and F"+cdt.getFieldNo()+" is not null and length(F"+cdt.getFieldNo()+") > 0 and (statusId is null or statusId not in (:transRELId)));";
+	    } 
+	    else {
 
-		Query updateData = sessionFactory.getCurrentSession().createSQLQuery(sql)
-		    .setParameter("configId", configId)
-		    .setParameterList("transRELId", transRELId);
-			updateData.executeUpdate();
-	}
+		sql = "insert into batchdownloaddroppedvalues  (batchDownloadId, configId, "
+		    + "transactionOutRecordsId, fieldNo, fieldname, fieldValue)"
+		    + " select " + batchId + ", " + configId + ",a.transactionOutRecordsId, " + cdt.getFieldNo()
+		    + ", '" + cdt.getFieldDesc() + "', b.F"+cdt.getFieldNo()+" from transactiontranslatedout_"+batchId+" a "
+		    + "inner join transactionoutrecords_"+batchId+" b on a.transactionOutRecordsId = b.id where "
+		    + "a.configId = :configId "
+		    + "and (a.F" + cdt.getFieldNo() + " is not null and length(a.F" + cdt.getFieldNo() + ") != 0  and a.forcw is null)"
+		    + "and a.transactionOutRecordsId in (select id from transactionoutrecords_"+batchId+ " "
+		    + "where configId = :configId and F"+cdt.getFieldNo()+" is not null and length(F"+cdt.getFieldNo()+") > 0 and (statusId is null or statusId not in (:transRELId)));";
+	    } 
 
-	@Override
-	@Transactional(readOnly = false)
-	public void populateDroppedValues(Integer batchUploadId, Integer configId, boolean foroutboundProcessing) throws Exception {
-		String sql = "call populateDroppedValues(:configId, :batchUploadId, :foroutboundProcessing);";
-		Query query = sessionFactory.getCurrentSession().createSQLQuery(sql);
-		query.setParameter("configId", configId);
-		query.setParameter("batchUploadId", batchUploadId);
-		query.setParameter("foroutboundProcessing", foroutboundProcessing);
-		query.executeUpdate();
-	}
+	    Query updateData = sessionFactory.getCurrentSession().createSQLQuery(sql)
+		.setParameter("configId", configId)
+		.setParameterList("transRELId", transRELId);
+		    updateData.executeUpdate();
+    }
+
+    @Override
+    @Transactional(readOnly = false)
+    public void populateDroppedValues(Integer batchUploadId, Integer configId, boolean foroutboundProcessing) throws Exception {
+	    String sql = "call populateDroppedValues(:configId, :batchUploadId, :foroutboundProcessing);";
+	    Query query = sessionFactory.getCurrentSession().createSQLQuery(sql);
+	    query.setParameter("configId", configId);
+	    query.setParameter("batchUploadId", batchUploadId);
+	    query.setParameter("foroutboundProcessing", foroutboundProcessing);
+	    query.executeUpdate();
+    }
 		
 	
     @Override
@@ -3695,5 +3693,21 @@ public class transactionInDAOImpl implements transactionInDAO {
 	
 	return (Integer) query.list().get(0);
 
+    }
+    
+    @Override
+    @Transactional(readOnly = false)
+    public void executePassClearLogic(Integer batchId, configurationDataTranslations cdt, boolean foroutboundProcessing) throws Exception {
+	String sql;
+	
+	if (foroutboundProcessing == false) {
+	    sql = "update transactiontranslatedin_"+batchId+ " set F"+cdt.getFieldNo()+" = null where forCW = 'MACRO_ERROR'";
+	} 
+	else {
+	    sql = "update transactiontranslatedout_"+batchId+ " set F"+cdt.getFieldNo()+" = null where forCW = 'MACRO_ERROR'";
+	} 
+
+	Query updateData = sessionFactory.getCurrentSession().createSQLQuery(sql);
+	updateData.executeUpdate();
     }
 }
