@@ -210,7 +210,7 @@ public interface utConfigurationManager {
     
     StringBuffer printFieldSettingsSection(utConfiguration configDetails) throws Exception;
     
-    StringBuffer printDataTranslationsSection(utConfiguration configDetails) throws Exception;
+    StringBuffer printDataTranslationsSection(utConfiguration configDetails, String siteTimeZone) throws Exception;
     
     StringBuffer printConnectionDetails(utConfiguration srcconfigDetails,utConfiguration tgtconfigDetails) throws Exception;
     

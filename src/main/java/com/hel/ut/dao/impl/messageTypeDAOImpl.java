@@ -409,18 +409,6 @@ public class messageTypeDAOImpl implements messageTypeDAO {
 		+ "order by a.name asc";
 	}
 	
-	int firstResult = 0;
-
-        //Set the parameters for paging
-        //Set the page to load
-        if (page > 1) {
-            firstResult = (maxCrosswalks * (page - 1));
-        }
-        
-	if(maxCrosswalks > 0) {
-	    sql += " limit " + firstResult + ", " + maxCrosswalks;
-	}
-	
 	Query query = sessionFactory
 	    .getCurrentSession()
 	    .createSQLQuery(sql)
@@ -429,6 +417,7 @@ public class messageTypeDAOImpl implements messageTypeDAO {
 	    .addScalar("dtsId", StandardBasicTypes.INTEGER)
 	    .addScalar("name", StandardBasicTypes.STRING)
 	    .addScalar("dateCreated", StandardBasicTypes.TIMESTAMP)
+	    .addScalar("lastUpdated", StandardBasicTypes.TIMESTAMP)	
 	    .setResultTransformer( Transformers.aliasToBean(Crosswalks.class))
 	    .setParameter("orgId", orgId).setParameter("configId", configId);
 	
@@ -451,7 +440,7 @@ public class messageTypeDAOImpl implements messageTypeDAO {
     @Transactional(readOnly = true)
     public List getConfigCrosswalksWithData(Integer orgId, Integer configId) {
 	
-	String sql = "select a.name,  b.sourceValue, b.targetValue, b.descValue, a.id, a.fileDelimiter "
+	String sql = "select a.name,  b.sourceValue, b.targetValue, b.descValue, a.id, a.fileDelimiter, a.dateCreated, ifnull(a.lastUpdated,a.dateCreated) as lastUpdated "
 	    + "from crosswalks a inner join "
 	    + "rel_crosswalkdata b on b.crosswalkId = a.id "
 	    + "where a.orgId = :orgId "

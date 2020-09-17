@@ -1926,15 +1926,19 @@ public class adminConfigController {
 	
 	Iterator<configurationDataTranslations> it = translations.iterator();
 
-        while (it.hasNext()) {
-            configurationDataTranslations translation = it.next();
-            if (translation.getProcessOrder() == currProcessOrder) {
-                translation.setProcessOrder(newProcessOrder);
-            } else if (translation.getProcessOrder() == newProcessOrder) {
-                translation.setProcessOrder(currProcessOrder);
-            }
-        }
-
+	while (it.hasNext()) {
+	    configurationDataTranslations translation = it.next();
+	    if(translation.getProcessOrder() >= newProcessOrder && translation.getProcessOrder() < currProcessOrder) {
+		translation.setProcessOrder(translation.getProcessOrder()+1);
+	    }
+	    else if(translation.getProcessOrder() <= newProcessOrder && translation.getProcessOrder() > currProcessOrder) {
+		translation.setProcessOrder(translation.getProcessOrder()-1);
+	    }
+	    else if(translation.getProcessOrder() == currProcessOrder) {
+		translation.setProcessOrder(newProcessOrder);
+	    }
+	}
+        
         return 1;
     }
 
@@ -2069,7 +2073,7 @@ public class adminConfigController {
         if ("save".equals(action)) {
 	    
 	    if(configurationDetails.getConfigurationType() == 2) {
-		 ModelAndView mav = new ModelAndView(new RedirectView("/administrator/configurations/list?msg=updated"));
+		ModelAndView mav = new ModelAndView(new RedirectView("/administrator/configurations/list?msg=updated"));
 		return mav;
 	    }
 	    else {
@@ -2087,7 +2091,8 @@ public class adminConfigController {
             return mav;
         } 
 	else {
-            ModelAndView mav = new ModelAndView(new RedirectView("preprocessing"));
+	    ModelAndView mav = new ModelAndView(new RedirectView("/administrator/configurations/list?msg=updated"));
+            //ModelAndView mav = new ModelAndView(new RedirectView("preprocessing"));
             return mav;
         }
 
@@ -3099,6 +3104,14 @@ public class adminConfigController {
 
         //Need to return a list of crosswalks
         List<Crosswalks> crosswalks = messagetypemanager.getCrosswalksForConfig(page, maxCrosswalks, orgId, configId);
+	if(!crosswalks.isEmpty()) {
+	   for(Crosswalks crosswalk : crosswalks) {
+	       if(crosswalk.getLastUpdated() == null) {
+		   crosswalk.setLastUpdated(crosswalk.getDateCreated());
+	       }
+	   }
+	}
+	
         mav.addObject("availableCrosswalks", crosswalks);
 
         //Find out the total number of crosswalks
@@ -3186,7 +3199,8 @@ public class adminConfigController {
     public @ResponseBody 
     int uploadnewfileCrosswalk(@ModelAttribute(value = "crosswalkDetails") Crosswalks crosswalkDetails, BindingResult result, RedirectAttributes redirectAttr, @RequestParam int orgId) throws Exception {
 
-        int lastId = messagetypemanager.uploadNewFileForCrosswalk(crosswalkDetails);
+        crosswalkDetails.setLastUpdated(new Date());
+	int lastId = messagetypemanager.uploadNewFileForCrosswalk(crosswalkDetails);
 	
 	return lastId;
 
@@ -3701,7 +3715,7 @@ public class adminConfigController {
 	reportBody.append(utconfigurationmanager.printTransportMethodSection(configDetails));
 	reportBody.append(utconfigurationmanager.printMessageSpecsSection(configDetails));
 	reportBody.append(utconfigurationmanager.printFieldSettingsSection(configDetails));
-	reportBody.append(utconfigurationmanager.printDataTranslationsSection(configDetails));
+	reportBody.append(utconfigurationmanager.printDataTranslationsSection(configDetails,siteTimeZone));
 	
 	out.println(reportBody.toString());
 	
