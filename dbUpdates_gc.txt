@@ -74,6 +74,13 @@ drop procedure if exists IfSFLen0orNullReplaceValue;
 delete from macro_names where formula = 'IfSFLen0orNullReplaceValue';
 
 /** ***** **/
+/**  20200917 **/
+ 
+drop procedure if exists ArithmeticForSFAndFAUpdateFB;
+delete from macro_names where formula = 'ArithmeticForSFAndFAUpdateFB';
+
+drop procedure if exists DeleteTransactionWhenFieldIsNull;
+delete from macro_names where formula = 'DeleteTransactionWhenFieldIsNull';
 
 
 
