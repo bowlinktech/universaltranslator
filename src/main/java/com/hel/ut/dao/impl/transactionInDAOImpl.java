@@ -3728,7 +3728,7 @@ public class transactionInDAOImpl implements transactionInDAO {
 	} 
 	
 	sql = "insert into " + droppedTableName + " ("+batchIdType+"," + transactionRecordCol + ",fieldNo,configId,fieldName,fieldValue) ";
-	sql += "select " + batchId + "," + transactionRecordCol + "," + cdt.getFieldNo() + "," + cdt.getconfigId() + "," + cdt.getFieldDesc().trim() + ", F"+cdt.getFieldNo();
+	sql += "select " + batchId + "," + transactionRecordCol + "," + cdt.getFieldNo() + "," + cdt.getconfigId() + ", '" + cdt.getFieldDesc().trim() + "', F"+cdt.getFieldNo();
 	sql += " from " + translatedTable + " where forCW = 'MACRO_ERROR'";
 	
 	Query updateData = sessionFactory.getCurrentSession().createSQLQuery(sql);
