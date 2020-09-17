@@ -1323,7 +1323,7 @@ public class utConfigurationManagerImpl implements utConfigurationManager {
     }
 
     @Override 
-    public StringBuffer printDataTranslationsSection(utConfiguration configDetails) throws Exception {
+    public StringBuffer printDataTranslationsSection(utConfiguration configDetails, String siteTimeZone) throws Exception {
 	
 	configurationTransport transportDetails = configurationTransportDAO.getTransportDetails(configDetails.getId());
 	
@@ -1417,6 +1417,8 @@ public class utConfigurationManagerImpl implements utConfigurationManager {
 		Iterator<Object[]> cwIterator = crosswalksWithData.iterator();
 		String cwname = "";
 		String delim = "";
+		String dateCreated = "";
+		String lastUpdated = "";
 		while(cwIterator.hasNext()) {
 		    Object[] cwData = cwIterator.next();
 		    
@@ -1440,18 +1442,34 @@ public class utConfigurationManagerImpl implements utConfigurationManager {
 			else if((Integer) cwData[5] == 12) {
 			    delim = "tab";
 			}
-			reportBody.append("<div><span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 14px;'><strong>CW Name: "+cwname+" (ID=" + cwData[4].toString() + ")</strong></span><br /><span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 14px;'><strong>Delimiter Used: " + delim+ "</strong></span><br /><table border='1' cellpadding='1' cellspacing='1' width='100%'>");
+			
+			dateCreated = cwData[6].toString();
+			lastUpdated = cwData[7].toString();
+			
+			TimeZone timeZone = TimeZone.getTimeZone(siteTimeZone);
+			DateFormat requiredFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+			DateFormat dft = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+			requiredFormat.setTimeZone(timeZone);
+			
+			Date createDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(dateCreated);
+			Date lastUpdateDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(lastUpdated);
+			
+			reportBody.append("<div><span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 14px;'><strong>CW Name: "+cwname+" (ID=" + cwData[4].toString() + ")</strong></span><br />");
+			reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 14px;'><strong>Date Created: " + new SimpleDateFormat("M/dd/yyyy").format(createDate) + "</strong></span><br />");
+			reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 14px;'><strong>Last Updated: " + new SimpleDateFormat("M/dd/yyyy").format(lastUpdateDate) + "</strong></span><br />");
+			reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 14px;'><strong>Delimiter Used: " + delim+ "</strong></span><br />");
+			reportBody.append("<table border='1' cellpadding='1' cellspacing='1' width='100%'>");
 			reportBody.append("<thead><tr><th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Source Value</th><th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Target Value</th><th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Desc</th>");
 			reportBody.append("</tr></thead><tbody>");
 		    }
 		   
 		    reportBody.append("<tr><td>")
-			.append(cwData[1].toString().replaceAll("[:*\"?|<>']", " "))
-			.append("</td><td>")
-			.append(cwData[2].toString().replaceAll("[:*\"?|<>']", " "))
-			.append("</td><td>")
-			.append(cwData[3].toString().replaceAll("[:*\"?|<>']", " "))
-			.append("</td></tr>");
+		    .append(cwData[1].toString().replaceAll("[:*\"?|<>']", " "))
+		    .append("</td><td>")
+		    .append(cwData[2].toString().replaceAll("[:*\"?|<>']", " "))
+		    .append("</td><td>")
+		    .append(cwData[3].toString().replaceAll("[:*\"?|<>']", " "))
+		    .append("</td></tr>");
 		    
 		}
 		
@@ -1598,37 +1616,45 @@ public class utConfigurationManagerImpl implements utConfigurationManager {
 	File sourceCrosswalkFolder = new File(myProps.getProperty("ut.directory.utRootDir") + oldCleanURL + "/crosswalks");
 	File destinationCrossalkFolder = new File(myProps.getProperty("ut.directory.utRootDir") + newCleanURL + "/crosswalks");
 	
-	try {
-	    FileUtils.copyDirectory(sourceCrosswalkFolder, destinationCrossalkFolder);
-	} catch (IOException e) {
-	    e.printStackTrace();
+	if(!sourceCrosswalkFolder.equals(destinationCrossalkFolder)) {
+	    try {
+		FileUtils.copyDirectory(sourceCrosswalkFolder, destinationCrossalkFolder);
+	    } catch (IOException e) {
+		e.printStackTrace();
+	    }
 	}
 	
 	File sourceTemplateFolder = new File(myProps.getProperty("ut.directory.utRootDir") + oldCleanURL + "/templates");
 	File destinationTemplateFolder = new File(myProps.getProperty("ut.directory.utRootDir") + newCleanURL + "/templates");
 	
-	try {
-	    FileUtils.copyDirectory(sourceTemplateFolder, destinationTemplateFolder);
-	} catch (IOException e) {
-	    e.printStackTrace();
+	if(!sourceTemplateFolder.equals(destinationTemplateFolder)) {
+	    try {
+		FileUtils.copyDirectory(sourceTemplateFolder, destinationTemplateFolder);
+	    } catch (IOException e) {
+		e.printStackTrace();
+	    }
 	}
 	
 	File sourceInputFolder = new File(myProps.getProperty("ut.directory.utRootDir") + oldCleanURL + "/input files");
 	File destinationInputFolder = new File(myProps.getProperty("ut.directory.utRootDir") + newCleanURL + "/input files");
 	
-	try {
-	    FileUtils.copyDirectory(sourceInputFolder, destinationInputFolder);
-	} catch (IOException e) {
-	    e.printStackTrace();
+	if(!sourceInputFolder.equals(destinationInputFolder)) {
+	    try {
+		FileUtils.copyDirectory(sourceInputFolder, destinationInputFolder);
+	    } catch (IOException e) {
+		e.printStackTrace();
+	    }
 	}
 	
 	File sourceOutputFolder = new File(myProps.getProperty("ut.directory.utRootDir") + oldCleanURL + "/output files");
 	File destinationOutputFolder = new File(myProps.getProperty("ut.directory.utRootDir") + newCleanURL + "/output files");
 	
-	try {
-	    FileUtils.copyDirectory(sourceOutputFolder, destinationOutputFolder);
-	} catch (IOException e) {
-	    e.printStackTrace();
+	if(!sourceOutputFolder.equals(destinationOutputFolder)) {
+	    try {
+		FileUtils.copyDirectory(sourceOutputFolder, destinationOutputFolder);
+	    } catch (IOException e) {
+		e.printStackTrace();
+	    }
 	}
     }
     

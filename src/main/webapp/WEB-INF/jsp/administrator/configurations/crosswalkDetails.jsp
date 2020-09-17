@@ -88,25 +88,32 @@
                         <div id="crosswalkNameDiv" class="form-group">
                             <label class="control-label" for="data">Crosswalk Data</label>
                             <br />
-                            <table class="table table-striped table-hover table-default">
-                                <thead>
-                                    <tr>
-                                        <th scope="col">Source Value</th>
-                                        <th scope="col" class="center-text">Target Value</th>
-                                        <th scope="col">Description Value</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <c:forEach items="${crosswalkData}" var="cwalkData" varStatus="dStatus">
-                                        <tr>
-                                            <td scope="row">${crosswalkData[dStatus.index][0]}</td>
-                                            <td class="center-text">${crosswalkData[dStatus.index][1]}</td>
-                                            <td>${crosswalkData[dStatus.index][2]}</td>
-                                        </tr>
-                                    </c:forEach>
-                                </tbody>
-                            </table>
-
+                            <div style="height:350px; width: 550px;">
+                                <div style="overflow-x: scroll; height: 100%; display: flex; display: -webkit-flex; flex-direction: column; -webkit-flex-direction: column;">
+                                    <table style="border-bottom:1px solid;margin: 0px; padding:0px;">
+                                        <thead>
+                                            <tr>
+                                                <th scope="col" style="width: 250px">Source Value</th>
+                                                <th scope="col" style="width: 150px;">Target Value</th>
+                                                <th scope="col" style="width: 150px;">Description Value</th>
+                                            </tr>
+                                        </thead>
+                                    </table>
+                                    <div style="overflow-y: scroll;">
+                                        <table class="table-hover" style="border-collapse: collapse;">
+                                             <tbody>
+                                                <c:forEach items="${crosswalkData}" var="cwalkData" varStatus="dStatus">
+                                                    <tr>
+                                                        <td valign="top" scope="row" style="width: 250px;border-bottom:1px dashed; border-right:1px dashed;">${crosswalkData[dStatus.index][0]}</td>
+                                                        <td valign="top" style="width: 150px;border-bottom:1px dashed; border-right:1px dashed;">${crosswalkData[dStatus.index][1]}</td>
+                                                        <td valign="top" style="width: 150px;border-bottom:1px dashed;">${crosswalkData[dStatus.index][2]}</td>
+                                                    </tr>
+                                                </c:forEach>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </c:if>
 

@@ -126,6 +126,7 @@ require(['./main'], function () {
 	    var sourceconfigdatatable = $('#sourceconfigdatatable').dataTable({
 		"bStateSave": false,
 		"sPaginationType": "bootstrap",
+                columnDefs: [ { type: 'date', 'targets': [4,5] } ],
 		"oLanguage": {
 		    "sSearch": "_INPUT_",
 		    "sLengthMenu": '<select class="form-control" style="width:150px">' +
@@ -147,6 +148,7 @@ require(['./main'], function () {
 	    var targetconfigdatatable = $('#targetconfigdatatable').dataTable({
 		"bStateSave": false,
 		"sPaginationType": "bootstrap",
+                 columnDefs: [ { type: 'date', 'targets': [4,5] } ],
 		"oLanguage": {
 		    "sSearch": "_INPUT_",
 		    "sLengthMenu": '<select class="form-control" style="width:150px">' +
