@@ -567,9 +567,9 @@ public class transactionInManagerImpl implements transactionInManager {
 	    Integer macroErrors = flagMacroErrors(configId, batchId, cdt, foroutboundProcessing);
 	    
 	    if(cdt.getPassClear() == 2) {
-		executePassClearLogic(batchId, cdt, foroutboundProcessing);
-		insertMacroDroppedValues(batchId, cdt, foroutboundProcessing);
-	    }
+	    	insertMacroDroppedValues(batchId, cdt, foroutboundProcessing);
+	    	executePassClearLogic(batchId, cdt, foroutboundProcessing);
+		}
 
 	    //flag as error in transactionIn or transactionOut table (Only updating REQUIRED records from transactioninerrors)
 	    updateStatusForErrorTrans(batchId, 14, foroutboundProcessing);
