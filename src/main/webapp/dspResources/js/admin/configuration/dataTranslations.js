@@ -514,26 +514,16 @@ require(['./main'], function () {
         //Store the current position
         var currDspPos = $(this).attr('rel');
         var newDspPos = $(this).val();
-
-        $('.processOrder').each(function () {
-            if ($(this).attr('rel') == newDspPos) {
-                //Need to update the saved process order
-                $.ajax({
-                    url: 'updateTranslationProcessOrder?currProcessOrder=' + currDspPos + '&categoryId=1&newProcessOrder=' + newDspPos,
-                    type: "POST",
-                    success: function (data) {
-                        $('#translationMsgDiv').show();
-                        populateExistingTranslations(1);
-                    }
-                });
-                $(this).val(currDspPos);
-                $(this).attr('rel', currDspPos);
+        
+        $.ajax({
+            url: 'updateTranslationProcessOrder?currProcessOrder=' + currDspPos + '&categoryId=1&newProcessOrder=' + newDspPos,
+            type: "POST",
+            success: function (data) {
+                $('#translationMsgDiv').show();
+                populateExistingTranslations(1);
             }
         });
-
-        $(this).val(newDspPos);
-        $(this).attr('rel', newDspPos);
-
+        
     });
 
     //Function that will handle removing a line item from the
@@ -577,9 +567,37 @@ function populateCrosswalks(page) {
     $.ajax({
         url: 'getCrosswalks.do',
         type: "GET",
-        data: {'page': page, 'orgId': orgId, 'maxCrosswalks': 8, 'configId': configId},
+        data: {
+            'page': page, 
+            'orgId': orgId, 
+            'maxCrosswalks': 8, 
+            'configId': configId
+        },
         success: function (data) {
+            
             $("#crosswalksTable").html(data);
+            
+            $("#crosswalksTable").find('#cwDataTable').DataTable({
+                bServerSide: false,
+                bProcessing: false, 
+                deferRender: true,
+                aaSorting: [[3,'desc']],
+                sPaginationType: "bootstrap", 
+                searching: false,
+                bLengthChange: false,
+                oLanguage: {
+                   sEmptyTable: "There were no files submitted for the selected date range.", 
+                   sSearch: "Filter Results: ",
+                   sLengthMenu: '<select class="form-control" style="width:150px">' +
+                        '<option value="10">10 Records</option>' +
+                        '<option value="20">20 Records</option>' +
+                        '<option value="30">30 Records</option>' +
+                        '<option value="40">40 Records</option>' +
+                        '<option value="50">50 Records</option>' +
+                        '<option value="-1">All</option>' +
+                        '</select>'
+                }
+            });
         }
     });
 }

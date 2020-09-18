@@ -567,8 +567,9 @@ public class transactionInManagerImpl implements transactionInManager {
 	    Integer macroErrors = flagMacroErrors(configId, batchId, cdt, foroutboundProcessing);
 	    
 	    if(cdt.getPassClear() == 2) {
-		executePassClearLogic(batchId, cdt, foroutboundProcessing);
-	    }
+	    	insertMacroDroppedValues(batchId, cdt, foroutboundProcessing);
+	    	executePassClearLogic(batchId, cdt, foroutboundProcessing);
+		}
 
 	    //flag as error in transactionIn or transactionOut table (Only updating REQUIRED records from transactioninerrors)
 	    updateStatusForErrorTrans(batchId, 14, foroutboundProcessing);
@@ -4625,5 +4626,10 @@ public class transactionInManagerImpl implements transactionInManager {
     @Override
     public void executePassClearLogic(Integer batchId, configurationDataTranslations cdt, boolean foroutboundProcessing) throws Exception {
 	transactionInDAO.executePassClearLogic(batchId, cdt, foroutboundProcessing);
+    }
+    
+    @Override
+    public void insertMacroDroppedValues(Integer batchId, configurationDataTranslations cdt, boolean foroutboundProcessing) throws Exception {
+	transactionInDAO.insertMacroDroppedValues(batchId, cdt, foroutboundProcessing);
     }
 }

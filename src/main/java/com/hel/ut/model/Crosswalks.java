@@ -48,6 +48,11 @@ public class Crosswalks {
 
     @Column(name = "ORGID", nullable = true)
     private int orgId = 0;
+    
+    @DateTimeFormat(pattern = "dd/MM/yyyy hh:mm:ss")
+    @Column(name = "lastUpdated", nullable = true)
+    private Date lastUpdated = null;
+
 
     public int getId() {
         return id;
@@ -113,4 +118,13 @@ public class Crosswalks {
 	this.dtsId = dtsId;
     }
 
+    public Date getLastUpdated() {
+	return lastUpdated;
+    }
+
+    public void setLastUpdated(Date lastUpdated) {
+	this.lastUpdated = lastUpdated;
+    }
+
+    
 }
