@@ -1,9 +1,9 @@
 /** 20200920 ** /
 
-ALTER TABLE `universaltranslatorca`.`batchdownloadauditerrors` 
+ALTER TABLE `batchdownloadauditerrors` 
 ADD COLUMN `entity3Id` INT NULL DEFAULT 0 AFTER `required`;
 
-ALTER TABLE `universaltranslatorca`.`batchuploadauditerrors` 
+ALTER TABLE `batchuploadauditerrors` 
 ADD COLUMN `entity3Id` INT NULL DEFAULT 0 AFTER `required`;
 
 
