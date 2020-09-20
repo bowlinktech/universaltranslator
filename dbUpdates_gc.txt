@@ -1,8 +1,14 @@
-/** 20200919 ** /
+/** 20200920 ** /
+
+ALTER TABLE `universaltranslatorca`.`batchdownloadauditerrors` 
+ADD COLUMN `entity3Id` INT NULL DEFAULT 0 AFTER `required`;
+
+ALTER TABLE `universaltranslatorca`.`batchuploadauditerrors` 
+ADD COLUMN `entity3Id` INT NULL DEFAULT 0 AFTER `required`;
+
 
 DROP PROCEDURE `populateAuditReport`;
 DROP PROCEDURE `populateOutboundAuditReport`;
-
 
 DELIMITER $$
 CREATE DEFINER=`root`@`localhost` PROCEDURE `populateAuditErrorsEntity3Id`(in inConfigId int, in inBatchId int)
@@ -525,11 +531,10 @@ if (@populateInboundAuditReport) then
     call populateAuditErrorsEntity3Id (inBatchUploadConfigId, inBatchUpoadId);
 
 	SET @stmt = CONCAT("drop table if exists transactionoutdetailauditerrorsforinbound_",inBatchId,"; ");
-    
-			PREPARE stmt from @stmt;
-			EXECUTE stmt;
-            DEALLOCATE PREPARE stmt; 
-          
+	PREPARE stmt from @stmt;
+	EXECUTE stmt;
+	DEALLOCATE PREPARE stmt; 
+     
 
     end;
 end if;
@@ -537,7 +542,4 @@ end if;
 
 end proc_main$$
 DELIMITER ;
-
-
-
 
