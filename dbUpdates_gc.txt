@@ -934,3 +934,297 @@ end proc_main$$
 DELIMITER ;
 
 
+drop procedure if exists ArithmeticConstantStoreInFA;
+delete from macro_names where formula = 'ArithmeticConstantStoreInFA';
+
+DROP PROCEDURE `universaltranslatorca`.`CompareTwoFieldsAndReject`;
+UPDATE `universaltranslatorca`.`macro_names` SET `Macro_Name`='Conditional: Compare Two Non-Blank Fields and Insert Error when criteria is not met', `Macro_Short_Name`='CompareTwoFieldsAndError', `Formula`='CompareTwoFieldsAndError' WHERE `ID`='146';
+
+
+USE `universaltranslatorca`;
+DROP procedure IF EXISTS `CompareTwoFieldsAndError`;
+
+DELIMITER $$
+USE `universaltranslatorca`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `CompareTwoFieldsAndError`(in configId int, 
+in batchId int, in srcField varchar(10),
+in fieldA varchar(10), in fieldB varchar(10), in con1 varchar(255), 
+in con2 varchar(255), in macroId int, in foroutboundProcessing boolean, in passClear int, in transactionId int)
+proc_main:begin
+
+/** 
+this macro compares SF and FA using con1 operator
+Conditional: Compare Two Non-Blank Fields and Insert Error when criteria is not met
+
+**/
+
+call setInboundOutBoundTables (foroutboundProcessing,batchId);
+select @translatedTable, @transactionTable, @batchTable, @batchIdType , @errorTable, @translateCol
+into @translatedTable, @transactionTable, @batchTable, @batchIdType , @errorTable, @translateCol;
+
+call getFinalStatusIds;
+select @finalStatusIds into @finalStatusIds;
+
+
+	/** allowed comparison >, >=, =, <, <=, != **/
+      if con1 != '>'  and  con1 != '>='  and con1!='=' and con1 != '<' and con1 != '<=' and con1 != '!=' then
+					begin
+			
+							set @stmt = concat("insert into ", @errorTable , 
+                            " (" , @batchIdColumn, ", configId, " , @translateCol, ", fieldNo, errorId, macroId, stackTrace, required) 
+                            select ",batchId,", ",configId,", 0, replace('",srcField,"', 'F', ''), '", 5, 
+							"', ",macroId,", ","'CompareTwoFieldsAndError con1 - ", con1," is not a valid comparison.'",", ",true);
+                            
+							
+                            PREPARE stmt from @stmt;
+							EXECUTE stmt;
+							DEALLOCATE PREPARE stmt;
+                            
+                            set @stmt = concat("update ",@translatedTable, " set forCW = 'MACRO_ERROR'  where  configId = ",configId," and ", @batchIdType," = ",batchId,";");
+							
+                            PREPARE stmt from @stmt;
+							EXECUTE stmt;
+							DEALLOCATE PREPARE stmt;
+           
+			leave proc_main;
+        end;
+      end if;
+
+
+	-- This macro compares non-blank fields
+    set @sqlBlanks = concat("  ", fieldA," is not null and ",srcField," is not null 
+    and length(", fieldA,") > 0 and length(",srcField,") > 0 
+    ");
+	
+    
+    /** MySql doesn't compare integers and decimals well
+		we create a temp table and insert those into a table that specifics them as float
+    **/
+    set @stmt = concat("drop table if exists transactionnumericcompare_", batchId);
+	
+    PREPARE stmt from @stmt;
+	EXECUTE stmt;
+	DEALLOCATE PREPARE stmt;
+    
+    
+    set @stmt = concat("CREATE TABLE transactionnumericcompare_",batchId," (
+			  id int(11) NOT NULL AUTO_INCREMENT,
+			  transactionId int(11) DEFAULT NULL,
+			  compareResult bit(1) NOT NULL DEFAULT b'0',
+			  col1Data FLOAT(20,10) DEFAULT NULL,
+			  col2Data FLOAT(20,10) DEFAULT NULL,
+			  PRIMARY KEY (id),
+			  KEY numCompResult (compareResult)
+			  ) ENGINE=InnoDB DEFAULT CHARSET=latin1;");
+	
+    PREPARE stmt from @stmt;
+	EXECUTE stmt;
+	DEALLOCATE PREPARE stmt;
+    
+	/** now we insert the numeric values and compare those **/
+    set @stmt = concat("insert into transactionnumericcompare_",batchId," 
+    (transactionId, col1Data, col2Data)
+    select ",@translateCol,", ",srcField,", ",fieldA," from ", @translatedTable, 
+    " where ",srcField, "  REGEXP '^[+-]?[0-9]*[.]{0,1}[0-9]*$' = 1
+    and ",fieldA, "  REGEXP '^[+-]?[0-9]*[.]{0,1}[0-9]*$' = 1 
+    and length(",srcField, ") > 0 and length(",fieldA, ") > 0 and ",
+	@sqlBlanks);
+    
+    PREPARE stmt from @stmt;
+	EXECUTE stmt;
+	DEALLOCATE PREPARE stmt;
+	
+	/** this way it will compare better **/
+    set @stmt = concat("update ",@translatedTable, " join 
+	(select col1data ", con1 ," col2data comparedResults , transactionId from transactionnumericcompare_",batchId,") t2
+	on transactionId = ",@translateCol,"
+	set forCW = case when comparedResults = true then 'compared' else 'MACRO_ERROR' end where", @sqlBlanks);
+    
+    PREPARE stmt from @stmt;
+	EXECUTE stmt;
+	DEALLOCATE PREPARE stmt;
+    
+		
+	 /** we compare and update **/
+     set @stmt = concat("update  ",@translatedTable, " t1 join 
+		(select ",srcField, " " , con1, " ",fieldA," comparedResults , ",@translateCol," 
+		from  ",@translatedTable, " where forCW is null or forCW != 'compared') t2
+		on t1.",@translateCol," = t2.",@translateCol,"
+		set forCW = case when comparedResults then '' else 'MACRO_ERROR' end where", @sqlBlanks);
+	 
+     
+     PREPARE stmt from @stmt;
+     EXECUTE stmt;
+     DEALLOCATE PREPARE stmt;
+
+	set @stmt = concat("drop table if exists transactionnumericcompare_", batchId);
+	
+    PREPARE stmt from @stmt;
+	EXECUTE stmt;
+	DEALLOCATE PREPARE stmt;
+
+end proc_main$$
+
+DELIMITER ;
+
+USE `universaltranslatorca`;
+DROP procedure IF EXISTS `CompareTwoFieldsAndUpdateSFWithCon2`;
+
+DELIMITER $$
+USE `universaltranslatorca`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `CompareTwoFieldsAndUpdateSFWithCon2`(in configId int, 
+in batchId int, in srcField varchar(10),
+in fieldA varchar(10), in fieldB varchar(10), in con1 varchar(255), 
+in con2 varchar(255), in macroId int, in foroutboundProcessing boolean, in passClear int, in transactionId int)
+proc_main:begin
+
+/** 
+this macro compares SF and FA using con1 operator
+and will update to con2
+
+**/
+
+call setInboundOutBoundTables (foroutboundProcessing,batchId);
+select @translatedTable, @transactionTable, @batchTable, @batchIdType , @errorTable, @translateCol
+into @translatedTable, @transactionTable, @batchTable, @batchIdType , @errorTable, @translateCol;
+
+call getFinalStatusIds;
+select @finalStatusIds into @finalStatusIds;
+
+
+	/** allowed comparison >, >=, =, <, <=, != **/
+      if con1 != '>'  and  con1 != '>='  and con1!='=' and con1 != '<' and con1 != '<=' and con1 != '!=' then
+					begin
+			
+							set @stmt = concat("insert into ", @errorTable , 
+                            " (" , @batchIdColumn, ", configId, " , @translateCol, ", fieldNo, errorId, macroId, stackTrace, required) 
+                            select ",batchId,", ",configId,", 0, replace('",srcField,"', 'F', ''), '", 5, 
+							"', ",macroId,", ","'CompareTwoFieldsAndUpdateSF con1 - ", con1," is not a valid comparison.'",", ",true);
+                            
+                            PREPARE stmt from @stmt;
+							EXECUTE stmt;
+							DEALLOCATE PREPARE stmt;
+                            
+                            set @stmt = concat("update ",@translatedTable, " set forCW = 'MACRO_ERROR'  where  configId = ",configId," and ", @batchIdType," = ",batchId,";");
+							
+                            PREPARE stmt from @stmt;
+							EXECUTE stmt;
+							DEALLOCATE PREPARE stmt;
+           
+			leave proc_main;
+        end;
+      end if;
+
+
+	-- we only compare non-empty fields
+    set @sqlBlanks = concat("  ", fieldA," is not null and ",srcField," is not null 
+    and length(", fieldA,") > 0 and length(",srcField,") > 0 
+    ");
+	
+    /** MySql doesn't compare integers and decimals well
+		we create a temp table and insert those into a table that specifics them as float
+    **/
+    set @stmt = concat("drop table if exists transactionnumericcompare_", batchId);
+	
+    PREPARE stmt from @stmt;
+	EXECUTE stmt;
+	DEALLOCATE PREPARE stmt;
+    
+    
+    set @stmt = concat("CREATE TABLE transactionnumericcompare_",batchId," (
+			  id int(11) NOT NULL AUTO_INCREMENT,
+			  transactionId int(11) DEFAULT NULL,
+			  compareResult bit(1) NOT NULL DEFAULT b'0',
+			  col1Data FLOAT(20,10) DEFAULT NULL,
+			  col2Data FLOAT(20,10) DEFAULT NULL,
+			  PRIMARY KEY (id),
+			  KEY numCompResult (compareResult)
+			  ) ENGINE=InnoDB DEFAULT CHARSET=latin1;");
+	
+    PREPARE stmt from @stmt;
+	EXECUTE stmt;
+	DEALLOCATE PREPARE stmt;
+    
+	/** now we insert the numeric values and compare those **/
+    set @stmt = concat("insert into transactionnumericcompare_",batchId," 
+    (transactionId, col1Data, col2Data)
+    select ",@translateCol,", ",srcField,", ",fieldA," from ", @translatedTable, 
+    " where ",srcField, "  REGEXP '^[+-]?[0-9]*[.]{0,1}[0-9]*$' = 1
+    and ",fieldA, "  REGEXP '^[+-]?[0-9]*[.]{0,1}[0-9]*$' = 1 
+    and length(",srcField, ") > 0 and length(",fieldA, ") > 0 and ",
+	@sqlBlanks);
+    
+    PREPARE stmt from @stmt;
+	EXECUTE stmt;
+	DEALLOCATE PREPARE stmt;
+	
+	/** this way it will compare better **/
+    set @stmt = concat("update ",@translatedTable, " join 
+	(select col1data ", con1 ," col2data comparedResults , transactionId from transactionnumericcompare_",batchId,") t2
+	on transactionId = ",@translateCol,"
+	set forCW = 'compared', ",srcField," = case when comparedResults then '",con2,"' else ",srcField," end where ", @sqlBlanks);
+    
+    PREPARE stmt from @stmt;
+	EXECUTE stmt;
+	DEALLOCATE PREPARE stmt;
+    
+		
+	 /** we compare and update **/
+     set @stmt = concat("update  ",@translatedTable, " t1 join 
+		(select ",srcField, " " , con1, " ",fieldA," comparedResults , ",@translateCol," 
+		from  ",@translatedTable, " where forCW is null or forCW != 'compared') t2
+		on t1.",@translateCol," = t2.",@translateCol,"
+		set ",srcField," = case when comparedResults then '",con2,"' else ",srcField," end where ", @sqlBlanks);
+	 
+     PREPARE stmt from @stmt;
+     EXECUTE stmt;
+     DEALLOCATE PREPARE stmt;
+     
+     
+	set @stmt = concat("drop table if exists transactionnumericcompare_", batchId);
+	
+    PREPARE stmt from @stmt;
+	EXECUTE stmt;
+	DEALLOCATE PREPARE stmt;
+
+end proc_main$$
+
+DELIMITER ;
+
+USE `universaltranslatorca`;
+DROP procedure IF EXISTS `ifNotNumericSetToCon1`;
+
+DELIMITER $$
+USE `universaltranslatorca`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `ifNotNumericSetToCon1`(in configId int, 
+in batchId int, in srcField varchar(10),
+in fieldA varchar(10), in fieldB varchar(10), in con1 varchar(255), 
+in con2 varchar(255), in macroId int, in foroutboundProcessing boolean, in passClear int, in transactionId int)
+proc_main:begin
+
+call setInboundOutBoundTables (foroutboundProcessing,batchId);
+select @translatedTable, @transactionTable, @batchTable, @batchIdType , @errorTable, @translateCol
+into @translatedTable, @transactionTable, @batchTable, @batchIdType , @errorTable, @translateCol;
+
+call getFinalStatusIds;
+select @finalStatusIds into @finalStatusIds;
+
+set @whereclause = concat(" and configId = ",configId," and ", @batchIdType," = ",batchId," and statusId not in (",@finalStatusIds ,")");
+set @stmt1 = concat("update ",@translatedTable, " set ",srcField, " = '", con1 , "' where  ",srcField ," REGEXP  '^-?[0-9]+[.]?[0-9]*$|^-?[.][0-9]+$' = 0 ");
+
+
+set @stmt = concat(@stmt1, @whereclause, ";");
+PREPARE stmt from @stmt;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+
+end proc_main$$
+
+DELIMITER ;
+
+
+
+
+
+
