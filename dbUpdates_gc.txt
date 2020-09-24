@@ -2710,3 +2710,91 @@ delete from macro_names where formula = 'srcFieldLessThanNumericCon1UpdateFBwith
 drop procedure if exists srcFieldLessThanNumericCon1UpdateFBwithCon2;
 
 
+/** 20200924 **/
+UPDATE `universaltranslatorca`.`macro_names` SET `FieldA_Question`='', `FieldB_Question`='Please enter start range', `Con1_Question`='Please enter end range' WHERE `ID`='194';
+
+USE `universaltranslatorca`;
+DROP procedure IF EXISTS `NumericRange`;
+
+DELIMITER $$
+USE `universaltranslatorca`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `NumericRange`(in configId int, 
+in batchId int, in srcField varchar(10),
+in fieldA varchar(10), in fieldB varchar(10), in con1 varchar(255), 
+in con2 varchar(255), in macroId int, in foroutboundProcessing boolean, in passClear int, in transactionId int)
+proc_main:begin
+
+call setInboundOutBoundTables (foroutboundProcessing,batchId);
+SELECT 
+    @translatedTable,
+    @transactionTable,
+    @batchTable,
+    @batchIdType,
+    @errorTable,
+    @translateCol
+INTO @translatedTable , @transactionTable , @batchTable , @batchIdType , @errorTable, @translateCol;
+
+call getFinalStatusIds;
+SELECT @finalStatusIds INTO @finalStatusIds;
+
+set @startRange = con1;
+set @endRange = con2;
+
+
+/** make sure start range, end range and con1 ( ) are all numeric **/
+		if ( 
+		@startRange REGEXP '^[+-]?[0-9]*[.]{0,1}[0-9]*$' = 0 ||
+		@endRange REGEXP '^[+-]?[0-9]*[.]{0,1}[0-9]*$' = 0 ||
+		length(@startRange) = 0 || length(@endRange) = 0
+		) then
+
+							set @stmt = concat("insert into ", @errorTable , 
+                            " (" , @batchIdColumn, ", configId, " , @translateCol, ", fieldNo, errorId, macroId, stackTrace, required) 
+                            select ",batchId,", ",configId,", 0, replace('",srcField,"', 'F', ''), '", 5, 
+							"', ",macroId,", ","'NumericRange Macro - One of these is not a valid value.  Start Range - ",@startRange," or End Range - ",@endRange,". '",", ",true);
+                            
+                            PREPARE stmt from @stmt;
+							EXECUTE stmt;
+							DEALLOCATE PREPARE stmt;
+                            
+                            
+							set @stmt = concat("update ",@translatedTable, " set forCW = 'MACRO_ERROR'  where  configId = ",configId," and ", @batchIdType," = ",batchId,";");
+							
+                            PREPARE stmt from @stmt;
+							EXECUTE stmt;
+							DEALLOCATE PREPARE stmt;
+
+
+leave proc_main;
+
+end if;
+
+
+
+	set @whereStmt =  concat("and ",srcField ," is not null and length(",srcField,") > 0 and configId = ",configId," and ", @batchIdType," = ",batchId," and statusId not in (",@finalStatusIds ,");");
+	
+
+	-- error out all non numeric values transactions
+    set @stmt = concat("update  ", @translatedTable , " set forcw = 'MACRO_ERROR' where ",srcField," REGEXP '^[+-]?[0-9]*[.]{0,1}[0-9]*$' = 0 "
+    , @whereStmt);
+	
+    PREPARE stmt from @stmt;
+	EXECUTE stmt;
+	DEALLOCATE PREPARE stmt;
+      
+    /**
+    now we compare if value is between startRange and endRange, we insert error if it is not **/
+    set @stmt = concat("update  ", @translatedTable , " set forcw ='MACRO_ERROR'
+    where ",srcField," not between ",@startRange," and ", @endRange,
+    " and (forcw is null or forcw != 'MACRO_ERROR') ", @whereStmt);
+	
+    PREPARE stmt from @stmt;
+	EXECUTE stmt;
+	DEALLOCATE PREPARE stmt;
+
+    
+    
+end proc_main$$
+
+DELIMITER ;
+
