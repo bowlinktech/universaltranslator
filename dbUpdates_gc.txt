@@ -2650,5 +2650,63 @@ end proc_main$$
 
 DELIMITER ;
 
+USE `universaltranslatorca`;
+DROP procedure IF EXISTS `IfFieldACon1andSFBlankInsertError`;
+
+DELIMITER $$
+USE `universaltranslatorca`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `IfFieldACon1andSFBlankInsertError`(in configId int, 
+in batchId int, in srcField varchar(10),
+in fieldA varchar(10), in fieldB varchar(10), in con1 varchar(255), 
+in con2 varchar(255), in macroId int, in foroutboundProcessing boolean, in passClear int, in transactionId int)
+proc_main:begin
+
+	call setInboundOutBoundTables (foroutboundProcessing,batchId);
+	SELECT 
+		@translatedTable,
+		@transactionTable,
+		@batchTable,
+		@batchIdType,
+		@errorTable,
+		@translateCol
+	INTO @translatedTable , @transactionTable , @batchTable , @batchIdType , @errorTable, @translateCol;
+
+	call getFinalStatusIds;
+	SELECT @finalStatusIds INTO @finalStatusIds;
+
+		set @whereString = concat("  configId = ",configId," and ", @batchIdType," = ",batchId," and statusId not in (",@finalStatusIds ,");");
+
+		set @stmt = concat("select fieldDesc from configurationformfields where configId = ",configId," and fieldNo = replace('",srcField,"', 'F', '') into @fieldDesc;");
+		PREPARE stmt from @stmt;
+		EXECUTE stmt;
+		DEALLOCATE PREPARE stmt;
+
+		
+		set @stmt = concat("insert into ", @errorTable , " (" , @batchIdColumn, ", configId, " , @translateCol, 
+		", fieldNo, errorId, macroId, fieldValue, required, stackTrace, fieldLabel) select ",@batchIdType,", configId, id, replace('",srcField,"', 'F', ''), ", 58, 
+	   ", ",macroId,",case when ",srcField," is null then '' else ",srcField," end, true, 'A value is required if \"",@fieldDesc,"\" is value \"",con1, "\"', '",@fieldDesc,"' from ", @translatedTable, 
+       " where ",fieldA,"  = '",con1,"' and (",srcField," is null 
+       or length(REPLACE(REPLACE(", srcField, ", ""\n"", """"), ""\r"", """")) = 0) and ", 
+		@whereString);
+		
+        PREPARE stmt from @stmt;
+		EXECUTE stmt;
+		DEALLOCATE PREPARE stmt;
+    
+		set @stmt = concat("update ", @translatedTable, " set statusId = 14 
+        where  ",fieldA,"  = '",con1,"' and (",srcField," is null 
+        or length(REPLACE(REPLACE(", srcField, ", ""\n"", """"), ""\r"", """")) = 0) and ", 
+		@whereString);
+        
+        PREPARE stmt from @stmt;
+		EXECUTE stmt;
+		DEALLOCATE PREPARE stmt;
+        
+end proc_main$$
+
+DELIMITER ;
+
+delete from macro_names where formula = 'srcFieldLessThanNumericCon1UpdateFBwithCon2';
+drop procedure if exists srcFieldLessThanNumericCon1UpdateFBwithCon2;
 
 
