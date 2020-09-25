@@ -3711,7 +3711,7 @@ public class adminConfigController {
 	
 	
 	reportBody.append(utconfigurationmanager.printDetailsSection(configDetails,orgDetails,siteTimeZone));
-	reportBody.append(utconfigurationmanager.printConfigurationNotesSection(configDetails,siteTimeZone));
+	//reportBody.append(utconfigurationmanager.printConfigurationNotesSection(configDetails,siteTimeZone));
 	reportBody.append(utconfigurationmanager.printTransportMethodSection(configDetails));
 	reportBody.append(utconfigurationmanager.printMessageSpecsSection(configDetails));
 	reportBody.append(utconfigurationmanager.printFieldSettingsSection(configDetails));
