@@ -804,6 +804,8 @@ public class utConfigurationManagerImpl implements utConfigurationManager {
 	reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'><strong>Message Type: </strong>").append(messageType).append("</span><br /><br />");
 	reportBody.append("</div>");
 	
+	reportBody.append(printConfigurationNotesSection(configDetails,siteTimeZone));
+	
 	String scheduleType = "Automatically";
 	String processingType = "";
 	
@@ -1850,11 +1852,11 @@ public class utConfigurationManagerImpl implements utConfigurationManager {
 		reportBody.append("<td valign='top' style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>").append(new SimpleDateFormat("M/dd/yyyy h:mm a").format(createDate)).append("</td>");
 		reportBody.append("</tr>");
 	    }
-	    reportBody.append("</tbody></table></div>");
+	    reportBody.append("</tbody></table></div><br />");
 	}
 	else {
 	   reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 16px;'>No notes have been made for this configuration.</span><br />");
-	   reportBody.append("</div>");
+	   reportBody.append("</div><br />");
 	}
 	
 	return reportBody;
