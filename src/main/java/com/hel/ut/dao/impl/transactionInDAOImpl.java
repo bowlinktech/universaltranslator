@@ -1712,7 +1712,7 @@ public class transactionInDAOImpl implements transactionInDAO {
 	
 	configFormFields.forEach(field -> {
 	    if(field.getUseField()) {
-		tableFields.append("F").append(field.getFieldNo()).append(" = TRIM(replace(F").append(field.getFieldNo()).append(", char(13), '')),");
+		tableFields.append(" F").append(field.getFieldNo()).append(" = case when F").append(field.getFieldNo()).append(" is null then '' else TRIM(replace(F").append(field.getFieldNo()).append(", char(13), '')) end,");
 	    }
 	});
 	
