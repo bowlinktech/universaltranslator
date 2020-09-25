@@ -2317,9 +2317,11 @@ public class adminProcessingActivity {
 		    customCols.add("Field Value");	
 		    
 		    sql = "select 'false' as fromOutboundConfig,a.rownumber as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name, a.errorDetails as crosswalk, a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
-			+ "from batchdownloadauditerrors a left outerjoin "
+			+ "from batchdownloadauditerrors a left outer join "
 			+ "configurationmessagespecs b on a.configId = b.configId "
 			+ "where a.batchDownloadId = " + batchId + " and a.errorId = " + errorId + " order by a.rownumber asc";
+		    
+		    System.out.println(sql);
 		}
 		break;
 		
