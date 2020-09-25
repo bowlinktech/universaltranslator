@@ -1,4 +1,4 @@
-/** macro updates **/
+/** delete stmts  applied to CA stage **/
 DROP PROCEDURE if exists yyyymmddToDate;
 delete from macro_names where formula = 'yyyymmddToDate';
 
@@ -29,9 +29,6 @@ drop procedure if exists cat2ApplyCWTranslatedList;
 delete from macro_names where formula = 'addCharToString';
 drop procedure if exists addCharToString;
 
-DROP PROCEDURE if exists yyyymmddToDate;
-delete from macro_names where formula = 'yyyymmddToDate';
-
 drop procedure if exists dateyyyymmddTimeToDateTime;
 delete from macro_names where formula = 'dateyyyymmddTimeToDateTime';
 
@@ -40,14 +37,6 @@ drop procedure if exists addDelimiterEvery2Characters;
 
 drop procedure if exists ifDateCon1ElseNull;
 delete from macro_names where formula = 'ifDateCon1ElseNull';
-
-UPDATE `universaltranslatorca`.`macro_Names` SET `Con1_Question`='Please enter source SF\'s date value separator.  e.g. -, ., /', `Con2_Question`='Please enter target SF\'s date value separator.  e.g. -, ., /' WHERE `ID`='68';
-UPDATE `universaltranslatorca`.`macro_Names` SET `Con1_Question`='Please enter source SF\'s date value separator.  e.g. -, ., /', `Con2_Question`='Please enter target SF\'s date value separator.  e.g. -, ., /' WHERE `ID`='69';
-
-UPDATE `universaltranslatorca`.`macro_Names` SET `Macro_Name`='Date - yyyy*mm*dd to mm*dd*yyyy' WHERE `ID`='68';
-UPDATE `universaltranslatorca`.`macro_Names` SET `Macro_Name`='Date - mm*dd*yyyy to yyyy*mm*dd' WHERE `ID`='69';
-
-UPDATE `universaltranslatorca`.`macro_names` SET `FieldB_Question`='Handle MySQL 2 digit year limitations for 2 digit years ending in 30-69. (Y/N)', `Con1_Question`='Please enter the inbound string\'s date format', `Con2_Question`='Please enter the outbound string\'s date format' WHERE `ID`='112';
 
 drop procedure if exists yyyymmddstripTime;
 delete from macro_names where formula = 'yyyymmddstripTime';
@@ -58,29 +47,81 @@ delete from macro_names where formula = 'ifNonDateSetNull';
 delete from macro_names where formula = 'dateYYYYMMDDHHMMSSMSToYYYYMMDDHHMMSS';
 drop procedure if exists dateYYYYMMDDHHMMSSMSToYYYYMMDDHHMMSS;
 
-
-/** Still TO DO **/
-UPDATE `universaltranslatorca`.`macro_names` SET `FieldA_Question`='Please enter value you would like to prepend', `FieldB_Question`='Prepend if the field is blank (Y/N).', `Con1_Question`='Please enter value you would like to append', `Con2_Question`='Append if the field is blank (Y/N).' WHERE `ID`='102';
-
-update configurationdatatranslations set macroId = 76 where macroId = 110;
-
-drop procedure if exists IfSFLen0orNullReplaceValue;
-
-
 drop procedure if exists concatColumnsToList;
 delete from macro_names where formula = 'concatColumnsToList';
 
-drop procedure if exists IfSFLen0orNullReplaceValue;
-delete from macro_names where formula = 'IfSFLen0orNullReplaceValue';
-
-/** ***** **/
-/**  20200917 **/
- 
 drop procedure if exists ArithmeticForSFAndFAUpdateFB;
 delete from macro_names where formula = 'ArithmeticForSFAndFAUpdateFB';
 
 drop procedure if exists DeleteTransactionWhenFieldIsNull;
 delete from macro_names where formula = 'DeleteTransactionWhenFieldIsNull';
+ 
+drop procedure if exists countListSize;
+delete from macro_names where formula = 'countListSize';
+
+
+drop procedure if exists populateWithBatchUploadId;
+delete from macro_names where formula = 'populateWithBatchUploadId';
+
+drop procedure if exists ifNonDateAndNotBlankReject;
+delete from macro_names where formula = 'ifNonDateAndNotBlankReject';
+
+drop procedure if exists ifNotBlankReject;
+
+
+delete from macro_names where formula = 'StringToDateFor2DigitYears';
+drop procedure if exists StringToDateFor2DigitYears;
+
+delete from macro_names where formula = 'prependStringWithCon2IfLengthMataches';
+drop procedure if exists prependStringWithCon2IfLengthMataches;
+
+delete from macro_names where formula = 'CopyColumnTTItoTIR';
+drop procedure if exists CopyColumnTTItoTIR;
+
+drop procedure if exists prependStringWithCon2IfLengthMataches;
+
+delete from macro_names where formula = 'GreaterThanEqualFieldAUpdateSrcField';
+drop procedure if exists  	GreaterThanEqualFieldAUpdateSrcField;
+
+delete from macro_names where formula = 'lessThanEqualFieldAUpdateFieldB';
+drop procedure if exists  lessThanEqualFieldAUpdateFieldB;
+
+delete from macro_names where formula = 'IfSFLen0orNullReplaceValue';
+drop procedure if exists  IfSFLen0orNullReplaceValue;
+
+
+drop procedure if exists ArithmeticConstantStoreInFA;
+delete from macro_names where formula = 'ArithmeticConstantStoreInFA';
+
+delete from macro_names where formula = 'CopyColumnTTItoTIR';
+drop procedure if exists CopyColumnTTItoTIR;
+
+
+/** updated **/
+UPDATE `universaltranslatorca`.`macro_names` SET macro_Name = 'Prepend and/or Append Strings', macro_short_Name = 'Prepend Append String', formula = 'appendPrependString', `FieldA_Question`='Please enter value you would like to prepend', `FieldB_Question`='Prepend if the field is blank (Y/N).', `Con1_Question`='Please enter value you would like to append', `Con2_Question`='Append if the field is blank (Y/N).' WHERE `ID`='102';
+drop procedure if exists appendPrependStringIfNotBlank;
+delete from macro_names where id = 79;
+
+
+
+
+/** update stmts on CA stage **/
+update macro_names set fieldA_Question = '', fieldB_Question = '' where formula = 'stringToDate';
+
+UPDATE `universaltranslatorca`.`macro_Names` SET `Con1_Question`='Please enter source SF\'s date value separator.  e.g. -, ., /', `Con2_Question`='Please enter target SF\'s date value separator.  e.g. -, ., /' WHERE `ID`='68';
+UPDATE `universaltranslatorca`.`macro_Names` SET `Con1_Question`='Please enter source SF\'s date value separator.  e.g. -, ., /', `Con2_Question`='Please enter target SF\'s date value separator.  e.g. -, ., /' WHERE `ID`='69';
+
+UPDATE `universaltranslatorca`.`macro_Names` SET `Macro_Name`='Date - yyyy*mm*dd to mm*dd*yyyy' WHERE `ID`='68';
+UPDATE `universaltranslatorca`.`macro_Names` SET `Macro_Name`='Date - mm*dd*yyyy to yyyy*mm*dd' WHERE `ID`='69';
+
+UPDATE `universaltranslatorca`.`macro_names` SET `FieldB_Question`='Handle MySQL 2 digit year limitations for 2 digit years ending in 30-69. (Y/N)', `Con1_Question`='Please enter the inbound string\'s date format', `Con2_Question`='Please enter the outbound string\'s date format' WHERE `ID`='112';
+ 
+UPDATE `universaltranslatorca`.`macro_names` SET `Macro_Short_Name`='ifNotBlankError', `Formula`='ifNotBlankError' WHERE `ID`='150';
+
+UPDATE `universaltranslatorca`.`macro_names` SET `CategoryId`='0', `Macro_Short_Name`='errorNonYearMonthTransactions', `Formula`='errorNonYearMonthTransactions' WHERE `ID`='152';
+
+UPDATE `universaltranslatorca`.`macro_names` SET `Macro_Name`='Prepend String with Value if Length matches', `Macro_Short_Name`='prependCon2IfCon1Length', `Formula`='prependCon2IfCon1Length' WHERE `ID`='180';
+
 
 /** 20200920 **/
 USE `universaltranslatorca`;
@@ -129,20 +170,8 @@ DELIMITER ;
 
 /** 20200921 **/
 
-drop procedure if exists GreaterThanEqualFieldAUpdateFieldB;
-delete from macro_names where formula = 'GreaterThanEqualFieldAUpdateFieldB';
-
-
-drop procedure if exists lessThanEqualFieldAUpdateFieldB;
-delete from macro_names where formula = 'lessThanEqualFieldAUpdateFieldB';
-
-drop procedure if exists countListSize;
-delete from macro_names where formula = 'countListSize';
-
 
 INSERT INTO `macro_names` (`ID`, `CategoryId`, `Macro_Name`, `Macro_Short_Name`, `Formula`, `FieldA_Question`, `FieldB_Question`, `Con1_Question`, `Con2_Question`) VALUES ('197', '1', 'Compare Two Fields and Update SF to Con2', 'Compare Two Fields and Update SF to Con2', 'CompareTwoFieldsAndUpdateSFWithCon2', 'Please enter field to compare source field to', ' ', 'Please enter comparison (< , <=, =, >, >=, !=)', 'Please enter value to update SF to');
-
-update macro_names set fieldA_Question = '', fieldB_Question = '' where formula = 'stringToDate';
 
 
 USE `universaltranslatorca`;
@@ -278,15 +307,6 @@ end proc_main$$
 
 DELIMITER ;
 
-drop procedure if exists populateWithBatchUploadId;
-delete from macro_names where formula = 'populateWithBatchUploadId';
-
-drop procedure if exists ifNonDateAndNotBlankReject;
-delete from macro_names where formula = 'ifNonDateAndNotBlankReject';
-
-UPDATE `universaltranslatorca`.`macro_names` SET `Macro_Short_Name`='ifNotBlankError', `Formula`='ifNotBlankError' WHERE `ID`='150';
-
-drop procedure if exists ifNotBlankReject;
 
 USE `universaltranslatorca`;
 DROP procedure IF EXISTS `ZipCodeCheck`;
@@ -562,15 +582,6 @@ end proc_main$$
 
 DELIMITER ;
 
-delete from macro_names where formula = 'StringToDateFor2DigitYears';
-drop procedure if exists StringToDateFor2DigitYears;
-
-delete from macro_names where formula = 'prependStringWithCon2IfLengthMataches';
-drop procedure if exists prependStringWithCon2IfLengthMataches;
-
-delete from macro_names where formula = 'CopyColumnTTItoTIR';
-drop procedure if exists CopyColumnTTItoTIR;
-
 USE `universaltranslatorca`;
 DROP procedure IF EXISTS `regExCheck`;
 
@@ -731,9 +742,6 @@ end proc_main$$
 
 DELIMITER ;
 
-
-drop procedure if exists ArithmeticConstantStoreInFA;
-delete from macro_names where formula = 'ArithmeticConstantStoreInFA';
 
 USE `universaltranslatorca`;
 DROP procedure IF EXISTS `CompareTwoFieldsAndUpdateSFWithCon2`;
@@ -1173,8 +1181,8 @@ end proc_main$$
 
 DELIMITER ;
 
-DROP PROCEDURE applyCWTranslatedList;
-DROP PROCEDURE applyCWTranslatedListNoTrackDroppedValues;
+DROP PROCEDURE if exists applyCWTranslatedList;
+DROP PROCEDURE if exists  applyCWTranslatedListNoTrackDroppedValues;
 
 DELIMITER $$
 CREATE DEFINER=`root`@`localhost` PROCEDURE `applyCWTranslatedList`(in configId int, 
@@ -1326,7 +1334,7 @@ DEALLOCATE PREPARE stmt;
 		set @stmt = concat("
 		SELECT max(CHAR_LENGTH(",srcField,") - CHAR_LENGTH( REPLACE ( ",srcField,", ',', '') )  + 1) from ",@translatedTable, " into @maxListLength");
 		
-        insert into sqlstmts (sqlstmt) values (@stmt);
+        
 		PREPARE stmt from @stmt;
 		EXECUTE stmt;
 		DEALLOCATE PREPARE stmt;
@@ -1344,7 +1352,6 @@ DEALLOCATE PREPARE stmt;
    ,(select id N from ref_numbers where id <=",@maxListLength,") b
     ORDER BY n) n  WHERE n.n <= 1 + (LENGTH(t.",srcField,") - LENGTH(REPLACE(t.",srcField,", ',', ''))) ", @whereString);
     
-    insert into sqlstmts (sqlstmt) values (@stmt);
     
     PREPARE stmt from @stmt;
 	EXECUTE stmt;
@@ -1353,7 +1360,7 @@ DEALLOCATE PREPARE stmt;
     
     set @stmt = concat("update ",@listTable," set invalue = replace(replace(invalue, '\n',''), '\r', '')");
 	
-    insert into sqlstmts (sqlstmt) values (@stmt);
+    
      
     PREPARE stmt from @stmt;
 	EXECUTE stmt;
@@ -1362,7 +1369,7 @@ DEALLOCATE PREPARE stmt;
     set @stmt = concat("update ",@listTable," join (select id, sourcevalue, targetvalue from rel_crosswalkdata where crosswalkid = ", con1 ,") cwdata
 	on invalue = sourcevalue set translatedvalue = targetvalue where ",@batchIdType," = ", batchId);
 	
-    insert into sqlstmts (sqlstmt) values (@stmt);
+    
   
     PREPARE stmt from @stmt;
 	EXECUTE stmt;
@@ -1372,7 +1379,7 @@ DEALLOCATE PREPARE stmt;
 	
 		set @stmt = concat("update ",@listTable, " set translatedvalue = invalue where translatedvalue is null ");
 		
-        insert into sqlstmts (sqlstmt) values (@stmt);
+        
 		
         PREPARE stmt from @stmt;
 		EXECUTE stmt;
@@ -1394,7 +1401,7 @@ DEALLOCATE PREPARE stmt;
     group_concat(",@selDistinct," translatedValue order by id) label from  ",@listTable,"
 	where ",@batchIdType," = ",batchid, " and fcol = ",@fCol," group by ",@translateCol," ) cwmatch on ",@translateCol," = matchid set ",srcField," = label ");
 	
-    insert into sqlstmts (sqlstmt) values (@stmt);
+    
        
     PREPARE stmt from @stmt;
 	EXECUTE stmt;
@@ -1403,7 +1410,7 @@ DEALLOCATE PREPARE stmt;
 
     set @stmt = concat("delete from ", @listTable, " where ",@batchIdType," = ",batchId," and fcol = ",@fcol);
     
-    insert into sqlstmts (sqlstmt) values (@stmt);
+    
     
     PREPARE stmt from @stmt;
 	EXECUTE stmt;
@@ -2798,3 +2805,62 @@ end proc_main$$
 
 DELIMITER ;
 
+
+drop procedure if exists prependCon2IfCon1Length;
+
+DELIMITER $$
+USE `universaltranslatorca`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `prependCon2IfCon1Length`(in configId int, 
+in batchId int, in srcField varchar(10),
+in fieldA varchar(10), in fieldB varchar(10), in con1 varchar(255), 
+in con2 varchar(255), in macroId int, in foroutboundProcessing boolean, in passClear int, in transactionId int)
+proc_main:begin
+
+call setInboundOutBoundTables (foroutboundProcessing,batchId);
+select @translatedTable, @transactionTable, @batchTable, @batchIdType , @errorTable
+into @translatedTable, @transactionTable, @batchTable, @batchIdType , @errorTable;
+
+call getFinalStatusIds;
+select @finalStatusIds into @finalStatusIds;
+
+/** con1 must be numeric **/
+				if (con1 REGEXP '^[]?[0-9]*[]{0,1}[0-9]*$' = 0 || length(@con1) = 0 ) then
+
+							set @stmt = concat("insert into ", @errorTable , 
+                            " (" , @batchIdColumn, ", configId, " , @translateCol, ", fieldNo, errorId, macroId, stackTrace, required) 
+                            select ",batchId,", ",configId,", 0, replace('",srcField,"', 'F', ''), '", 5, 
+							"', ",macroId,", ","'prependCon2IfCon1Length Macro - Con1 - ",con1," must be an integer. '",", ",true);
+                            
+                            
+                            PREPARE stmt from @stmt;
+							EXECUTE stmt;
+							DEALLOCATE PREPARE stmt;
+                            
+                            
+							set @stmt = concat("update ",@translatedTable, " set forCW = 'MACRO_ERROR'  where  configId = ",configId," and ", @batchIdType," = ",batchId,";");
+							 
+                            PREPARE stmt from @stmt;
+							EXECUTE stmt;
+							DEALLOCATE PREPARE stmt;
+
+
+leave proc_main;
+
+end if;
+
+set @whereClause = '';
+if (con1 = 0) then
+	set @whereClause = concat(" or ",srcField," is null");
+end if;
+
+set @stmt = concat("update ", @translatedTable," set ",srcField,
+" = concat_ws('','", con2, "', ",srcField , ") where (length(",srcField,") = ",con1,@whereClause,") and ",
+"configId = ",configId," and ",@batchIdType," = ",batchId," and statusId not in (",@finalStatusIds,");");
+
+PREPARE stmt from @stmt;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+end proc_main$$
+
+DELIMITER ;
