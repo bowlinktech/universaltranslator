@@ -1,8 +1,0 @@
-ALTER TABLE `universaltranslatorca`.`configurationupdatelogs` 
-CHANGE COLUMN `updateMade` `updateMade` MEDIUMTEXT NULL DEFAULT NULL ;
-
-ALTER TABLE `universaltranslatorca`.`crosswalks` 
-ADD COLUMN `lastUpdated` DATETIME NULL DEFAULT CURRENT_TIMESTAMP AFTER `orgId`;
-
-update universaltranslatorca.crosswalks set lastupdated = null;
-
