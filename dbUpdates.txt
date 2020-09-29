@@ -1,3 +1,9 @@
+
+/** 
+CM - 09/29/202
+The below changes must be made once UT Production has been updated with the latest
+code from EAH 
+**/
 ALTER TABLE `universaltranslatorca`.`configurationupdatelogs` 
 CHANGE COLUMN `updateMade` `updateMade` MEDIUMTEXT NULL DEFAULT NULL ;
 
