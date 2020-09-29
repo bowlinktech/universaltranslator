@@ -1062,7 +1062,7 @@ public class transactionInDAOImpl implements transactionInDAO {
 	    query.executeUpdate();
 	    
 	    //insert system error
-	    insertProcessingError(processingSysErrorId, configId, batchId, cdt.getFieldNo(),cdt.getMacroId(), null, null,true, foroutboundProcessing, ("executeMacro " + ex.getCause().toString()));
+	    insertProcessingError(processingSysErrorId, configId, batchId, cdt.getFieldNo(),cdt.getMacroId(), null, null,true, foroutboundProcessing, (cdt.getMacroName() + "- executeMacro " + ex.getCause().toString()));
 	   
 	    return 9999999;
 	}

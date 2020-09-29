@@ -1,4 +1,4 @@
-/** macro updates **/
+/** delete stmts  applied to CA stage **/
 DROP PROCEDURE if exists yyyymmddToDate;
 delete from macro_names where formula = 'yyyymmddToDate';
 
@@ -26,11 +26,14 @@ drop procedure if exists CleanTranslatedListTable;
 delete from  macro_names where formula = 'cat2ApplyCWTranslatedList';
 drop procedure if exists cat2ApplyCWTranslatedList;
 
+delete from  macro_names where formula = 'cat2ApplyCW';
+drop procedure if exists cat2ApplyCW;
+
+delete from  macro_names where formula = 'cat2CopyColumnIn';
+drop procedure if exists cat2CopyColumnIn;
+
 delete from macro_names where formula = 'addCharToString';
 drop procedure if exists addCharToString;
-
-DROP PROCEDURE if exists yyyymmddToDate;
-delete from macro_names where formula = 'yyyymmddToDate';
 
 drop procedure if exists dateyyyymmddTimeToDateTime;
 delete from macro_names where formula = 'dateyyyymmddTimeToDateTime';
@@ -41,14 +44,6 @@ drop procedure if exists addDelimiterEvery2Characters;
 drop procedure if exists ifDateCon1ElseNull;
 delete from macro_names where formula = 'ifDateCon1ElseNull';
 
-UPDATE `universaltranslatorca`.`macro_Names` SET `Con1_Question`='Please enter source SF\'s date value separator.  e.g. -, ., /', `Con2_Question`='Please enter target SF\'s date value separator.  e.g. -, ., /' WHERE `ID`='68';
-UPDATE `universaltranslatorca`.`macro_Names` SET `Con1_Question`='Please enter source SF\'s date value separator.  e.g. -, ., /', `Con2_Question`='Please enter target SF\'s date value separator.  e.g. -, ., /' WHERE `ID`='69';
-
-UPDATE `universaltranslatorca`.`macro_Names` SET `Macro_Name`='Date - yyyy*mm*dd to mm*dd*yyyy' WHERE `ID`='68';
-UPDATE `universaltranslatorca`.`macro_Names` SET `Macro_Name`='Date - mm*dd*yyyy to yyyy*mm*dd' WHERE `ID`='69';
-
-UPDATE `universaltranslatorca`.`macro_names` SET `FieldB_Question`='Handle MySQL 2 digit year limitations for 2 digit years ending in 30-69. (Y/N)', `Con1_Question`='Please enter the inbound string\'s date format', `Con2_Question`='Please enter the outbound string\'s date format' WHERE `ID`='112';
-
 drop procedure if exists yyyymmddstripTime;
 delete from macro_names where formula = 'yyyymmddstripTime';
 
@@ -58,31 +53,212 @@ delete from macro_names where formula = 'ifNonDateSetNull';
 delete from macro_names where formula = 'dateYYYYMMDDHHMMSSMSToYYYYMMDDHHMMSS';
 drop procedure if exists dateYYYYMMDDHHMMSSMSToYYYYMMDDHHMMSS;
 
-
-/** Still TO DO **/
-UPDATE `universaltranslatorca`.`macro_names` SET `FieldA_Question`='Please enter value you would like to prepend', `FieldB_Question`='Prepend if the field is blank (Y/N).', `Con1_Question`='Please enter value you would like to append', `Con2_Question`='Append if the field is blank (Y/N).' WHERE `ID`='102';
-
-update configurationdatatranslations set macroId = 76 where macroId = 110;
-
-drop procedure if exists IfSFLen0orNullReplaceValue;
-
-
 drop procedure if exists concatColumnsToList;
 delete from macro_names where formula = 'concatColumnsToList';
 
-drop procedure if exists IfSFLen0orNullReplaceValue;
-delete from macro_names where formula = 'IfSFLen0orNullReplaceValue';
-
-/** ***** **/
-/**  20200917 **/
- 
 drop procedure if exists ArithmeticForSFAndFAUpdateFB;
 delete from macro_names where formula = 'ArithmeticForSFAndFAUpdateFB';
 
 drop procedure if exists DeleteTransactionWhenFieldIsNull;
 delete from macro_names where formula = 'DeleteTransactionWhenFieldIsNull';
+ 
+drop procedure if exists countListSize;
+delete from macro_names where formula = 'countListSize';
+
+
+drop procedure if exists populateWithBatchUploadId;
+delete from macro_names where formula = 'populateWithBatchUploadId';
+
+drop procedure if exists ifNonDateAndNotBlankReject;
+delete from macro_names where formula = 'ifNonDateAndNotBlankReject';
+
+drop procedure if exists ifNotBlankReject;
+
+
+delete from macro_names where formula = 'StringToDateFor2DigitYears';
+drop procedure if exists StringToDateFor2DigitYears;
+
+delete from macro_names where formula = 'prependStringWithCon2IfLengthMataches';
+drop procedure if exists prependStringWithCon2IfLengthMataches;
+
+delete from macro_names where formula = 'CopyColumnTTItoTIR';
+drop procedure if exists CopyColumnTTItoTIR;
+
+drop procedure if exists prependStringWithCon2IfLengthMataches;
+
+delete from macro_names where formula = 'GreaterThanEqualFieldAUpdateSrcField';
+drop procedure if exists  	GreaterThanEqualFieldAUpdateSrcField;
+
+delete from macro_names where formula = 'lessThanEqualFieldAUpdateFieldB';
+drop procedure if exists  lessThanEqualFieldAUpdateFieldB;
+
+delete from macro_names where formula = 'IfSFLen0orNullReplaceValue';
+drop procedure if exists  IfSFLen0orNullReplaceValue;
+
+
+drop procedure if exists ArithmeticConstantStoreInFA;
+delete from macro_names where formula = 'ArithmeticConstantStoreInFA';
+
+delete from macro_names where formula = 'CopyColumnTTItoTIR';
+drop procedure if exists CopyColumnTTItoTIR;
+
+drop procedure if exists applyCW;
+
+drop procedure if exists BHCounseling;
+drop procedure if exists BHMedServices;
+drop procedure if exists closeOutReferral;
+
+drop procedure if exists CompareFALengthForNotBlankReplaceWithCon2;
+
+drop procedure if exists  Concat3ColsDelimNoSpaces;
+
+drop procedure if exists concat3ColssWithDelimiterNoSpaces;
+
+drop procedure if exists DateToyyyymmdd;
+
+drop procedure if exists deleteTransaction;
+
+drop procedure if exists DeleteTransactionWhenFieldAIsNull;
+
+drop procedure if exists dropValueByPriorityInboundOnly;
+
+drop procedure if exists FALessThanNumericCon1UpdateFBwithCon2;
+
+drop procedure if exists FieldBGreaterThanEqualFieldAUpdateFieldA;
+
+drop procedure if exists fix2DigitMySQLYears;
+
+drop procedure if exists ifFAStartsWithCon1UpdateFBToCon2;
+
+drop procedure if exists GreaterThanEqualFieldAUpdateFieldB;
+
+drop procedure if exists IfFieldACon1andTFBlankInsertCon2Error;
+
+drop procedure if exists CompareFALengthForNotBlankReplaceWithCon2;
+
+drop procedure if exists Concat3ColsDelimNoSpaces;
+
+drop procedure if exists concat3ColssWithDelimiterNoSpaces;
+
+drop procedure if exists removeTransactionTargets;
+
+drop procedure if exists deletetransaction;
+
+drop procedure if exists deletetransactionisnull;
+
+drop procedure if exists dropValueByPriorityInboundOnly;
+
+drop procedure if exists ifFieldANotInListValuesSetToCon2;
+
+drop procedure if exists ifFieldANotNumericSetFieldBToCon1;
+
+drop procedure if exists IfMatchFieldAAndTFBlankSetTFValue;
+
+drop procedure if exists ifNumLTThenError;
+
+drop procedure if exists IfSFLen0orNullReplaceValueInFA;
+
+drop procedure if exists ifSrcFieldBlankAndFACompareTo0ThenFieldBCon2;
+
+drop procedure if exists MatchFieldAUpdateFieldB;
+
+drop procedure if exists mmddyyyytoyyyymmdd;
+
+drop procedure if exists NJPopulateCounseling;
+
+drop procedure if exists NJProviderIdentifier;
+
+drop procedure if exists PopulateTranslatedList;
+
+drop procedure if exists populateUniqueKeyAndTTI;
+
+drop procedure if exists updateFieldBToDistinctSrcFieldAsList;
+
+drop procedure if exists UpdateFPRace;
+
+drop procedure if exists UpdateToMaxMinForCol;
+
+drop procedure if exists UpdateTranslatedListValueNotDistinct;
+
+drop procedure if exists YYYYMMDDHHMMSSMSToYYYYMMDDHHMMSS;
+
+drop procedure if exists yyyymmddTimeToDateTime;
+
+drop procedure if exists yyyymmddTommddyyyy;
+
+drop procedure if exists ifFieldANotCon1ThenNull;
+
+drop procedure if exists IfMatchFieldAAndTFBlankSetTFValue;
+
+drop procedure if exists IfSFNullOrEmptySetFieldBToValueFieldA;
+
+drop procedure if exists ListToRows;
+
+drop procedure if exists NotInUse_DateToyyyymmdd;
+
+drop procedure if exists removeDupFromListOld;
+
+drop procedure if exists replaceChars;
+
+drop procedure if exists updateFieldBToSrcFieldAsList;
+
+drop procedure if exists yyyymmddTommddyyyy;
+
+UPDATE `universaltranslatorca`.`macro_names` SET macro_Name = 'Prepend and/or Append Strings', macro_short_Name = 'Prepend Append String', formula = 'appendPrependString', `FieldA_Question`='Please enter value you would like to prepend', `FieldB_Question`='Prepend if the field is blank (Y/N).', `Con1_Question`='Please enter value you would like to append', `Con2_Question`='Append if the field is blank (Y/N).' WHERE `ID`='102';
+drop procedure if exists appendPrependStringIfNotBlank;
+delete from macro_names where id = 79;
+
+update macro_names set fieldA_Question = '', fieldB_Question = '' where formula = 'stringToDate';
+
+UPDATE `universaltranslatorca`.`macro_Names` SET `Con1_Question`='Please enter source SF\'s date value separator.  e.g. -, ., /', `Con2_Question`='Please enter target SF\'s date value separator.  e.g. -, ., /' WHERE `ID`='68';
+UPDATE `universaltranslatorca`.`macro_Names` SET `Con1_Question`='Please enter source SF\'s date value separator.  e.g. -, ., /', `Con2_Question`='Please enter target SF\'s date value separator.  e.g. -, ., /' WHERE `ID`='69';
+
+UPDATE `universaltranslatorca`.`macro_Names` SET `Macro_Name`='Date - yyyy*mm*dd to mm*dd*yyyy' WHERE `ID`='68';
+UPDATE `universaltranslatorca`.`macro_Names` SET `Macro_Name`='Date - mm*dd*yyyy to yyyy*mm*dd' WHERE `ID`='69';
+
+UPDATE `universaltranslatorca`.`macro_names` SET `FieldB_Question`='Handle MySQL 2 digit year limitations for 2 digit years ending in 30-69. (Y/N)', `Con1_Question`='Please enter the inbound string\'s date format', `Con2_Question`='Please enter the outbound string\'s date format' WHERE `ID`='112';
+ 
+UPDATE `universaltranslatorca`.`macro_names` SET `Macro_Short_Name`='ifNotBlankError', `Formula`='ifNotBlankError' WHERE `ID`='150';
+
+UPDATE `universaltranslatorca`.`macro_names` SET `CategoryId`='0', `Macro_Short_Name`='errorNonYearMonthTransactions', `Formula`='errorNonYearMonthTransactions' WHERE `ID`='152';
+
+UPDATE `universaltranslatorca`.`macro_names` SET `Macro_Name`='Prepend String with Value if Length matches', `Macro_Short_Name`='prependCon2IfCon1Length', `Formula`='prependCon2IfCon1Length' WHERE `ID`='180';
+
 
 /** 20200920 **/
+
+UPDATE `universaltranslatorca`.`macro_names` SET formula = 'replaceChars1', Macro_Short_Name ='replaceChars1' WHERE `ID`='72';
+
+USE `universaltranslatorca`;
+DROP procedure IF EXISTS `replaceChars1`;
+
+DELIMITER $$
+USE `universaltranslatorca`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `replaceChars1`(in configId int, 
+in batchId int, in srcField varchar(10),
+in fieldA varchar(10), in fieldB varchar(10), in con1 varchar(255), 
+in con2 varchar(255), in macroId int, in foroutboundProcessing boolean, in passClear int, in transactionId int)
+proc_main:begin
+
+call setInboundOutBoundTables (foroutboundProcessing,batchId);
+select @translatedTable, @transactionTable, @batchTable, @batchIdType , @errorTable
+into @translatedTable, @transactionTable, @batchTable, @batchIdType , @errorTable;
+
+call getFinalStatusIds;
+select @finalStatusIds into @finalStatusIds;
+
+			set @stmt = concat("update ", @translatedTable, " set ",srcField," = replace_ci(",srcField,", '",con1,"','",con2,"') 
+			where  configId = ",configId," and ", @batchIdType," = ",batchId," and statusId not in (",@finalStatusIds ,");");
+
+			PREPARE stmt from @stmt;
+			EXECUTE stmt;
+			DEALLOCATE PREPARE stmt;
+
+end proc_main$$
+
+DELIMITER ;
+
+
 USE `universaltranslatorca`;
 DROP procedure IF EXISTS `futureDateCheck`;
 
@@ -129,20 +305,8 @@ DELIMITER ;
 
 /** 20200921 **/
 
-drop procedure if exists GreaterThanEqualFieldAUpdateFieldB;
-delete from macro_names where formula = 'GreaterThanEqualFieldAUpdateFieldB';
 
-
-drop procedure if exists lessThanEqualFieldAUpdateFieldB;
-delete from macro_names where formula = 'lessThanEqualFieldAUpdateFieldB';
-
-drop procedure if exists countListSize;
-delete from macro_names where formula = 'countListSize';
-
-
-INSERT INTO `macro_names` (`ID`, `CategoryId`, `Macro_Name`, `Macro_Short_Name`, `Formula`, `FieldA_Question`, `FieldB_Question`, `Con1_Question`, `Con2_Question`) VALUES ('197', '1', 'Compare Two Fields and Update SF to Con2', 'Compare Two Fields and Update SF to Con2', 'CompareTwoFieldsAndUpdateSFWithCon2', 'Please enter field to compare source field to', ' ', 'Please enter comparison (< , <=, =, >, >=, !=)', 'Please enter value to update SF to');
-
-update macro_names set fieldA_Question = '', fieldB_Question = '' where formula = 'stringToDate';
+INSERT INTO `macro_names` (`ID`, `CategoryId`, `Macro_Name`, `Macro_Short_Name`, `Formula`, `FieldA_Question`, `FieldB_Question`, `Con1_Question`, `Con2_Question`) VALUES ('197', '1', 'Compare Two Fields and Update SF to Con2', 'Compare Two Fields and Update SF to Con2', 'CompareTwoFieldsAndUpdateSF', 'Please enter field to compare source field to', ' ', 'Please enter comparison (< , <=, =, >, >=, !=)', 'Please enter value to update SF to');
 
 
 USE `universaltranslatorca`;
@@ -278,15 +442,6 @@ end proc_main$$
 
 DELIMITER ;
 
-drop procedure if exists populateWithBatchUploadId;
-delete from macro_names where formula = 'populateWithBatchUploadId';
-
-drop procedure if exists ifNonDateAndNotBlankReject;
-delete from macro_names where formula = 'ifNonDateAndNotBlankReject';
-
-UPDATE `universaltranslatorca`.`macro_names` SET `Macro_Short_Name`='ifNotBlankError', `Formula`='ifNotBlankError' WHERE `ID`='150';
-
-drop procedure if exists ifNotBlankReject;
 
 USE `universaltranslatorca`;
 DROP procedure IF EXISTS `ZipCodeCheck`;
@@ -562,15 +717,6 @@ end proc_main$$
 
 DELIMITER ;
 
-delete from macro_names where formula = 'StringToDateFor2DigitYears';
-drop procedure if exists StringToDateFor2DigitYears;
-
-delete from macro_names where formula = 'prependStringWithCon2IfLengthMataches';
-drop procedure if exists prependStringWithCon2IfLengthMataches;
-
-delete from macro_names where formula = 'CopyColumnTTItoTIR';
-drop procedure if exists CopyColumnTTItoTIR;
-
 USE `universaltranslatorca`;
 DROP procedure IF EXISTS `regExCheck`;
 
@@ -732,15 +878,12 @@ end proc_main$$
 DELIMITER ;
 
 
-drop procedure if exists ArithmeticConstantStoreInFA;
-delete from macro_names where formula = 'ArithmeticConstantStoreInFA';
-
 USE `universaltranslatorca`;
-DROP procedure IF EXISTS `CompareTwoFieldsAndUpdateSFWithCon2`;
+DROP procedure IF EXISTS `CompareTwoFieldsAndUpdateSF`;
 
 DELIMITER $$
 USE `universaltranslatorca`$$
-CREATE DEFINER=`root`@`localhost` PROCEDURE `CompareTwoFieldsAndUpdateSFWithCon2`(in configId int, 
+CREATE DEFINER=`root`@`localhost` PROCEDURE `CompareTwoFieldsAndUpdateSF`(in configId int, 
 in batchId int, in srcField varchar(10),
 in fieldA varchar(10), in fieldB varchar(10), in con1 varchar(255), 
 in con2 varchar(255), in macroId int, in foroutboundProcessing boolean, in passClear int, in transactionId int)
@@ -877,15 +1020,49 @@ into @translatedTable, @transactionTable, @batchTable, @batchIdType , @errorTabl
 call getFinalStatusIds;
 select @finalStatusIds into @finalStatusIds;
 
-set @whereclause = concat(" and configId = ",configId," and ", @batchIdType," = ",batchId," and statusId not in (",@finalStatusIds ,")");
-set @stmt1 = concat("update ",@translatedTable, " set ",srcField, " = '", con1 , "' where  ",srcField ," REGEXP  '^-?[0-9]+[.]?[0-9]*$|^-?[.][0-9]+$' = 0 ");
 
+	set @whereclause = concat(" and configId = ",configId," and ", @batchIdType," = ",batchId," and statusId not in (",@finalStatusIds ,")");
 
-set @stmt = concat(@stmt1, @whereclause, ";");
-PREPARE stmt from @stmt;
-EXECUTE stmt;
-DEALLOCATE PREPARE stmt;
+	set @dropTable = "batchuploaddroppedvalues";
+	set @colDirection = "in";
 
+	if (foroutboundProcessing) then
+
+		set @dropTable = "batchdownloaddroppedvalues";
+		set @colDirection = "out";
+		
+	end if;
+
+	-- track values being replaced
+	set @stmt = concat("select fieldDesc into @fieldName from configurationformfields where configId = ",configId," and fieldNo = replace('",srcField,"', 'F', '') limit 1;");
+
+	PREPARE stmt from @stmt;
+	EXECUTE stmt;
+    DEALLOCATE PREPARE stmt;
+
+	set @stmt1 = concat("
+    insert into ",@dropTable,"
+    (transaction",@colDirection,"RecordsId, fieldNo, ",@batchIdType ,", configId, fieldName, fieldValue) 
+     select transaction",@colDirection,"RecordsId, replace('",srcField,"', 'F', ''), ",@batchIdType,", configId, '",@fieldName,"', ",srcField,"
+     from ",@translatedTable, " where  ",srcField ," REGEXP  '^-?[0-9]+[.]?[0-9]*$|^-?[.][0-9]+$' = 0 
+     and ",srcField," is not null and length(",srcField,") > 0 ");
+		
+	set @stmt = concat(@stmt1, @whereclause, ";");
+    
+    PREPARE stmt from @stmt;
+	EXECUTE stmt;
+	DEALLOCATE PREPARE stmt;
+    
+
+	set @stmt1 = concat("update ",@translatedTable, " set ",srcField, " = '", con1 , "' where  
+    ",srcField ," REGEXP  '^-?[0-9]+[.]?[0-9]*$|^-?[.][0-9]+$' = 0 
+    and ",srcField," is not null and length(",srcField,") > 0 ");
+	
+    set @stmt = concat(@stmt1, @whereclause, ";");
+     
+	PREPARE stmt from @stmt;
+	EXECUTE stmt;
+	DEALLOCATE PREPARE stmt;
 
 end proc_main$$
 
@@ -1173,8 +1350,8 @@ end proc_main$$
 
 DELIMITER ;
 
-DROP PROCEDURE applyCWTranslatedList;
-DROP PROCEDURE applyCWTranslatedListNoTrackDroppedValues;
+DROP PROCEDURE if exists applyCWTranslatedList;
+DROP PROCEDURE if exists  applyCWTranslatedListNoTrackDroppedValues;
 
 DELIMITER $$
 CREATE DEFINER=`root`@`localhost` PROCEDURE `applyCWTranslatedList`(in configId int, 
@@ -1326,7 +1503,7 @@ DEALLOCATE PREPARE stmt;
 		set @stmt = concat("
 		SELECT max(CHAR_LENGTH(",srcField,") - CHAR_LENGTH( REPLACE ( ",srcField,", ',', '') )  + 1) from ",@translatedTable, " into @maxListLength");
 		
-        insert into sqlstmts (sqlstmt) values (@stmt);
+        
 		PREPARE stmt from @stmt;
 		EXECUTE stmt;
 		DEALLOCATE PREPARE stmt;
@@ -1344,7 +1521,6 @@ DEALLOCATE PREPARE stmt;
    ,(select id N from ref_numbers where id <=",@maxListLength,") b
     ORDER BY n) n  WHERE n.n <= 1 + (LENGTH(t.",srcField,") - LENGTH(REPLACE(t.",srcField,", ',', ''))) ", @whereString);
     
-    insert into sqlstmts (sqlstmt) values (@stmt);
     
     PREPARE stmt from @stmt;
 	EXECUTE stmt;
@@ -1353,7 +1529,7 @@ DEALLOCATE PREPARE stmt;
     
     set @stmt = concat("update ",@listTable," set invalue = replace(replace(invalue, '\n',''), '\r', '')");
 	
-    insert into sqlstmts (sqlstmt) values (@stmt);
+    
      
     PREPARE stmt from @stmt;
 	EXECUTE stmt;
@@ -1362,7 +1538,7 @@ DEALLOCATE PREPARE stmt;
     set @stmt = concat("update ",@listTable," join (select id, sourcevalue, targetvalue from rel_crosswalkdata where crosswalkid = ", con1 ,") cwdata
 	on invalue = sourcevalue set translatedvalue = targetvalue where ",@batchIdType," = ", batchId);
 	
-    insert into sqlstmts (sqlstmt) values (@stmt);
+    
   
     PREPARE stmt from @stmt;
 	EXECUTE stmt;
@@ -1372,7 +1548,7 @@ DEALLOCATE PREPARE stmt;
 	
 		set @stmt = concat("update ",@listTable, " set translatedvalue = invalue where translatedvalue is null ");
 		
-        insert into sqlstmts (sqlstmt) values (@stmt);
+        
 		
         PREPARE stmt from @stmt;
 		EXECUTE stmt;
@@ -1394,7 +1570,7 @@ DEALLOCATE PREPARE stmt;
     group_concat(",@selDistinct," translatedValue order by id) label from  ",@listTable,"
 	where ",@batchIdType," = ",batchid, " and fcol = ",@fCol," group by ",@translateCol," ) cwmatch on ",@translateCol," = matchid set ",srcField," = label ");
 	
-    insert into sqlstmts (sqlstmt) values (@stmt);
+    
        
     PREPARE stmt from @stmt;
 	EXECUTE stmt;
@@ -1403,7 +1579,7 @@ DEALLOCATE PREPARE stmt;
 
     set @stmt = concat("delete from ", @listTable, " where ",@batchIdType," = ",batchId," and fcol = ",@fcol);
     
-    insert into sqlstmts (sqlstmt) values (@stmt);
+    
     
     PREPARE stmt from @stmt;
 	EXECUTE stmt;
@@ -1611,8 +1787,6 @@ end proc_main$$
 DELIMITER ;
 
 drop procedure IfFALengthNotMatchCon1ReplaceFBWithCon2;
-
-
 
 USE `universaltranslatorca`;
 DROP procedure IF EXISTS `IfLengthNotCon1ReplaceWithCon2`;
@@ -2194,6 +2368,7 @@ end proc_main$$
 
 DELIMITER ;
 
+UPDATE `universaltranslatorca`.`macro_names` SET `Macro_Short_Name`='CompareTwoFieldsAndError', `Formula`='CompareTwoFieldsAndError' WHERE `ID`='146';
 
 USE `universaltranslatorca`;
 DROP procedure IF EXISTS `CompareTwoFieldsAndError`;
@@ -2530,11 +2705,11 @@ end proc_main$$
 DELIMITER ;
 
 USE `universaltranslatorca`;
-DROP procedure IF EXISTS `CompareTwoFieldsAndUpdateSFWithCon2`;
+DROP procedure IF EXISTS `CompareTwoFieldsAndUpdateSF`;
 
 DELIMITER $$
 USE `universaltranslatorca`$$
-CREATE DEFINER=`root`@`localhost` PROCEDURE `CompareTwoFieldsAndUpdateSFWithCon2`(in configId int, 
+CREATE DEFINER=`root`@`localhost` PROCEDURE `CompareTwoFieldsAndUpdateSF`(in configId int, 
 in batchId int, in srcField varchar(10),
 in fieldA varchar(10), in fieldB varchar(10), in con1 varchar(255), 
 in con2 varchar(255), in macroId int, in foroutboundProcessing boolean, in passClear int, in transactionId int)
@@ -2797,4 +2972,893 @@ end if;
 end proc_main$$
 
 DELIMITER ;
+
+
+drop procedure if exists prependCon2IfCon1Length;
+
+DELIMITER $$
+USE `universaltranslatorca`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `prependCon2IfCon1Length`(in configId int, 
+in batchId int, in srcField varchar(10),
+in fieldA varchar(10), in fieldB varchar(10), in con1 varchar(255), 
+in con2 varchar(255), in macroId int, in foroutboundProcessing boolean, in passClear int, in transactionId int)
+proc_main:begin
+
+call setInboundOutBoundTables (foroutboundProcessing,batchId);
+select @translatedTable, @transactionTable, @batchTable, @batchIdType , @errorTable
+into @translatedTable, @transactionTable, @batchTable, @batchIdType , @errorTable;
+
+call getFinalStatusIds;
+select @finalStatusIds into @finalStatusIds;
+
+/** con1 must be numeric **/
+				if (con1 REGEXP '^[]?[0-9]*[]{0,1}[0-9]*$' = 0 || length(@con1) = 0 ) then
+
+							set @stmt = concat("insert into ", @errorTable , 
+                            " (" , @batchIdColumn, ", configId, " , @translateCol, ", fieldNo, errorId, macroId, stackTrace, required) 
+                            select ",batchId,", ",configId,", 0, replace('",srcField,"', 'F', ''), '", 5, 
+							"', ",macroId,", ","'prependCon2IfCon1Length Macro - Con1 - ",con1," must be an integer. '",", ",true);
+                            
+                            
+                            PREPARE stmt from @stmt;
+							EXECUTE stmt;
+							DEALLOCATE PREPARE stmt;
+                            
+                            
+							set @stmt = concat("update ",@translatedTable, " set forCW = 'MACRO_ERROR'  where  configId = ",configId," and ", @batchIdType," = ",batchId,";");
+							 
+                            PREPARE stmt from @stmt;
+							EXECUTE stmt;
+							DEALLOCATE PREPARE stmt;
+
+
+leave proc_main;
+
+end if;
+
+set @whereClause = '';
+if (con1 = 0) then
+	set @whereClause = concat(" or ",srcField," is null");
+end if;
+
+set @stmt = concat("update ", @translatedTable," set ",srcField,
+" = concat_ws('','", con2, "', ",srcField , ") where (length(",srcField,") = ",con1,@whereClause,") and ",
+"configId = ",configId," and ",@batchIdType," = ",batchId," and statusId not in (",@finalStatusIds,");");
+
+PREPARE stmt from @stmt;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+end proc_main$$
+
+DELIMITER ;
+
+
+USE `universaltranslatorca`;
+DROP procedure IF EXISTS `dateddmonyyWithDashesToyyyymmdd`;
+
+DELIMITER $$
+USE `universaltranslatorca`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `dateddmonyyWithDashesToyyyymmdd`(in configId int, 
+in batchId int, in srcField varchar(10),
+in fieldA varchar(10), in fieldB varchar(10), in con1 varchar(10), 
+in con2 varchar(10), in macroId int, in foroutboundProcessing boolean, in passClear int, in transactionId int)
+proc_main:begin
+
+call setInboundOutBoundTables (foroutboundProcessing,batchId);
+select @translatedTable, @transactionTable, @batchTable, @batchIdType , @errorTable, @batchIdColumn,@translateCol
+into @translatedTable, @transactionTable, @batchTable, @batchIdType , @errorTable, @batchIdColumn,@translateCol;
+
+call getFinalStatusIds;
+select @finalStatusIds into @finalStatusIds;
+
+		set @stmt = concat("update ",@translatedTable, " set forcw = null;");
+
+		PREPARE stmt from @stmt;
+		EXECUTE stmt;
+		DEALLOCATE PREPARE stmt;
+
+
+		set @mysqlDateFormat = concat('%Y-%m-%d');
+		set @inboundDateFormat = concat('%d-%b-%y');
+        set @outboundDateFormat = concat('%Y%m%d');
+		
+         
+        set @errorIds = '';
+		set @stmt = concat("select group_concat(id) from ",@translatedTable, " where left(right(F1, 3), 1) != '-' 
+					and ",srcField," is not null and length(",srcField,") > 0 and forcw is null
+					and configId = ",configId," and ", @batchIdType," = ",batchId," and statusId not in (",@finalStatusIds ,") into @errorIds");
+        
+		PREPARE stmt from @stmt;
+		EXECUTE stmt;
+		DEALLOCATE PREPARE stmt;
+
+		if (@errorIds is not null) then
+
+		begin
+
+				set @stmt = concat("update ",@translatedTable, " set forcw = 'MACRO_ERROR' where id in (",@errorIds,")");
+		
+				PREPARE stmt from @stmt;
+				EXECUTE stmt;
+				DEALLOCATE PREPARE stmt;
+				
+		end;
+		end if;
+        
+
+
+		set @errorIds = "";
+		set @stmt = concat("select group_concat(id) from ",@translatedTable, " where str_to_date(",srcField,", '",@inboundDateFormat,"') is null
+					and ",srcField," is not null and length(",srcField,") > 0
+					and configId = ",configId," and ", @batchIdType," = ",batchId," and statusId not in (",@finalStatusIds ,") into @errorIds");
+        
+        PREPARE stmt from @stmt;
+		EXECUTE stmt;
+		DEALLOCATE PREPARE stmt;
+
+		if (@errorIds is not null) then
+
+		begin
+				set @stmt = concat("update ",@translatedTable, " set forcw = 'MACRO_ERROR' where id in (",@errorIds,")");
+				
+                PREPARE stmt from @stmt;
+				EXECUTE stmt;
+				DEALLOCATE PREPARE stmt;
+		end;
+		end if;
+
+
+		
+		set @stmt = concat("update ",@translatedTable, " set forcw = str_to_date(",srcField,", '",@inboundDateFormat,"') where forcw is null
+					and ",srcField," is not null and length(",srcField,") > 0 
+					and configId = ",configId," and ", @batchIdType," = ",batchId," and statusId not in (",@finalStatusIds ,")");
+                    
+            PREPARE stmt from @stmt;
+			EXECUTE stmt;
+			DEALLOCATE PREPARE stmt;
+      
+
+		
+		set @errorIds = "";
+		set @stmt = concat("select group_concat(id) from ",@translatedTable, " where date(forcw) is null
+					and ",srcField," is not null and length(",srcField,") > 0  and forcw != 'MACRO_ERROR'  and forcw is not null
+					and configId = ",configId," and ", @batchIdType," = ",batchId," and statusId not in (",@finalStatusIds ,") into @errorIds");
+       
+        PREPARE stmt from @stmt;
+		EXECUTE stmt;
+		DEALLOCATE PREPARE stmt;
+
+		if (@errorIds is not null) then
+
+		begin	
+				set @stmt = concat("update ",@translatedTable, " set forcw = 'MACRO_ERROR' where id in (",@errorIds,")");
+				 
+				PREPARE stmt from @stmt;
+				EXECUTE stmt;
+				DEALLOCATE PREPARE stmt;
+				
+		end;
+		end if;
+        
+        
+		set @goodIds = "";
+
+		set @stmt = concat("select group_concat(id) from ",@translatedTable, " where  ",srcField," is not null and length(",srcField,") > 0  
+					and (forcw != 'MACRO_ERROR' or forcw is null)
+					and configId = ",configId," and ", @batchIdType," = ",batchId," and statusId not in (",@finalStatusIds ,") into @goodIds");
+        
+        PREPARE stmt from @stmt;
+		EXECUTE stmt;
+		DEALLOCATE PREPARE stmt;
+
+		
+		if (@goodIds is not null) then
+
+		begin
+
+		
+		set @stmt = concat("update ",@translatedTable, " set ",srcField," = date_format(forcw, '",@outboundDateFormat,"') where id in (",@goodIds,") ");
+				
+                PREPARE stmt from @stmt;
+				EXECUTE stmt;
+				DEALLOCATE PREPARE stmt;
+                
+                
+			/** fix two digit years **/
+			select year(curdate()) into @currYear;
+
+			set @stmt = concat("update ",@translatedTable, " set ",srcField," =  DATE_ADD(",srcField,", INTERVAL -100 Year) where id in (",@goodIds,") 
+			and year(",srcField,") > ",@currYear,"");
+						
+			PREPARE stmt from @stmt;
+			EXECUTE stmt;
+			DEALLOCATE PREPARE stmt;        
+				
+		end;
+		end if;
+
+					
+
+end proc_main$$
+
+DELIMITER ;
+
+
+USE `universaltranslatorca`;
+DROP procedure IF EXISTS `dateddmonyyWithDashesToyyyymmdd`;
+
+DELIMITER $$
+USE `universaltranslatorca`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `dateddmonyyWithDashesToyyyymmdd`(in configId int, 
+in batchId int, in srcField varchar(10),
+in fieldA varchar(10), in fieldB varchar(10), in con1 varchar(10), 
+in con2 varchar(10), in macroId int, in foroutboundProcessing boolean, in passClear int, in transactionId int)
+proc_main:begin
+
+call setInboundOutBoundTables (foroutboundProcessing,batchId);
+select @translatedTable, @transactionTable, @batchTable, @batchIdType , @errorTable, @batchIdColumn,@translateCol
+into @translatedTable, @transactionTable, @batchTable, @batchIdType , @errorTable, @batchIdColumn,@translateCol;
+
+call getFinalStatusIds;
+select @finalStatusIds into @finalStatusIds;
+
+		set @stmt = concat("update ",@translatedTable, " set forcw = null;");
+
+		PREPARE stmt from @stmt;
+		EXECUTE stmt;
+		DEALLOCATE PREPARE stmt;
+
+
+		set @mysqlDateFormat = concat('%Y-%m-%d');
+		set @inboundDateFormat = concat('%d-%b-%y');
+        set @outboundDateFormat = concat('%Y%m%d');
+		
+         
+        set @errorIds = '';
+		set @stmt = concat("select group_concat(id) from ",@translatedTable, " where left(right(",srcField,", 3), 1) != '-' 
+					and ",srcField," is not null and length(",srcField,") > 0 and forcw is null
+					and configId = ",configId," and ", @batchIdType," = ",batchId," and statusId not in (",@finalStatusIds ,") into @errorIds");
+        
+        PREPARE stmt from @stmt;
+		EXECUTE stmt;
+		DEALLOCATE PREPARE stmt;
+
+		if (@errorIds is not null) then
+
+		begin
+
+				set @stmt = concat("update ",@translatedTable, " set forcw = 'MACRO_ERROR' where id in (",@errorIds,")");
+				
+                PREPARE stmt from @stmt;
+				EXECUTE stmt;
+				DEALLOCATE PREPARE stmt;
+				
+		end;
+		end if;
+        
+
+
+		set @errorIds = "";
+		set @stmt = concat("select group_concat(id) from ",@translatedTable, " where str_to_date(",srcField,", '",@inboundDateFormat,"') is null
+					and ",srcField," is not null and length(",srcField,") > 0
+					and configId = ",configId," and ", @batchIdType," = ",batchId," and statusId not in (",@finalStatusIds ,") into @errorIds");
+        
+        PREPARE stmt from @stmt;
+		EXECUTE stmt;
+		DEALLOCATE PREPARE stmt;
+
+		if (@errorIds is not null) then
+
+		begin
+				set @stmt = concat("update ",@translatedTable, " set forcw = 'MACRO_ERROR' where id in (",@errorIds,")");
+				
+                PREPARE stmt from @stmt;
+				EXECUTE stmt;
+				DEALLOCATE PREPARE stmt;
+		end;
+		end if;
+
+
+		
+		set @stmt = concat("update ",@translatedTable, " set forcw = str_to_date(",srcField,", '",@inboundDateFormat,"') where forcw is null
+					and ",srcField," is not null and length(",srcField,") > 0 
+					and configId = ",configId," and ", @batchIdType," = ",batchId," and statusId not in (",@finalStatusIds ,")");
+                    
+            PREPARE stmt from @stmt;
+			EXECUTE stmt;
+			DEALLOCATE PREPARE stmt;
+      
+
+		
+		set @errorIds = "";
+		set @stmt = concat("select group_concat(id) from ",@translatedTable, " where date(forcw) is null
+					and ",srcField," is not null and length(",srcField,") > 0  and forcw != 'MACRO_ERROR'  and forcw is not null
+					and configId = ",configId," and ", @batchIdType," = ",batchId," and statusId not in (",@finalStatusIds ,") into @errorIds");
+       
+        PREPARE stmt from @stmt;
+		EXECUTE stmt;
+		DEALLOCATE PREPARE stmt;
+
+		if (@errorIds is not null) then
+
+		begin	
+				set @stmt = concat("update ",@translatedTable, " set forcw = 'MACRO_ERROR' where id in (",@errorIds,")");
+				 
+				PREPARE stmt from @stmt;
+				EXECUTE stmt;
+				DEALLOCATE PREPARE stmt;
+				
+		end;
+		end if;
+        
+        
+		set @goodIds = "";
+
+		set @stmt = concat("select group_concat(id) from ",@translatedTable, " where  ",srcField," is not null and length(",srcField,") > 0  
+					and (forcw != 'MACRO_ERROR' or forcw is null)
+					and configId = ",configId," and ", @batchIdType," = ",batchId," and statusId not in (",@finalStatusIds ,") into @goodIds");
+        
+        PREPARE stmt from @stmt;
+		EXECUTE stmt;
+		DEALLOCATE PREPARE stmt;
+
+		
+		if (@goodIds is not null) then
+
+		begin
+
+
+			/** fix two digit years **/
+			select year(curdate()) into @currYear;
+
+			set @stmt = concat("update ",@translatedTable, " set forcw =  DATE_ADD(forcw, INTERVAL -100 Year) where id in (",@goodIds,") 
+			and year(forcw) > ",@currYear,"");
+			
+            PREPARE stmt from @stmt;
+			EXECUTE stmt;
+			DEALLOCATE PREPARE stmt;  
+		
+		set @stmt = concat("update ",@translatedTable, " set ",srcField," = date_format(forcw, '",@outboundDateFormat,"') where id in (",@goodIds,") ");
+				
+                PREPARE stmt from @stmt;
+				EXECUTE stmt;
+				DEALLOCATE PREPARE stmt;
+			end;
+		end if;
+
+end proc_main$$
+
+DELIMITER ;
+
+USE `universaltranslatorca`;
+DROP procedure IF EXISTS `datemmddyyWithSlashesToyyyymmdd`;
+
+DELIMITER $$
+USE `universaltranslatorca`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `datemmddyyWithSlashesToyyyymmdd`(in configId int, 
+in batchId int, in srcField varchar(10),
+in fieldA varchar(10), in fieldB varchar(10), in con1 varchar(10), 
+in con2 varchar(10), in macroId int, in foroutboundProcessing boolean, in passClear int, in transactionId int)
+proc_main:begin
+
+call setInboundOutBoundTables (foroutboundProcessing,batchId);
+select @translatedTable, @transactionTable, @batchTable, @batchIdType , @errorTable, @batchIdColumn,@translateCol
+into @translatedTable, @transactionTable, @batchTable, @batchIdType , @errorTable, @batchIdColumn,@translateCol;
+
+call getFinalStatusIds;
+select @finalStatusIds into @finalStatusIds;
+
+		set @stmt = concat("update ",@translatedTable, " set forcw = null;");
+
+		PREPARE stmt from @stmt;
+		EXECUTE stmt;
+		DEALLOCATE PREPARE stmt;
+
+		set @mysqlDateFormat = concat('%Y-%m-%d');
+		set @inboundDateFormat = concat('%m/%d/%y');
+        set @outboundDateFormat = concat('%Y%m%d');
+		
+        set @errorIds = '';
+		set @stmt = concat("select group_concat(id) from ",@translatedTable, " where left(right(",srcField,", 3), 1) != '/' 
+					and ",srcField," is not null and length(",srcField,") > 0 and forcw is null
+					and configId = ",configId," and ", @batchIdType," = ",batchId," and statusId not in (",@finalStatusIds ,") into @errorIds");
+        
+		PREPARE stmt from @stmt;
+		EXECUTE stmt;
+		DEALLOCATE PREPARE stmt;
+
+		if (@errorIds is not null) then
+
+		begin
+
+				set @stmt = concat("update ",@translatedTable, " set forcw = 'MACRO_ERROR' where id in (",@errorIds,")");
+		
+				PREPARE stmt from @stmt;
+				EXECUTE stmt;
+				DEALLOCATE PREPARE stmt;
+				
+		end;
+		end if;
+        
+
+		set @errorIds = "";
+		set @stmt = concat("select group_concat(id) from ",@translatedTable, " where str_to_date(",srcField,", '",@inboundDateFormat,"') is null
+					and ",srcField," is not null and length(",srcField,") > 0
+					and configId = ",configId," and ", @batchIdType," = ",batchId," and statusId not in (",@finalStatusIds ,") into @errorIds");
+        
+        PREPARE stmt from @stmt;
+		EXECUTE stmt;
+		DEALLOCATE PREPARE stmt;
+
+		if (@errorIds is not null) then
+
+		begin
+				set @stmt = concat("update ",@translatedTable, " set forcw = 'MACRO_ERROR' where id in (",@errorIds,")");
+				
+                PREPARE stmt from @stmt;
+				EXECUTE stmt;
+				DEALLOCATE PREPARE stmt;
+		end;
+		end if;
+
+		set @stmt = concat("update ",@translatedTable, " set forcw = str_to_date(",srcField,", '",@inboundDateFormat,"') where forcw is null
+					and ",srcField," is not null and length(",srcField,") > 0 
+					and configId = ",configId," and ", @batchIdType," = ",batchId," and statusId not in (",@finalStatusIds ,")");
+                    
+            PREPARE stmt from @stmt;
+			EXECUTE stmt;
+			DEALLOCATE PREPARE stmt;
+      
+
+		
+		set @errorIds = "";
+		set @stmt = concat("select group_concat(id) from ",@translatedTable, " where date(forcw) is null
+					and ",srcField," is not null and length(",srcField,") > 0  and forcw != 'MACRO_ERROR'  and forcw is not null
+					and configId = ",configId," and ", @batchIdType," = ",batchId," and statusId not in (",@finalStatusIds ,") into @errorIds");
+       
+        PREPARE stmt from @stmt;
+		EXECUTE stmt;
+		DEALLOCATE PREPARE stmt;
+
+		if (@errorIds is not null) then
+
+		begin	
+				set @stmt = concat("update ",@translatedTable, " set forcw = 'MACRO_ERROR' where id in (",@errorIds,")");
+				 
+				PREPARE stmt from @stmt;
+				EXECUTE stmt;
+				DEALLOCATE PREPARE stmt;
+				
+		end;
+		end if;
+        
+        
+		set @goodIds = "";
+
+		set @stmt = concat("select group_concat(id) from ",@translatedTable, " where  ",srcField," is not null and length(",srcField,") > 0  
+					and (forcw != 'MACRO_ERROR' or forcw is null)
+					and configId = ",configId," and ", @batchIdType," = ",batchId," and statusId not in (",@finalStatusIds ,") into @goodIds");
+        
+        PREPARE stmt from @stmt;
+		EXECUTE stmt;
+		DEALLOCATE PREPARE stmt;
+
+		
+		if (@goodIds is not null) then
+
+		begin
+
+		/** fix two digit years **/
+			select year(curdate()) into @currYear;
+
+			set @stmt = concat("update ",@translatedTable, " set forcw =  DATE_ADD(forcw, INTERVAL -100 Year) where id in (",@goodIds,") 
+			and year(forcw) > ",@currYear,"");
+			
+            PREPARE stmt from @stmt;
+			EXECUTE stmt;
+			DEALLOCATE PREPARE stmt; 
+        
+        
+		set @stmt = concat("update ",@translatedTable, " set ",srcField," = date_format(forcw, '",@outboundDateFormat,"') where id in (",@goodIds,") ");
+				
+                PREPARE stmt from @stmt;
+				EXECUTE stmt;
+				DEALLOCATE PREPARE stmt;
+				
+		end;
+		end if;
+        
+end proc_main$$
+
+DELIMITER ;
+
+USE `universaltranslatorca`;
+DROP procedure IF EXISTS `datedmyyWithSlashesToyyyymmdd`;
+
+DELIMITER $$
+USE `universaltranslatorca`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `datedmyyWithSlashesToyyyymmdd`(in configId int, 
+in batchId int, in srcField varchar(10),
+in fieldA varchar(10), in fieldB varchar(10), in con1 varchar(10), 
+in con2 varchar(10), in macroId int, in foroutboundProcessing boolean, in passClear int, in transactionId int)
+proc_main:begin
+
+call setInboundOutBoundTables (foroutboundProcessing,batchId);
+select @translatedTable, @transactionTable, @batchTable, @batchIdType , @errorTable, @batchIdColumn,@translateCol
+into @translatedTable, @transactionTable, @batchTable, @batchIdType , @errorTable, @batchIdColumn,@translateCol;
+
+call getFinalStatusIds;
+select @finalStatusIds into @finalStatusIds;
+
+		set @stmt = concat("update ",@translatedTable, " set forcw = null;");
+
+		PREPARE stmt from @stmt;
+		EXECUTE stmt;
+		DEALLOCATE PREPARE stmt;
+
+
+		set @mysqlDateFormat = concat('%Y-%m-%d');
+		set @inboundDateFormat = concat('%e/%c/%y');
+        set @outboundDateFormat = concat('%Y%m%d');
+		
+         
+        set @errorIds = '';
+		set @stmt = concat("select group_concat(id) from ",@translatedTable, " where left(right(",srcField,", 3), 1) != '/' 
+					and ",srcField," is not null and length(",srcField,") > 0 and forcw is null
+					and configId = ",configId," and ", @batchIdType," = ",batchId," and statusId not in (",@finalStatusIds ,") into @errorIds");
+        
+        PREPARE stmt from @stmt;
+		EXECUTE stmt;
+		DEALLOCATE PREPARE stmt;
+
+		if (@errorIds is not null) then
+
+		begin
+
+				set @stmt = concat("update ",@translatedTable, " set forcw = 'MACRO_ERROR' where id in (",@errorIds,")");
+				
+                PREPARE stmt from @stmt;
+				EXECUTE stmt;
+				DEALLOCATE PREPARE stmt;
+				
+		end;
+		end if;
+        
+
+
+		set @errorIds = "";
+		set @stmt = concat("select group_concat(id) from ",@translatedTable, " where str_to_date(",srcField,", '",@inboundDateFormat,"') is null
+					and ",srcField," is not null and length(",srcField,") > 0
+					and configId = ",configId," and ", @batchIdType," = ",batchId," and statusId not in (",@finalStatusIds ,") into @errorIds");
+        
+        PREPARE stmt from @stmt;
+		EXECUTE stmt;
+		DEALLOCATE PREPARE stmt;
+
+		if (@errorIds is not null) then
+
+		begin
+				set @stmt = concat("update ",@translatedTable, " set forcw = 'MACRO_ERROR' where id in (",@errorIds,")");
+				
+                PREPARE stmt from @stmt;
+				EXECUTE stmt;
+				DEALLOCATE PREPARE stmt;
+		end;
+		end if;
+
+
+		
+		set @stmt = concat("update ",@translatedTable, " set forcw = str_to_date(",srcField,", '",@inboundDateFormat,"') where forcw is null
+					and ",srcField," is not null and length(",srcField,") > 0 
+					and configId = ",configId," and ", @batchIdType," = ",batchId," and statusId not in (",@finalStatusIds ,")");
+                    
+            PREPARE stmt from @stmt;
+			EXECUTE stmt;
+			DEALLOCATE PREPARE stmt;
+      
+
+		
+		set @errorIds = "";
+		set @stmt = concat("select group_concat(id) from ",@translatedTable, " where date(forcw) is null
+					and ",srcField," is not null and length(",srcField,") > 0  and forcw != 'MACRO_ERROR'  and forcw is not null
+					and configId = ",configId," and ", @batchIdType," = ",batchId," and statusId not in (",@finalStatusIds ,") into @errorIds");
+       
+        PREPARE stmt from @stmt;
+		EXECUTE stmt;
+		DEALLOCATE PREPARE stmt;
+
+		if (@errorIds is not null) then
+
+		begin	
+				set @stmt = concat("update ",@translatedTable, " set forcw = 'MACRO_ERROR' where id in (",@errorIds,")");
+				 
+				PREPARE stmt from @stmt;
+				EXECUTE stmt;
+				DEALLOCATE PREPARE stmt;
+				
+		end;
+		end if;
+        
+		set @goodIds = "";
+
+		set @stmt = concat("select group_concat(id) from ",@translatedTable, " where  ",srcField," is not null and length(",srcField,") > 0  
+					and (forcw != 'MACRO_ERROR' or forcw is null)
+					and configId = ",configId," and ", @batchIdType," = ",batchId," and statusId not in (",@finalStatusIds ,") into @goodIds");
+        
+        PREPARE stmt from @stmt;
+		EXECUTE stmt;
+		DEALLOCATE PREPARE stmt;
+
+		
+		if (@goodIds is not null) then
+
+		begin
+
+			/** fix two digit years **/
+			select year(curdate()) into @currYear;
+
+			set @stmt = concat("update ",@translatedTable, " set forcw =  DATE_ADD(forcw, INTERVAL -100 Year) where id in (",@goodIds,") 
+			and year(forcw) > ",@currYear,"");
+			
+            PREPARE stmt from @stmt;
+			EXECUTE stmt;
+			DEALLOCATE PREPARE stmt;  
+		
+		set @stmt = concat("update ",@translatedTable, " set ",srcField," = date_format(forcw, '",@outboundDateFormat,"') where id in (",@goodIds,") ");
+				
+                PREPARE stmt from @stmt;
+				EXECUTE stmt;
+				DEALLOCATE PREPARE stmt;
+			end;
+		end if;
+
+end proc_main$$
+
+DELIMITER ;
+
+
+
+/** remove this after updating macro using this
+drop procedure if exists yyyymmddToString;
+**/
+
+USE `universaltranslatorca`;
+DROP procedure IF EXISTS `ArithmeticConstant`;
+
+DELIMITER $$
+USE `universaltranslatorca`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `ArithmeticConstant`(in configId int, 
+in batchId int, in srcField varchar(10),
+in fieldA varchar(10), in fieldB varchar(10), in con1 varchar(255), 
+in con2 varchar(255), in macroId int, in foroutboundProcessing boolean, in passClear int, in transactionId int)
+proc_main:begin
+
+call setInboundOutBoundTables (foroutboundProcessing,batchId);
+select @translatedTable, @transactionTable, @batchTable, @batchIdType , @errorTable
+into @translatedTable, @transactionTable, @batchTable, @batchIdType , @errorTable;
+
+call getFinalStatusIds;
+select @finalStatusIds into @finalStatusIds;
+
+		-- multipler
+		set fieldA = REPLACE(fieldA,'F','');
+       
+       if(fieldA is null or fieldA = '') then 
+			BEGIN
+				set fieldA = 0;
+			END;
+		end if;
+        
+        -- con1 
+        if(con1 is null or con1 = '') then 
+			BEGIN
+				set con1 = 0;
+			END;
+		end if;
+
+        -- check to see if con1 is numeric
+      if con1 REGEXP '^-?[0-9]+[.]?[0-9]*$|^-?[.][0-9]+$' = 0 or   fieldA REGEXP '^-?[0-9]+[.]?[0-9]*$|^-?[.][0-9]+$' = 0 then 
+					begin
+			
+							set @stmt = concat("insert into ", @errorTable , 
+                            " (" , @batchIdColumn, ", configId, " , @translateCol, ", fieldNo, errorId, macroId, stackTrace, required) 
+                            select ",batchId,", ",configId,", 0, replace('",srcField,"', 'F', ''), '", 5, 
+							"', ",macroId,", ","'ArithmeticConstant Con1 - ",con1,"  or FA - ",fieldA," is not a valid value'",", ",true);
+                            
+                            PREPARE stmt from @stmt;
+							EXECUTE stmt;
+							DEALLOCATE PREPARE stmt;
+                            
+                            -- update all transactions to macro_error
+							set @stmt = concat("update ",@translatedTable, " set forCW = 'MACRO_ERROR'  where  configId = ",configId," and ", @batchIdType," = ",batchId,";");
+							 
+                             PREPARE stmt from @stmt;
+							EXECUTE stmt;
+							DEALLOCATE PREPARE stmt;
+           
+			leave proc_main;
+        end;
+      end if;
+      
+        -- division by 0
+      if con2 = '/'  and  fieldA = '0' then
+					begin
+			
+							set @stmt = concat("insert into ", @errorTable , 
+                            " (" , @batchIdColumn, ", configId, " , @translateCol, ", fieldNo, errorId, macroId, stackTrace, required) 
+                            select ",batchId,", ",configId,", 0, replace('",srcField,"', 'F', ''), '", 5, 
+							"', ",macroId,", ","'ArithmeticConstant Divide (con2) by 0 (con1) error.'",", ",true);
+                            
+                            PREPARE stmt from @stmt;
+							EXECUTE stmt;
+							DEALLOCATE PREPARE stmt;
+                            
+                            -- update all transactions to macro_error
+							set @stmt = concat("update ",@translatedTable, " set forCW = 'MACRO_ERROR'  where  configId = ",configId," and ", @batchIdType," = ",batchId,";");
+							
+                            PREPARE stmt from @stmt;
+							EXECUTE stmt;
+							DEALLOCATE PREPARE stmt;
+           
+			leave proc_main;
+        end;
+      end if;
+      
+      -- for con2 we only accept * +  / - 
+       -- check to see if con1 is numeric
+      if con2 != '/'  and  con2 != '-'  and con2!='*' and con2 != '+' then
+					begin
+			
+							set @stmt = concat("insert into ", @errorTable , 
+                            " (" , @batchIdColumn, ", configId, " , @translateCol, ", fieldNo, errorId, macroId, stackTrace, required) 
+                            select ",batchId,", ",configId,", 0, replace('",srcField,"', 'F', ''), '", 5, 
+							"', ",macroId,", ","'ArithmeticConstant con2 - ", con2," is not a valid arithmetic operation.'",", ",true);
+                            
+                            PREPARE stmt from @stmt;
+							EXECUTE stmt;
+							DEALLOCATE PREPARE stmt;
+                            
+                            -- update all transactions to macro_error
+							set @stmt = concat("update ",@translatedTable, " set forCW = 'MACRO_ERROR'  where  configId = ",configId," and ", @batchIdType," = ",batchId,";");
+							
+                            PREPARE stmt from @stmt;
+							EXECUTE stmt;
+							DEALLOCATE PREPARE stmt;
+           
+			leave proc_main;
+        end;
+      end if;
+      
+		
+        -- insert macro error if srcField is not numeric
+        
+        
+		set @stmt = concat("update ",@translatedTable, " set forcw = 'MACRO_ERROR' where ",srcField,"  REGEXP '^-?[0-9]+[.]?[0-9]*$|^-?[.][0-9]+$' = 0
+        and configId = ",configId," and ", @batchIdType," = ",batchId," and statusId not in (",@finalStatusIds ,")");
+
+		PREPARE stmt from @stmt;
+		EXECUTE stmt;
+		DEALLOCATE PREPARE stmt;
+		
+
+		 set @stmt = concat("update ",@translatedTable, " set ",srcField," = ROUND((",srcField," ",con2," ",fieldA,"),",con1,") where 
+         forcw is null and 
+         configId = ",configId," and ", @batchIdType," = ",batchId," and statusId not in (",@finalStatusIds ,")
+		 and ",con1 ," REGEXP  '^-?[0-9]+[.]?[0-9]*$|^-?[.][0-9]+$' = 1  and ",srcField ," REGEXP  '^-?[0-9]+[.]?[0-9]*$|^-?[.][0-9]+$' = 1 ;");
+
+		PREPARE stmt from @stmt;
+		EXECUTE stmt;
+		DEALLOCATE PREPARE stmt;
+
+end proc_main$$
+
+DELIMITER ;
+
+USE `universaltranslator`;
+DROP procedure IF EXISTS `removeDupFromList`;
+
+DELIMITER $$
+USE `universaltranslator`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `removeDupFromList`(in configId int, 
+in batchId int, in srcField varchar(10),
+in fieldA varchar(10), in fieldB varchar(10), in con1 varchar(255), 
+in con2 varchar(255), in macroId int, in foroutboundProcessing boolean, in passClear int, in transactionId int)
+proc_main:begin 
+
+call setInboundOutBoundTables (foroutboundProcessing,batchId);
+select @translatedTable, @transactionTable, @batchTable, @batchIdType , @errorTable, @batchIdColumn, @listTable, @translateCol
+into @translatedTable, @transactionTable, @batchTable, @batchIdType , @errorTable, @batchIdColumn, @listTable, @translateCol;
+
+call getFinalStatusIds;
+select @finalStatusIds into @finalStatusIds;
+
+set @whereString = concat(" and configId = ",configId," and ", @batchIdType," = ",batchId," and statusId not in (",@finalStatusIds ,");");
+
+set @fcol = replace(lcase(srcField), 'f', '');
+set @stmt = concat("truncate table ", @listTable);
+
+PREPARE stmt from @stmt;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+		set @stmt = concat("
+		SELECT max(CHAR_LENGTH(",srcField,") - CHAR_LENGTH( REPLACE ( ",srcField,", ',', '') )  + 1) from ",@translatedTable, " into @maxListLength");
+		
+		PREPARE stmt from @stmt;
+		EXECUTE stmt;
+		DEALLOCATE PREPARE stmt;
+         
+        if (@maxListLength is null) then
+			set @maxListLength = 108;
+        end if;
+       
+		set @stmt = concat("
+    insert into ", @listTable," (",@batchIdType,", ",@translateCol,", invalue, fcol)
+    SELECT ",@batchIdType,", ",@translateCol,", IFNULL(trim(SUBSTRING_INDEX(SUBSTRING_INDEX(t.",srcField,", ',', n.n), ',', -1)),'') value, ",@fcol,"
+	FROM ",@translatedTable ," t CROSS JOIN (
+    SELECT distinct a.N + b.N * 10 + 1 n FROM  
+   (select id N from ref_numbers where id <=",@maxListLength,") a
+   ,(select id N from ref_numbers where id <=",@maxListLength,") b
+    ORDER BY n) n  WHERE n.n <= 1 + (LENGTH(t.",srcField,") - LENGTH(REPLACE(t.",srcField,", ',', ''))) ", @whereString);
+    
+    PREPARE stmt from @stmt;
+	EXECUTE stmt;
+    DEALLOCATE PREPARE stmt;
+
+    
+    set @stmt = concat("update ",@listTable," set invalue = replace(replace(invalue, '\n',''), '\r', '')");
+	 
+    PREPARE stmt from @stmt;
+	EXECUTE stmt;
+    DEALLOCATE PREPARE stmt;
+    
+	set @stmt = concat("update ",@listTable, " set translatedvalue = invalue where translatedvalue is null ");
+		
+    PREPARE stmt from @stmt;
+	EXECUTE stmt;
+	DEALLOCATE PREPARE stmt;
+
+	set @selDistinct = ' distinct ';
+    
+    set @stmt = concat("update ",@translatedTable," join  (select ",@translateCol," as matchId, 
+    group_concat(",@selDistinct," translatedValue order by id) label from  ",@listTable,"
+	where ",@batchIdType," = ",batchid, " and fcol = ",@fCol," group by ",@translateCol," ) cwmatch on ",@translateCol," = matchid set ",srcField," = label ");
+	   
+    PREPARE stmt from @stmt;
+	EXECUTE stmt;
+    DEALLOCATE PREPARE stmt;
+    
+    set @colText = "in";
+    if (foroutboundProcessing) then
+		set @colText = "out";
+    end if;
+    
+    set @stmt = concat("
+    insert into transaction",@colText,"macrodroppedvalues_",batchId," (",@batchIdColumn ,", transaction",@colText,"RecordsId, fieldNo, fieldValue, matchId, configId) 
+	select distinct ",batchId,", t2.transaction",@colText,"RecordsId, fcol, concat((valCount-1), ' count(s) of - ' , t2.translatedValue),
+	concat('dupMacro_', t2.transaction",@colText,"RecordsId, '_', t2.translatedValue), ",configId," 
+	from transactiontranslatedlist",@colText,"_",batchId," t1 join (
+	select ",batchId,", ",configId," , transaction",@colText,"RecordsId, count(translatedvalue) valCount, 
+    translatedvalue from transactiontranslatedlist",@colText,"_",batchId,"
+	where translatedvalue is not null
+	group by transaction",@colText,"RecordsId, translatedvalue 
+    order by count(translatedvalue) desc) t2
+	on t1.transaction",@colText,"recordsId = t2.transaction",@colText,"recordsId
+	where valCount > 1");
+		
+        PREPARE stmt from @stmt;
+		EXECUTE stmt;
+		DEALLOCATE PREPARE stmt;
+        
+	set @stmt = concat("truncate table ", @listTable);
+    
+    PREPARE stmt from @stmt;
+	EXECUTE stmt;
+    DEALLOCATE PREPARE stmt;
+
+end proc_main$$
+
+DELIMITER ;
+
 

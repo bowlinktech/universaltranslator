@@ -1364,6 +1364,7 @@ public class transactionOutDAOImpl implements transactionOutDAO {
 	    + "OR fromBatchFile like '%"+searchTerm+"%' "		    
 	    + "OR statusValue like '%"+searchTerm+"%' "
 	    + "OR transportMethod like '%"+searchTerm+"%'"
+	    + "OR srcOrgName like '%"+searchTerm+"%'"
 	    + ") ";
 	}	
 	
