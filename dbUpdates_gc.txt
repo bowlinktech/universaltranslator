@@ -204,13 +204,10 @@ drop procedure if exists updateFieldBToSrcFieldAsList;
 
 drop procedure if exists yyyymmddTommddyyyy;
 
-
-/** updated **/
 UPDATE `universaltranslatorca`.`macro_names` SET macro_Name = 'Prepend and/or Append Strings', macro_short_Name = 'Prepend Append String', formula = 'appendPrependString', `FieldA_Question`='Please enter value you would like to prepend', `FieldB_Question`='Prepend if the field is blank (Y/N).', `Con1_Question`='Please enter value you would like to append', `Con2_Question`='Append if the field is blank (Y/N).' WHERE `ID`='102';
 drop procedure if exists appendPrependStringIfNotBlank;
 delete from macro_names where id = 79;
 
-/** update stmts on CA stage **/
 update macro_names set fieldA_Question = '', fieldB_Question = '' where formula = 'stringToDate';
 
 UPDATE `universaltranslatorca`.`macro_Names` SET `Con1_Question`='Please enter source SF\'s date value separator.  e.g. -, ., /', `Con2_Question`='Please enter target SF\'s date value separator.  e.g. -, ., /' WHERE `ID`='68';
