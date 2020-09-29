@@ -569,7 +569,7 @@ public class transactionInManagerImpl implements transactionInManager {
 	    if(cdt.getPassClear() == 2) {
 	    	insertMacroDroppedValues(batchId, cdt, foroutboundProcessing);
 	    	executePassClearLogic(batchId, cdt, foroutboundProcessing);
-		}
+	    }
 
 	    //flag as error in transactionIn or transactionOut table (Only updating REQUIRED records from transactioninerrors)
 	    updateStatusForErrorTrans(batchId, 14, foroutboundProcessing);
@@ -2068,6 +2068,9 @@ public class transactionInManagerImpl implements transactionInManager {
 	
 	//first thing we do is get details, then we set it to  38
 	batchUploads batch = getBatchDetails(batchId);
+	
+	//Get a full list of macros
+	List<Macros> macroList = configurationManager.getMacros();
 
 	//we recheck status in case it was picked up in a loop
 	if (batch.getStatusId() == 42) {
@@ -2686,34 +2689,48 @@ public class transactionInManagerImpl implements transactionInManager {
 			    //we are reordering 1. cw/macro, 2. required and 3. validate 
 			    // 1. grab the configurationDataTranslations and run cw/macros
 			    List<configurationDataTranslations> dataTranslations = configurationManager.getDataTranslationsWithFieldNo(configId, 2); //pre processing
-			    Integer crosswalkError = 0;
+			    Integer crosswalkErrors = 0;
 			    Integer macroError = 0;
+			    String macroName = "";
 			    
 			    for (configurationDataTranslations cdt : dataTranslations) {
-				crosswalkError = 0;
+				crosswalkErrors = 0;
 				macroError = 0;
 				
 				if (cdt.getCrosswalkId() != 0) {
-				    crosswalkError = processCrosswalk(configId, batchId, cdt, false);
 				    
-				    if(crosswalkError > 0) {
-					sysErrors = sysErrors + crosswalkError;
-					
+				    crosswalkErrors = processCrosswalk(configId, batchId, cdt, false);
+			    
+				    if(crosswalkErrors == 9999999) {
+					sysErrors++; 
+				    }
+				    else if(crosswalkErrors > 0) {
 					//log batch activity
 					ba = new batchuploadactivity();
-					ba.setActivity("Crosswalk Error. CWId:" + cdt.getCrosswalkId() + " for configId:" + configId);
+					ba.setActivity("Crosswalk Error. CWId:" + cdt.getCrosswalkId() + " for configId:" + batch.getConfigId() + " total records with CW error: " + crosswalkErrors);
 					ba.setBatchUploadId(batchId);
 					transactionInDAO.submitBatchActivityLog(ba);
 				    }
-				} else if (cdt.getMacroId() != 0) {
-				    macroError = processMacro(configId, batchId, cdt, false);
 				    
-				    if(macroError > 0) {
-					sysErrors = sysErrors + macroError;
-					
+				} else if (cdt.getMacroId() != 0) {
+				    macroName = "";
+				    macroError = processMacro(configId, batchId, cdt, false);
+
+				    if(macroError == 9999999) {
+					sysErrors++; 
+				    }
+				    else if(macroError > 0) {
+					if(!macroList.isEmpty()) {
+					    for(Macros macro : macroList) {
+						if(macro.getId() == cdt.getMacroId()) {
+						    macroName = macro.getMacroName().trim();
+						}
+					    }
+					}
+
 					//log batch activity
 					ba = new batchuploadactivity();
-					ba.setActivity("Macro Error. macroId:" + cdt.getMacroId() + " for configId:" + configId);
+					ba.setActivity("Macro Error. macro: " + macroName + " macroId: " + cdt.getMacroId() + " for configId:" + batch.getConfigId() + " total records with Macro error: " + macroError);
 					ba.setBatchUploadId(batchId);
 					transactionInDAO.submitBatchActivityLog(ba);
 				    }
@@ -3104,14 +3121,17 @@ public class transactionInManagerImpl implements transactionInManager {
 		}
 
 		//Check to make sure all returned targets match the config of the uploaded batch
+		Integer checkTargets = 0;
 		for (configurationConnection bt : batchTargetList) {
 		    if (bt.getsourceConfigId() != sourceConfigId) {
 			sourceConfigId = bt.getsourceConfigId();
 
 			if (bt.getTargetOrgCol() != 0) {
-			    systemErrorCount = systemErrorCount + rejectInvalidTargetOrg(batchUploadId, bt);
+			    checkTargets = rejectInvalidTargetOrg(batchUploadId, bt);
+			    if(checkTargets == 9999999) {
+				systemErrorCount++; 
+			    }
 			}
-
 		    }
 		}
 	    }
