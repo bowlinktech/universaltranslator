@@ -3758,4 +3758,110 @@ end proc_main$$
 
 DELIMITER ;
 
+USE `universaltranslator`;
+DROP procedure IF EXISTS `removeDupFromList`;
+
+DELIMITER $$
+USE `universaltranslator`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `removeDupFromList`(in configId int, 
+in batchId int, in srcField varchar(10),
+in fieldA varchar(10), in fieldB varchar(10), in con1 varchar(255), 
+in con2 varchar(255), in macroId int, in foroutboundProcessing boolean, in passClear int, in transactionId int)
+proc_main:begin 
+
+call setInboundOutBoundTables (foroutboundProcessing,batchId);
+select @translatedTable, @transactionTable, @batchTable, @batchIdType , @errorTable, @batchIdColumn, @listTable, @translateCol
+into @translatedTable, @transactionTable, @batchTable, @batchIdType , @errorTable, @batchIdColumn, @listTable, @translateCol;
+
+call getFinalStatusIds;
+select @finalStatusIds into @finalStatusIds;
+
+set @whereString = concat(" and configId = ",configId," and ", @batchIdType," = ",batchId," and statusId not in (",@finalStatusIds ,");");
+
+set @fcol = replace(lcase(srcField), 'f', '');
+set @stmt = concat("truncate table ", @listTable);
+
+PREPARE stmt from @stmt;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+		set @stmt = concat("
+		SELECT max(CHAR_LENGTH(",srcField,") - CHAR_LENGTH( REPLACE ( ",srcField,", ',', '') )  + 1) from ",@translatedTable, " into @maxListLength");
+		
+		PREPARE stmt from @stmt;
+		EXECUTE stmt;
+		DEALLOCATE PREPARE stmt;
+         
+        if (@maxListLength is null) then
+			set @maxListLength = 108;
+        end if;
+       
+		set @stmt = concat("
+    insert into ", @listTable," (",@batchIdType,", ",@translateCol,", invalue, fcol)
+    SELECT ",@batchIdType,", ",@translateCol,", IFNULL(trim(SUBSTRING_INDEX(SUBSTRING_INDEX(t.",srcField,", ',', n.n), ',', -1)),'') value, ",@fcol,"
+	FROM ",@translatedTable ," t CROSS JOIN (
+    SELECT distinct a.N + b.N * 10 + 1 n FROM  
+   (select id N from ref_numbers where id <=",@maxListLength,") a
+   ,(select id N from ref_numbers where id <=",@maxListLength,") b
+    ORDER BY n) n  WHERE n.n <= 1 + (LENGTH(t.",srcField,") - LENGTH(REPLACE(t.",srcField,", ',', ''))) ", @whereString);
+    
+    PREPARE stmt from @stmt;
+	EXECUTE stmt;
+    DEALLOCATE PREPARE stmt;
+
+    
+    set @stmt = concat("update ",@listTable," set invalue = replace(replace(invalue, '\n',''), '\r', '')");
+	 
+    PREPARE stmt from @stmt;
+	EXECUTE stmt;
+    DEALLOCATE PREPARE stmt;
+    
+	set @stmt = concat("update ",@listTable, " set translatedvalue = invalue where translatedvalue is null ");
+		
+    PREPARE stmt from @stmt;
+	EXECUTE stmt;
+	DEALLOCATE PREPARE stmt;
+
+	set @selDistinct = ' distinct ';
+    
+    set @stmt = concat("update ",@translatedTable," join  (select ",@translateCol," as matchId, 
+    group_concat(",@selDistinct," translatedValue order by id) label from  ",@listTable,"
+	where ",@batchIdType," = ",batchid, " and fcol = ",@fCol," group by ",@translateCol," ) cwmatch on ",@translateCol," = matchid set ",srcField," = label ");
+	   
+    PREPARE stmt from @stmt;
+	EXECUTE stmt;
+    DEALLOCATE PREPARE stmt;
+    
+    set @colText = "in";
+    if (foroutboundProcessing) then
+		set @colText = "out";
+    end if;
+    
+    set @stmt = concat("
+    insert into transaction",@colText,"macrodroppedvalues_",batchId," (",@batchIdColumn ,", transaction",@colText,"RecordsId, fieldNo, fieldValue, matchId, configId) 
+	select distinct ",batchId,", t2.transaction",@colText,"RecordsId, fcol, concat((valCount-1), ' count(s) of - ' , t2.translatedValue),
+	concat('dupMacro_', t2.transaction",@colText,"RecordsId, '_', t2.translatedValue), ",configId," 
+	from transactiontranslatedlist",@colText,"_",batchId," t1 join (
+	select ",batchId,", ",configId," , transaction",@colText,"RecordsId, count(translatedvalue) valCount, 
+    translatedvalue from transactiontranslatedlist",@colText,"_",batchId,"
+	where translatedvalue is not null
+	group by transaction",@colText,"RecordsId, translatedvalue 
+    order by count(translatedvalue) desc) t2
+	on t1.transaction",@colText,"recordsId = t2.transaction",@colText,"recordsId
+	where valCount > 1");
+		
+        PREPARE stmt from @stmt;
+		EXECUTE stmt;
+		DEALLOCATE PREPARE stmt;
+        
+	set @stmt = concat("truncate table ", @listTable);
+    
+    PREPARE stmt from @stmt;
+	EXECUTE stmt;
+    DEALLOCATE PREPARE stmt;
+
+end proc_main$$
+
+DELIMITER ;
+
 
