@@ -558,6 +558,13 @@ public class transactionInManagerImpl implements transactionInManager {
 	try {
 	    Macros macro = configurationManager.getMacroById(cdt.getMacroId());
 	    
+	    if (macro != null) {
+	    	cdt.setMacroName(macro.getmacroName());
+	    } else {
+	    	insertProcessingError(processingSysErrorId, configId, batchId, cdt.getFieldNo(),null, null, null,true, foroutboundProcessing, ("Macro " + cdt.getMacroId() + " doesn't exist in macro_names table"));
+	    	return 0;
+	    }
+	    
 	    int sysError = 0;
 		
 	    // we expect the target field back so we can figure out clear pass option
