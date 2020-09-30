@@ -4,8 +4,6 @@ ADD COLUMN `translatedReportField1Data` VARCHAR(45) NOT NULL Default '' AFTER `r
 ALTER TABLE `universaltranslatorca`.`batchuploadauditerrors` 
 ADD COLUMN `translatedReportField1Data` VARCHAR(45) NOT NULL Default '' AFTER `required`;
 
-USE `universaltranslatorca`;
-DROP procedure IF EXISTS `createTempErrorTable`;
 
 USE `universaltranslatorca`;
 DROP procedure IF EXISTS `populateOutboundAuditReport`;
@@ -345,7 +343,7 @@ if (@populateInboundAuditReport) then
  
   -- update translatedReportField1Data
            SET @stmt = CONCAT("update batchuploadauditerrors table1 join (
-			select ",@rptInField1In ," fieldData, transactionInRecordsId from transactiontranslatedin_",inBatchUpoadId,") table2
+			select ",@rptInField1 ," fieldData, transactionInRecordsId from transactiontranslatedin_",inBatchUpoadId,") table2
 			on table1.rownumber = table2.transactionInRecordsId
 			set translatedReportField1Data = fieldData
 			where table1.batchUploadId = ",inBatchUpoadId," and fromOutboundConfig = true;");
