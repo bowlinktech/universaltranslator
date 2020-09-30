@@ -15,7 +15,6 @@ USE `universaltranslatorca`$$
 CREATE DEFINER=`root`@`localhost` PROCEDURE `populateOutboundAuditReport`(in inConfigId int, in inBatchId int, in inBatchUpoadId int, in inBatchUploadConfigId int)
 proc_main:begin
 
-
 SET @stmt = CONCAT('delete from transactionoutdetailauditerrors_',inBatchId,' where configId = ',inConfigId);
 
 PREPARE stmt from @stmt;
@@ -60,8 +59,8 @@ DEALLOCATE PREPARE stmt;
 
 SET @stmt = CONCAT("UPDATE transactionouterrors_",inBatchId," JOIN (select distinct id as matchId, macro_Name as label 
 from macro_names) tbl_concat
-     ON transactionouterrors_",inBatchId,".macroId = tbl_concat.matchid
-SET transactionouterrors_",inBatchId,".stackTrace = concat(label, ' - ' , stackTrace)  WHERE errorId = 5");
+ ON transactionouterrors_",inBatchId,".macroId = tbl_concat.matchid
+SET transactionouterrors_",inBatchId,".stackTrace = concat(label, ' - ' , stackTrace) WHERE errorId = 5");
 
 
 PREPARE stmt from @stmt;
@@ -71,7 +70,7 @@ DEALLOCATE PREPARE stmt;
 
 SET @stmt = CONCAT('UPDATE transactionoutdetailauditerrors_',inBatchId,' JOIN (select distinct fieldNo matchid, macro_Name as label 
 from macro_names, transactionouterrors_',inBatchId,' where macro_Names.id = transactionouterrors_',inBatchId,'.macroId) tbl_concat
-     ON transactionoutdetailauditerrors_',inBatchId,'.fieldNo = tbl_concat.matchid
+ ON transactionoutdetailauditerrors_',inBatchId,'.fieldNo = tbl_concat.matchid
 SET transactionoutdetailauditerrors_',inBatchId,'.errorDetails = tbl_concat.label WHERE errorId = 4');
 
 PREPARE stmt from @stmt;
@@ -79,9 +78,9 @@ EXECUTE stmt;
 DEALLOCATE PREPARE stmt;
 
 SET @stmt = CONCAT('UPDATE transactionoutdetailauditerrors_',inBatchId,'
-  JOIN (select distinct fieldNo matchid, name as label 
+ JOIN (select distinct fieldNo matchid, name as label 
 from crosswalks, transactionouterrors_',inBatchId,' where crosswalks.id = transactionouterrors_',inBatchId,'.cwId) tbl_concat
-     ON transactionoutdetailauditerrors_',inBatchId,'.fieldNo = tbl_concat.matchid
+ ON transactionoutdetailauditerrors_',inBatchId,'.fieldNo = tbl_concat.matchid
 SET transactionoutdetailauditerrors_',inBatchId,'.errorDetails = tbl_concat.label WHERE errorId = 3');
 
 PREPARE stmt from @stmt;
@@ -89,9 +88,9 @@ EXECUTE stmt;
 DEALLOCATE PREPARE stmt;
 
 SET @stmt = CONCAT('UPDATE transactionoutdetailauditerrors_',inBatchId,'
-  JOIN (select distinct fieldNo matchid, validationType as label 
+ JOIN (select distinct fieldNo matchid, validationType as label 
 from ref_validationtypes, transactionouterrors_',inBatchId,' where ref_validationtypes.id = transactionouterrors_',inBatchId,'.validationTypeId) tbl_concat
-     ON transactionoutdetailauditerrors_',inBatchId,'.fieldNo = tbl_concat.matchid
+ ON transactionoutdetailauditerrors_',inBatchId,'.fieldNo = tbl_concat.matchid
 SET transactionoutdetailauditerrors_',inBatchId,'.errorDetails = tbl_concat.label WHERE errorId = 2');
 
 
@@ -100,8 +99,8 @@ EXECUTE stmt;
 DEALLOCATE PREPARE stmt;
 
 SET @stmt = CONCAT('UPDATE transactionoutdetailauditerrors_',inBatchId,'
-  JOIN (select distinct fieldNo as matchid, fieldDesc as label from configurationformfields where configId = ',inConfigId,') tbl_concat
-     ON transactionoutdetailauditerrors_',inBatchId,'.fieldNo = tbl_concat.matchid
+ JOIN (select distinct fieldNo as matchid, fieldDesc as label from configurationformfields where configId = ',inConfigId,') tbl_concat
+ ON transactionoutdetailauditerrors_',inBatchId,'.fieldNo = tbl_concat.matchid
 SET transactionoutdetailauditerrors_',inBatchId,'.fieldName = tbl_concat.label');
 
 PREPARE stmt from @stmt;
@@ -122,7 +121,7 @@ DEALLOCATE PREPARE stmt;
 
 
 SET @stmt = CONCAT("select group_concat(distinct concat('F', fieldNo)) from transactionoutdetailauditerrors_",inBatchId," 
-where batchDownloadId = ",inBatchId,"  and errorData is null and configId = ",inConfigId," into @fieldNos;
+where batchDownloadId = ",inBatchId," and errorData is null and configId = ",inConfigId," into @fieldNos;
 ");
 
 PREPARE stmt from @stmt;
@@ -133,38 +132,38 @@ DEALLOCATE PREPARE stmt;
 
 
 if (@fieldNos is not null) then
-	
-	begin
-    
-    SET @stmt = CONCAT("
-		select distinct group_concat(distinct concat('when fieldNo = ', fieldNo , ' then ', concat('F', fieldNo)) separator ' ' ) from transactionoutdetailauditerrors_",inBatchId,"
-        where batchDownloadId = ",inBatchId," and errorData is null and configId = ",inConfigId," into @updateStmts;
-	 ");
-		
 
-		PREPARE stmt from @stmt;
-		EXECUTE stmt;
-		DEALLOCATE PREPARE stmt;
-       
-        
-   if (@updateStmts is not null) then 
-    begin
-   
-	   SET @stmt = CONCAT("
-			update transactionoutdetailauditerrors_",inBatchId," tiae join (
-			select distinct id, ", @fieldNos," from transactionoutrecords_",inBatchId,") tir
-			on tiae.transactionoutRecordsId = tir.id
-			set errordata = case ",@updateStmts," end
-			where batchDownloadId = ",inBatchId,"  and errorData is null  and configId = ",inConfigId," ;
-		");
-			
-           
-			PREPARE stmt from @stmt;
-			EXECUTE stmt;
-			DEALLOCATE PREPARE stmt;
+	begin
+
+ SET @stmt = CONCAT("
+ select distinct group_concat(distinct concat('when fieldNo = ', fieldNo , ' then ', concat('F', fieldNo)) separator ' ' ) from transactionoutdetailauditerrors_",inBatchId,"
+ where batchDownloadId = ",inBatchId," and errorData is null and configId = ",inConfigId," into @updateStmts;
+ ");
+
+
+ PREPARE stmt from @stmt;
+ EXECUTE stmt;
+ DEALLOCATE PREPARE stmt;
+
+
+ if (@updateStmts is not null) then 
+ begin
+
+ SET @stmt = CONCAT("
+ update transactionoutdetailauditerrors_",inBatchId," tiae join (
+ select distinct id, ", @fieldNos," from transactionoutrecords_",inBatchId,") tir
+ on tiae.transactionoutRecordsId = tir.id
+ set errordata = case ",@updateStmts," end
+ where batchDownloadId = ",inBatchId," and errorData is null and configId = ",inConfigId," ;
+ ");
+
+
+ PREPARE stmt from @stmt;
+ EXECUTE stmt;
+ DEALLOCATE PREPARE stmt;
 	end;
-    end if;
-    
+ end if;
+
 	end;
 
 end if;
@@ -180,7 +179,6 @@ PREPARE stmt from @stmt;
 EXECUTE stmt;
 DEALLOCATE PREPARE stmt;
 
-
 -- update report field
 SET @stmt = CONCAT("update batchdownloadauditerrors table1 join (
 select ",@rptField1," fielddata, transactionOutRecordsId from transactiontranslatedout_",inBatchId,") table2
@@ -193,160 +191,161 @@ EXECUTE stmt;
 DEALLOCATE PREPARE stmt;
 
 
+
 if (@populateInboundAuditReport) then
-	
-    begin
-    
-    
-    call  createTempErrorTable(inBatchId);
-	
-    SET @stmt = CONCAT("
-			insert into transactionoutdetailauditerrorsforinbound_",inBatchId," 
-			select * from transactionoutdetailauditerrors_",inBatchId,";
-			");
-          	
-            PREPARE stmt from @stmt;
-			EXECUTE stmt;
-			DEALLOCATE PREPARE stmt;
-            
-	        
-			SET @stmt = CONCAT("
-				ALTER TABLE transactionoutdetailauditerrorsforinbound_",inBatchId,"  
-				ADD COLUMN transactionInRecordsId INT NULL AFTER transactionOutErrorId,
-				ADD COLUMN inFieldNo  INT NULL  AFTER transactionInRecordsId;
-			");
-            
-            PREPARE stmt from @stmt;
-			EXECUTE stmt;
-			DEALLOCATE PREPARE stmt;      
 
-			
-            SET @stmt = CONCAT("
-				update transactionoutdetailauditerrorsforinbound_",inBatchId," auditTable join (
-				select distinct populateErrorFieldNo, mt.* from configurationconnectionfieldmappings  join 
-				( select auditId, transactionInRecordsId, fieldno  from transactionoutrecords_",inBatchId," tir 
-				join ( select id as auditId, transactionoutrecordsId, fieldNo from transactionoutdetailauditerrorsforinbound_",inBatchId,") errorTable 
-				on tir.id = errorTable.transactionoutrecordsId) mt on mt.fieldNo = configurationconnectionfieldmappings.fieldNo 
-                where sourceConfigId = ",inBatchUploadConfigId,") infoTable
-				on infotable.auditid = auditTable.id
-				set auditTable.transactionInRecordsId = infoTable.transactionInRecordsId, inFieldNo = populateErrorFieldNo;
-			");
-            
-            PREPARE stmt from @stmt;
-			EXECUTE stmt;
-			DEALLOCATE PREPARE stmt;      
-            
-    
-		
-		SET @stmt = CONCAT("
-				select group_concat(distinct concat('F', inFieldNo)) from transactionoutdetailauditerrorsforinbound_",inBatchId,"  where infieldNo != 0  into @inboundFields;
-			 ");
-             
-            
-            PREPARE stmt from @stmt;
-			EXECUTE stmt;
-			DEALLOCATE PREPARE stmt;  
-           
-            
-		if (@inboundFields is not null) then 
-        
-			begin
-			
-            SET @stmt = CONCAT("
-					select group_concat(distinct concat('when infieldNo = ', inFieldNo , ' then ',  concat('F', inFieldNo)) separator ' ' ) 
-                    from transactionoutdetailauditerrorsforinbound_",inBatchId," where infieldNo != 0 into @inUpdateFields;
-				");
-                
-                 
-			PREPARE stmt from @stmt;
-			EXECUTE stmt;
-			DEALLOCATE PREPARE stmt;  
-            
-            
-            SELECT concat('F',rptField1),concat('F',rptField2),concat('F',rptField3),concat('F',rptField4) INTO @rptInField1, @rptInField2,@rptInField3,@rptInField4 
-			FROM configurationmessagespecs where configId = inBatchUploadConfigId LIMIT 1;
-			
-            
-            	if (@rptInField1 = 'F0') then 
-					set @rptInField1 = "F1";
-				end if;
+ begin
 
-				if (@rptInField2 = 'F0') then 
-					set @rptInField2 = "F2";
-				end if;
 
-				if (@rptInField3 = 'F0') then 
-					set @rptInField3 = "F3";
-				end if;
+ call createTempErrorTable(inBatchId);
 
-				if(@rptInField4 = 'F0') then 
-					set @rptInField4 = "F4";
-				end if;
-            
+ SET @stmt = CONCAT("
+ insert into transactionoutdetailauditerrorsforinbound_",inBatchId," 
+ select * from transactionoutdetailauditerrors_",inBatchId,";
+ ");
 
-			SET @stmt = CONCAT("
-				update  transactionoutdetailauditerrorsforinbound_",inBatchId," tir join (
-				select distinct ",@rptInField1," reportField1Data, ",@rptInField2," reportField2Data, ",@rptInField3," reportField3Data, ",@rptInField4," reportField4Data, 
-                transactionInRecordsId, ",@inboundFields," from transactioninrecords_",inBatchUpoadId," tir join 
-				(select distinct transactionInRecordsId from transactionoutdetailauditerrorsforinbound_",inBatchId,") auditTable
-				on transactionInRecordsId = tir.id) infotable
-				on infotable.transactionInRecordsId = tir.transactionInRecordsId
-				set errorData = case 
-				",@inUpdateFields,"
-                end, 
-                tir.reportField1Data = infotable.reportField1Data, tir.reportField2Data = infotable.reportField2Data,
-                tir.reportField3Data = infotable.reportField3Data, tir.reportField4Data = infotable.reportField4Data
-            ");
-            
-             
-            PREPARE stmt from @stmt;
-			EXECUTE stmt;
-			DEALLOCATE PREPARE stmt;  
-			
-            -- SET @stmt = CONCAT("
-			-- 	delete from batchuploadauditerrors where fromOutboundConfig = true and batchUploadId = ",inBatchUpoadId," and configId = ",inBatchUploadConfigId,"
-			-- ");
-            
-           --  PREPARE stmt from @stmt;
-			-- EXECUTE stmt;
-			-- DEALLOCATE PREPARE stmt;
-            
-            
-             -- SET @stmt = CONCAT("insert into batchuploadauditerrors (batchUploadId, configId, fieldNo, fieldName, errorId, errorDetails, errorData, reportField1Data, 
-			-- 				reportField2Data, reportField3Data, reportField4Data, rownumber, fromOutboundConfig, required)
-			-- 				select ",inBatchUpoadId,", ",inBatchUploadConfigId,", case when inFieldNo is null then 0 else inFieldNo end, fieldName,  errorId, errorDetails, errorData, reportField1Data, 
-			-- 				reportField2Data, reportField3Data, reportField4Data, transactionInRecordsId, true, required from 
-			-- 				transactionoutdetailauditerrorsforinbound_",inBatchId, " table1");
-            
-			-- PREPARE stmt from @stmt;
-			-- EXECUTE stmt;
-           --  DEALLOCATE PREPARE stmt; 
-           
-           end;
-    end if;
-    
-		 SET @stmt = CONCAT("
-				delete from batchuploadauditerrors where fromOutboundConfig = true and batchUploadId = ",inBatchUpoadId," and configId = ",inBatchUploadConfigId,"
-			");
-            
-            PREPARE stmt from @stmt;
-			EXECUTE stmt;
-			DEALLOCATE PREPARE stmt;
-            
-    
-			SET @stmt = CONCAT("insert into batchuploadauditerrors (batchUploadId, configId, fieldNo, fieldName, errorId, errorDetails, errorData, reportField1Data, 
-				reportField2Data, reportField3Data, reportField4Data, rownumber, fromOutboundConfig, required)
-				select ",inBatchUpoadId,", case when inFieldNo is null then configId when inFieldNo = 0 then configId else ",inBatchUploadConfigId," end, case when inFieldNo is null then fieldNo when inFieldNo = 0 then fieldNo else inFieldNo end, fieldName,  errorId, errorDetails, errorData, reportField1Data, 
-				reportField2Data, reportField3Data, reportField4Data, case when transactionInRecordsId is null then 0 else transactionInRecordsId end, true, required from 
-				transactionoutdetailauditerrorsforinbound_",inBatchUpoadId, " table1");
-            
-			PREPARE stmt from @stmt;
-			EXECUTE stmt;
-            DEALLOCATE PREPARE stmt;
-            
-            -- update translatedReportField1Data
+ PREPARE stmt from @stmt;
+ EXECUTE stmt;
+ DEALLOCATE PREPARE stmt;
+
+
+ SET @stmt = CONCAT("
+ ALTER TABLE transactionoutdetailauditerrorsforinbound_",inBatchId," 
+ ADD COLUMN transactionInRecordsId INT NULL AFTER transactionOutErrorId,
+ ADD COLUMN inFieldNo INT NULL AFTER transactionInRecordsId;
+ ");
+
+ PREPARE stmt from @stmt;
+ EXECUTE stmt;
+ DEALLOCATE PREPARE stmt; 
+
+
+ SET @stmt = CONCAT("
+ update transactionoutdetailauditerrorsforinbound_",inBatchId," auditTable join (
+ select distinct populateErrorFieldNo, mt.* from configurationconnectionfieldmappings join 
+ ( select auditId, transactionInRecordsId, fieldno from transactionoutrecords_",inBatchId," tir 
+ join ( select id as auditId, transactionoutrecordsId, fieldNo from transactionoutdetailauditerrorsforinbound_",inBatchId,") errorTable 
+ on tir.id = errorTable.transactionoutrecordsId) mt on mt.fieldNo = configurationconnectionfieldmappings.fieldNo 
+ where sourceConfigId = ",inBatchUploadConfigId,") infoTable
+ on infotable.auditid = auditTable.id
+ set auditTable.transactionInRecordsId = infoTable.transactionInRecordsId, inFieldNo = populateErrorFieldNo;
+ ");
+
+ PREPARE stmt from @stmt;
+ EXECUTE stmt;
+ DEALLOCATE PREPARE stmt; 
+
+
+
+ SET @stmt = CONCAT("
+ select group_concat(distinct concat('F', inFieldNo)) from transactionoutdetailauditerrorsforinbound_",inBatchId," where infieldNo != 0 into @inboundFields;
+ ");
+
+
+ PREPARE stmt from @stmt;
+ EXECUTE stmt;
+ DEALLOCATE PREPARE stmt; 
+
+
+ if (@inboundFields is not null) then 
+
+ begin
+
+ SET @stmt = CONCAT("
+ select group_concat(distinct concat('when infieldNo = ', inFieldNo , ' then ', concat('F', inFieldNo)) separator ' ' ) 
+ from transactionoutdetailauditerrorsforinbound_",inBatchId," where infieldNo != 0 into @inUpdateFields;
+ ");
+
+
+ PREPARE stmt from @stmt;
+ EXECUTE stmt;
+ DEALLOCATE PREPARE stmt; 
+
+
+ SELECT concat('F',rptField1),concat('F',rptField2),concat('F',rptField3),concat('F',rptField4) INTO @rptInField1, @rptInField2,@rptInField3,@rptInField4 
+ FROM configurationmessagespecs where configId = inBatchUploadConfigId LIMIT 1;
+
+
+ if (@rptInField1 = 'F0') then 
+ set @rptInField1 = "F1";
+ end if;
+
+ if (@rptInField2 = 'F0') then 
+ set @rptInField2 = "F2";
+ end if;
+
+ if (@rptInField3 = 'F0') then 
+ set @rptInField3 = "F3";
+ end if;
+
+ if(@rptInField4 = 'F0') then 
+ set @rptInField4 = "F4";
+ end if;
+
+
+ SET @stmt = CONCAT("
+ update transactionoutdetailauditerrorsforinbound_",inBatchId," tir join (
+ select distinct ",@rptInField1," reportField1Data, ",@rptInField2," reportField2Data, ",@rptInField3," reportField3Data, ",@rptInField4," reportField4Data, 
+ transactionInRecordsId, ",@inboundFields," from transactioninrecords_",inBatchUpoadId," tir join 
+ (select distinct transactionInRecordsId from transactionoutdetailauditerrorsforinbound_",inBatchId,") auditTable
+ on transactionInRecordsId = tir.id) infotable
+ on infotable.transactionInRecordsId = tir.transactionInRecordsId
+ set errorData = case 
+ ",@inUpdateFields,"
+ end, 
+ tir.reportField1Data = infotable.reportField1Data, tir.reportField2Data = infotable.reportField2Data,
+ tir.reportField3Data = infotable.reportField3Data, tir.reportField4Data = infotable.reportField4Data
+ ");
+
+
+ PREPARE stmt from @stmt;
+ EXECUTE stmt;
+ DEALLOCATE PREPARE stmt; 
+
+ -- SET @stmt = CONCAT("
+ -- delete from batchuploadauditerrors where fromOutboundConfig = true and batchUploadId = ",inBatchUpoadId," and configId = ",inBatchUploadConfigId,"
+ -- ");
+
+ -- PREPARE stmt from @stmt;
+ -- EXECUTE stmt;
+ -- DEALLOCATE PREPARE stmt;
+
+
+ -- SET @stmt = CONCAT("insert into batchuploadauditerrors (batchUploadId, configId, fieldNo, fieldName, errorId, errorDetails, errorData, reportField1Data, 
+ -- reportField2Data, reportField3Data, reportField4Data, rownumber, fromOutboundConfig, required)
+ -- select ",inBatchUpoadId,", ",inBatchUploadConfigId,", case when inFieldNo is null then 0 else inFieldNo end, fieldName, errorId, errorDetails, errorData, reportField1Data, 
+ -- reportField2Data, reportField3Data, reportField4Data, transactionInRecordsId, true, required from 
+ -- transactionoutdetailauditerrorsforinbound_",inBatchId, " table1");
+
+ -- PREPARE stmt from @stmt;
+ -- EXECUTE stmt;
+ -- DEALLOCATE PREPARE stmt; 
+
+ end;
+ end if;
+
+ SET @stmt = CONCAT("
+ delete from batchuploadauditerrors where fromOutboundConfig = true and batchUploadId = ",inBatchUpoadId," and configId = ",inBatchUploadConfigId,"
+ ");
+
+ PREPARE stmt from @stmt;
+ EXECUTE stmt;
+ DEALLOCATE PREPARE stmt;
+
+
+ SET @stmt = CONCAT("insert into batchuploadauditerrors (batchUploadId, configId, fieldNo, fieldName, errorId, errorDetails, errorData, reportField1Data, 
+ reportField2Data, reportField3Data, reportField4Data, rownumber, fromOutboundConfig, required)
+ select ",inBatchUpoadId,", case when inFieldNo is null then configId when inFieldNo = 0 then configId else ",inBatchUploadConfigId," end, case when inFieldNo is null then fieldNo when inFieldNo = 0 then fieldNo else inFieldNo end, fieldName, errorId, errorDetails, errorData, reportField1Data, 
+ reportField2Data, reportField3Data, reportField4Data, case when transactionInRecordsId is null then 0 else transactionInRecordsId end, true, required from 
+ transactionoutdetailauditerrorsforinbound_",inBatchId, " table1");
+
+ PREPARE stmt from @stmt;
+ EXECUTE stmt;
+ DEALLOCATE PREPARE stmt; 
+ 
+  -- update translatedReportField1Data
            SET @stmt = CONCAT("update batchuploadauditerrors table1 join (
-			select ",@rptField1," fieldData, transactionInRecordsId from transactiontranslatedin_",inBatchUpoadId,") table2
+			select ",@rptInField1In ," fieldData, transactionInRecordsId from transactiontranslatedin_",inBatchUpoadId,") table2
 			on table1.rownumber = table2.transactionInRecordsId
 			set translatedReportField1Data = fieldData
 			where table1.batchUploadId = ",inBatchUpoadId," and fromOutboundConfig = true;");
@@ -354,21 +353,23 @@ if (@populateInboundAuditReport) then
 			PREPARE stmt from @stmt;
 			EXECUTE stmt;
 			DEALLOCATE PREPARE stmt;
-         
-			SET @stmt = CONCAT("drop table if exists transactionoutdetailauditerrorsforinbound_",inBatchId,"; ");
-    
-			PREPARE stmt from @stmt;
-			EXECUTE stmt;
-            DEALLOCATE PREPARE stmt; 
-          
-    end;
+ 
+
+ SET @stmt = CONCAT("drop table if exists transactionoutdetailauditerrorsforinbound_",inBatchId,"; ");
+
+ PREPARE stmt from @stmt;
+ EXECUTE stmt;
+ DEALLOCATE PREPARE stmt; 
+
+ end;
 end if;
 
-select '';
 
 end proc_main$$
 
 DELIMITER ;
+
+
 
 USE `universaltranslatorca`;
 DROP procedure IF EXISTS `populateAuditReport`;
