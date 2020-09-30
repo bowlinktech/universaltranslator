@@ -5,10 +5,8 @@
  */
 package com.hel.ut.model;
 
-import com.hel.ut.validator.NoHtml;
 
 import java.util.Date;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
