@@ -34,7 +34,6 @@ public class batchuploadactivity {
     @Column(name = "batchUploadId", nullable = true)
     private Integer batchUploadId = 0;
 
-    @NoHtml
     @Column(name = "activity", nullable = true)
     private String activity;
 
