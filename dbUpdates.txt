@@ -12,3 +12,5 @@ ADD COLUMN `lastUpdated` DATETIME NULL DEFAULT CURRENT_TIMESTAMP AFTER `orgId`;
 
 update universaltranslator.crosswalks set lastupdated = null;
 
+ALTER TABLE `universaltranslator`.`configurationdatatranslations` 
+ADD COLUMN `dateAdded` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP AFTER `defaultValue`;

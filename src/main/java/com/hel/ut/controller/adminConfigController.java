@@ -3355,7 +3355,6 @@ public class adminConfigController {
 
 		    sb = new StringBuilder();
 		    sb.append("Config Name").append(",")
-		    .append("Category").append(",")
 		    .append("Process Order").append(",")
 		    .append("Field Label").append(",")
 		    .append("Macro Id").append(",")
@@ -3382,15 +3381,14 @@ public class adminConfigController {
 			.append(dtDatarow[1]).append(",")
 			.append(dtDatarow[2]).append(",")
 			.append(dtDatarow[3]).append(",")
-			.append(dtDatarow[4]).append(",")
-			.append("\"").append(dtDatarow[5]).append("\"").append(",")
+			.append("\"").append(dtDatarow[4]).append("\"").append(",")
+			.append(dtDatarow[5]).append(",")
 			.append(dtDatarow[6]).append(",")
 			.append(dtDatarow[7]).append(",")
-			.append(dtDatarow[8]).append(",")
+			.append("\"").append(dtDatarow[8]).append("\"").append(",")
 			.append("\"").append(dtDatarow[9]).append("\"").append(",")
 			.append("\"").append(dtDatarow[10]).append("\"").append(",")
-			.append("\"").append(dtDatarow[11]).append("\"").append(",")
-			.append("\"").append(dtDatarow[12]).append("\"");
+			.append("\"").append(dtDatarow[11]).append("\"");
 
 			writer.write(sb.toString());
 			if(dtDataIt.hasNext()) {
