@@ -713,15 +713,15 @@ public class utConfigurationManagerImpl implements utConfigurationManager {
     @Override
     public List getDataTranslationsForDownload(Integer configId) throws Exception {
 	
-	String sqlStatement = "select configName, category, processOrder, fieldDesc, macroId, macroName, crosswalkId, crosswalkname,  passClear,  fieldA, fieldB, constant1, constant2 "
-	    + "from (select cff.configId configId, case when categoryId = 1 then 'During' when categoryId = 2 then 'Pre' end category,"
+	String sqlStatement = "select configName, processOrder, fieldDesc, macroId, macroName, crosswalkId, crosswalkname,  passClear,  fieldA, fieldB, constant1, constant2 "
+	    + "from (select cff.configId configId, "
 	    + "processOrder, fieldDesc, crosswalkId, IFNULL(name,'') as crosswalkname, macroId, IFNULL(concat(Macro_Short_Name, ' (', formula,')'),'') macroname,"
 	    + "fieldA, fieldB, replace(replace(replace(constant1, '\\\\', '^^'), '''', '|_|'), '\"', '&') constant1 , constant2, case when passclear = 1 then 'Pass' else 'Clear' end passClear "
 	    + "from (select dts.*, name from (select configurationdatatranslations.*, Macro_Short_Name, formula  from configurationdatatranslations left join "
 	    + "(select * from macro_names) macros on macros.id = configurationdatatranslations.macroId where configId = " + configId
 	    + " order by categoryId, processOrder)  dts left join (Select * from crosswalks) cws on cws.id = crosswalkId ) dts inner join "
 	    + "(select * from configurationformfields ) cff on cff.id = fieldId) cff join (select configName, id from configurations) configurations on configurations.id = cff.configId "
-	    + "order by configName, category desc, processOrder";
+	    + "order by configName, processOrder";
 	
 	return utConfigurationDAO.getDTCWForDownload(sqlStatement);
 	
