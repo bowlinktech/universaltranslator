@@ -3448,8 +3448,6 @@ public class transactionInDAOImpl implements transactionInDAO {
 	    }
 	}
 	
-	System.out.println(dateSQLString);
-	
 	String sqlQuery = "select id, statusName, orgName, dateCreated, configId, batchUploadId, batchName, totalMessages "
 		+ "from ("
 		+ "select a.id, a.batchUploadId, a.dateCreated, a.configId, IFNULL(b.orgName,\"\") as orgName,"

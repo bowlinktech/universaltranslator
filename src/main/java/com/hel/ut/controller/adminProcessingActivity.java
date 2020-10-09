@@ -2321,7 +2321,6 @@ public class adminProcessingActivity {
 			+ "configurationmessagespecs b on a.configId = b.configId "
 			+ "where a.batchDownloadId = " + batchId + " and a.errorId = " + errorId + " order by a.rownumber asc";
 		    
-		    System.out.println(sql);
 		}
 		break;
 		
