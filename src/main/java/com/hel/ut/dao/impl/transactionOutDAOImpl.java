@@ -1213,17 +1213,17 @@ public class transactionOutDAOImpl implements transactionOutDAO {
 	
 	if(batchDownloads != null) {
 	    if(!batchDownloads.isEmpty()) {
-		for(batchDownloads batch : batchDownloads) {
-		    deleteSQL += "DROP TABLE IF EXISTS `transactionoutdetailauditerrors_" + batch.getId() + "`;";
-		    deleteSQL += "DROP TABLE IF EXISTS `transactiontranslatedlistout_" + batch.getId() + "`;";
-		    deleteSQL += "DROP TABLE IF EXISTS `transactionoutrecords_" + batch.getId() + "`;";
-		    deleteSQL += "DROP TABLE IF EXISTS `transactionouterrors_" + batch.getId() + "`;";
-		    deleteSQL += "DROP TABLE IF EXISTS `transactionoutjsontable_" + batch.getId() + "`;";
-		    deleteSQL += "DROP TABLE IF EXISTS `transactiontranslatedout_" + batch.getId() + "`;";
-		    deleteSQL += "DROP TABLE IF EXISTS `transactionoutmacrodroppedvalues_" + batch.getId() + "`;";
-			deleteSQL += "DROP TABLE IF EXISTS `transactionoutmacrokeptvalues_" + batch.getId() + "`;";
-			
-		}
+			for(batchDownloads batch : batchDownloads) {
+			    deleteSQL += "DROP TABLE IF EXISTS `transactionoutdetailauditerrors_" + batch.getId() + "`;";
+			    deleteSQL += "DROP TABLE IF EXISTS `transactiontranslatedlistout_" + batch.getId() + "`;";
+			    deleteSQL += "DROP TABLE IF EXISTS `transactionoutrecords_" + batch.getId() + "`;";
+			    deleteSQL += "DROP TABLE IF EXISTS `transactionouterrors_" + batch.getId() + "`;";
+			    deleteSQL += "DROP TABLE IF EXISTS `transactionoutjsontable_" + batch.getId() + "`;";
+			    deleteSQL += "DROP TABLE IF EXISTS `transactiontranslatedout_" + batch.getId() + "`;";
+			    deleteSQL += "DROP TABLE IF EXISTS `transactionoutmacrodroppedvalues_" + batch.getId() + "`;";
+				deleteSQL += "DROP TABLE IF EXISTS `transactionoutmacrokeptvalues_" + batch.getId() + "`;";
+				deleteSQL += "delete from batchdownloaddroppedvalues where batchdownloadId = " + batch.getId() + ";";
+			}
 		
 		if(!"".equals(deleteSQL)) {
 		    deleteQuery = sessionFactory.getCurrentSession().createSQLQuery(deleteSQL);
