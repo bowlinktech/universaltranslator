@@ -1028,3 +1028,35 @@ select @finalStatusIds into @finalStatusIds;
 end proc_main$$
 DELIMITER ;
 
+
+/**  macros that are still on stage and no longer in use or name changed **/
+
+DROP PROCEDURE `universaltranslatorca`.`appendPrependStringIfNotBlank`;
+DROP PROCEDURE `universaltranslatorca`.`appendStringWithCon1IfLengthMataches`;
+DROP PROCEDURE `universaltranslatorca`.`applyCW`;
+DROP PROCEDURE `universaltranslatorca`.`cat2CleanListTable`;
+DROP PROCEDURE `universaltranslatorca`.`cat2PopulateTranslatedList`;
+DROP PROCEDURE `universaltranslatorca`.`cat2UpdateListValue`;
+DROP PROCEDURE `universaltranslatorca`.`CompareFALengthForNotBlankReplaceWithCon2`;
+DROP PROCEDURE `universaltranslatorca`.`CompareTwoFieldsAndReject`;
+DROP PROCEDURE `universaltranslatorca`.`concat3ColssWithDelimiterNoSpaces`;
+DROP PROCEDURE `universaltranslatorca`.`Concat3ColsDelimNoSpaces`;
+DROP PROCEDURE `universaltranslatorca`.`deleteTransaction`;
+DROP PROCEDURE `universaltranslatorca`.`DeleteTransactionWhenFieldAIsNull`;
+DROP PROCEDURE `universaltranslatorca`.`dropValueByPriorityInboundOnly`;
+DROP PROCEDURE `universaltranslatorca`.`FieldBGreaterThanEqualFieldAUpdateFieldA`;
+DROP PROCEDURE `universaltranslatorca`.`fix2DigitMySQLYears`;
+DROP PROCEDURE `universaltranslatorca`.`IfMatchFieldAAndTFBlankSetTFValue`;
+DROP PROCEDURE `universaltranslatorca`.`ifNumLTThenError`;
+DROP PROCEDURE `universaltranslatorca`.`ifSrcFieldBlankAndFACompareTo0ThenFieldBCon2`;
+DROP PROCEDURE `universaltranslatorca`.`ListToRows`;
+DROP PROCEDURE `universaltranslatorca`.`trimField`;
+DROP PROCEDURE `universaltranslatorca`.`NotInUse_DateToyyyymmdd`;
+DROP PROCEDURE `universaltranslatorca`.`PopulateTranslatedList`;
+DROP PROCEDURE `universaltranslatorca`.`populateUniqueKeyAndTTI`;
+DROP PROCEDURE `universaltranslatorca`.`prependStringWithCon2IfLengthMataches`;
+DROP PROCEDURE `universaltranslatorca`.`updateFieldBToDistinctSrcFieldAsList`;
+DROP PROCEDURE `universaltranslatorca`.`updateFieldBToSrcFieldAsList`;
+DROP PROCEDURE `universaltranslatorca`.`UpdateFPRace`;
+DROP PROCEDURE `universaltranslatorca`.`UpdateToMaxMinForCol`;
+DROP PROCEDURE `universaltranslatorca`.`UpdateTranslatedListValueNotDistinct`;
