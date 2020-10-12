@@ -2321,7 +2321,6 @@ public class adminProcessingActivity {
 			+ "configurationmessagespecs b on a.configId = b.configId "
 			+ "where a.batchDownloadId = " + batchId + " and a.errorId = " + errorId + " order by a.rownumber asc";
 		    
-		    System.out.println(sql);
 		}
 		break;
 		
@@ -3939,12 +3938,12 @@ public class adminProcessingActivity {
 	customCols.add("Field Value");
 	
 	if("inbound".equals(type)) {
-	    sql = "select a.transactionInRecordsId as rownumber, a.fieldNo as fieldNumber, a.fieldName as column_name,a.entity3Id as clientIdentifier,a.fieldValue as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
+	    sql = "select a.transactionInRecordsId as rownumber, a.fieldNo as fieldNumber, a.fieldName as column_name,a.translatedReportField1Data as clientIdentifier,a.fieldValue as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
 	    + "from batchuploaddroppedvalues a "
 	    + "where a.batchUploadId = " + batchId + " order by a.id asc limit 50 ";
 	}
 	else {
-	    sql = "select a.transactionOutRecordsId as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name,a.entity3Id as clientIdentifier,a.fieldValue as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
+	    sql = "select a.transactionOutRecordsId as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name,a.translatedReportField1Data as clientIdentifier,a.fieldValue as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
 	    + "from batchdownloaddroppedvalues a "
 	    + "where a.batchDownloadId = " + batchId + " order by a.id asc limit 50 ";
 	}
@@ -4078,7 +4077,7 @@ public class adminProcessingActivity {
 		if(!inboundDroppedValues.isEmpty()) {
 		    errorType = "Dropped Crosswalk Values";
 		    
-		    sql = "select 'source' as fromOutboundConfig, a.transactionInRecordsId as rownumber, a.fieldNo as fieldNumber, a.fieldName as column_name,a.entity3Id as clientIdentifier,a.fieldValue as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
+		    sql = "select 'source' as fromOutboundConfig, a.transactionInRecordsId as rownumber, a.fieldNo as fieldNumber, a.fieldName as column_name,a.translatedReportField1Data as clientIdentifier,a.fieldValue as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
 		    + "from batchuploaddroppedvalues a "
 		    + "where a.batchUploadId = " + batchId + " order by a.id asc";
 		    
@@ -4193,7 +4192,7 @@ public class adminProcessingActivity {
 		if(!outboundDroppedValues.isEmpty()) {
 		    errorType = "Dropped Crosswalk Values";
 		    
-		    sql = "select 'target' as fromOutboundConfig, a.transactionInRecordsId as rownumber, a.fieldNo as fieldNumber, a.fieldName as column_name,a.entity3Id as clientIdentifier,a.fieldValue as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
+		    sql = "select 'target' as fromOutboundConfig, a.transactionInRecordsId as rownumber, a.fieldNo as fieldNumber, a.fieldName as column_name,a.translatedReportField1Data as clientIdentifier,a.fieldValue as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
 		    + "from batchdownloaddroppedvalues a "
 		    + "where a.batchDownloadId = " + batchId + " order by a.id asc";
 		    
@@ -4791,7 +4790,7 @@ public class adminProcessingActivity {
 		}
 		reportBody.append("</tr></thead><tbody>");
 
-		sql = "select 'source' as fromOutboundConfig, a.transactionInRecordsId as rownumber, a.fieldNo as fieldNumber, a.fieldName as column_name,a.entity3Id as clientIdentifier,a.fieldValue as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
+		sql = "select 'source' as fromOutboundConfig, a.transactionInRecordsId as rownumber, a.fieldNo as fieldNumber, a.fieldName as column_name,a.translatedReportField1Data as clientIdentifier,a.fieldValue as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
 		+ "from batchuploaddroppedvalues a "
 		+ "where a.batchUploadId = " + batchId + " order by a.id asc";
 
@@ -4893,7 +4892,7 @@ public class adminProcessingActivity {
 		}
 		reportBody.append("</tr></thead><tbody>");
 
-		sql = "select 'target' as fromOutboundConfig, a.transactionInRecordsId as rownumber, a.fieldNo as fieldNumber, a.fieldName as column_name,a.entity3Id as clientIdentifier,a.fieldValue as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
+		sql = "select 'target' as fromOutboundConfig, a.transactionInRecordsId as rownumber, a.fieldNo as fieldNumber, a.fieldName as column_name,a.translatedReportField1Data as clientIdentifier,a.fieldValue as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
 		+ "from batchdownloaddroppedvalues a "
 		+ "where a.batchDownloadId = " + batchId + " order by a.id asc";
 

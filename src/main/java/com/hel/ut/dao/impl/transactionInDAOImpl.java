@@ -1064,7 +1064,7 @@ public class transactionInDAOImpl implements transactionInDAO {
 	    //insert system error
 	    insertProcessingError(processingSysErrorId, configId, batchId, cdt.getFieldNo(),cdt.getMacroId(), null, null,true, foroutboundProcessing, (cdt.getMacroName() + "- executeMacro " + ex.getCause().toString()));
 	   
-	    return 9999999;
+	    return 0;
 	}
     }
 
@@ -1387,7 +1387,7 @@ public class transactionInDAOImpl implements transactionInDAO {
 	} catch (Exception ex) {
 	    System.err.println("rejectInvalidTargetOrg " + ex.getCause());
 	    ex.printStackTrace();
-	    return 1;
+	    return 9999999;
 	}
     }
 
@@ -3447,8 +3447,6 @@ public class transactionInDAOImpl implements transactionInDAO {
 		dateSQLString += "a.id > 0";
 	    }
 	}
-	
-	System.out.println(dateSQLString);
 	
 	String sqlQuery = "select id, statusName, orgName, dateCreated, configId, batchUploadId, batchName, totalMessages "
 		+ "from ("

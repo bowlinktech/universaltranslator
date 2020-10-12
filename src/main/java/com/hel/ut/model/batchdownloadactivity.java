@@ -5,10 +5,7 @@
  */
 package com.hel.ut.model;
 
-import com.hel.ut.validator.NoHtml;
-
 import java.util.Date;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -34,7 +31,6 @@ public class batchdownloadactivity {
     @Column(name = "batchDownloadId", nullable = true)
     private Integer batchDownloadId = 0;
 
-    @NoHtml
     @Column(name = "activity", nullable = true)
     private String activity;
 
