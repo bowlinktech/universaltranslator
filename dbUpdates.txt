@@ -1,2 +1,0 @@
-ALTER TABLE `universaltranslatorca`.`configurationdatatranslations` 
-ADD COLUMN `dateAdded` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP AFTER `defaultValue`;
