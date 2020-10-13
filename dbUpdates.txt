@@ -14,3 +14,9 @@ update universaltranslator.crosswalks set lastupdated = null;
 
 ALTER TABLE `universaltranslator`.`configurationdatatranslations` 
 ADD COLUMN `dateAdded` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP AFTER `defaultValue`;
+
+ALTER TABLE `universaltranslator`.`batchdownloadauditerrors` 
+ADD COLUMN `translatedReportField1Data` VARCHAR(45) NOT NULL Default '' AFTER `required`;
+
+ALTER TABLE `universaltranslator`.`batchuploadauditerrors` 
+ADD COLUMN `translatedReportField1Data` VARCHAR(45) NOT NULL Default '' AFTER `required`;
