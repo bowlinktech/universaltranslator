@@ -99,8 +99,7 @@ on t1.",@recordName ,"Id = t2.",@recordName,"Id
 set reportField1Data = rptField1,
 reportField2Data = rptField2,
 reportField3Data = rptField3,
-reportField4Data = rptField4,
-translatedReportField1Data = rptField1 
+reportField4Data = rptField4
 where t1.",@batchIdCol," = ",inBatchId," and configId = ",inConfigId,";
 ");
 
