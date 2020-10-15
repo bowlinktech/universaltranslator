@@ -1,9 +1,21 @@
 
 /** 
-CM - 09/29/202
+CM - 09/29/2020
 The below changes must be made once UT Production has been updated with the latest
 code from EAH 
 **/
+CREATE TABLE `configurationupdatelogs` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `configId` int(11) NOT NULL,
+  `userId` int(11) NOT NULL,
+  `dateCreated` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updateMade` mediumtext,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `id_UNIQUE` (`id`),
+  KEY `configid` (`configId`)
+) ENGINE=InnoDB AUTO_INCREMENT=127 DEFAULT CHARSET=latin1;
+
+
 ALTER TABLE `universaltranslator`.`configurationupdatelogs` 
 CHANGE COLUMN `updateMade` `updateMade` MEDIUMTEXT NULL DEFAULT NULL ;
 
@@ -16,7 +28,23 @@ ALTER TABLE `universaltranslator`.`configurationdatatranslations`
 ADD COLUMN `dateAdded` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP AFTER `defaultValue`;
 
 ALTER TABLE `universaltranslator`.`batchdownloadauditerrors` 
+ADD COLUMN `required` BIT(1) NULL Default '' AFTER `rownumber`,
 ADD COLUMN `translatedReportField1Data` VARCHAR(45) NOT NULL Default '' AFTER `required`;
 
 ALTER TABLE `universaltranslator`.`batchuploadauditerrors` 
+ADD COLUMN `required` BIT(1) NULL Default '' AFTER `rownumber`,
 ADD COLUMN `translatedReportField1Data` VARCHAR(45) NOT NULL Default '' AFTER `required`;
+
+/** 
+CM - 10/215/202
+eReferral Configuration updates for replaced macros 
+**/
+UPDATE `universaltranslator`.`configurationdatatranslations` SET `macroId`='68', `fieldA`='', `constant2`='-' WHERE `id`='2105';
+UPDATE `universaltranslator`.`configurationdatatranslations` SET `macroId`='68', `fieldA`='', `constant2`='-' WHERE `id`='2106';
+UPDATE `universaltranslator`.`configurationdatatranslations` SET `macroId`='68', `fieldA`='', `constant2`='-' WHERE `id`='2107';
+UPDATE `universaltranslator`.`configurationdatatranslations` SET `macroId`='68', `fieldA`='', `constant2`='-' WHERE `id`='3642';
+UPDATE `universaltranslator`.`configurationdatatranslations` SET `macroId`='68', `fieldA`=NULL, `constant2`='-' WHERE `id`='3643';
+UPDATE `universaltranslator`.`configurationdatatranslations` SET `macroId`='68', `fieldA`='', `constant2`='-' WHERE `id`='3644';
+UPDATE `universaltranslator`.`configurationdatatranslations` SET `macroId`='112', `fieldA`='', `constant1`='%Y%m%d', `constant2`='%Y-%m-%d' WHERE `id`='350';
+UPDATE `universaltranslator`.`configurationdatatranslations` SET `macroId`='112', `fieldA`='', `constant1`='%Y%m%d', `constant2`='%Y-%m-%d' WHERE `id`='351';
+
