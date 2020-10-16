@@ -24,6 +24,7 @@ import com.hel.ut.model.utConfiguration;
 import com.hel.ut.model.configurationTransport;
 import com.hel.ut.reference.CountryList;
 import com.hel.ut.reference.USStateList;
+import com.hel.ut.reference.fileSystem;
 import com.hel.ut.service.messageTypeManager;
 import com.registryKit.registry.helRegistry;
 import com.registryKit.registry.helRegistryManager;
@@ -346,6 +347,13 @@ public class adminOrgContoller {
 		    
 		    configurationmanager.updateConfigurationDirectories(configIds,currentOrg.getcleanURL().trim(),organization.getcleanURL().trim());
 		}
+	    }
+	    
+	    //Need to delete the old directory
+	    File oldDirectory = new File(UTDirectory.replace("/home/","/") + currentOrg.getcleanURL());
+	    if (directory.exists()) {
+		fileSystem filesystem = new fileSystem();
+		filesystem.deleteOrgDirectories(UTDirectory.replace("/home/","/") + currentOrg.getcleanURL());
 	    }
 	}
 	

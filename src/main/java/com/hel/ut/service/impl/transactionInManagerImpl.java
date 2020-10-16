@@ -4280,7 +4280,7 @@ public class transactionInManagerImpl implements transactionInManager {
 		}
 	    }
 	    
-	    String DMFile = myProps.getProperty("ut.directory.utRootDir") + fileDropDir.replace("/HELProductSuite/universalTranslator/", "");
+	    String DMFile = myProps.getProperty("ut.directory.utRootDir") + fileDropDir.replace("/Applications/HELProductSuite/universalTranslator/", "").replace("/HELProductSuite/universalTranslator/", "");
 	    batchInfo.setOriginalFolder(DMFile);
 
 	    //we reject
@@ -4320,9 +4320,13 @@ public class transactionInManagerImpl implements transactionInManager {
 		//copy file
 		writeToFile = fileNamePath;
 		
-		File encodedFile = new File(archivefileNamePath.replace("/HELProductSuite/universalTranslator/",myProps.getProperty("ut.directory.utRootDir")));
+		File encodedFile = new File(archivefileNamePath
+			.replace("/Applications/HELProductSuite/universalTranslator/",myProps.getProperty("ut.directory.utRootDir"))
+			.replace("/HELProductSuite/universalTranslator/",myProps.getProperty("ut.directory.utRootDir")));
 		
-		File movedFile = new File(fileNamePath.replace("/HELProductSuite/universalTranslator/",myProps.getProperty("ut.directory.utRootDir")));
+		File movedFile = new File(fileNamePath
+			.replace("/Applications/HELProductSuite/universalTranslator/",myProps.getProperty("ut.directory.utRootDir"))
+			.replace("/HELProductSuite/universalTranslator/",myProps.getProperty("ut.directory.utRootDir")));
 		
 		FileUtils.moveFile(new File(DMFile+directMessage.getReferralFileName()),movedFile);
 
@@ -4345,7 +4349,9 @@ public class transactionInManagerImpl implements transactionInManager {
 		    } 
 		    else {
 			String encodeArchivePath = myProps.getProperty("ut.directory.utRootDir") + "archivesIn/archive_" + batchName + fileExt;
-			Files.copy(new File(writeToFile.replace("/HELProductSuite/universalTranslator/",myProps.getProperty("ut.directory.utRootDir"))).toPath(), new File(encodeArchivePath).toPath(), REPLACE_EXISTING);
+			Files.copy(new File(writeToFile
+				.replace("/Applications/HELProductSuite/universalTranslator/",myProps.getProperty("ut.directory.utRootDir"))
+				.replace("/HELProductSuite/universalTranslator/",myProps.getProperty("ut.directory.utRootDir"))).toPath(), new File(encodeArchivePath).toPath(), REPLACE_EXISTING);
 			Files.copy(encodedFile.toPath(), new File(myProps.getProperty("ut.directory.utRootDir") + "archivesIn/" + batchName + fileExt.replace("/HELProductSuite/universalTranslator/",myProps.getProperty("ut.directory.utRootDir"))).toPath(), REPLACE_EXISTING);
 		    }
 
@@ -4364,7 +4370,9 @@ public class transactionInManagerImpl implements transactionInManager {
 			    delimiter = ct.getDelimChar();
 			}
 			
-			int delimCount = dir.checkFileDelimiter(new File(fileNamePath.replace("/HELProductSuite/universalTranslator/",myProps.getProperty("ut.directory.utRootDir"))), delimiter);
+			int delimCount = dir.checkFileDelimiter(new File(fileNamePath
+				.replace("/Applications/HELProductSuite/universalTranslator/",myProps.getProperty("ut.directory.utRootDir"))
+				.replace("/HELProductSuite/universalTranslator/",myProps.getProperty("ut.directory.utRootDir"))), delimiter);
 			if (delimCount < 3) {
 			    statusId = 7;
 			    errorId = 15;
