@@ -1,0 +1,41 @@
+/** 20201018  macro error **/
+
+
+DROP procedure IF EXISTS `regExCheck`;
+
+DELIMITER $$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `regExCheck`(in configId int, 
+in batchId int, in srcField varchar(10),
+in fieldA varchar(10), in fieldB varchar(10), in con1 varchar(255), 
+in con2 varchar(255), in macroId int, in foroutboundProcessing boolean, in passClear int, in transactionId int)
+proc_main:begin
+
+call setInboundOutBoundTables (foroutboundProcessing,batchId);
+SELECT 
+    @translatedTable,
+    @transactionTable,
+    @batchTable,
+    @batchIdType,
+    @errorTable,
+    @translateCol
+INTO @translatedTable , @transactionTable , @batchTable , @batchIdType , @errorTable, @translateCol;
+
+call getFinalStatusIds;
+SELECT @finalStatusIds INTO @finalStatusIds;
+
+set @whereClause  = concat("  (",srcField," REGEXP '",con1,"' != 1 or ",srcField," REGEXP '",con1,"' is null)
+            and ",srcField," is not null and  length(",srcField,") > 0 and ");
+            
+set @whereString = concat(@whereClause, "  configId = ",configId," and ", @batchIdType," = ",batchId," and statusId not in (",@finalStatusIds ,");");
+
+			set @stmt = concat("update  ", @translatedTable , " set forcw = 'MACRO_ERROR'  where ",@whereString);
+
+			PREPARE stmt from @stmt;
+			EXECUTE stmt;
+			DEALLOCATE PREPARE stmt;
+
+end proc_main$$
+
+DELIMITER ;
+
+
