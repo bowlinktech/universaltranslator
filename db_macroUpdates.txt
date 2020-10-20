@@ -39,7 +39,7 @@ end proc_main$$
 DELIMITER ;
 
 /** on stage 20201019 **/
-drop procedure if exists KeepTopRanked;
+DROP procedure IF EXISTS `KeepTopRanked`;
 
 DELIMITER $$
 CREATE DEFINER=`root`@`localhost` PROCEDURE `KeepTopRanked`(in configId int, 
@@ -180,7 +180,7 @@ DEALLOCATE PREPARE stmt;
 	EXECUTE stmt;
     DEALLOCATE PREPARE stmt;
     
-    set @stmt = concat("update ",@listTable," set toprankedvalue = null where translatedValue != toprankedvalue;");
+    set @stmt = concat("update ",@listTable," set toprankedvalue = null where invalue != toprankedvalue;");
 	
 	PREPARE stmt from @stmt;
 	EXECUTE stmt;
@@ -234,6 +234,8 @@ DEALLOCATE PREPARE stmt;
     DEALLOCATE PREPARE stmt;
 
 end proc_main$$
+
 DELIMITER ;
+
 
 
