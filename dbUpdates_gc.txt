@@ -1,10 +1,9 @@
-/** 20201015  dropped value error **/
+/** 20201015  dropped value error on stage **/
 
-USE `universaltranslator`;
+
 DROP procedure IF EXISTS `populateDroppedValues`;
 
 DELIMITER $$
-USE `universaltranslator`$$
 CREATE DEFINER=`root`@`localhost` PROCEDURE `populateDroppedValues`(in inConfigId int, in inBatchId int, in foroutboundProcessing boolean)
 proc_main:begin
 
