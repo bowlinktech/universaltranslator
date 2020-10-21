@@ -3934,16 +3934,19 @@ public class adminProcessingActivity {
 	}
 	
 	customCols.add("Column Name");
-	customCols.add("Client Identifier");
 	customCols.add("Field Value");
 	
 	if("inbound".equals(type)) {
-	    sql = "select a.transactionInRecordsId as rownumber, a.fieldNo as fieldNumber, a.fieldName as column_name,a.translatedReportField1Data as clientIdentifier,a.fieldValue as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
-	    + "from batchuploaddroppedvalues a "
+	    // sql = "select a.transactionInRecordsId as rownumber, a.fieldNo as fieldNumber, a.fieldName as column_name,a.translatedReportField1Data as clientIdentifier,a.fieldValue as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
+		sql = "select fromOutboundConfig, a.transactionInRecordsId as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name,"
+				+ "a.fieldValue as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
+		+ "from batchuploaddroppedvalues a "
 	    + "where a.batchUploadId = " + batchId + " order by a.id asc limit 50 ";
 	}
 	else {
-	    sql = "select a.transactionOutRecordsId as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name,a.translatedReportField1Data as clientIdentifier,a.fieldValue as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
+	    //sql = "select a.transactionOutRecordsId as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name,a.translatedReportField1Data as clientIdentifier,a.fieldValue as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
+	    sql = "select 'false' as fromOutboundConfig,a.transactionOutRecordsId as rownumber, "
+	    + " a.fieldNo as fieldNumber,a.fieldName as column_name, a.fieldValue as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
 	    + "from batchdownloaddroppedvalues a "
 	    + "where a.batchDownloadId = " + batchId + " order by a.id asc limit 50 ";
 	}
