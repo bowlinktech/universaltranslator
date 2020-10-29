@@ -11,9 +11,9 @@
                 <div class="panel-body">
                     <dt>
                     <dt>System Summary:</dt>
-                    <dd><strong>Batches Received in the Past Hour:</strong> <fmt:formatNumber value="${summaryDetails.batchesPastHour}" /></dd>
-                    <dd><strong>Batches Received in today:</strong> <fmt:formatNumber value="${summaryDetails.batchesToday}" /></dd>
-                    <dd><strong>Batches Received in This Week:</strong> <fmt:formatNumber value="${summaryDetails.batchesThisWeek}" /></dd>
+                    <dd><strong>Batches Processed in the Past Hour:</strong> <fmt:formatNumber value="${summaryDetails.batchesPastHour}" /></dd>
+                    <dd><strong>Batches Processed in today:</strong> <fmt:formatNumber value="${summaryDetails.batchesToday}" /></dd>
+                    <dd><strong>Batches Processed in This Week:</strong> <fmt:formatNumber value="${summaryDetails.batchesThisWeek}" /></dd>
                     <dd><strong>Total Batches in Error:</strong> <fmt:formatNumber value="${summaryDetails.batchesInError}" /></dd>
                     </dt>
                 </div>

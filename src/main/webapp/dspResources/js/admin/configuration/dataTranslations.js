@@ -582,6 +582,14 @@ function populateCrosswalks(page) {
                 bProcessing: false, 
                 deferRender: true,
                 aaSorting: [[3,'desc']],
+                 "columns": [
+                    { "width": "10%" },
+                    { "width": "20%" },
+                    { "width": "20%", "type": "date" },
+                    { "width": "20%", "type": "date" },
+                    { "width": "10%" },
+                    { "width": "10%" }
+                 ],
                 sPaginationType: "bootstrap", 
                 searching: false,
                 bLengthChange: false,
