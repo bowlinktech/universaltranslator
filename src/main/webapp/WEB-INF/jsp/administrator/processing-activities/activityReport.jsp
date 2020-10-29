@@ -33,7 +33,7 @@
                 <section class="panel panel-default panel-stats" role="widget" aria-labelleby="Messages Received">
                     <div class="panel-body">
                         <span class="stat-number"><a href="/administrator/processing-activity/inbound"><c:choose><c:when test="${totalMessagesReceived >= 0}"><fmt:formatNumber value = "${totalMessagesReceived}" type = "number"/></c:when><c:otherwise>0</c:otherwise></c:choose></a></span>
-			<h3>Message<c:if test="${totalMessagesReceived == 0 || totalMessagesReceived > 1}">s</c:if> Received</h3>
+			<h3>Message<c:if test="${totalMessagesReceived == 0 || totalMessagesReceived > 1}">s</c:if> Received/Processed</h3>
 		    </div>
 		</section>
 	    </div>
