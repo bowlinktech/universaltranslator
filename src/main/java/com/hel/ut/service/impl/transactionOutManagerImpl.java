@@ -1616,6 +1616,10 @@ public class transactionOutManagerImpl implements transactionOutManager {
 	//Get the total number of errors found that are for required fields
 	Integer totalRequiredErrorsFound = transactionOutDAO.getTotalErrors(batchDownload.getId());
 	
+	// some macros have to error in the macro and do not return macro_error, those are R errors, we add them to totalErrorCount so that populateOutboundAuditReport will run
+	totalErrorCount = totalErrorCount + totalRequiredErrorsFound;
+		
+	
 	if (totalRequiredErrorsFound > 0 && (sourceConfigTransportDetails.geterrorHandling() == 3 || transportDetails.geterrorHandling() == 3)) {
 	    
 	    ba = new batchdownloadactivity();
