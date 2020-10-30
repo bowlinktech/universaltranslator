@@ -1,0 +1,158 @@
+/** 20201021 **/
+
+ALTER TABLE `universaltranslatorca`.`batchuploaddroppedvalues` 
+ADD COLUMN `fromOutboundConfig` BIT(1) NULL DEFAULT False AFTER `translatedReportField1Data`;
+
+USE `universaltranslatorca`;
+DROP procedure IF EXISTS `populateDroppedValues`;
+
+DELIMITER $$
+USE `universaltranslatorca`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `populateDroppedValues`(in inConfigId int, in inBatchId int, in foroutboundProcessing boolean)
+proc_main:begin
+
+set @dvTableName = "batchuploaddroppedvalues";
+set @recordName = "transactioninrecords";
+set @batchIdCol = "batchUploadId";
+set @colDirection = "in";
+
+if (foroutboundProcessing)  then
+		set @dvTableName = "batchdownloaddroppedvalues";
+		set @recordName = "transactionoutrecords";
+        set @batchIdCol = "batchDownloadId";
+        set @colDirection = "out";
+end if;
+
+SET @stmt = CONCAT("
+delete dropv from transaction",@colDirection,"macrodroppedvalues_",inBatchId," dropv join (
+select matchid from transaction",@colDirection,"macrokeptvalues_",inBatchId,") keptv
+on keptv.matchId = dropv.matchId;
+");
+
+PREPARE stmt from @stmt;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+
+SET @stmt = CONCAT("
+insert into ",@dvTableName ," (",@batchIdCol,", transaction",@colDirection,"recordsId, fieldNo, configId, fieldName, fieldValue)
+select distinct ",inBatchId,", t1.transaction",@colDirection,"recordsId, t1.fieldNo, t1.configId, fieldDesc, 
+t1.fieldValue from transaction",@colDirection,"macrodroppedvalues_",inBatchId," t1 
+join (select * from configurationformfields) t2
+on t1.configId = t2.configId
+and t1.fieldNo = t2.fieldno;
+");
+
+
+
+PREPARE stmt from @stmt;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+
+if (foroutboundProcessing) then
+	begin
+		
+         select batchuploadid into @batchUploadId from batchdownloads where id = inBatchId;
+        delete from   batchdownloaddroppedvalues where batchuploadId = @batchUploadId;
+    
+        
+        SET @stmt = CONCAT("
+			update  batchdownloaddroppedvalues t1 join (select id transactionOutRecordsId, transactionInRecordsId from transactionoutrecords_",inBatchId," 
+            ) t2
+			on t1.transactionOutRecordsId = t2.transactionOutRecordsId
+			set t1.batchuploadId = ",@batchUploadId,",
+            t1.transactionInRecordsId = t2.transactionInRecordsId
+            where t1.batchdownloadId = ",inBatchId,";
+		");
+
+PREPARE stmt from @stmt;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+        
+	end;
+end if;
+
+SELECT concat('F',rptField1),concat('F',rptField2),concat('F',rptField3),concat('F',rptField4) INTO @rptField1, @rptField2,@rptField3,@rptField4 
+FROM configurationmessagespecs where configId = inConfigId LIMIT 1;
+
+if(@rptField1 = 'F0') then 
+	set @rptField1 = "F1";
+end if;
+
+if(@rptField2 = 'F0') then 
+	set @rptField2 = "F2";
+end if;
+
+if(@rptField3 = 'F0') then 
+	set @rptField3 = "F3";
+end if;
+
+if(@rptField4 = 'F0') then 
+	set @rptField4 = "F4";
+end if;
+
+
+SET @stmt = CONCAT("
+update  ",@dvTableName," t1 join 
+(Select transaction",@colDirection,"RecordsId, t1.",@rptField1," rptField1, t1.",@rptField2," rptField2, t1.",@rptField3," rptField3, t1.",@rptField4," rptField4
+ from transaction",@colDirection,"records_",inBatchId," t1 join
+(select transaction",@colDirection,"RecordsId from transactiontranslated",@colDirection,"_",inBatchId,") t2
+on t1.id = t2.transaction",@colDirection,"RecordsId) t2
+on t1.",@recordName ,"Id = t2.",@recordName,"Id 
+set reportField1Data = rptField1,
+reportField2Data = rptField2,
+reportField3Data = rptField3,
+reportField4Data = rptField4,
+translatedReportField1Data = rptField1 
+where t1.",@batchIdCol," = ",inBatchId," and configId = ",inConfigId,";
+");
+
+PREPARE stmt from @stmt;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+
+SET @stmt = CONCAT("
+update  ",@dvTableName," t1 join 
+(Select transaction",@colDirection,"RecordsId, ",@rptField1," rptField1
+from transactiontranslated",@colDirection,"_",inBatchId,") t2
+on t1.",@recordName ,"Id = t2.",@recordName,"Id 
+set translatedReportField1Data = rptField1 
+where t1.",@batchIdCol," = ",inBatchId," and configId = ",inConfigId,";
+");
+
+PREPARE stmt from @stmt;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+/** populate inbound **/
+SELECT populateInboundAuditReport INTO @populateInboundAuditReport FROM configurationtransportdetails where configId = inConfigId LIMIT 1;
+
+if (@populateInboundAuditReport) then
+
+	-- we insert outbound entries into inbound DV table
+	begin
+			
+				SET @stmt = CONCAT("
+					INSERT INTO batchuploaddroppedvalues 
+					(transactionInRecordsId, fieldNo, batchUploadId, configId, fieldName, fieldValue, reportField1Data, reportField2Data, 
+					reportField3Data, reportField4Data, translatedReportField1Data, fromOutboundConfig) 
+					select transactionOutRecordsId, fieldNo, batchUploadId, configId, fieldName, fieldValue, reportField1Data, reportField2Data, 
+					reportField3Data, reportField4Data, translatedReportField1Data, True from batchdownloaddroppedvalues where batchDownloadId = ",inBatchId,";
+					");
+				
+				PREPARE stmt from @stmt;
+				EXECUTE stmt;
+				DEALLOCATE PREPARE stmt;
+    
+    end;
+
+end if;
+
+
+end proc_main$$
+
+DELIMITER ;
+

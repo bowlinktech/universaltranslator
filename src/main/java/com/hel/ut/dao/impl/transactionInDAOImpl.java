@@ -62,6 +62,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import com.hel.ut.service.utConfigurationTransportManager;
+import org.hibernate.criterion.Criterion;
 import org.hibernate.type.DateType;
 
 /**
@@ -492,27 +493,42 @@ public class transactionInDAOImpl implements transactionInDAO {
 	if(fromDate !=  null && toDate != null) {
 	    
 	    if(!"".equals(fromDate)) {
-		dateSQLString += "a.dateSubmitted between '"+mysqlDateFormat.format(fromDate)+" 00:00:00' ";
-		dateSQLStringTotal += "dateSubmitted between '"+mysqlDateFormat.format(fromDate)+" 00:00:00' ";
+		dateSQLString += "((a.dateSubmitted between '"+mysqlDateFormat.format(fromDate)+" 00:00:00' ";
+		dateSQLStringTotal += "((dateSubmitted between '"+mysqlDateFormat.format(fromDate)+" 00:00:00' ";
 
 		if(!"".equals(toDate)) {
-		    dateSQLString += "AND '"+mysqlDateFormat.format(toDate)+" 23:59:59'";
-		    dateSQLStringTotal += "AND '"+mysqlDateFormat.format(toDate)+" 23:59:59'";
+		    dateSQLString += "AND '"+mysqlDateFormat.format(toDate)+" 23:59:59') OR (";
+		    dateSQLStringTotal += "AND '"+mysqlDateFormat.format(toDate)+" 23:59:59') OR (";
 		}
 		else {
-		    dateSQLString += "AND '"+mysqlDateFormat.format(fromDate)+" 23:59:59'";
-		    dateSQLStringTotal += "AND '"+mysqlDateFormat.format(fromDate)+" 23:59:59'";
+		    dateSQLString += "AND '"+mysqlDateFormat.format(fromDate)+" 23:59:59') OR (";
+		    dateSQLStringTotal += "AND '"+mysqlDateFormat.format(fromDate)+" 23:59:59') OR (";
+		}
+		
+		dateSQLString += "a.startDateTime between '"+mysqlDateFormat.format(fromDate)+" 00:00:00' ";
+		dateSQLStringTotal += "startDateTime between '"+mysqlDateFormat.format(fromDate)+" 00:00:00' ";
+		
+		if(!"".equals(toDate)) {
+		    dateSQLString += "AND '"+mysqlDateFormat.format(toDate)+" 23:59:59'))";
+		    dateSQLStringTotal += "AND '"+mysqlDateFormat.format(toDate)+" 23:59:59'))";
+		}
+		else {
+		    dateSQLString += "AND '"+mysqlDateFormat.format(fromDate)+" 23:59:59'))";
+		    dateSQLStringTotal += "AND '"+mysqlDateFormat.format(fromDate)+" 23:59:59'))";
 		}
 	    }
 	    else {
 		if(!"".equals(toDate)) {
-		    dateSQLString += "a.dateSubmitted between '"+mysqlDateFormat.format(toDate)+" 00:00:00' ";
-		    dateSQLString += "AND '"+mysqlDateFormat.format(toDate)+" 23:59:59'";
+		    dateSQLString += "((a.dateSubmitted between '"+mysqlDateFormat.format(toDate)+" 00:00:00' ";
+		    dateSQLString += "AND '"+mysqlDateFormat.format(toDate)+" 23:59:59') OR (";
+		    dateSQLString += "a.startDateTime between '"+mysqlDateFormat.format(toDate)+" 00:00:00' ";
+		    dateSQLString += "AND '"+mysqlDateFormat.format(toDate)+" 23:59:59'))";
 		}
 		else {
 		    dateSQLString += "a.id > 0";
 		}
 	    }
+	    
 	}
 	else {
 	    dateSQLString += "a.id > 0";
@@ -608,20 +624,44 @@ public class transactionInDAOImpl implements transactionInDAO {
 	int firstResult = 0;
 
 	Criteria findBatches = sessionFactory.getCurrentSession().createCriteria(batchUploads.class);
-	findBatches.add(Restrictions.ge("totalRecordCount", 0));
 	
 	if (!"".equals(batchName)) {
-	    findBatches.add(Restrictions.eq("utBatchName", batchName));
+	    findBatches.add(Restrictions.and(Restrictions.ge("totalRecordCount", 0),Restrictions.eq("utBatchName", batchName)));
 	}
 	else {
-	    if (!"".equals(fromDate)) {
-		findBatches.add(Restrictions.ge("dateSubmitted", fromDate));
-	    }
+	    Criterion rest1 = null;
+	    Criterion rest2 = null;
 
-	    if (!"".equals(toDate)) {
-		findBatches.add(Restrictions.lt("dateSubmitted", toDate));
+	    if (fromDate != null) {
+		if (!"".equals(fromDate)) {
+
+		    if (toDate != null) {
+			if (!"".equals(toDate)) {
+			    rest1 = Restrictions.and(Restrictions.ge("dateSubmitted", fromDate),Restrictions.lt("dateSubmitted", toDate));
+			    rest2 = Restrictions.and(Restrictions.ge("startDateTime", fromDate),Restrictions.lt("startDateTime", toDate));
+			}
+			else {
+			    rest1 = Restrictions.ge("dateSubmitted", fromDate);
+			    rest2 = Restrictions.ge("startDateTime", fromDate);
+			}
+		    }
+		    else {
+			rest1 = Restrictions.ge("dateSubmitted", fromDate);
+			rest2 = Restrictions.ge("startDateTime", fromDate);
+		    }
+		}
 	    }
+	    else {
+		if (toDate != null) {
+		    if (!"".equals(toDate)) {
+			rest1 = Restrictions.lt("dateSubmitted", toDate);
+			rest2 = Restrictions.lt("startDateTime", toDate);
+		    }
+		}
+	    }
+	    findBatches.add(Restrictions.and(Restrictions.ge("totalRecordCount", 0),Restrictions.or(rest1,rest2)));
 	}
+	
 
 	findBatches.addOrder(Order.desc("dateSubmitted"));
 
@@ -1951,7 +1991,8 @@ public class transactionInDAOImpl implements transactionInDAO {
     public List<Integer> geBatchesIdsForReport(String fromDate, String toDate) throws Exception {
 
 	String sql = "select id from batchUploads a "
-		+ "where (a.dateSubmitted >= '" + fromDate + " 00:00:00' and a.dateSubmitted < '" + toDate + " 23:59:59') "
+		+ "where ((a.dateSubmitted >= '" + fromDate + " 00:00:00' and a.dateSubmitted < '" + toDate + " 23:59:59') OR ("
+		+ "a.startDateTime >= '" + fromDate + " 00:00:00' and a.startDateTime < '" + toDate + " 23:59:59')) "
 		+ "and statusId in (2,3,4,5,6,22,23,24,25,28,36,38,41,42,43,59,64) "
 		+ "order by dateSubmitted desc";
 
@@ -1968,9 +2009,10 @@ public class transactionInDAOImpl implements transactionInDAO {
     public BigInteger getMessagesSent(String fromDate, String toDate) throws Exception {
 
 	String sql = "select count(a.id) as totalMessagesSent "
-		+ "from batchdownloads a inner join "
-		+ "batchUploads b on a.batchUploadId = b.id "
-		+ "where a.statusId = 28 and (b.dateSubmitted >= '" + fromDate + " 00:00:00' and b.dateSubmitted < '" + toDate + " 23:59:59')";
+	    + "from batchdownloads a inner join "
+	    + "batchUploads b on a.batchUploadId = b.id "
+	    + "where a.statusId = 28 and ((b.dateSubmitted >= '" + fromDate + " 00:00:00' and b.dateSubmitted < '" + toDate + " 23:59:59') OR ("
+	    + "b.startDateTime >= '" + fromDate + " 00:00:00' and b.startDateTime < '" + toDate + " 23:59:59'))";
 
 	Query getMessagesSentCount = sessionFactory.getCurrentSession().createSQLQuery(sql);
 
@@ -1982,9 +2024,10 @@ public class transactionInDAOImpl implements transactionInDAO {
     public BigInteger getRejectedCount(String fromDate, String toDate) throws Exception {
 
 	String sql = "select count(a.id) as totalErrors "
-		+ "from batchuploadauditerrors a inner join "
-		+ "batchUploads b on a.batchUploadId = b.id "
-		+ "where (b.dateSubmitted >= '" + fromDate + " 00:00:00' and b.dateSubmitted < '" + toDate + " 23:59:59')";
+	    + "from batchuploadauditerrors a inner join "
+	    + "batchUploads b on a.batchUploadId = b.id "
+	    + "where ((b.dateSubmitted >= '" + fromDate + " 00:00:00' and b.dateSubmitted < '" + toDate + " 23:59:59') OR ("
+	    + "b.startDateTime >= '" + fromDate + " 00:00:00' and b.startDateTime < '" + toDate + " 23:59:59'))";
 	
 	Query getRejectedCount = sessionFactory.getCurrentSession().createSQLQuery(sql);
 
@@ -1996,8 +2039,9 @@ public class transactionInDAOImpl implements transactionInDAO {
     public BigInteger getRejectedReceivedCount(String fromDate, String toDate) throws Exception {
 
 	String sql = "select count(id) as totalMessagesRejected "
-		+ "from batchUploads "
-		+ "where statusId = 7 and (dateSubmitted >= '" + fromDate + " 00:00:00' and dateSubmitted < '" + toDate + " 23:59:59')";
+	    + "from batchUploads "
+	    + "where statusId = 7 and ((dateSubmitted >= '" + fromDate + " 00:00:00' and dateSubmitted < '" + toDate + " 23:59:59') OR ("
+	    + "startDateTime >= '" + fromDate + " 00:00:00' and startDateTime < '" + toDate + " 23:59:59'))";
 	
 	Query getRejectedReceivedCount = sessionFactory.getCurrentSession().createSQLQuery(sql);
 
@@ -2009,13 +2053,14 @@ public class transactionInDAOImpl implements transactionInDAO {
     public List<activityReportList> getReferralList(String fromDate, String toDate) throws Exception {
 
 	String sql = ("select a.configId, c.orgname as orgName, b.configName as messageType,"
-		+ "(select count(Id) from batchuploads where configId = a.configId and dateSubmitted >= '" + fromDate + " 00:00:00' and dateSubmitted < '" + toDate + " 23:59:59') as total "
-		+ "from batchuploads a "
-		+ "inner join configurations b on b.id = a.configId "
-		+ "inner join organizations c on c.id = a.orgId "
-		+ "where a.dateSubmitted >= '" + fromDate + " 00:00:00' and a.dateSubmitted < '" + toDate + " 23:59:59' "
-		+ "group by a.configId "
-		+ "order by orgName asc");
+	    + "(select count(Id) from batchuploads where configId = a.configId and ((dateSubmitted >= '" + fromDate + " 00:00:00' and dateSubmitted < '" + toDate + " 23:59:59') OR (startDateTime >= '" + fromDate + " 00:00:00' and startDateTime < '" + toDate + " 23:59:59'))) as total "
+	    + "from batchuploads a "
+	    + "inner join configurations b on b.id = a.configId "
+	    + "inner join organizations c on c.id = a.orgId "
+	    + "where ((a.dateSubmitted >= '" + fromDate + " 00:00:00' and a.dateSubmitted < '" + toDate + " 23:59:59') OR ("
+	    + "a.startDateTime >= '" + fromDate + " 00:00:00' and a.startDateTime < '" + toDate + " 23:59:59')) "
+	    + "group by a.configId "
+	    + "order by orgName asc");
 	
 	Query query = sessionFactory.getCurrentSession().createSQLQuery(sql)
 		.addScalar("configId", StandardBasicTypes.INTEGER)
@@ -2491,23 +2536,47 @@ public class transactionInDAOImpl implements transactionInDAO {
 	
 	
 	Criteria findBatches = sessionFactory.getCurrentSession().createCriteria(batchUploads.class);
-	findBatches.add(Restrictions.in("statusId",statusIds));
+	//findBatches.add(Restrictions.in("statusId",statusIds));
+	
+	Criterion rest1 = null;
+	Criterion rest2 = null;
 
 	if (fromDate != null) {
 	    if (!"".equals(fromDate)) {
-		findBatches.add(Restrictions.ge("dateSubmitted", fromDate));
+		
+		if (toDate != null) {
+		    if (!"".equals(toDate)) {
+			Calendar cal = Calendar.getInstance();
+			cal.setTime(toDate);
+			cal.add(Calendar.DATE, 1);
+			
+			rest1 = Restrictions.and(Restrictions.ge("dateSubmitted", fromDate),Restrictions.lt("dateSubmitted", cal.getTime()));
+			rest2 = Restrictions.and(Restrictions.ge("startDateTime", fromDate),Restrictions.lt("startDateTime", cal.getTime()));
+		    }
+		    else {
+			rest1 = Restrictions.ge("dateSubmitted", fromDate);
+			rest2 = Restrictions.ge("startDateTime", fromDate);
+		    }
+		}
+		else {
+		    rest1 = Restrictions.ge("dateSubmitted", fromDate);
+		    rest2 = Restrictions.ge("startDateTime", fromDate);
+		}
+	    }
+	}
+	else {
+	    if (toDate != null) {
+		if (!"".equals(toDate)) {
+		    Calendar cal = Calendar.getInstance();
+		    cal.setTime(toDate);
+		    cal.add(Calendar.DATE, 1);
+		    rest1 = Restrictions.lt("dateSubmitted", cal.getTime());
+		    rest2 = Restrictions.lt("startDateTime", cal.getTime());
+		}
 	    }
 	}
 	
-	
-	if (toDate != null) {
-	    if (!"".equals(toDate)) {
-		Calendar cal = Calendar.getInstance();
-		cal.setTime(toDate);
-		cal.add(Calendar.DATE, 1);
-		findBatches.add(Restrictions.lt("dateSubmitted", cal.getTime()));
-	    }
-	}
+	findBatches.add(Restrictions.and(Restrictions.in("statusId",statusIds),Restrictions.or(rest1,rest2)));
 
 	findBatches.addOrder(Order.desc("dateSubmitted"));
 
@@ -3296,22 +3365,36 @@ public class transactionInDAOImpl implements transactionInDAO {
 	if(fromDate !=  null && toDate != null) {
 	    
 	    if(!"".equals(fromDate)) {
-		dateSQLString += "a.dateSubmitted between '"+mysqlDateFormat.format(fromDate)+" 00:00:00' ";
-		dateSQLStringTotal += "dateSubmitted between '"+mysqlDateFormat.format(fromDate)+" 00:00:00' ";
+		dateSQLString += "((a.dateSubmitted between '"+mysqlDateFormat.format(fromDate)+" 00:00:00' ";
+		dateSQLStringTotal += "((dateSubmitted between '"+mysqlDateFormat.format(fromDate)+" 00:00:00' ";
 
 		if(!"".equals(toDate)) {
-		    dateSQLString += "AND '"+mysqlDateFormat.format(toDate)+" 23:59:59'";
-		    dateSQLStringTotal += "AND '"+mysqlDateFormat.format(toDate)+" 23:59:59'";
+		    dateSQLString += "AND '"+mysqlDateFormat.format(toDate)+" 23:59:59') OR (";
+		    dateSQLStringTotal += "AND '"+mysqlDateFormat.format(toDate)+" 23:59:59') OR (";
 		}
 		else {
-		    dateSQLString += "AND '"+mysqlDateFormat.format(fromDate)+" 23:59:59'";
-		    dateSQLStringTotal += "AND '"+mysqlDateFormat.format(fromDate)+" 23:59:59'";
+		    dateSQLString += "AND '"+mysqlDateFormat.format(fromDate)+" 23:59:59') OR (";
+		    dateSQLStringTotal += "AND '"+mysqlDateFormat.format(fromDate)+" 23:59:59') OR (";
+		}
+		
+		dateSQLString += "a.startDateTime between '"+mysqlDateFormat.format(fromDate)+" 00:00:00' ";
+		dateSQLStringTotal += "startDateTime between '"+mysqlDateFormat.format(fromDate)+" 00:00:00' ";
+		
+		if(!"".equals(toDate)) {
+		    dateSQLString += "AND '"+mysqlDateFormat.format(toDate)+" 23:59:59'))";
+		    dateSQLStringTotal += "AND '"+mysqlDateFormat.format(toDate)+" 23:59:59'))";
+		}
+		else {
+		    dateSQLString += "AND '"+mysqlDateFormat.format(fromDate)+" 23:59:59'))";
+		    dateSQLStringTotal += "AND '"+mysqlDateFormat.format(fromDate)+" 23:59:59'))";
 		}
 	    }
 	    else {
 		if(!"".equals(toDate)) {
-		    dateSQLString += "a.dateSubmitted between '"+mysqlDateFormat.format(toDate)+" 00:00:00' ";
-		    dateSQLString += "AND '"+mysqlDateFormat.format(toDate)+" 23:59:59'";
+		    dateSQLString += "((a.dateSubmitted between '"+mysqlDateFormat.format(toDate)+" 00:00:00' ";
+		    dateSQLString += "AND '"+mysqlDateFormat.format(toDate)+" 23:59:59') OR (";
+		    dateSQLString += "a.startDateTime between '"+mysqlDateFormat.format(toDate)+" 00:00:00' ";
+		    dateSQLString += "AND '"+mysqlDateFormat.format(toDate)+" 23:59:59'))";
 		}
 		else {
 		    dateSQLString += "a.id > 0";

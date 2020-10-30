@@ -195,15 +195,32 @@ public class adminProcessingActivity {
 
         /* Retrieve search parameters from session */
         searchParameters searchParameters = (searchParameters) session.getAttribute("searchParameters");
+	
+	searchParameters.setsection("activityReport");
+	session.setAttribute("searchParameters", searchParameters);
+	
+	if(searchParameters.getfromDate() == null) {
+	     searchParameters.setfromDate(fromDate);
+	     session.setAttribute("searchParameters", searchParameters);
+	}
+	if(searchParameters.gettoDate() == null) {
+	     searchParameters.settoDate(toDate);
+	     session.setAttribute("searchParameters", searchParameters);
+	}
+	
+	fromDate = searchParameters.getfromDate();
+	toDate = searchParameters.gettoDate();
+	
+	
 
-        if ("".equals(searchParameters.getsection()) || !"activityReport".equals(searchParameters.getsection())) {
+        /*if ("".equals(searchParameters.getsection()) || !"activityReport".equals(searchParameters.getsection())) {
             searchParameters.setfromDate(fromDate);
             searchParameters.settoDate(toDate);
             searchParameters.setsection("activityReport");
         } else {
             fromDate = searchParameters.getfromDate();
             toDate = searchParameters.gettoDate();
-        }
+        }*/
 
         mav.addObject("fromDate", fromDate);
         mav.addObject("toDate", toDate);
@@ -338,7 +355,41 @@ public class adminProcessingActivity {
 	
 	String searchTerm = "";
 	
-        if ("".equals(searchParameters.getsection()) || !"inbound".equals(searchParameters.getsection())) {
+	if(searchParameters.getfromDate() == null) {
+	     searchParameters.setfromDate(fromDate);
+	     session.setAttribute("searchParameters", searchParameters);
+	}
+	if(searchParameters.gettoDate() == null) {
+	     searchParameters.settoDate(toDate);
+	     session.setAttribute("searchParameters", searchParameters);
+	}
+	if(!"".equals(searchParameters.getsearchTerm().trim()) && "inbound".equals(searchParameters.getsection())) {
+	    searchTerm = searchParameters.getsearchTerm().trim();
+	}
+	else {
+	    if(pathVariables.get("batchName") != null) {
+		if(!"".equals(pathVariables.get("batchName"))) {
+		    searchTerm = pathVariables.get("batchName");
+		    searchParameters.setsearchTerm(pathVariables.get("batchName"));
+		    session.setAttribute("searchParameters", searchParameters);
+		}
+		else {
+		    searchParameters.setsearchTerm("");
+		    session.setAttribute("searchParameters", searchParameters);
+		}
+	    }
+	    else {
+		searchParameters.setsearchTerm("");
+		session.setAttribute("searchParameters", searchParameters);
+	    }
+	}
+	searchParameters.setsection("inbound");
+	session.setAttribute("searchParameters", searchParameters);
+	
+	fromDate = searchParameters.getfromDate();
+	toDate = searchParameters.gettoDate();
+	
+        /*if ("".equals(searchParameters.getsection()) || !"inbound".equals(searchParameters.getsection())) {
             searchParameters.setfromDate(fromDate);
             searchParameters.settoDate(toDate);
             searchParameters.setsection("inbound");
@@ -351,8 +402,7 @@ public class adminProcessingActivity {
 	    
 	    searchParameters.setsearchTerm("");
 	    session.setAttribute("searchParameters", searchParameters);
-        }
-	
+        }*/
 	
 	mav.addObject("searchFilter", searchTerm);
         mav.addObject("fromDate", fromDate);
@@ -388,6 +438,7 @@ public class adminProcessingActivity {
         searchParameters.setfromDate(fromDate);
         searchParameters.settoDate(toDate);
         searchParameters.setsection("inbound");
+	searchParameters.setsearchTerm(searchTerm);
 	
 	if(!"".equals(batchName)) {
 	    searchTerm = batchName;
@@ -467,7 +518,50 @@ public class adminProcessingActivity {
 	
 	String searchTerm = "";
 	
-        if ("".equals(searchParameters.getsection()) || !"outbound".equals(searchParameters.getsection())) {
+	if(pathVariables.get("batchName") != null) {
+	     if(!"".equals(pathVariables.get("batchName"))) {
+		 fromDate = null;
+		 toDate = null;
+	     }
+	}
+	
+	if(fromDate != null && searchParameters.getfromDate() == null) {
+	     searchParameters.setfromDate(fromDate);
+	     session.setAttribute("searchParameters", searchParameters);
+	}
+	if(toDate != null && searchParameters.gettoDate() == null) {
+	     searchParameters.settoDate(toDate);
+	     session.setAttribute("searchParameters", searchParameters);
+	}
+	
+	if(!"".equals(searchParameters.getsearchTerm().trim()) && "outbound".equals(searchParameters.getsection())) {
+	   searchTerm = searchParameters.getsearchTerm().trim();
+	}
+	else {
+	    if(pathVariables.get("batchName") != null) {
+		if(!"".equals(pathVariables.get("batchName"))) {
+		    searchTerm = pathVariables.get("batchName");
+		    searchParameters.setsearchTerm(pathVariables.get("batchName"));
+		    session.setAttribute("searchParameters", searchParameters);
+		}
+		else {
+		    searchParameters.setsearchTerm("");
+		    session.setAttribute("searchParameters", searchParameters);
+		}
+	    }
+	    else {
+		searchParameters.setsearchTerm("");
+		session.setAttribute("searchParameters", searchParameters);
+	    }
+	}
+	
+	searchParameters.setsection("outbound");
+	session.setAttribute("searchParameters", searchParameters);
+	
+	fromDate = searchParameters.getfromDate();
+	toDate = searchParameters.gettoDate();
+	
+        /*if ("".equals(searchParameters.getsection()) || !"outbound".equals(searchParameters.getsection())) {
             searchParameters.setfromDate(fromDate);
             searchParameters.settoDate(toDate);
             searchParameters.setsection("outbound");
@@ -480,7 +574,7 @@ public class adminProcessingActivity {
 	    
 	    searchParameters.setsearchTerm("");
 	    session.setAttribute("searchParameters", searchParameters);
-        }
+        }*/
 	
 	mav.addObject("searchFilter", searchTerm);
         mav.addObject("fromDate", fromDate);
@@ -517,6 +611,7 @@ public class adminProcessingActivity {
         searchParameters.setfromDate(fromDate);
         searchParameters.settoDate(toDate);
         searchParameters.setsection("outbound");
+	searchParameters.setsearchTerm(searchTerm);
 	
 	if(!"".equals(batchName)) {
 	    searchTerm = batchName;
@@ -1487,26 +1582,24 @@ public class adminProcessingActivity {
 
 	String searchTerm = "";
 	
-        if ("".equals(searchParameters.getsection()) || !"rejected".equals(searchParameters.getsection())) {
-            searchParameters.setfromDate(fromDate);
-            searchParameters.settoDate(toDate);
-	    searchParameters.setsearchTerm("");
-            searchParameters.setsection("rejected");
-	    session.setAttribute("searchParameters", searchParameters);
-        } else {
-            fromDate = searchParameters.getfromDate();
-            toDate = searchParameters.gettoDate();
-	    searchTerm = searchParameters.getsearchTerm();
+	searchParameters.setsection("rejected");
+	session.setAttribute("searchParameters", searchParameters);
+	 
+	if(!"".equals(searchParameters.getsearchTerm().trim())) {
+	    searchTerm = searchParameters.getsearchTerm().trim();
 	    searchParameters.setsearchTerm("");
 	    session.setAttribute("searchParameters", searchParameters);
-        }
+	}
+	
+	fromDate = searchParameters.getfromDate();
+	toDate = searchParameters.gettoDate();
 	
 	mav.addObject("searchFilter", searchTerm);
         mav.addObject("fromDate", fromDate);
         mav.addObject("toDate", toDate);
         mav.addObject("originalDate", originalDate);
 	mav.addObject("DTS", "");
-
+	
         return mav;
 
     }
@@ -1543,12 +1636,16 @@ public class adminProcessingActivity {
         mav.addObject("toDate", toDate);
         mav.addObject("originalDate", originalDate);
 	mav.addObject("DTS", DTS);
-
+	
         /* Retrieve search parameters from session */
         searchParameters searchParameters = (searchParameters) session.getAttribute("searchParameters");
         searchParameters.setfromDate(fromDate);
         searchParameters.settoDate(toDate);
         searchParameters.setsection("rejected");
+	
+	/* Get system inbound summary */
+        systemSummary summaryDetails = transactionInManager.generateSystemInboundSummary();
+        mav.addObject("summaryDetails", summaryDetails);
 
         try {
 
@@ -2437,21 +2534,19 @@ public class adminProcessingActivity {
 	    toDate = getMonthDate("END-TODAY");
 	}
 	
-	searchParameters.setfromDate(fromDate);
-        searchParameters.settoDate(toDate);
-       
 	String searchTerm = "";
 	
-        if ("".equals(searchParameters.getsection()) || !"invalidIn".equals(searchParameters.getsection())) {
-            searchParameters.setsection("invalidIn");
-	    searchParameters.setsearchTerm("");
-	    session.setAttribute("searchParameters", searchParameters);
-        } else {
+	searchParameters.setsection("invalidIn");
+	session.setAttribute("searchParameters", searchParameters);
+	 
+	if(!"".equals(searchParameters.getsearchTerm().trim())) {
 	    searchTerm = searchParameters.getsearchTerm().trim();
-	    
 	    searchParameters.setsearchTerm("");
 	    session.setAttribute("searchParameters", searchParameters);
-        }
+	}
+	
+	fromDate = searchParameters.getfromDate();
+	toDate = searchParameters.gettoDate();
 	
         ModelAndView mav = new ModelAndView();
         mav.setViewName("/administrator/processing-activity/invalidIn");
@@ -3411,7 +3506,7 @@ public class adminProcessingActivity {
      * @throws Exception
      */
     @RequestMapping(value = "/outbound/auditReport/{batchName}", method = RequestMethod.GET)
-    public ModelAndView viewOutboundAuditReport(@PathVariable String batchName) throws Exception {
+    public ModelAndView viewOutboundAuditReport(@PathVariable String batchName, HttpSession session) throws Exception {
 
         ModelAndView mav = new ModelAndView();
         mav.setViewName("/administrator/processing-activity/outbound/auditReport");
@@ -3420,7 +3515,11 @@ public class adminProcessingActivity {
 	boolean canEdit = false;
 	boolean canSend = false;
         boolean showButtons = true;
-
+	
+	searchParameters searchParameters = (searchParameters) session.getAttribute("searchParameters");
+	searchParameters.setsection("outbound");
+	session.setAttribute("searchParameters", searchParameters);
+	
         /* Get the details of the batch */
 	batchDownloads batchDetails = transactionOutManager.getBatchDetailsByBatchName(batchName);
 	
@@ -3934,16 +4033,19 @@ public class adminProcessingActivity {
 	}
 	
 	customCols.add("Column Name");
-	customCols.add("Client Identifier");
 	customCols.add("Field Value");
 	
 	if("inbound".equals(type)) {
-	    sql = "select a.transactionInRecordsId as rownumber, a.fieldNo as fieldNumber, a.fieldName as column_name,a.translatedReportField1Data as clientIdentifier,a.fieldValue as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
-	    + "from batchuploaddroppedvalues a "
+	    // sql = "select a.transactionInRecordsId as rownumber, a.fieldNo as fieldNumber, a.fieldName as column_name,a.translatedReportField1Data as clientIdentifier,a.fieldValue as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
+		sql = "select fromOutboundConfig, a.transactionInRecordsId as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name,"
+				+ "a.fieldValue as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
+		+ "from batchuploaddroppedvalues a "
 	    + "where a.batchUploadId = " + batchId + " order by a.id asc limit 50 ";
 	}
 	else {
-	    sql = "select a.transactionOutRecordsId as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name,a.translatedReportField1Data as clientIdentifier,a.fieldValue as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
+	    //sql = "select a.transactionOutRecordsId as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name,a.translatedReportField1Data as clientIdentifier,a.fieldValue as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
+	    sql = "select 'false' as fromOutboundConfig,a.transactionOutRecordsId as rownumber, "
+	    + " a.fieldNo as fieldNumber,a.fieldName as column_name, a.fieldValue as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
 	    + "from batchdownloaddroppedvalues a "
 	    + "where a.batchDownloadId = " + batchId + " order by a.id asc limit 50 ";
 	}
