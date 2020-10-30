@@ -1,222 +1,151 @@
-/** for prod move **/
+/** for Prod **/
 
-DROP PROCEDURE `universaltranslator`.`addCharToString`;
-DROP PROCEDURE `universaltranslator`.`addDelimiterEvery2Characters`;
-DROP PROCEDURE `universaltranslator`.`AlphaNumericCheck`;
-DROP PROCEDURE `universaltranslator`.`AlphaNumericCheck_20200422`;
-DROP PROCEDURE `universaltranslator`.`appendPrependString`;
-DROP PROCEDURE `universaltranslator`.`appendPrependStringIfNotBlank`;
-DROP PROCEDURE `universaltranslator`.`appendStringWithCon1IfLengthMataches`;
-DROP PROCEDURE `universaltranslator`.`applyCW`;
-DROP PROCEDURE `universaltranslator`.`applyCWTranslatedList`;
-DROP PROCEDURE `universaltranslator`.`applyCWTranslatedListNoTrackDroppedValues`;
-DROP PROCEDURE `universaltranslator`.`ArithmeticConstant`;
-DROP PROCEDURE `universaltranslator`.`ArithmeticConstantStoreInFA`;
-DROP PROCEDURE `universaltranslator`.`ArithmeticForSFAndFAUpdateFB`;
-DROP PROCEDURE `universaltranslator`.`BHCounseling`;
-DROP PROCEDURE `universaltranslator`.`BHMedServices`;
-DROP PROCEDURE `universaltranslator`.`cat2ApplyCW`;
-DROP PROCEDURE `universaltranslator`.`cat2ApplyCWForTransactionInRecords`;
-DROP PROCEDURE `universaltranslator`.`cat2ApplyCWTranslatedList`;
-DROP PROCEDURE `universaltranslator`.`cat2CleanListTable`;
-DROP PROCEDURE `universaltranslator`.`cat2Concat2ColsDelimNoSpaces`;
-DROP PROCEDURE `universaltranslator`.`cat2Concat3ColsDelimNoSpaces`;
-DROP PROCEDURE `universaltranslator`.`cat2CopyColumnIn`;
-DROP PROCEDURE `universaltranslator`.`cat2DelTransWhenFieldAIsNull`;
-DROP PROCEDURE `universaltranslator`.`cat2PopulateTranslatedList`;
-DROP PROCEDURE `universaltranslator`.`cat2StripLeadingChars`;
-DROP PROCEDURE `universaltranslator`.`cat2StripLeadingCharsTTI`;
-DROP PROCEDURE `universaltranslator`.`cat2UpdateListValue`;
-DROP PROCEDURE `universaltranslator`.`CheckInvalidDateAndError`;
-DROP PROCEDURE `universaltranslator`.`CheckLengthAndReplace`;
-DROP PROCEDURE `universaltranslator`.`CheckListLengthIfGTError`;
-DROP PROCEDURE `universaltranslator`.`CleanTranslatedListTable`;
-DROP PROCEDURE `universaltranslator`.`closeOutReferral`;
-DROP PROCEDURE `universaltranslator`.`CompareFALengthForNotBlankReplaceWithCon2`;
-DROP PROCEDURE `universaltranslator`.`CompareTwoFieldsAndReject`;
-DROP PROCEDURE `universaltranslator`.`Concat3ColsDelimNoSpaces`;
-DROP PROCEDURE `universaltranslator`.`concat3ColssWithDelimiterNoSpaces`;
-DROP PROCEDURE `universaltranslator`.`concatColumnsToList`;
-DROP PROCEDURE `universaltranslator`.`concatFieldToList`;
-DROP PROCEDURE `universaltranslator`.`copyColumn`;
-DROP PROCEDURE `universaltranslator`.`CopyColumnTTItoTIR`;
-DROP PROCEDURE `universaltranslator`.`countListSize`;
-DROP PROCEDURE `universaltranslator`.`createTempErrorTable`;
-DROP PROCEDURE `universaltranslator`.`dateddmonyyWithDashesToyyyymmdd`;
-DROP PROCEDURE `universaltranslator`.`datedmyyWithSlashesToyyyymmdd`;
-DROP PROCEDURE `universaltranslator`.`datemddyyyyToyyyymmdd`;
-DROP PROCEDURE `universaltranslator`.`datemddyyyyWithSlashesToyyyymmdd`;
-DROP PROCEDURE `universaltranslator`.`datemdyyyyWithSlashesToyyyymmdd`;
-DROP PROCEDURE `universaltranslator`.`datemmddyyWithSlashesToyyyymmdd`;
-DROP PROCEDURE `universaltranslator`.`datemmddyyyytoyyyymmdd`;
-DROP PROCEDURE `universaltranslator`.`datemmddyyyyWithSlashesToyyyymmdd`;
-DROP PROCEDURE `universaltranslator`.`datemmdyyyyWithSlashesToyyyymmdd`;
-DROP PROCEDURE `universaltranslator`.`dateYYYYMMDDHHMMSSMSToYYYYMMDDHHMMSS`;
-DROP PROCEDURE `universaltranslator`.`dateyyyymmddTimeToDateTime`;
-DROP PROCEDURE `universaltranslator`.`dateyyyymmddTommddyyyy`;
-DROP PROCEDURE `universaltranslator`.`dateyyyymmddWithDashesToyyyymmdd`;
-DROP PROCEDURE `universaltranslator`.`deleteTransaction`;
-DROP PROCEDURE `universaltranslator`.`DeleteTransactionWhenFieldIsNull`;
-DROP PROCEDURE `universaltranslator`.`DOBCheck`;
-DROP PROCEDURE `universaltranslator`.`dropValueByPriorityInboundOnly`;
-DROP PROCEDURE `universaltranslator`.`FALessThanNumericCon1UpdateFBwithCon2`;
-DROP PROCEDURE `universaltranslator`.`FieldBGreaterThanEqualFieldAUpdateFieldA`;
-DROP PROCEDURE `universaltranslator`.`futureDateCheck`;
-DROP PROCEDURE `universaltranslator`.`getConfigToFromFieldNo`;
-DROP PROCEDURE `universaltranslator`.`getFinalStatusIds`;
-DROP PROCEDURE `universaltranslator`.`getJSONForConfig`;
-DROP PROCEDURE `universaltranslator`.`GreaterThanEqualFieldAUpdateFieldB`;
-DROP PROCEDURE `universaltranslator`.`if1Con1ElseCon2`;
-DROP PROCEDURE `universaltranslator`.`if1Con1ElseNull`;
-DROP PROCEDURE `universaltranslator`.`ifDateCon1ElseNull`;
-DROP PROCEDURE `universaltranslator`.`IfFALengthNotMatchCon1ReplaceFBWithCon2`;
-DROP PROCEDURE `universaltranslator`.`ifFAStartsWithCon1UpdateFBToCon2`;
-DROP PROCEDURE `universaltranslator`.`IfFieldACon1andTFBlankInsertCon2Error`;
-DROP PROCEDURE `universaltranslator`.`ifFieldANotCon1ThenNull`;
-DROP PROCEDURE `universaltranslator`.`ifFieldANotInListValuesSetToCon2`;
-DROP PROCEDURE `universaltranslator`.`ifFieldANotNumericSetFieldBToCon1`;
-DROP PROCEDURE `universaltranslator`.`IfFieldsBlankThenError`;
-DROP PROCEDURE `universaltranslator`.`IfMatchFieldAAndTFBlankSetTFValue`;
-DROP PROCEDURE `universaltranslator`.`IfMatchSetToValueOfAnotherColumn`;
-DROP PROCEDURE `universaltranslator`.`ifNonDateAndNotBlankReject`;
-DROP PROCEDURE `universaltranslator`.`ifNonDateSetNull`;
-DROP PROCEDURE `universaltranslator`.`ifNotBlankReject`;
-DROP PROCEDURE `universaltranslator`.`ifNumLTThenError`;
-DROP PROCEDURE `universaltranslator`.`IfSFLen0orNullReplaceValueInFA`;
-DROP PROCEDURE `universaltranslator`.`ifSFMatchCon1ThenCon2ElseNull`;
-DROP PROCEDURE `universaltranslator`.`IfSFNullOrEmptySetFieldBToValueFieldA`;
-DROP PROCEDURE `universaltranslator`.`ifSrcFieldBlankAndFACompareTo0ThenFieldBCon2`;
-DROP PROCEDURE `universaltranslator`.`insertValidationErrors`;
-DROP PROCEDURE `universaltranslator`.`insertValidationErrorsOutbound`;
-DROP PROCEDURE `universaltranslator`.`KeepTopRanked`;
-DROP PROCEDURE `universaltranslator`.`lessThanEqualFieldAUpdateFieldB`;
-DROP PROCEDURE `universaltranslator`.`ListToRows`;
-DROP PROCEDURE `universaltranslator`.`MatchFAUpdateSF`;
-DROP PROCEDURE `universaltranslator`.`MatchFieldAUpdateFieldB`;
-DROP PROCEDURE `universaltranslator`.`mergeTransactions`;
-DROP PROCEDURE `universaltranslator`.`mergeValues`;
-DROP PROCEDURE `universaltranslator`.`mmddyyyytoyyyymmdd`;
-DROP PROCEDURE `universaltranslator`.`NJPopulateCounseling`;
-DROP PROCEDURE `universaltranslator`.`NJProviderIdentifier`;
-DROP PROCEDURE `universaltranslator`.`NotInUse_DateToyyyymmdd`;
-DROP PROCEDURE `universaltranslator`.`NumericRange`;
-DROP PROCEDURE `universaltranslator`.`overwriteColumn`;
-DROP PROCEDURE `universaltranslator`.`overwriteColumnWithRandomNumber`;
-DROP PROCEDURE `universaltranslator`.`pastDateCheck`;
-DROP PROCEDURE `universaltranslator`.`populateAuditReport`;
-DROP PROCEDURE `universaltranslator`.`populateDroppedValues`;
-DROP PROCEDURE `universaltranslator`.`populateDroppedValues_20200610`;
-DROP PROCEDURE `universaltranslator`.`populateOutboundAuditReport`;
-DROP PROCEDURE `universaltranslator`.`PopulateTranslatedList`;
-DROP PROCEDURE `universaltranslator`.`populateUniqueKeyAndTTI`;
-DROP PROCEDURE `universaltranslator`.`populateWithBatchUploadId`;
-DROP PROCEDURE `universaltranslator`.`prependStringWithCon2IfLengthMataches`;
-DROP PROCEDURE `universaltranslator`.`regExCheck`;
-DROP PROCEDURE `universaltranslator`.`rejectNonYearMonthTransactions`;
-DROP PROCEDURE `universaltranslator`.`removeDupFromList`;
-DROP PROCEDURE `universaltranslator`.`replaceBlanksWithChars`;
-DROP PROCEDURE `universaltranslator`.`replacechars`;
-DROP PROCEDURE `universaltranslator`.`setFieldToNull`;
-DROP PROCEDURE `universaltranslator`.`setInboundOutBoundTables`;
-DROP PROCEDURE `universaltranslator`.`setSqlForConfig`;
-DROP PROCEDURE `universaltranslator`.`setSqlForOutboundConfig`;
-DROP PROCEDURE `universaltranslator`.`stringToDate`;
-DROP PROCEDURE `universaltranslator`.`StringToDateFor2DigitYears`;
-DROP PROCEDURE `universaltranslator`.`stripCharAtPos`;
-DROP PROCEDURE `universaltranslator`.`stripCharsFromStartOrEnd`;
-DROP PROCEDURE `universaltranslator`.`stripLeadingChars`;
-DROP PROCEDURE `universaltranslator`.`stripPhoneChars`;
-DROP PROCEDURE `universaltranslator`.`stripPhoneCharsOutbound`;
-DROP PROCEDURE `universaltranslator`.`stripTrailingChars`;
-DROP PROCEDURE `universaltranslator`.`substringToAnotherField`;
-DROP PROCEDURE `universaltranslator`.`trimField`;
-DROP PROCEDURE `universaltranslator`.`updateFieldBToDistinctSrcFieldAsList`;
-DROP PROCEDURE `universaltranslator`.`updateFieldBToSrcFieldAsList`;
-DROP PROCEDURE `universaltranslator`.`UpdateFPRace`;
-DROP PROCEDURE `universaltranslator`.`UpdateToMaxMinForCol`;
-DROP PROCEDURE `universaltranslator`.`UpdateTranslatedListValueNotDistinct`;
-DROP PROCEDURE `universaltranslator`.`YYYYMMDDHHMMSSMSToYYYYMMDDHHMMSS`;
-DROP PROCEDURE `universaltranslator`.`yyyymmddstripTime`;
-DROP PROCEDURE `universaltranslator`.`yyyymmddTimeToDateTime`;
-DROP PROCEDURE `universaltranslator`.`yyyymmddToDate`;
-DROP PROCEDURE `universaltranslator`.`yyyymmddTommddyyyy`;
-DROP PROCEDURE `universaltranslator`.`yyyymmddToString`;
-DROP PROCEDURE `universaltranslator`.`ZipCodeCheck`;
-DROP PROCEDURE `universaltranslator`.`ZipCodeCheck_20200422`;
+DROP PROCEDURE if exists  `universaltranslator`.`addCharToString`;
+DROP PROCEDURE if exists  `universaltranslator`.`addDelimiterEvery2Characters`;
+DROP PROCEDURE if exists  `universaltranslator`.`AlphaNumericCheck`;
+DROP PROCEDURE if exists  `universaltranslator`.`AlphaNumericCheck_20200422`;
+DROP PROCEDURE if exists  `universaltranslator`.`appendPrependString`;
+DROP PROCEDURE if exists  `universaltranslator`.`appendPrependStringIfNotBlank`;
+DROP PROCEDURE if exists  `universaltranslator`.`appendStringWithCon1IfLengthMataches`;
+DROP PROCEDURE if exists  `universaltranslator`.`applyCW`;
+DROP PROCEDURE if exists  `universaltranslator`.`applyCWTranslatedList`;
+DROP PROCEDURE if exists  `universaltranslator`.`applyCWTranslatedListNoTrackDroppedValues`;
+DROP PROCEDURE if exists  `universaltranslator`.`ArithmeticConstant`;
+DROP PROCEDURE if exists  `universaltranslator`.`ArithmeticConstantStoreInFA`;
+DROP PROCEDURE if exists  `universaltranslator`.`ArithmeticForSFAndFAUpdateFB`;
+DROP PROCEDURE if exists  `universaltranslator`.`BHCounseling`;
+DROP PROCEDURE if exists  `universaltranslator`.`BHMedServices`;
+DROP PROCEDURE if exists  `universaltranslator`.`cat2ApplyCW`;
+DROP PROCEDURE if exists  `universaltranslator`.`cat2ApplyCWForTransactionInRecords`;
+DROP PROCEDURE if exists  `universaltranslator`.`cat2ApplyCWTranslatedList`;
+DROP PROCEDURE if exists  `universaltranslator`.`cat2CleanListTable`;
+DROP PROCEDURE if exists  `universaltranslator`.`cat2Concat2ColsDelimNoSpaces`;
+DROP PROCEDURE if exists  `universaltranslator`.`cat2Concat3ColsDelimNoSpaces`;
+DROP PROCEDURE if exists  `universaltranslator`.`cat2CopyColumnIn`;
+DROP PROCEDURE if exists  `universaltranslator`.`cat2DelTransWhenFieldAIsNull`;
+DROP PROCEDURE if exists  `universaltranslator`.`cat2PopulateTranslatedList`;
+DROP PROCEDURE if exists  `universaltranslator`.`cat2StripLeadingChars`;
+DROP PROCEDURE if exists  `universaltranslator`.`cat2StripLeadingCharsTTI`;
+DROP PROCEDURE if exists  `universaltranslator`.`cat2UpdateListValue`;
+DROP PROCEDURE if exists  `universaltranslator`.`CheckInvalidDateAndError`;
+DROP PROCEDURE if exists  `universaltranslator`.`CheckLengthAndReplace`;
+DROP PROCEDURE if exists  `universaltranslator`.`CheckListLengthIfGTError`;
+DROP PROCEDURE if exists  `universaltranslator`.`CleanTranslatedListTable`;
+DROP PROCEDURE if exists  `universaltranslator`.`closeOutReferral`;
+DROP PROCEDURE if exists  `universaltranslator`.`CompareFALengthForNotBlankReplaceWithCon2`;
+DROP PROCEDURE if exists  `universaltranslator`.`CompareTwoFieldsAndReject`;
+DROP PROCEDURE if exists  `universaltranslator`.`Concat3ColsDelimNoSpaces`;
+DROP PROCEDURE if exists  `universaltranslator`.`concat3ColssWithDelimiterNoSpaces`;
+DROP PROCEDURE if exists  `universaltranslator`.`concatColumnsToList`;
+DROP PROCEDURE if exists  `universaltranslator`.`concatFieldToList`;
+DROP PROCEDURE if exists  `universaltranslator`.`copyColumn`;
+DROP PROCEDURE if exists  `universaltranslator`.`CopyColumnTTItoTIR`;
+DROP PROCEDURE if exists  `universaltranslator`.`countListSize`;
+DROP PROCEDURE if exists  `universaltranslator`.`createTempErrorTable`;
+DROP PROCEDURE if exists  `universaltranslator`.`dateddmonyyWithDashesToyyyymmdd`;
+DROP PROCEDURE if exists  `universaltranslator`.`datedmyyWithSlashesToyyyymmdd`;
+DROP PROCEDURE if exists  `universaltranslator`.`datemddyyyyToyyyymmdd`;
+DROP PROCEDURE if exists  `universaltranslator`.`datemddyyyyWithSlashesToyyyymmdd`;
+DROP PROCEDURE if exists  `universaltranslator`.`datemdyyyyWithSlashesToyyyymmdd`;
+DROP PROCEDURE if exists  `universaltranslator`.`datemmddyyWithSlashesToyyyymmdd`;
+DROP PROCEDURE if exists  `universaltranslator`.`datemmddyyyytoyyyymmdd`;
+DROP PROCEDURE if exists  `universaltranslator`.`datemmddyyyyWithSlashesToyyyymmdd`;
+DROP PROCEDURE if exists  `universaltranslator`.`datemmdyyyyWithSlashesToyyyymmdd`;
+DROP PROCEDURE if exists  `universaltranslator`.`dateYYYYMMDDHHMMSSMSToYYYYMMDDHHMMSS`;
+DROP PROCEDURE if exists  `universaltranslator`.`dateyyyymmddTimeToDateTime`;
+DROP PROCEDURE if exists  `universaltranslator`.`dateyyyymmddTommddyyyy`;
+DROP PROCEDURE if exists  `universaltranslator`.`dateyyyymmddWithDashesToyyyymmdd`;
+DROP PROCEDURE if exists  `universaltranslator`.`deleteTransaction`;
+DROP PROCEDURE if exists  `universaltranslator`.`DeleteTransactionWhenFieldIsNull`;
+DROP PROCEDURE if exists  `universaltranslator`.`DOBCheck`;
+DROP PROCEDURE if exists  `universaltranslator`.`dropValueByPriorityInboundOnly`;
+DROP PROCEDURE if exists  `universaltranslator`.`FALessThanNumericCon1UpdateFBwithCon2`;
+DROP PROCEDURE if exists  `universaltranslator`.`FieldBGreaterThanEqualFieldAUpdateFieldA`;
+DROP PROCEDURE if exists  `universaltranslator`.`futureDateCheck`;
+DROP PROCEDURE if exists  `universaltranslator`.`getConfigToFromFieldNo`;
+DROP PROCEDURE if exists  `universaltranslator`.`getFinalStatusIds`;
+DROP PROCEDURE if exists  `universaltranslator`.`getJSONForConfig`;
+DROP PROCEDURE if exists  `universaltranslator`.`GreaterThanEqualFieldAUpdateFieldB`;
+DROP PROCEDURE if exists  `universaltranslator`.`if1Con1ElseCon2`;
+DROP PROCEDURE if exists  `universaltranslator`.`if1Con1ElseNull`;
+DROP PROCEDURE if exists  `universaltranslator`.`ifDateCon1ElseNull`;
+DROP PROCEDURE if exists  `universaltranslator`.`IfFALengthNotMatchCon1ReplaceFBWithCon2`;
+DROP PROCEDURE if exists  `universaltranslator`.`ifFAStartsWithCon1UpdateFBToCon2`;
+DROP PROCEDURE if exists  `universaltranslator`.`IfFieldACon1andTFBlankInsertCon2Error`;
+DROP PROCEDURE if exists  `universaltranslator`.`ifFieldANotCon1ThenNull`;
+DROP PROCEDURE if exists  `universaltranslator`.`ifFieldANotInListValuesSetToCon2`;
+DROP PROCEDURE if exists  `universaltranslator`.`ifFieldANotNumericSetFieldBToCon1`;
+DROP PROCEDURE if exists  `universaltranslator`.`IfFieldsBlankThenError`;
+DROP PROCEDURE if exists  `universaltranslator`.`IfMatchFieldAAndTFBlankSetTFValue`;
+DROP PROCEDURE if exists  `universaltranslator`.`IfMatchSetToValueOfAnotherColumn`;
+DROP PROCEDURE if exists  `universaltranslator`.`ifNonDateAndNotBlankReject`;
+DROP PROCEDURE if exists  `universaltranslator`.`ifNonDateSetNull`;
+DROP PROCEDURE if exists  `universaltranslator`.`ifNotBlankReject`;
+DROP PROCEDURE if exists  `universaltranslator`.`ifNumLTThenError`;
+DROP PROCEDURE if exists  `universaltranslator`.`IfSFLen0orNullReplaceValueInFA`;
+DROP PROCEDURE if exists  `universaltranslator`.`ifSFMatchCon1ThenCon2ElseNull`;
+DROP PROCEDURE if exists  `universaltranslator`.`IfSFNullOrEmptySetFieldBToValueFieldA`;
+DROP PROCEDURE if exists  `universaltranslator`.`ifSrcFieldBlankAndFACompareTo0ThenFieldBCon2`;
+DROP PROCEDURE if exists  `universaltranslator`.`insertValidationErrors`;
+DROP PROCEDURE if exists  `universaltranslator`.`insertValidationErrorsOutbound`;
+DROP PROCEDURE if exists  `universaltranslator`.`KeepTopRanked`;
+DROP PROCEDURE if exists  `universaltranslator`.`lessThanEqualFieldAUpdateFieldB`;
+DROP PROCEDURE if exists  `universaltranslator`.`ListToRows`;
+DROP PROCEDURE if exists  `universaltranslator`.`MatchFAUpdateSF`;
+DROP PROCEDURE if exists  `universaltranslator`.`MatchFieldAUpdateFieldB`;
+DROP PROCEDURE if exists  `universaltranslator`.`mergeTransactions`;
+DROP PROCEDURE if exists  `universaltranslator`.`mergeValues`;
+DROP PROCEDURE if exists  `universaltranslator`.`mmddyyyytoyyyymmdd`;
+DROP PROCEDURE if exists  `universaltranslator`.`NJPopulateCounseling`;
+DROP PROCEDURE if exists  `universaltranslator`.`NJProviderIdentifier`;
+DROP PROCEDURE if exists  `universaltranslator`.`NotInUse_DateToyyyymmdd`;
+DROP PROCEDURE if exists  `universaltranslator`.`NumericRange`;
+DROP PROCEDURE if exists  `universaltranslator`.`overwriteColumn`;
+DROP PROCEDURE if exists  `universaltranslator`.`overwriteColumnWithRandomNumber`;
+DROP PROCEDURE if exists  `universaltranslator`.`pastDateCheck`;
+DROP PROCEDURE if exists  `universaltranslator`.`populateAuditReport`;
+DROP PROCEDURE if exists  `universaltranslator`.`populateDroppedValues`;
+DROP PROCEDURE if exists  `universaltranslator`.`populateDroppedValues_20200610`;
+DROP PROCEDURE if exists  `universaltranslator`.`populateOutboundAuditReport`;
+DROP PROCEDURE if exists  `universaltranslator`.`PopulateTranslatedList`;
+DROP PROCEDURE if exists  `universaltranslator`.`populateUniqueKeyAndTTI`;
+DROP PROCEDURE if exists  `universaltranslator`.`populateWithBatchUploadId`;
+DROP PROCEDURE if exists  `universaltranslator`.`prependStringWithCon2IfLengthMataches`;
+DROP PROCEDURE if exists  `universaltranslator`.`regExCheck`;
+DROP PROCEDURE if exists  `universaltranslator`.`rejectNonYearMonthTransactions`;
+DROP PROCEDURE if exists  `universaltranslator`.`removeDupFromList`;
+DROP PROCEDURE if exists  `universaltranslator`.`replaceBlanksWithChars`;
+DROP PROCEDURE if exists  `universaltranslator`.`replacechars`;
+DROP PROCEDURE if exists  `universaltranslator`.`setFieldToNull`;
+DROP PROCEDURE if exists  `universaltranslator`.`setInboundOutBoundTables`;
+DROP PROCEDURE if exists  `universaltranslator`.`setSqlForConfig`;
+DROP PROCEDURE if exists  `universaltranslator`.`setSqlForOutboundConfig`;
+DROP PROCEDURE if exists  `universaltranslator`.`stringToDate`;
+DROP PROCEDURE if exists  `universaltranslator`.`StringToDateFor2DigitYears`;
+DROP PROCEDURE if exists  `universaltranslator`.`stripCharAtPos`;
+DROP PROCEDURE if exists  `universaltranslator`.`stripCharsFromStartOrEnd`;
+DROP PROCEDURE if exists  `universaltranslator`.`stripLeadingChars`;
+DROP PROCEDURE if exists  `universaltranslator`.`stripPhoneChars`;
+DROP PROCEDURE if exists  `universaltranslator`.`stripPhoneCharsOutbound`;
+DROP PROCEDURE if exists  `universaltranslator`.`stripTrailingChars`;
+DROP PROCEDURE if exists  `universaltranslator`.`substringToAnotherField`;
+DROP PROCEDURE if exists  `universaltranslator`.`trimField`;
+DROP PROCEDURE if exists  `universaltranslator`.`updateFieldBToDistinctSrcFieldAsList`;
+DROP PROCEDURE if exists  `universaltranslator`.`updateFieldBToSrcFieldAsList`;
+DROP PROCEDURE if exists  `universaltranslator`.`UpdateFPRace`;
+DROP PROCEDURE if exists  `universaltranslator`.`UpdateToMaxMinForCol`;
+DROP PROCEDURE if exists  `universaltranslator`.`UpdateTranslatedListValueNotDistinct`;
+DROP PROCEDURE if exists  `universaltranslator`.`YYYYMMDDHHMMSSMSToYYYYMMDDHHMMSS`;
+DROP PROCEDURE if exists  `universaltranslator`.`yyyymmddstripTime`;
+DROP PROCEDURE if exists  `universaltranslator`.`yyyymmddTimeToDateTime`;
+DROP PROCEDURE if exists  `universaltranslator`.`yyyymmddToDate`;
+DROP PROCEDURE if exists  `universaltranslator`.`yyyymmddTommddyyyy`;
+DROP PROCEDURE if exists  `universaltranslator`.`yyyymmddToString`;
+DROP PROCEDURE if exists  `universaltranslator`.`ZipCodeCheck`;
+DROP PROCEDURE if exists  `universaltranslator`.`ZipCodeCheck_20200422`;
 
+use universaltranslator;
 
--- misc tables still in the system
-
-DROP TABLE if exists `universaltranslator`.`transactionindetailauditerrors_72`, `universaltranslator`.`transactioninerrors_72`, `universaltranslator`.`transactioninmacrodroppedvalues_72`, `universaltranslator`.`transactioninmacrokeptvalues_72`, `universaltranslator`.`transactioninrecords_67`, `universaltranslator`.`transactioninrecords_70`, `universaltranslator`.`transactioninrecords_71`, `universaltranslator`.`transactioninrecords_72`, `universaltranslator`.`transactiontranslatedin_72`, `universaltranslator`.`transactiontranslatedlistin_72`;
-
-
--- clean out macros table
-truncate table macro_Names;
-
--- reinsert what is in stage
-INSERT INTO `universaltranslator`.`macro_names` (`ID`, `CategoryId`, `Macro_Name`, `Macro_Short_Name`, `Ref_Number`, `Date_Display`, `Formula`, `Invalid_When`, `FieldA_Question`, `FieldB_Question`, `Con1_Question`, `Con2_Question`, `populateFieldA`, `macroDesc`) VALUES (1, 1, 'Conditional: IF SF = CON1, FB = CON2', 'IF SF = CON1, FB = CON2', NULL, NULL, 'MatchSFtoCon1UpdateFBtoCon2', NULL, '', 'Please enter the field number to update', 'Please enter the constant value to match the source field value.', 'Please enter the constant value to be inserted into field B if the match occurs.', 1, 'If the value in the field that the macro is attached to (SF) matches CON1, insert CON2 into the second field (FB). \r\n\r\nThis macrso does not generate an error under any circumstances.');
-INSERT INTO `universaltranslator`.`macro_names` (`ID`, `CategoryId`, `Macro_Name`, `Macro_Short_Name`, `Ref_Number`, `Date_Display`, `Formula`, `Invalid_When`, `FieldA_Question`, `FieldB_Question`, `Con1_Question`, `Con2_Question`, `populateFieldA`, `macroDesc`) VALUES ('2', 1, 'Conditional: IF SFA = CON1, SF = CON2', 'IF SFA = CON1, SF = CON2', NULL, NULL, 'MatchFAtoCon1UpdateSFtoCon2', NULL, 'Please enter field number to match', NULL, 'Please enter constant to match', 'Please enter constant to update to', 1, NULL);
-INSERT INTO `universaltranslator`.`macro_names` (`ID`, `CategoryId`, `Macro_Name`, `Macro_Short_Name`, `Ref_Number`, `Date_Display`, `Formula`, `Invalid_When`, `FieldA_Question`, `FieldB_Question`, `Con1_Question`, `Con2_Question`, `populateFieldA`, `macroDesc`) VALUES ('68', 1, 'Date - yyyy*mm*dd to mm*dd*yyyy', 'YYYY-MM-DD to MM-DD-YYYY', NULL, NULL, 'dateyyyymmddTommddyyyy', NULL, '', '', 'Please enter source SF\'s date value separator.  e.g. -, ., /', 'Please enter target SF\'s date value separator.  e.g. -, ., /', 1, 'This macro converts date value in yyyy-mm-dd format to mm-dd-yyyy. Any date value separators may be specified. \r\n\r\nIf an error occurs (i.e. date in wrong format), pass/clear logic will be applied and then reject record/reject file logic will be applied.');
-INSERT INTO `universaltranslator`.`macro_names` (`ID`, `CategoryId`, `Macro_Name`, `Macro_Short_Name`, `Ref_Number`, `Date_Display`, `Formula`, `Invalid_When`, `FieldA_Question`, `FieldB_Question`, `Con1_Question`, `Con2_Question`, `populateFieldA`, `macroDesc`) VALUES ('69', 1, 'Date - mm*dd*yyyy to yyyy*mm*dd', 'MM-DD-YYYY to YYYY-MM-DD', NULL, NULL, 'datemmddyyyyToyyyymmdd', NULL, '', '', 'Please enter source SF\'s date value separator.  e.g. -, ., /', 'Please enter target SF\'s date value separator.  e.g. -, ., /', 1, 'This macro converts date value in mm-dd-yyyy format to yyyy-mm-dd. Any date value separators may be specified. \r\n\r\nIf an error occurs (i.e. date in wrong format), pass/clear logic will be applied and then reject record/reject file logic will be applied.');
-INSERT INTO `universaltranslator`.`macro_names` (`ID`, `CategoryId`, `Macro_Name`, `Macro_Short_Name`, `Ref_Number`, `Date_Display`, `Formula`, `Invalid_When`, `FieldA_Question`, `FieldB_Question`, `Con1_Question`, `Con2_Question`, `populateFieldA`, `macroDesc`) VALUES ('70', 1, 'Set field to null', 'Clear SF', NULL, NULL, 'ClearSF', NULL, '', '', '', '', 1, 'Clear the field');
-INSERT INTO `universaltranslator`.`macro_names` (`ID`, `CategoryId`, `Macro_Name`, `Macro_Short_Name`, `Ref_Number`, `Date_Display`, `Formula`, `Invalid_When`, `FieldA_Question`, `FieldB_Question`, `Con1_Question`, `Con2_Question`, `populateFieldA`, `macroDesc`) VALUES ('72', 1, 'Replace chars in string', 'replaceChars1', NULL, NULL, 'replaceCon1CharswithCon2', NULL, '', '', 'Please enter character(s) that you would like to replace', 'Please enter new character(s).', 1, 'This macro searches for the CON1 character string in the current field and if found, replaces the character string with the specified character string in CON2.\r\n\r\nThis macro will never generate an error. If the specified character string is not found, the macro will move on to the next record.');
-INSERT INTO `universaltranslator`.`macro_names` (`ID`, `CategoryId`, `Macro_Name`, `Macro_Short_Name`, `Ref_Number`, `Date_Display`, `Formula`, `Invalid_When`, `FieldA_Question`, `FieldB_Question`, `Con1_Question`, `Con2_Question`, `populateFieldA`, `macroDesc`) VALUES ('74', 1, 'Concat fields into delimited list', 'concat fields to list', NULL, NULL, 'concatFieldToList', NULL, '', '', 'Please enter delimiter', 'Please enter field numbers to be concatenated in a comma delimited list', 1, 'Concatenate the values found in the comma separated fields found in CON2 using the specified delimiter specified in CON1 and store the results into the current field.\r\n\r\nThis macro will never generate an error.');
-INSERT INTO `universaltranslator`.`macro_names` (`ID`, `CategoryId`, `Macro_Name`, `Macro_Short_Name`, `Ref_Number`, `Date_Display`, `Formula`, `Invalid_When`, `FieldA_Question`, `FieldB_Question`, `Con1_Question`, `Con2_Question`, `populateFieldA`, `macroDesc`) VALUES ('75', 1, 'Strip character at specific position of field, with optional character match', 'strip Char At Position X', NULL, NULL, 'stripCharAtPos', NULL, '', '', 'Please enter the position of the character to drop within the string', 'Please enter the character to drop (optional)', 1, 'In the current field, drop the character from the specified location in the character string. A specific character may be specified (optional). If a specific character is specified, and that character is not found, the character found is not dropped.\r\n\r\nThis macro will never generate an error.');
-INSERT INTO `universaltranslator`.`macro_names` (`ID`, `CategoryId`, `Macro_Name`, `Macro_Short_Name`, `Ref_Number`, `Date_Display`, `Formula`, `Invalid_When`, `FieldA_Question`, `FieldB_Question`, `Con1_Question`, `Con2_Question`, `populateFieldA`, `macroDesc`) VALUES ('76', 1, 'Match Null or empty value and replace', 'replace blanks with chars', NULL, NULL, 'replaceBlanksWithChars', NULL, '', '', 'Please enter the value to insert if the field is blank.', '', 1, 'This macro will nsert the specified value into the current field but only if the current field is blank or null.\r\n\r\nThis macro will never generate an error.');
-INSERT INTO `universaltranslator`.`macro_names` (`ID`, `CategoryId`, `Macro_Name`, `Macro_Short_Name`, `Ref_Number`, `Date_Display`, `Formula`, `Invalid_When`, `FieldA_Question`, `FieldB_Question`, `Con1_Question`, `Con2_Question`, `populateFieldA`, `macroDesc`) VALUES ('80', 1, 'Strip leading characters', 'Strip Leading', NULL, NULL, 'stripLeadingChars', NULL, '', '', 'Please enter leading character(s) to be removed', '', 1, 'This macro will strip characters specified by the user from the leading edge of the current field. If characters are not found, no action is taken.\r\n\r\nThis macro will never generate an error.');
-INSERT INTO `universaltranslator`.`macro_names` (`ID`, `CategoryId`, `Macro_Name`, `Macro_Short_Name`, `Ref_Number`, `Date_Display`, `Formula`, `Invalid_When`, `FieldA_Question`, `FieldB_Question`, `Con1_Question`, `Con2_Question`, `populateFieldA`, `macroDesc`) VALUES ('81', 1, 'Strip Trailing Character(s) from field', 'Strip trailing character', NULL, NULL, 'stripTrailingChars', NULL, '', '', 'Please enter trailing character(s) to remove', '', 1, 'This macro will strip characters specified by the user from the trailing edge of the current field. If characters are not found, no action is taken.\r\n\r\nThis macro will never generate an error.');
-INSERT INTO `universaltranslator`.`macro_names` (`ID`, `CategoryId`, `Macro_Name`, `Macro_Short_Name`, `Ref_Number`, `Date_Display`, `Formula`, `Invalid_When`, `FieldA_Question`, `FieldB_Question`, `Con1_Question`, `Con2_Question`, `populateFieldA`, `macroDesc`) VALUES ('86', 1, 'Update Field', 'Update Field', NULL, NULL, 'overwriteSF', NULL, '', '', 'Please enter new value to be stored in the current field.', '', 1, 'This macro replaces the value stored in the current field with the specified value.');
-INSERT INTO `universaltranslator`.`macro_names` (`ID`, `CategoryId`, `Macro_Name`, `Macro_Short_Name`, `Ref_Number`, `Date_Display`, `Formula`, `Invalid_When`, `FieldA_Question`, `FieldB_Question`, `Con1_Question`, `Con2_Question`, `populateFieldA`, `macroDesc`) VALUES ('87', 1, 'Copy Field', 'Copy Field', NULL, NULL, 'copyField', NULL, '', 'Please enter the field number of the field to be copied into the current field.', '', '', 1, 'This macro copies the value from the specified field and stores that value in the current field.\r\n\r\nThis macro will never generate an error.');
-INSERT INTO `universaltranslator`.`macro_names` (`ID`, `CategoryId`, `Macro_Name`, `Macro_Short_Name`, `Ref_Number`, `Date_Display`, `Formula`, `Invalid_When`, `FieldA_Question`, `FieldB_Question`, `Con1_Question`, `Con2_Question`, `populateFieldA`, `macroDesc`) VALUES ('89', 1, 'Insert Random Number', 'Insert Random Nuimber', NULL, NULL, 'overwriteSFWithRandomNumber', NULL, '', '', '', NULL, 1, 'This macro inserts a random number into the current field.\r\n\r\nThis macro will never generate an error.');
-INSERT INTO `universaltranslator`.`macro_names` (`ID`, `CategoryId`, `Macro_Name`, `Macro_Short_Name`, `Ref_Number`, `Date_Display`, `Formula`, `Invalid_When`, `FieldA_Question`, `FieldB_Question`, `Con1_Question`, `Con2_Question`, `populateFieldA`, `macroDesc`) VALUES ('93', 1, 'Check Length of String and replace with', 'Check Length And Replace', NULL, NULL, 'CheckLengthAndReplace', NULL, '', '', 'Please enter minimum string length', 'Please enter the value to insert if string length is >= CON1', 1, 'This macro checks the lengfth of the value in the current field. If the length is >= CON1, the value specified in CON2 will be inserted.');
-INSERT INTO `universaltranslator`.`macro_names` (`ID`, `CategoryId`, `Macro_Name`, `Macro_Short_Name`, `Ref_Number`, `Date_Display`, `Formula`, `Invalid_When`, `FieldA_Question`, `FieldB_Question`, `Con1_Question`, `Con2_Question`, `populateFieldA`, `macroDesc`) VALUES ('94', 1, 'Copy Substring to Another Field', 'Substring to Another Field', NULL, NULL, 'substringToAnotherField', NULL, 'Please enter field number to be updated', '', 'Please enter starting position of string to be extracted', 'Please enter how many characters to extract', 1, 'This macro copies a substring from the current field and stores that value in the specified field.\r\n\r\nThis macro never generates an error.');
-INSERT INTO `universaltranslator`.`macro_names` (`ID`, `CategoryId`, `Macro_Name`, `Macro_Short_Name`, `Ref_Number`, `Date_Display`, `Formula`, `Invalid_When`, `FieldA_Question`, `FieldB_Question`, `Con1_Question`, `Con2_Question`, `populateFieldA`, `macroDesc`) VALUES ('99', 1, 'If scrField matches con1 overwrite Field A with Field B', 'If SRCF=CON1, Copy FB to FA', NULL, NULL, 'IfSFMatchCon1SetFAtoFB', NULL, 'Please enter field number to be updated', 'Please enter field number to copy to FA', 'Please enter value to match to SF', '', 1, 'This macro checks the current field for a specified value. If a match is found, the value in field B is copied to field A.\r\n\r\nThis macro will never generate an error.');
-INSERT INTO `universaltranslator`.`macro_names` (`ID`, `CategoryId`, `Macro_Name`, `Macro_Short_Name`, `Ref_Number`, `Date_Display`, `Formula`, `Invalid_When`, `FieldA_Question`, `FieldB_Question`, `Con1_Question`, `Con2_Question`, `populateFieldA`, `macroDesc`) VALUES ('102', 1, 'Prepend and/or Append Strings', 'Prepend Append String', NULL, NULL, 'appendPrependString', NULL, 'Please enter value you would like to prepend', 'Prepend if the field is blank (Y/N).', 'Please enter value you would like to append', 'Append if the field is blank (Y/N).', 1, 'This macro adds a string to the beginning and/or end to the field values in a column. Values that are empty or blank after white spaces are removed will be ignored.     An example is adding $ to the beginning, .00 to the end to all the values in column 1.  We would enter 1 for \'Please enter column to prepend or append to\'.    $ for \'Please enter value you would like to prepend\' and \'.00\' for \'Please enter value you would like to append\'.  For the sample value of 12, the macro converted value will be $12.00  ');
-INSERT INTO `universaltranslator`.`macro_names` (`ID`, `CategoryId`, `Macro_Name`, `Macro_Short_Name`, `Ref_Number`, `Date_Display`, `Formula`, `Invalid_When`, `FieldA_Question`, `FieldB_Question`, `Con1_Question`, `Con2_Question`, `populateFieldA`, `macroDesc`) VALUES ('103', 1, 'Check - Years Difference between Dates, i.e. DOB', 'yearDiffinsertError', NULL, NULL, 'yearDiffinsertError', NULL, 'Please enter the field for data to check against (e.g. visit date\'s column number)', NULL, 'Please enter the minium age before rejecting', '', 1, NULL);
-INSERT INTO `universaltranslator`.`macro_names` (`ID`, `CategoryId`, `Macro_Name`, `Macro_Short_Name`, `Ref_Number`, `Date_Display`, `Formula`, `Invalid_When`, `FieldA_Question`, `FieldB_Question`, `Con1_Question`, `Con2_Question`, `populateFieldA`, `macroDesc`) VALUES ('104', 1, 'Check - Past Date', 'pastDateCheck', NULL, NULL, 'pastDateCheck', NULL, NULL, NULL, 'Please enter number of months', '', 1, NULL);
-INSERT INTO `universaltranslator`.`macro_names` (`ID`, `CategoryId`, `Macro_Name`, `Macro_Short_Name`, `Ref_Number`, `Date_Display`, `Formula`, `Invalid_When`, `FieldA_Question`, `FieldB_Question`, `Con1_Question`, `Con2_Question`, `populateFieldA`, `macroDesc`) VALUES ('108', 1, 'Update SRCF to CON2 when SRCF is blank and FA = CON1', 'SRCF=CON2 if SRCF=<> and FA = CON1', NULL, NULL, 'IfFACon1AndSFBlankSetSFToCon2', NULL, 'Please enter field to check against', '', 'Please enter the value of field A', 'Please enter value to set source field to if blank', 1, 'This macro will update the current field with CON2 if the current field is blank but only if the specified field (field A) matches the value specified in CON1.\r\n\r\nThis macro never generates an error.');
-INSERT INTO `universaltranslator`.`macro_names` (`ID`, `CategoryId`, `Macro_Name`, `Macro_Short_Name`, `Ref_Number`, `Date_Display`, `Formula`, `Invalid_When`, `FieldA_Question`, `FieldB_Question`, `Con1_Question`, `Con2_Question`, `populateFieldA`, `macroDesc`) VALUES ('109', 1, 'Update SRCF to CON2 when SRCF = CON1 else clear SRCF.', 'ifSFMatchCon1ThenCon2ElseClear', NULL, NULL, 'ifSFMatchCon1ThenCon2ElseClear', NULL, '', '', 'Please enter value to match for SF', 'Please enter value to update SF to', 1, 'This macro will update the current field with CON2 if the current field = CON1 but will clear the current field if the current field <> CON1.\r\n\r\nThis macro will never generate an error.');
-INSERT INTO `universaltranslator`.`macro_names` (`ID`, `CategoryId`, `Macro_Name`, `Macro_Short_Name`, `Ref_Number`, `Date_Display`, `Formula`, `Invalid_When`, `FieldA_Question`, `FieldB_Question`, `Con1_Question`, `Con2_Question`, `populateFieldA`, `macroDesc`) VALUES ('112', 1, 'String to Date', 'stringToDate', NULL, NULL, 'stringToDate', NULL, '', '', 'Please enter the inbound string\'s date format', 'Please enter the outbound string\'s date format', 1, NULL);
-INSERT INTO `universaltranslator`.`macro_names` (`ID`, `CategoryId`, `Macro_Name`, `Macro_Short_Name`, `Ref_Number`, `Date_Display`, `Formula`, `Invalid_When`, `FieldA_Question`, `FieldB_Question`, `Con1_Question`, `Con2_Question`, `populateFieldA`, `macroDesc`) VALUES ('113', 1, 'Check - Zip Code', 'ZipCodeCheck', NULL, NULL, 'ZipCodeCheck', NULL, '', '', 'Optional - Please enter a default (e.g. 00000) for invalid zip codes (alphanumeric)', '', 1, 'This macro performs the following steps:\r\n- remove dashes from values\r\n- zip code length over length of 5 digits will be truncated to 5.\r\n- Optional\r\nIf a value is entered for the question \'Please enter a default for invalid zip codes (optional)\', \r\na default value will be added to all invalid (alphanumeric) zip codes. \r\nFor example, if a default value of 99999 is entered, \r\nabcde will be default to 99999\r\n- Optional\r\nIf \'Y\' is entered for the question \'Please enter Y if you would like to prepend 0(s) to zip codes that are 1-4 characters in length\', \r\nzip codes that are 1-4 characters in length will be prepended with 0(s) to make the zip code 5 characters long.\r\nFor example, zip code value of 345 will become 00345.\r\n\r\nThis macro will generate an error when alphanumeric values are found.');
-INSERT INTO `universaltranslator`.`macro_names` (`ID`, `CategoryId`, `Macro_Name`, `Macro_Short_Name`, `Ref_Number`, `Date_Display`, `Formula`, `Invalid_When`, `FieldA_Question`, `FieldB_Question`, `Con1_Question`, `Con2_Question`, `populateFieldA`, `macroDesc`) VALUES ('115', 1, 'Check - If SF is blank and FA is specified value\"\"', 'Check - If SF is blank and FA is specified value\"\"', NULL, NULL, 'IfFieldACon1andSFBlankInsertError', NULL, 'Please enter field to match value to', '', 'Please enter value to be checked in FA', '', 1, 'This macro will check FA for a specified value (CON1). If there is a match AND the SRCF is blank, log an error.\r\n\r\nThis macro is typically used in family planning to check if the IFNOMETHOD field is populated when the contra metho field = NO METHOD.\r\n\r\nThis macro will generate an error if the check condition is met. Pass/clear and reject record/file logic will be activated if SRCF is required.');
-INSERT INTO `universaltranslator`.`macro_names` (`ID`, `CategoryId`, `Macro_Name`, `Macro_Short_Name`, `Ref_Number`, `Date_Display`, `Formula`, `Invalid_When`, `FieldA_Question`, `FieldB_Question`, `Con1_Question`, `Con2_Question`, `populateFieldA`, `macroDesc`) VALUES ('128', 1, 'Append String with Value if Length matches', 'appendCon2IfCon1Length', NULL, NULL, 'appendCon2IfCon1Length', NULL, '', '', 'Please enter length of string', 'Please enter value to append', 1, 'These macro appends a string to a field value that matches the length of the string specified.    For example, we would like to append \' 00:00:00\' to any string that is 10 characters long in column 1.    We would enter 1 for \'Please enter column to append to\', 10 for \'Please enter length of string\' and \' 00:00:00\' for \'Please enter value to append\'.    An example is \'2019-02-28\', the result will be \'2019-02-28 00:00:00\'');
-INSERT INTO `universaltranslator`.`macro_names` (`ID`, `CategoryId`, `Macro_Name`, `Macro_Short_Name`, `Ref_Number`, `Date_Display`, `Formula`, `Invalid_When`, `FieldA_Question`, `FieldB_Question`, `Con1_Question`, `Con2_Question`, `populateFieldA`, `macroDesc`) VALUES ('129', 1, 'Apply CW to List', 'applyCWTranslatedList', NULL, NULL, 'applyCWTranslatedList', NULL, ' ', ' ', 'Please enter crosswalk Id', 'Enter Y to remove duplicaes; Enter N to keep duplictes.', 1, 'This macro applies a crosswalk to a column where the values are in a comma delimited list.   An example is translating a column 1\'s race valises into system Ids and store the translated values in column 2.    We would enter 1 for \'Please enter column with list\' and 2 for \'Please enter column to put translated list\'.  \'Please enter crosswalk Id\' will be the crosswalk Id assigned to races from the crosswalks table.    An example is column 1 with field \'White,Black\' , after allying this macro, column 2 will read 1,2    ');
-INSERT INTO `universaltranslator`.`macro_names` (`ID`, `CategoryId`, `Macro_Name`, `Macro_Short_Name`, `Ref_Number`, `Date_Display`, `Formula`, `Invalid_When`, `FieldA_Question`, `FieldB_Question`, `Con1_Question`, `Con2_Question`, `populateFieldA`, `macroDesc`) VALUES ('131', 1, 'If Source Field is empty set Src Field to value of another field', 'If SF is empty, copy FA to SF', NULL, NULL, 'IfSFBlankSetToFA', NULL, 'Please enter field to update empty source vlaues to', '', '', '', 1, 'This macro will copy the value found in FA to the SRCF if the SRCF is emplty.\r\n\r\nThis macro will never generate an error.');
-INSERT INTO `universaltranslator`.`macro_names` (`ID`, `CategoryId`, `Macro_Name`, `Macro_Short_Name`, `Ref_Number`, `Date_Display`, `Formula`, `Invalid_When`, `FieldA_Question`, `FieldB_Question`, `Con1_Question`, `Con2_Question`, `populateFieldA`, `macroDesc`) VALUES ('146', 1, 'Conditional: Compare Two Non-Blank Fields and Insert Errror when criteria is not met', 'CompareTwoFieldsAndError', NULL, NULL, 'CompareTwoFieldsAndError', NULL, 'Pleae enter field to compare source field to', NULL, 'Please enter how to compare - 1 (>), 2 (>=) , 3 (<), 4 (<=)', ' ', 0, NULL);
-INSERT INTO `universaltranslator`.`macro_names` (`ID`, `CategoryId`, `Macro_Name`, `Macro_Short_Name`, `Ref_Number`, `Date_Display`, `Formula`, `Invalid_When`, `FieldA_Question`, `FieldB_Question`, `Con1_Question`, `Con2_Question`, `populateFieldA`, `macroDesc`) VALUES ('147', 1, 'If SF Length is not Con 1 Replace With Con 2', 'IfLengthNotCon1ReplaceWithCon2', NULL, NULL, 'IfLengthNotCon1ReplaceWithCon2', NULL, '', '', 'Please enter length you wish field to be', 'Please enter value to replacement value', 1, NULL);
-INSERT INTO `universaltranslator`.`macro_names` (`ID`, `CategoryId`, `Macro_Name`, `Macro_Short_Name`, `Ref_Number`, `Date_Display`, `Formula`, `Invalid_When`, `FieldA_Question`, `FieldB_Question`, `Con1_Question`, `Con2_Question`, `populateFieldA`, `macroDesc`) VALUES ('148', 1, 'If SRCF is not equal to CON1, clear SRCF', 'IF SRCF <> CON1, then SRCF = NULL', NULL, NULL, 'ifSFNotCon1ThenClear', NULL, '', '', 'Please enter value to match', '', 1, 'This macro will check for the CON1 value in the SRCF. If not found, the SRCF will be cleared.\r\n\r\nThis macro will never generate an error.');
-INSERT INTO `universaltranslator`.`macro_names` (`ID`, `CategoryId`, `Macro_Name`, `Macro_Short_Name`, `Ref_Number`, `Date_Display`, `Formula`, `Invalid_When`, `FieldA_Question`, `FieldB_Question`, `Con1_Question`, `Con2_Question`, `populateFieldA`, `macroDesc`) VALUES ('150', 1, 'If field is not blank insert error', 'ifNotBlankError', NULL, NULL, 'ifNotBlankError', NULL, '', NULL, '', NULL, 1, NULL);
-INSERT INTO `universaltranslator`.`macro_names` (`ID`, `CategoryId`, `Macro_Name`, `Macro_Short_Name`, `Ref_Number`, `Date_Display`, `Formula`, `Invalid_When`, `FieldA_Question`, `FieldB_Question`, `Con1_Question`, `Con2_Question`, `populateFieldA`, `macroDesc`) VALUES ('152', 0, 'Check - Insert error for transactions that is not part of visit set', 'errorNonYearMonthTransactions', NULL, NULL, 'errorNonYearMonthTransactions', NULL, NULL, NULL, NULL, '', 1, NULL);
-INSERT INTO `universaltranslator`.`macro_names` (`ID`, `CategoryId`, `Macro_Name`, `Macro_Short_Name`, `Ref_Number`, `Date_Display`, `Formula`, `Invalid_When`, `FieldA_Question`, `FieldB_Question`, `Con1_Question`, `Con2_Question`, `populateFieldA`, `macroDesc`) VALUES ('156', 1, 'stripCharsFromStartOrEnd', 'stripCharsFromStartOrEnd', NULL, NULL, 'stripCharsFromStartOrEnd', NULL, '', '', 'Please enter number of characters to strip', 'Please enter 1 to strip from beginning, 2 for strip from end', 1, 'This macro will strip leading or trailing characters (any characters found) from the value stored in SF.\r\n\r\nThis macro will never generate an error.');
-INSERT INTO `universaltranslator`.`macro_names` (`ID`, `CategoryId`, `Macro_Name`, `Macro_Short_Name`, `Ref_Number`, `Date_Display`, `Formula`, `Invalid_When`, `FieldA_Question`, `FieldB_Question`, `Con1_Question`, `Con2_Question`, `populateFieldA`, `macroDesc`) VALUES ('160', 1, 'If value not in List set to Con2', 'ifValueNotInListValuesSetToCon2', 0, NULL, 'ifValueNotInListValuesSetToCon2', NULL, '', '', 'Please enter crosswalk Id', 'Please enter value to update to', 1, NULL);
-INSERT INTO `universaltranslator`.`macro_names` (`ID`, `CategoryId`, `Macro_Name`, `Macro_Short_Name`, `Ref_Number`, `Date_Display`, `Formula`, `Invalid_When`, `FieldA_Question`, `FieldB_Question`, `Con1_Question`, `Con2_Question`, `populateFieldA`, `macroDesc`) VALUES ('161', 1, 'If SF Starts With Con1 Update To Con2', 'ifStartsWithCon1UpdateToCon2', NULL, NULL, 'ifStartsWithCon1UpdateToCon2', NULL, '', '', 'Please enter starting characters to check', 'Please enter replacement value', 1, 'This macro will check to see if the value specified in CON1 is found at the start of the value in SRCF and if true, replace SRCF with CON2.\r\n\r\nThis macro will never generate an error.');
-INSERT INTO `universaltranslator`.`macro_names` (`ID`, `CategoryId`, `Macro_Name`, `Macro_Short_Name`, `Ref_Number`, `Date_Display`, `Formula`, `Invalid_When`, `FieldA_Question`, `FieldB_Question`, `Con1_Question`, `Con2_Question`, `populateFieldA`, `macroDesc`) VALUES ('165', 1, 'Check - Alpha Numeric', 'AlphaNumericCheck', NULL, NULL, 'AlphaNumericCheck', NULL, '', '', '', '', 1, NULL);
-INSERT INTO `universaltranslator`.`macro_names` (`ID`, `CategoryId`, `Macro_Name`, `Macro_Short_Name`, `Ref_Number`, `Date_Display`, `Formula`, `Invalid_When`, `FieldA_Question`, `FieldB_Question`, `Con1_Question`, `Con2_Question`, `populateFieldA`, `macroDesc`) VALUES ('166', 1, 'Check - Future Date', 'rejectFutureDate', NULL, NULL, 'futureDateCheck', NULL, '', '', '', '', 1, '');
-INSERT INTO `universaltranslator`.`macro_names` (`ID`, `CategoryId`, `Macro_Name`, `Macro_Short_Name`, `Ref_Number`, `Date_Display`, `Formula`, `Invalid_When`, `FieldA_Question`, `FieldB_Question`, `Con1_Question`, `Con2_Question`, `populateFieldA`, `macroDesc`) VALUES ('167', 1, 'If value is not numeric replace with Con1', 'If SRCF <> NUM, SRCF = CON1', NULL, NULL, 'ifNotNumericSetToCon1', NULL, '', '', 'Please enter replacement value', '', 1, 'This macro will check to see if the value in the SRCF is numeric and if not, will insert CON1 value into the SRCF\r\n\r\nThis macro will never generate an error.');
-INSERT INTO `universaltranslator`.`macro_names` (`ID`, `CategoryId`, `Macro_Name`, `Macro_Short_Name`, `Ref_Number`, `Date_Display`, `Formula`, `Invalid_When`, `FieldA_Question`, `FieldB_Question`, `Con1_Question`, `Con2_Question`, `populateFieldA`, `macroDesc`) VALUES ('169', 1, 'Perform arithmetic operation on SRCF and FA with results in SRCF', 'SRCF = SRCF (+,-,*,/) FA', NULL, NULL, 'ArithmeticConstant', NULL, 'Please enter the constant value', '', 'How many decimal places. (Defaults to 0 if left blank)', 'Please enter arithmetic operation ( + - / or *)', 0, 'This macro uses the specified arithmetic operator in CON2 and the value specified in FA to update the value stored in SRCF.\r\n\r\nSRCF = SRCF (+,-,*,/) FA\r\n\r\nIf the source field does not contain blank or a numeric value, the macro will generate an error.');
-INSERT INTO `universaltranslator`.`macro_names` (`ID`, `CategoryId`, `Macro_Name`, `Macro_Short_Name`, `Ref_Number`, `Date_Display`, `Formula`, `Invalid_When`, `FieldA_Question`, `FieldB_Question`, `Con1_Question`, `Con2_Question`, `populateFieldA`, `macroDesc`) VALUES ('172', 1, 'Check - List Length', 'CheckListLengthIfGTError', NULL, NULL, 'CheckListLengthIfGTError', NULL, '', NULL, 'Please enter number for the expected elements in the list', '', 1, NULL);
-INSERT INTO `universaltranslator`.`macro_names` (`ID`, `CategoryId`, `Macro_Name`, `Macro_Short_Name`, `Ref_Number`, `Date_Display`, `Formula`, `Invalid_When`, `FieldA_Question`, `FieldB_Question`, `Con1_Question`, `Con2_Question`, `populateFieldA`, `macroDesc`) VALUES ('173', 1, 'If SRCF, FA AND FB all blank, error', 'IfFieldsBlankThenError', NULL, NULL, 'IfFieldsBlankThenError', NULL, 'Please enter field number in additional to SF to check ', 'Please enter field number in additional to SF to check ', '', '', 0, 'This macro will check three firleds (SRCF, FA, FB) and if all three are blank, log an error.\r\n\r\n');
-INSERT INTO `universaltranslator`.`macro_names` (`ID`, `CategoryId`, `Macro_Name`, `Macro_Short_Name`, `Ref_Number`, `Date_Display`, `Formula`, `Invalid_When`, `FieldA_Question`, `FieldB_Question`, `Con1_Question`, `Con2_Question`, `populateFieldA`, `macroDesc`) VALUES ('174', 1, 'Populate Race Id and Individual Race Fields for CDS', 'PopulateFPRaceIdAndFields', NULL, NULL, 'PopulateFPRaceIdAndFields', NULL, '', '', 'Please enter value to populate individual race fields with', '', 1, 'This macro manages how multiple race fields and the individual race fiueld is populated.\r\n\r\nFirst, the macro looks at individual race fields are in use.  If not, it will use the single race Id to populate individual race fields.\r\n\r\nFor example - \r\n1. If individual race fields are in use, it will populate the single race field (FA) after assessint the contents of the individual race fields.\r\n\r\nIndividual race fields include.....\r\n\r\n2. If it finds that individual race fields are not in use, it will look at what is in the source field and populate the individual race fields.\r\nFor example, the source field value is \'1,2\'. This macro will set White - Y, Black - Y and single race field to 6 (more than one race)\r\nAnother example is source field value is \'1\'.  It will set White - Y and single race field (fieldA) to 1.\r\n');
-INSERT INTO `universaltranslator`.`macro_names` (`ID`, `CategoryId`, `Macro_Name`, `Macro_Short_Name`, `Ref_Number`, `Date_Display`, `Formula`, `Invalid_When`, `FieldA_Question`, `FieldB_Question`, `Con1_Question`, `Con2_Question`, `populateFieldA`, `macroDesc`) VALUES ('177', 1, 'Keep Top Ranked Value', 'KeepTopRanked', NULL, NULL, 'KeepTopRanked', NULL, '', '', 'Please enter crosswalk with rank list', NULL, 1, 'This macro takes a list of values and compare with a crosswalk and keep only top matching value');
-INSERT INTO `universaltranslator`.`macro_names` (`ID`, `CategoryId`, `Macro_Name`, `Macro_Short_Name`, `Ref_Number`, `Date_Display`, `Formula`, `Invalid_When`, `FieldA_Question`, `FieldB_Question`, `Con1_Question`, `Con2_Question`, `populateFieldA`, `macroDesc`) VALUES ('178', 1, 'Remove Duplicate Value from List', 'Remove Dup Values from List', NULL, NULL, 'removeDupFromList', NULL, '', '', '', '', 1, 'This macro will remove duplicate values from the source field.');
-INSERT INTO `universaltranslator`.`macro_names` (`ID`, `CategoryId`, `Macro_Name`, `Macro_Short_Name`, `Ref_Number`, `Date_Display`, `Formula`, `Invalid_When`, `FieldA_Question`, `FieldB_Question`, `Con1_Question`, `Con2_Question`, `populateFieldA`, `macroDesc`) VALUES ('179', 1, 'Merge Records', 'Merge Records', NULL, NULL, 'mergeTransactions', NULL, 'Please enter the field number for site ID', 'Please enter the field number for Client Identifier (MRN)', 'Please enter the field number for visit date', 'Please enter the field number of the field to be merged (typically med svcs)', 1, 'This macro is typically used for family planning where the customer submits one record for each ICD/CPT code in a visit, resulting in multiple records in the submission for a single patient visit. This macro will merge records with the same site ID, patient ID and visit date. Medical services from all matched records will be stored in the first record and only the first matched record will be saved. \r\n\r\nThis macro does not generate errors.');
-INSERT INTO `universaltranslator`.`macro_names` (`ID`, `CategoryId`, `Macro_Name`, `Macro_Short_Name`, `Ref_Number`, `Date_Display`, `Formula`, `Invalid_When`, `FieldA_Question`, `FieldB_Question`, `Con1_Question`, `Con2_Question`, `populateFieldA`, `macroDesc`) VALUES ('180', 1, 'Prepend String with Value if Length matches', 'prependCon2IfCon1Length', NULL, NULL, 'prependCon2IfCon1Length', NULL, '', '', 'Please enter length of string', 'Please enter value to prepend', 1, 'This macro prepends a string to a field value that matches the length of the string specified.    For example, we would like to append \'0\' to any string that is 4 characters long in column 1.    We would enter 1 for \'Please enter column to prepend to\', 4 for \'Please enter length of string\' and \'0\' for \'Please enter value to prepend\'.    An example is \'2155\', the result will be \'02155\' This is most commonly used to add back the 0 in a  zip code ');
-INSERT INTO `universaltranslator`.`macro_names` (`ID`, `CategoryId`, `Macro_Name`, `Macro_Short_Name`, `Ref_Number`, `Date_Display`, `Formula`, `Invalid_When`, `FieldA_Question`, `FieldB_Question`, `Con1_Question`, `Con2_Question`, `populateFieldA`, `macroDesc`) VALUES ('181', 1, 'Merge Values for Column', 'mergeValues', NULL, NULL, 'mergeValues', NULL, 'Please enter the field number (fieldNo) for Site Id (just #, no F)', 'Please enter the field number for Client Identifier', 'Please enter the field number for visit date', 'Please enter the field number for the column to merge', 1, 'This macro merges records for specified column (usually icd codes) and make  Site/Client Identifier/ Visit Date combination have the same value. For example, if Patient A, Site 123, Visit Date 1/1/2020 has two entries, one with ICD codes Z11.3,Z11.4,Z32.02, 2nd entry with ICD codes N76.0,Z30.011,Z01.419,Z30.49,Z31.9,N39.0, both entries will have ICD Codes Z11.3,Z11.4,Z32.02, N76.0,Z30.011,Z01.419,Z30.49,Z31.9,N39.0 after running this macro.');
-INSERT INTO `universaltranslator`.`macro_names` (`ID`, `CategoryId`, `Macro_Name`, `Macro_Short_Name`, `Ref_Number`, `Date_Display`, `Formula`, `Invalid_When`, `FieldA_Question`, `FieldB_Question`, `Con1_Question`, `Con2_Question`, `populateFieldA`, `macroDesc`) VALUES ('183', 1, 'Date - mmddyyyy to yyyymmdd', 'Convert Date mmddyyyy to yyyymmdd', NULL, NULL, 'datemmddyyyyToyyyymmdd', NULL, '', '', '', '', 1, 'This macro will convert a date value in mmddyyyy format to yyyymmdd format. If the date format is invalid, an error will be logged. Pass/clear logic and reject record/reject file logic will be activated when an error is logged.');
-INSERT INTO `universaltranslator`.`macro_names` (`ID`, `CategoryId`, `Macro_Name`, `Macro_Short_Name`, `Ref_Number`, `Date_Display`, `Formula`, `Invalid_When`, `FieldA_Question`, `FieldB_Question`, `Con1_Question`, `Con2_Question`, `populateFieldA`, `macroDesc`) VALUES ('184', 1, 'Date - dd-mon-yy to yyyymmdd', 'Convert Date dd-Mon-YY to yyyymmdd', NULL, NULL, 'dateddmonyyWithDashesToyyyymmdd', NULL, '', '', '', '', 1, 'This macro will convert a date value in dd-mon-yy format to yyyymmdd format. If the date format is invalid, an error will be logged. Pass/clear logic and reject record/reject file logic will be activated when an error is logged.');
-INSERT INTO `universaltranslator`.`macro_names` (`ID`, `CategoryId`, `Macro_Name`, `Macro_Short_Name`, `Ref_Number`, `Date_Display`, `Formula`, `Invalid_When`, `FieldA_Question`, `FieldB_Question`, `Con1_Question`, `Con2_Question`, `populateFieldA`, `macroDesc`) VALUES ('185', 1, 'Date - mm/dd/yyyy to yyyymmdd', 'Convert Date mm/dd/yyyy to yyyymmdd', NULL, NULL, 'datemmddyyyyWithSlashesToyyyymmdd', NULL, '', '', '', '', 1, 'This macro will convert a date value in mm/dd/yyyy format to yyyymmdd format. If the date format is invalid, an error will be logged. Pass/clear logic and reject record/reject file logic will be activated when an error is logged.');
-INSERT INTO `universaltranslator`.`macro_names` (`ID`, `CategoryId`, `Macro_Name`, `Macro_Short_Name`, `Ref_Number`, `Date_Display`, `Formula`, `Invalid_When`, `FieldA_Question`, `FieldB_Question`, `Con1_Question`, `Con2_Question`, `populateFieldA`, `macroDesc`) VALUES ('186', 1, 'Date - m/dd/yyyy to yyyymmdd', 'Convert Date m/dd/yyyy to yyyymmdd', NULL, NULL, 'datemddyyyyWithSlashesToyyyymmdd', NULL, '', '', '', '', 1, 'This macro will convert a date value in m/dd/yyyy format to yyyymmdd format. If the date format is invalid, an error will be logged. Pass/clear logic and reject record/reject file logic will be activated when an error is logged.');
-INSERT INTO `universaltranslator`.`macro_names` (`ID`, `CategoryId`, `Macro_Name`, `Macro_Short_Name`, `Ref_Number`, `Date_Display`, `Formula`, `Invalid_When`, `FieldA_Question`, `FieldB_Question`, `Con1_Question`, `Con2_Question`, `populateFieldA`, `macroDesc`) VALUES ('187', 1, 'Date - mm/d/yyyy to yyyymmdd', 'Convert Date mm/d/yyyy to yyyymmdd', NULL, NULL, 'datemmdyyyyWithSlashesToyyyymmdd', NULL, '', '', '', '', 1, 'This macro will convert a date value in mm/d/yyyy format to yyyymmdd format. If the date format is invalid, an error will be logged. Pass/clear logic and reject record/reject file logic will be activated when an error is logged.');
-INSERT INTO `universaltranslator`.`macro_names` (`ID`, `CategoryId`, `Macro_Name`, `Macro_Short_Name`, `Ref_Number`, `Date_Display`, `Formula`, `Invalid_When`, `FieldA_Question`, `FieldB_Question`, `Con1_Question`, `Con2_Question`, `populateFieldA`, `macroDesc`) VALUES ('188', 1, 'Date - m/d/yyyy to yyyymmdd', 'Convert Date m/d/yyyy to yyyymmdd', NULL, NULL, 'datemdyyyyWithSlashesToyyyymmdd', NULL, '', '', '', '', 1, 'This macro will convert a date value in m/d/yyyy format to yyyymmdd format. If the date format is invalid, an error will be logged. Pass/clear logic and reject record/reject file logic will be activated when an error is logged.');
-INSERT INTO `universaltranslator`.`macro_names` (`ID`, `CategoryId`, `Macro_Name`, `Macro_Short_Name`, `Ref_Number`, `Date_Display`, `Formula`, `Invalid_When`, `FieldA_Question`, `FieldB_Question`, `Con1_Question`, `Con2_Question`, `populateFieldA`, `macroDesc`) VALUES ('189', 1, 'Date - yyyy-mm-dd to yyyymmdd', 'Convert Date yyyy-mm-dd to yyyymmdd', NULL, NULL, 'dateyyyymmddWithDashesToyyyymmdd', NULL, '', '', '', '', 1, 'This macro will convert a date value in yyyy-mm-dd format to yyyymmdd format. If the date format is invalid, an error will be logged. Pass/clear logic and reject record/reject file logic will be activated when an error is logged.');
-INSERT INTO `universaltranslator`.`macro_names` (`ID`, `CategoryId`, `Macro_Name`, `Macro_Short_Name`, `Ref_Number`, `Date_Display`, `Formula`, `Invalid_When`, `FieldA_Question`, `FieldB_Question`, `Con1_Question`, `Con2_Question`, `populateFieldA`, `macroDesc`) VALUES ('190', 1, 'Date - mddyyyy (single digit month) to yyyymmdd', 'Convert Date mddyyyy to yyyymmdd', NULL, NULL, 'datemddyyyyToyyyymmdd', NULL, '', '', '', '', 1, 'This macro will convert a date value in mddyyyy format to yyyymmdd format. If the date format is invalid, an error will be logged. Pass/clear logic and reject record/reject file logic will be activated when an error is logged.');
-INSERT INTO `universaltranslator`.`macro_names` (`ID`, `CategoryId`, `Macro_Name`, `Macro_Short_Name`, `Ref_Number`, `Date_Display`, `Formula`, `Invalid_When`, `FieldA_Question`, `FieldB_Question`, `Con1_Question`, `Con2_Question`, `populateFieldA`, `macroDesc`) VALUES ('191', 1, 'Date - mm/dd/yy (two digit year) to yyyymmdd', 'Convert Date mm/dd/yy to yyyymmdd', NULL, NULL, 'datemmddyyWithSlashesToyyyymmdd', NULL, '', '', '', '', 1, 'This macro will convert a date value in mm/dd/yy format to yyyymmdd format. If the date format is invalid, an error will be logged. Pass/clear logic and reject record/reject file logic will be activated when an error is logged.');
-INSERT INTO `universaltranslator`.`macro_names` (`ID`, `CategoryId`, `Macro_Name`, `Macro_Short_Name`, `Ref_Number`, `Date_Display`, `Formula`, `Invalid_When`, `FieldA_Question`, `FieldB_Question`, `Con1_Question`, `Con2_Question`, `populateFieldA`, `macroDesc`) VALUES ('192', 1, 'Date - m/d/yy to yyyymmdd', 'Convert Date m/d/yy to yyyymmdd', NULL, NULL, 'datedmyyWithSlashesToyyyymmdd', NULL, '', '', '', '', 1, 'This macro will convert a date value in m/d/yy format to yyyymmdd format. If the date format is invalid, an error will be logged. Pass/clear logic and reject record/reject file logic will be activated when an error is logged.');
-INSERT INTO `universaltranslator`.`macro_names` (`ID`, `CategoryId`, `Macro_Name`, `Macro_Short_Name`, `Ref_Number`, `Date_Display`, `Formula`, `Invalid_When`, `FieldA_Question`, `FieldB_Question`, `Con1_Question`, `Con2_Question`, `populateFieldA`, `macroDesc`) VALUES ('193', 1, 'Date - Insert error for invalid dates', 'Error Invalid Date', NULL, NULL, 'CheckInvalidDateAndError', NULL, '', '', 'Please enter current date format - i.e. %Y%m%d for yyyymmdd', '', 1, 'This macro checks the field for a valid date.  User will enter in the format of the date using corresponding MySQL format.\r\nFor example,  dates in yyyymmdd format will be %Y%m%d\r\n\r\nBelow are the acceptable formats - \r\n%c - (m) Numeric month name (0 to 12)\r\n%d - (dd) Day of the month as a numeric value (01 to 31)\r\n%e - (d) Day of the month as a numeric value (0 to 31)\r\n%M - (month) Month name in full (January to December)\r\n%m - (mon) Month name as a numeric value (00 to 12)\r\n%Y - (yyyy) Year as a numeric, 4-digit value\r\n%y - (yy) Year as a numeric, 2-digit value');
-INSERT INTO `universaltranslator`.`macro_names` (`ID`, `CategoryId`, `Macro_Name`, `Macro_Short_Name`, `Ref_Number`, `Date_Display`, `Formula`, `Invalid_When`, `FieldA_Question`, `FieldB_Question`, `Con1_Question`, `Con2_Question`, `populateFieldA`, `macroDesc`) VALUES ('194', 1, 'Numeric Range', 'Numeric Range', NULL, NULL, 'NumericRange', NULL, '', 'Please enter start range', 'Please enter end range', '', 0, 'This macro will verify that a field is numeric and that the value falls within the specified numeric range. If the field is not numeric or does not fall within the specified range, an error will be logged. Pass/clear logic and reject record/reject file logic will be activated when an error is logged.');
-INSERT INTO `universaltranslator`.`macro_names` (`ID`, `CategoryId`, `Macro_Name`, `Macro_Short_Name`, `Ref_Number`, `Date_Display`, `Formula`, `Invalid_When`, `FieldA_Question`, `FieldB_Question`, `Con1_Question`, `Con2_Question`, `populateFieldA`, `macroDesc`) VALUES ('195', 1, 'Apply CW to List without Tracking Dropped Values', 'Apply CW to List without Tracking Dropped Values', NULL, NULL, 'applyCWTranslatedListNoTrackDroppedValues', NULL, NULL, NULL, 'Please enter crosswalk Id', 'Enter Y for distinct value only, Enter N for all values', 1, NULL);
-INSERT INTO `universaltranslator`.`macro_names` (`ID`, `CategoryId`, `Macro_Name`, `Macro_Short_Name`, `Ref_Number`, `Date_Display`, `Formula`, `Invalid_When`, `FieldA_Question`, `FieldB_Question`, `Con1_Question`, `Con2_Question`, `populateFieldA`, `macroDesc`) VALUES ('196', 1, 'Check - Regular Expression', 'regExCheck', NULL, NULL, 'regExCheck', NULL, NULL, NULL, 'Please enter the regular expression', NULL, 1, NULL);
-INSERT INTO `universaltranslator`.`macro_names` (`ID`, `CategoryId`, `Macro_Name`, `Macro_Short_Name`, `Ref_Number`, `Date_Display`, `Formula`, `Invalid_When`, `FieldA_Question`, `FieldB_Question`, `Con1_Question`, `Con2_Question`, `populateFieldA`, `macroDesc`) VALUES ('197', 1, 'Compare Two Fields and Update SF to Con2', 'Compare Two Fields and Update SF to Con2', NULL, NULL, 'CompareTwoFieldsAndUpdateSF', NULL, 'Please enter field to compare source field to', ' ', 'Please enter comparison (< , <=, =, >, >=, !=)', 'Please enter value to update SF to', 1, NULL);
 
 DELIMITER $$
 CREATE DEFINER=`root`@`localhost` PROCEDURE `AlphaNumericCheck`(in configId int, 
@@ -2739,7 +2668,7 @@ if (@totalCount1 = @totalCount2) then
 	BEGIN
 			set @stmt = concat("insert into ", @errorTable , " (" , @batchIdColumn, ", configId, " , @translateCol, 
 			", fieldNo, errorId, macroId, stackTrace, required, fieldLabel, fieldValue) select ",batchId,", ",configId,", ",@translateCol, ", replace('",srcField,"', 'F', ''), ", 8, 
-			", ",macroId, ", 'Macro rejectNonYearMonthTransactions - Could not determine which date to use:  "  "Year Month - ",@yearMonthToUse1, " and ",@yearMonthToUse2," have the same numbers of transactions - ",@totalCount1, "'",
+			", ",macroId, ", 'Macro errorNonYearMonthTransactions - Could not determine which date to use:  "  "Year Month - ",@yearMonthToUse1, " and ",@yearMonthToUse2," have the same numbers of transactions - ",@totalCount1, "'",
             ", true, '",@fieldLabel,"', ",srcField," from ", @translatedTable, " where ",
 			srcField," is not null and length(",srcField,") > 0 ", @whereClause, ";");
             
@@ -3713,63 +3642,72 @@ DEALLOCATE PREPARE stmt;
 	EXECUTE stmt;
     DEALLOCATE PREPARE stmt;
     
-    
+    -- we need to keep all the values that are not part of top ranked cw
 	set @stmt = concat("update ",@listTable," join (select id, sourcevalue, targetvalue from rel_crosswalkdata where crosswalkid = ", con1 ,") cwdata
 	on invalue = sourcevalue set translatedvalue = targetvalue where ",@batchIdType," = ", batchId);
   
     PREPARE stmt from @stmt;
 	EXECUTE stmt;
     DEALLOCATE PREPARE stmt;
-
+    
+    set @stmt = concat("ALTER TABLE ",@listTable," ADD COLUMN topRankedValue TEXT NULL AFTER fCol;");
+  
+	PREPARE stmt from @stmt;
+	EXECUTE stmt;
+    DEALLOCATE PREPARE stmt;
+    
 	set @selDistinct = ' distinct ';
     
-    set @stmt = concat("update ",@translatedTable," join  (
-	SELECT tt.",@translateCol," as matchId,  invalue label
-	FROM ",@listTable," tt
-	INNER JOIN
-	(SELECT ",@translateCol,", min(CONVERT(translatedValue,UNSIGNED INTEGER) ) AS topRanked
-	FROM ",@listTable," 
-	where ",@batchIdType," = ",batchid," and fcol = ",@fCol," 
-	GROUP BY ",@translateCol," order by ",@translateCol,") groupedtt 
-	ON tt.",@translateCol," = groupedtt.",@translateCol," 
-	AND tt.translatedValue = groupedtt.topRanked
-	where ",@batchIdType," = ",batchid," and fcol = ",@fCol," 
-    order by tt.",@translateCol,"
-   ) cwmatch on ",@translateCol," = matchid set ",srcField," = label 
-   where label is not null
-   ");
-	
+    set @stmt = concat("update ",@listTable," join  (
+		SELECT tt.",@translateCol," as matchId,  invalue label
+		FROM ",@listTable," tt
+		INNER JOIN
+		(SELECT ",@translateCol,", min(CONVERT(translatedValue,UNSIGNED INTEGER) ) AS topRanked
+		FROM ",@listTable," 
+		where ",@batchIdType," = ",batchid," and fcol = ",@fCol," 
+		GROUP BY ",@translateCol," order by ",@translateCol,") groupedtt 
+		ON tt.",@translateCol," = groupedtt.",@translateCol," 
+		AND tt.translatedValue = groupedtt.topRanked
+		where ",@batchIdType," = ",batchid," and fcol = ",@fCol," 
+		order by tt.",@translateCol,"
+	   ) cwmatch on ",@translateCol," = matchid set  toprankedvalue = label 
+	   where label is not null
+	   ");
 	
     PREPARE stmt from @stmt;
 	EXECUTE stmt;
     DEALLOCATE PREPARE stmt;
     
+    set @stmt = concat("update ",@listTable," set toprankedvalue = invalue where translatedValue is null;");
+	
+    PREPARE stmt from @stmt;
+	EXECUTE stmt;
+    DEALLOCATE PREPARE stmt;
     
-    -- track the topranked value
+    set @stmt = concat("update ",@listTable," set toprankedvalue = null where invalue != toprankedvalue;");
+	
+	PREPARE stmt from @stmt;
+	EXECUTE stmt;
+    DEALLOCATE PREPARE stmt;
+   
+    -- update the translated with topranked value
     
     set @stmt = concat("
-	update ",@listTable," t1 join  (
-	SELECT tt.id as matchId,  invalue label
-	FROM ",@listTable," tt
-	INNER JOIN
-	(SELECT ",@translateCol,", min(CONVERT(translatedValue,UNSIGNED INTEGER) ) AS topRanked
-	FROM ",@listTable," 
-	where ",@batchIdType," = ",batchid," and fcol = ",@fCol," 
-	GROUP BY ",@translateCol," order by ",@translateCol,") groupedtt 
-	ON tt.",@translateCol," = groupedtt.",@translateCol," 
-	AND tt.translatedValue = groupedtt.topRanked
-	where ",@batchIdType," = ",batchid," and fcol = ",@fCol," 
-    order by tt.",@translateCol,"
-   ) cwmatch on t1.id = cwmatch.matchId set translateIdToKeep = 1
-   where label is not null;");
-    
+		   update ",@translatedTable ," table1 join (
+		   select ",@translateCol," , 
+		   group_concat(CONVERT(toprankedvalue,UNSIGNED INTEGER)  order by CONVERT(toprankedvalue,UNSIGNED INTEGER)) label
+		   from ",@listTable,"
+		   where topRankedValue is not null 
+		   group by ",@translateCol," 
+		   order by ",@translateCol," ) table2
+		   on table1.",@translateCol,"  = table2.",@translateCol," 
+		   set table1.",srcField," = table2.label;");
     
     PREPARE stmt from @stmt;
 	EXECUTE stmt;
     DEALLOCATE PREPARE stmt;
     
-    
-    /** track dropped values **/
+    /** track dropped values , we only drop values that are part of the cw **/
     set @colText = "in";
     if (foroutboundProcessing) then
 		set @colText = "out";
@@ -3779,19 +3717,25 @@ DEALLOCATE PREPARE stmt;
     set @stmt = concat("
 			insert into transaction",@colText,"macrodroppedvalues_",batchId," (",@batchIdColumn ,", transaction",@colText,"RecordsId, fieldNo, fieldValue, matchId, configId) 
 			select distinct ",batchId,", transaction",@colText,"RecordsId, fcol, invalue,concat('keepTopRanked_',",configId,", '_', fcol, '_', invalue), ",configId," from transactiontranslatedlist",@colText,"_",batchId," 
-            where translateIdToKeep is null;
+            where toprankedvalue is null;
 	");
     
-	PREPARE stmt from @stmt;
+    PREPARE stmt from @stmt;
 	EXECUTE stmt;
 	DEALLOCATE PREPARE stmt;
-
+    
+    
     set @stmt = concat("truncate table ", @listTable);
 	
     PREPARE stmt from @stmt;
 	EXECUTE stmt;
     DEALLOCATE PREPARE stmt;
-
+    
+    set @stmt = concat("ALTER TABLE ",@listTable," DROP COLUMN topRankedValue;");
+	
+    PREPARE stmt from @stmt;
+	EXECUTE stmt;
+    DEALLOCATE PREPARE stmt;
 
 end proc_main$$
 DELIMITER ;
@@ -3828,43 +3772,6 @@ EXECUTE stmt;
 DEALLOCATE PREPARE stmt; 
 
 end if;
-
-end proc_main$$
-DELIMITER ;
-
-DELIMITER $$
-CREATE DEFINER=`root`@`localhost` PROCEDURE `MatchSFtoCon1UpdateFBtoCon2`(in configId int, 
-in batchId int, in srcField varchar(10),
-in fieldA varchar(10), in fieldB varchar(10), in con1 varchar(255), 
-in con2 varchar(255), in macroId int, in foroutboundProcessing boolean, in passClear int, in transactionId int)
-proc_main:begin
-
-
-call setInboundOutBoundTables (foroutboundProcessing,batchId);
-select @translatedTable, @transactionTable, @batchTable, @batchIdType , @errorTable
-into @translatedTable, @transactionTable, @batchTable, @batchIdType , @errorTable;
-
-call getFinalStatusIds;
-select @finalStatusIds into @finalStatusIds;
-
-	set @stmt = concat("update ",@translatedTable, " set ",fieldB," = '",con2,"' where trim(REPLACE(CONVERT(",srcField," USING ASCII), '?','')) = '",con1,"'
-				and  configId = ",configId," and ", @batchIdType," = ",batchId," and statusId not in (",@finalStatusIds ,");");
-
-PREPARE stmt from @stmt;
-EXECUTE stmt;
-DEALLOCATE PREPARE stmt;
-
-
-if (length(con1) = 0) then
-		set @stmt = concat("update ",@translatedTable, " set ",fieldB," = '",con2,"' where (",srcField," is null or ",srcField," = '')
-		and  configId = ",configId," and ", @batchIdType," = ",batchId," and statusId not in (", @finalStatusIds, ");");
-
-	PREPARE stmt from @stmt;
-	EXECUTE stmt;
-	DEALLOCATE PREPARE stmt; 
-    
-end if;
-
 
 end proc_main$$
 DELIMITER ;
@@ -4346,13 +4253,11 @@ if (foroutboundProcessing)  then
         set @colDirection = "out";
 end if;
 
-
 SET @stmt = CONCAT("
 delete dropv from transaction",@colDirection,"macrodroppedvalues_",inBatchId," dropv join (
 select matchid from transaction",@colDirection,"macrokeptvalues_",inBatchId,") keptv
 on keptv.matchId = dropv.matchId;
 ");
-
 
 PREPARE stmt from @stmt;
 EXECUTE stmt;
@@ -4367,6 +4272,8 @@ join (select * from configurationformfields) t2
 on t1.configId = t2.configId
 and t1.fieldNo = t2.fieldno;
 ");
+
+
 
 PREPARE stmt from @stmt;
 EXECUTE stmt;
@@ -4397,13 +4304,8 @@ DEALLOCATE PREPARE stmt;
 	end;
 end if;
 
-select concat('F', fieldNo) into @entity3IdField from configurationformfields where configId = inConfigId and fieldDesc = 'rrEntity3' limit 1;
-
-
 SELECT concat('F',rptField1),concat('F',rptField2),concat('F',rptField3),concat('F',rptField4) INTO @rptField1, @rptField2,@rptField3,@rptField4 
 FROM configurationmessagespecs where configId = inConfigId LIMIT 1;
-
-
 
 if(@rptField1 = 'F0') then 
 	set @rptField1 = "F1";
@@ -4422,16 +4324,11 @@ if(@rptField4 = 'F0') then
 end if;
 
 
-if(@entity3IdField is null) then 
-	set @entity3IdField = "F1";
-end if;
-
-
 SET @stmt = CONCAT("
 update  ",@dvTableName," t1 join 
-(Select transaction",@colDirection,"RecordsId, t1.",@rptField1," rptField1, t1.",@rptField2," rptField2, t1.",@rptField3," rptField3, t1.",@rptField4," rptField4, 
-rrEntity3Id from transaction",@colDirection,"records_",inBatchId," t1 join
-(select ",@entity3IdField," rrEntity3Id, transaction",@colDirection,"RecordsId from transactiontranslated",@colDirection,"_",inBatchId,") t2
+(Select transaction",@colDirection,"RecordsId, t1.",@rptField1," rptField1, t1.",@rptField2," rptField2, t1.",@rptField3," rptField3, t1.",@rptField4," rptField4
+ from transaction",@colDirection,"records_",inBatchId," t1 join
+(select transaction",@colDirection,"RecordsId from transactiontranslated",@colDirection,"_",inBatchId,") t2
 on t1.id = t2.transaction",@colDirection,"RecordsId) t2
 on t1.",@recordName ,"Id = t2.",@recordName,"Id 
 set reportField1Data = rptField1,
@@ -4442,10 +4339,48 @@ translatedReportField1Data = rptField1
 where t1.",@batchIdCol," = ",inBatchId," and configId = ",inConfigId,";
 ");
 
+PREPARE stmt from @stmt;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+
+SET @stmt = CONCAT("
+update  ",@dvTableName," t1 join 
+(Select transaction",@colDirection,"RecordsId, ",@rptField1," rptField1
+from transactiontranslated",@colDirection,"_",inBatchId,") t2
+on t1.",@recordName ,"Id = t2.",@recordName,"Id 
+set translatedReportField1Data = rptField1 
+where t1.",@batchIdCol," = ",inBatchId," and configId = ",inConfigId,";
+");
 
 PREPARE stmt from @stmt;
 EXECUTE stmt;
 DEALLOCATE PREPARE stmt;
+
+/** populate inbound **/
+SELECT populateInboundAuditReport INTO @populateInboundAuditReport FROM configurationtransportdetails where configId = inConfigId LIMIT 1;
+
+if (@populateInboundAuditReport) then
+
+	-- we insert outbound entries into inbound DV table
+	begin
+			
+				SET @stmt = CONCAT("
+					INSERT INTO batchuploaddroppedvalues 
+					(transactionInRecordsId, fieldNo, batchUploadId, configId, fieldName, fieldValue, reportField1Data, reportField2Data, 
+					reportField3Data, reportField4Data, translatedReportField1Data, fromOutboundConfig) 
+					select transactionOutRecordsId, fieldNo, batchUploadId, configId, fieldName, fieldValue, reportField1Data, reportField2Data, 
+					reportField3Data, reportField4Data, translatedReportField1Data, True from batchdownloaddroppedvalues where batchDownloadId = ",inBatchId,";
+					");
+				
+				PREPARE stmt from @stmt;
+				EXECUTE stmt;
+				DEALLOCATE PREPARE stmt;
+    
+    end;
+
+end if;
+
 
 end proc_main$$
 DELIMITER ;
@@ -4464,6 +4399,9 @@ into @translatedTable, @transactionTable, @batchTable, @batchIdType , @errorTabl
 
 call getFinalStatusIds;
 select @finalStatusIds into @finalStatusIds;
+
+-- defaulting con1 to Y
+set con1 = 'Y';
 			
             set @whereString = concat("  where configId = ",configId," and ", @batchIdType," = ",batchId," and statusId not in (",@finalStatusIds ,")");
 			
@@ -5023,8 +4961,7 @@ INTO @translatedTable , @transactionTable , @batchTable , @batchIdType , @errorT
 call getFinalStatusIds;
 SELECT @finalStatusIds INTO @finalStatusIds;
 
-
-set @whereClause  = concat("  (",srcField," REGEXP '",con1,"' != 1 or ",srcField," REGEXP '^[",con1,"]*$' is null)
+set @whereClause  = concat("  (",srcField," REGEXP '",con1,"' != 1 or ",srcField," REGEXP '",con1,"' is null)
             and ",srcField," is not null and  length(",srcField,") > 0 and ");
             
 set @whereString = concat(@whereClause, "  configId = ",configId," and ", @batchIdType," = ",batchId," and statusId not in (",@finalStatusIds ,");");
@@ -5034,7 +4971,6 @@ set @whereString = concat(@whereClause, "  configId = ",configId," and ", @batch
 			PREPARE stmt from @stmt;
 			EXECUTE stmt;
 			DEALLOCATE PREPARE stmt;
-
 
 end proc_main$$
 DELIMITER ;
@@ -5747,10 +5683,17 @@ proc_main:begin
 			leave proc_main;
         end;
       end if;
-
+		
+        /** 
+			we only update if there are enough characters. 
+			for example, abcd, extract position 2 (con1), 3 characters, cd is only 2 so it won't be updated.
+        **/
+        
 		set @stmt = concat("update ",@translatedTable, " set ",fieldA," =  ",
-		" substring(" , srcField, ", ", con1,",", con2,")  where configId = ",configId," and ", @batchIdType," = ",batchId," and statusId not in (",@finalStatusIds ,");");
-
+		" substring(" , srcField, ", ", con1,",", con2,")  
+        where  (length(substring(" , srcField, ", ", con1,",", con2,")) >= ",con2,") = true and configId = ",configId," and ", @batchIdType," = ",batchId," and statusId not in (",@finalStatusIds ,");");
+		
+        
 		PREPARE stmt from @stmt;
 		EXECUTE stmt;
 		DEALLOCATE PREPARE stmt;
@@ -5960,6 +5903,20 @@ SELECT @finalStatusIds INTO @finalStatusIds;
 				
 end proc_main$$
 DELIMITER ;
+
+
+/** macro table **/
+
+SET FOREIGN_KEY_CHECKS = 0;
+
+truncate table macro_names;
+
+/** replace this update statement after we update macros on EAH stage with Mike's updates **/
+INSERT INTO `macro_names` VALUES (2,1,'Conditional: IF SFA = CON1, SF = CON2','IF SFA = CON1, SF = CON2',NULL,NULL,'MatchFAtoCon1UpdateSFtoCon2',NULL,'Please enter field number to match',NULL,'Please enter constant to match','Please enter constant to update to','',NULL),(68,1,'Date - yyyy*mm*dd to mm*dd*yyyy','YYYY-MM-DD to MM-DD-YYYY',NULL,NULL,'dateyyyymmddTommddyyyy',NULL,'','','Please enter source SF\'s date value separator.  e.g. -, ., /','Please enter target SF\'s date value separator.  e.g. -, ., /','','This macro converts date value in yyyy-mm-dd format to mm-dd-yyyy. Any date value separators may be specified. \r\n\r\nIf an error occurs (i.e. date in wrong format), pass/clear logic will be applied and then reject record/reject file logic will be applied.'),(69,1,'Date - mm*dd*yyyy to yyyy*mm*dd','MM-DD-YYYY to YYYY-MM-DD',NULL,NULL,'datemmddyyyyToyyyymmdd',NULL,'','','Please enter source SF\'s date value separator.  e.g. -, ., /','Please enter target SF\'s date value separator.  e.g. -, ., /','','This macro converts date value in mm-dd-yyyy format to yyyy-mm-dd. Any date value separators may be specified. \r\n\r\nIf an error occurs (i.e. date in wrong format), pass/clear logic will be applied and then reject record/reject file logic will be applied.'),(70,1,'Set field to null','Clear SF',NULL,NULL,'ClearSF',NULL,'','','','','','Clear the field'),(72,1,'Replace chars in string','replaceChars1',NULL,NULL,'replaceCon1CharswithCon2',NULL,'','','Please enter character(s) that you would like to replace','Please enter new character(s).','','This macro searches for the CON1 character string in the current field and if found, replaces the character string with the specified character string in CON2.\r\n\r\nThis macro will never generate an error. If the specified character string is not found, the macro will move on to the next record.'),(74,1,'Concat fields into delimited list','concat fields to list',NULL,NULL,'concatFieldToList',NULL,'','','Please enter delimiter','Please enter field numbers to be concatenated in a comma delimited list','','Concatenate the values found in the comma separated fields found in CON2 using the specified delimiter specified in CON1 and store the results into the current field.\r\n\r\nThis macro will never generate an error.'),(75,1,'Strip character at specific position of field, with optional character match','strip Char At Position X',NULL,NULL,'stripCharAtPos',NULL,'','','Please enter the position of the character to drop within the string','Please enter the character to drop (optional)','','In the current field, drop the character from the specified location in the character string. A specific character may be specified (optional). If a specific character is specified, and that character is not found, the character found is not dropped.\r\n\r\nThis macro will never generate an error.'),(76,1,'Match Null or empty value and replace','replace blanks with chars',NULL,NULL,'replaceBlanksWithChars',NULL,'','','Please enter the value to insert if the field is blank.','','','This macro will nsert the specified value into the current field but only if the current field is blank or null.\r\n\r\nThis macro will never generate an error.'),(80,1,'Strip leading characters','Strip Leading',NULL,NULL,'stripLeadingChars',NULL,'','','Please enter leading character(s) to be removed','','','This macro will strip characters specified by the user from the leading edge of the current field. If characters are not found, no action is taken.\r\n\r\nThis macro will never generate an error.'),(81,1,'Strip Trailing Character(s) from field','Strip trailing character',NULL,NULL,'stripTrailingChars',NULL,'','','Please enter trailing character(s) to remove','','','This macro will strip characters specified by the user from the trailing edge of the current field. If characters are not found, no action is taken.\r\n\r\nThis macro will never generate an error.'),(86,1,'Update Field','Update Field',NULL,NULL,'overwriteSF',NULL,'','','Please enter new value to be stored in the current field.','','','This macro replaces the value stored in the current field with the specified value.'),(87,1,'Copy Field','Copy Field',NULL,NULL,'copyField',NULL,'','Please enter the field number of the field to be copied into the current field.','','','','This macro copies the value from the specified field and stores that value in the current field.\r\n\r\nThis macro will never generate an error.'),(89,1,'Insert Random Number','Insert Random Nuimber',NULL,NULL,'overwriteSFWithRandomNumber',NULL,'','','','NULL','','This macro inserts a random number into the current field.\r\n\r\nThis macro will never generate an error.'),(93,1,'Check Length of String and replace with','Check Length And Replace',NULL,NULL,'CheckLengthAndReplace',NULL,'','','Please enter minimum string length','Please enter the value to insert if string length is >= CON1','','This macro checks the lengfth of the value in the current field. If the length is >= CON1, the value specified in CON2 will be inserted.'),(94,1,'Copy Substring to Another Field','Substring to Another Field',NULL,NULL,'substringToAnotherField',NULL,'Please enter field number to be updated','','Please enter starting position of string to be extracted','Please enter how many characters to extract','','This macro copies a substring from the current field and stores that value in the specified field.\r\n\r\nThis macro never generates an error.'),(99,1,'If scrField matches con1 overwrite Field A with Field B','If SRCF=CON1, Copy FB to FA',NULL,NULL,'IfSFMatchCon1SetFAtoFB',NULL,'Please enter field number to be updated','Please enter field number to copy to FA','Please enter value to match to SF','','','This macro checks the current field for a specified value. If a match is found, the value in field B is copied to field A.\r\n\r\nThis macro will never generate an error.'),(102,1,'Prepend and/or Append Strings','Prepend Append String',NULL,NULL,'appendPrependString',NULL,'Please enter value you would like to prepend','Prepend if the field is blank (Y/N).','Please enter value you would like to append','Append if the field is blank (Y/N).','','This macro adds a string to the beginning and/or end to the field values in a column. Values that are empty or blank after white spaces are removed will be ignored.     An example is adding $ to the beginning, .00 to the end to all the values in column 1.  We would enter 1 for \'Please enter column to prepend or append to\'.    $ for \'Please enter value you would like to prepend\' and \'.00\' for \'Please enter value you would like to append\'.  For the sample value of 12, the macro converted value will be $12.00  '),(103,1,'Check - Years Difference between Dates, i.e. DOB','yearDiffinsertError',NULL,NULL,'yearDiffinsertError',NULL,'Please enter the field for data to check against (e.g. visit date\'s column number)',NULL,'Please enter the minium age before rejecting','','',NULL),(104,1,'Check - Past Date','pastDateCheck',NULL,NULL,'pastDateCheck',NULL,NULL,NULL,'Please enter number of months','','',NULL),(108,1,'Update SRCF to CON2 when SRCF is blank and FA = CON1','SRCF=CON2 if SRCF=<> and FA = CON1',NULL,NULL,'IfFACon1AndSFBlankSetSFToCon2',NULL,'Please enter field to check against','','Please enter the value of field A','Please enter value to set source field to if blank','','This macro will update the current field with CON2 if the current field is blank but only if the specified field (field A) matches the value specified in CON1.\r\n\r\nThis macro never generates an error.'),(109,1,'Update SRCF to CON2 when SRCF = CON1 else clear SRCF.','ifSFMatchCon1ThenCon2ElseClear',NULL,NULL,'ifSFMatchCon1ThenCon2ElseClear',NULL,'','','Please enter value to match for SF','Please enter value to update SF to','','This macro will update the current field with CON2 if the current field = CON1 but will clear the current field if the current field <> CON1.\r\n\r\nThis macro will never generate an error.'),(112,1,'String to Date','stringToDate',NULL,NULL,'stringToDate',NULL,'','','Please enter the inbound string\'s date format','Please enter the outbound string\'s date format','',NULL),(113,1,'Check - Zip Code','ZipCodeCheck',NULL,NULL,'ZipCodeCheck',NULL,'','','Optional - Please enter a default (e.g. 00000) for invalid zip codes (alphanumeric)','','','This macro performs the following steps:\r\n- remove dashes from values\r\n- zip code length over length of 5 digits will be truncated to 5.\r\n- Optional\r\nIf a value is entered for the question \'Please enter a default for invalid zip codes (optional)\', \r\na default value will be added to all invalid (alphanumeric) zip codes. \r\nFor example, if a default value of 99999 is entered, \r\nabcde will be default to 99999\r\n- Optional\r\nIf \'Y\' is entered for the question \'Please enter Y if you would like to prepend 0(s) to zip codes that are 1-4 characters in length\', \r\nzip codes that are 1-4 characters in length will be prepended with 0(s) to make the zip code 5 characters long.\r\nFor example, zip code value of 345 will become 00345.\r\n\r\nThis macro will generate an error when alphanumeric values are found.'),(115,1,'Check - If SF is blank and FA is specified \"value\"','Check - If SF is blank and FA is specified \"value\"',NULL,NULL,'IfFieldACon1andSFBlankInsertError',NULL,'Please enter field to match value to','','Please enter value to be checked in FA','','','This macro will check FA for a specified value (CON1). If there is a match AND the SRCF is blank, log an error.\r\n\r\nThis macro is typically used in family planning to check if the IFNOMETHOD field is populated when the contra metho field = NO METHOD.\r\n\r\nThis macro will generate an error if the check condition is met. Pass/clear and reject record/file logic will be activated if SRCF is required.'),(128,1,'Append String with Value if Length matches','appendCon2IfCon1Length',NULL,NULL,'appendCon2IfCon1Length',NULL,'','','Please enter length of string','Please enter value to append','','These macro appends a string to a field value that matches the length of the string specified.    For example, we would like to append \' 00:00:00\' to any string that is 10 characters long in column 1.    We would enter 1 for \'Please enter column to append to\', 10 for \'Please enter length of string\' and \' 00:00:00\' for \'Please enter value to append\'.    An example is \'2019-02-28\', the result will be \'2019-02-28 00:00:00\''),(129,1,'Apply CW to List','applyCWTranslatedList',NULL,NULL,'applyCWTranslatedList',NULL,' ',' ','Please enter crosswalk Id','Enter Y to remove duplicaes; Enter N to keep duplictes.','','This macro applies a crosswalk to a column where the values are in a comma delimited list.   An example is translating a column 1\'s race valises into system Ids and store the translated values in column 2.    We would enter 1 for \'Please enter column with list\' and 2 for \'Please enter column to put translated list\'.  \'Please enter crosswalk Id\' will be the crosswalk Id assigned to races from the crosswalks table.    An example is column 1 with field \'White,Black\' , after allying this macro, column 2 will read 1,2    '),(131,1,'If Source Field is empty set Src Field to value of another field','If SF is empty, copy FA to SF',NULL,NULL,'IfSFBlankSetToFA',NULL,'Please enter field to update empty source vlaues to','','','','','This macro will copy the value found in FA to the SRCF if the SRCF is emplty.\r\n\r\nThis macro will never generate an error.'),(146,1,'Conditional: Compare Two Non-Blank Fields and Insert Errror when criteria is not met','CompareTwoFieldsAndError',NULL,NULL,'CompareTwoFieldsAndError',NULL,'Pleae enter field to compare source field to',NULL,'Please enter how to compare - 1 (>), 2 (>=) , 3 (<), 4 (<=)',' ','\0',NULL),(147,1,'If SF Length is not Con 1 Replace With Con 2','IfLengthNotCon1ReplaceWithCon2',NULL,NULL,'IfLengthNotCon1ReplaceWithCon2',NULL,'','','Please enter length you wish field to be','Please enter value to replacement value','',NULL),(148,1,'If SRCF is not equal to CON1, clear SRCF','IF SRCF <> CON1, then SRCF = NULL',NULL,NULL,'ifSFNotCon1ThenClear',NULL,'','','Please enter value to match','','','This macro will check for the CON1 value in the SRCF. If not found, the SRCF will be cleared.\r\n\r\nThis macro will never generate an error.'),(150,1,'If field is not blank insert error','ifNotBlankError',NULL,NULL,'ifNotBlankError',NULL,'',NULL,'',NULL,'',NULL),(152,0,'Check - Insert error for transactions that is not part of visit set','errorNonYearMonthTransactions',NULL,NULL,'errorNonYearMonthTransactions',NULL,NULL,NULL,NULL,'','',NULL),(156,1,'stripCharsFromStartOrEnd','stripCharsFromStartOrEnd',NULL,NULL,'stripCharsFromStartOrEnd',NULL,'','','Please enter number of characters to strip','Please enter 1 to strip from beginning, 2 for strip from end','','This macro will strip leading or trailing characters (any characters found) from the value stored in SF.\r\n\r\nThis macro will never generate an error.'),(160,1,'If value not in List set to Con2','ifValueNotInListValuesSetToCon2',0,NULL,'ifValueNotInListValuesSetToCon2',NULL,'','','Please enter crosswalk Id','Please enter value to update to','',NULL),(161,1,'If SF Starts With Con1 Update To Con2','ifStartsWithCon1UpdateToCon2',NULL,NULL,'ifStartsWithCon1UpdateToCon2',NULL,'','','Please enter starting characters to check','Please enter replacement value','','This macro will check to see if the value specified in CON1 is found at the start of the value in SRCF and if true, replace SRCF with CON2.\r\n\r\nThis macro will never generate an error.'),(165,1,'Check - Alpha Numeric','AlphaNumericCheck',NULL,NULL,'AlphaNumericCheck',NULL,'','','','','',NULL),(166,1,'Check - Future Date','rejectFutureDate',NULL,NULL,'futureDateCheck',NULL,'','','','','',''),(167,1,'If value is not numeric replace with Con1','If SRCF <> NUM, SRCF = CON1',NULL,NULL,'ifNotNumericSetToCon1',NULL,'','','Please enter replacement value','','','This macro will check to see if the value in the SRCF is numeric and if not, will insert CON1 value into the SRCF\r\n\r\nThis macro will never generate an error.'),(169,1,'Perform arithmetic operation on SRCF and FA with results in SRCF','SRCF = SRCF (+,-,*,/) FA',NULL,NULL,'ArithmeticConstant',NULL,'Please enter the constant value','','How many decimal places. (Defaults to 0 if left blank)','Please enter arithmetic operation ( + - / or *)','\0','This macro uses the specified arithmetic operator in CON2 and the value specified in FA to update the value stored in SRCF.\r\n\r\nSRCF = SRCF (+,-,*,/) FA\r\n\r\nIf the source field does not contain blank or a numeric value, the macro will generate an error.'),(172,1,'Check - List Length','CheckListLengthIfGTError',NULL,NULL,'CheckListLengthIfGTError',NULL,'',NULL,'Please enter number for the expected elements in the list','','',NULL),(173,1,'If SRCF, FA AND FB all blank, error','IfFieldsBlankThenError',NULL,NULL,'IfFieldsBlankThenError',NULL,'Please enter field number in additional to SF to check ','Please enter field number in additional to SF to check ','','','\0','This macro will check three firleds (SRCF, FA, FB) and if all three are blank, log an error.\r\n\r\n'),(174,1,'Populate Race Id and Individual Race Fields for CDS','PopulateFPRaceIdAndFields',NULL,NULL,'PopulateFPRaceIdAndFields',NULL,'','','','','','This macro manages how multiple race fields and the individual race fiueld is populated.\r\n\r\nFirst, the macro looks at individual race fields are in use.  If not, it will use the single race Id to populate individual race fields.\r\n\r\nFor example - \r\n1. If individual race fields are in use, it will populate the single race field (FA) after assessint the contents of the individual race fields.\r\n\r\nIndividual race fields include.....\r\n\r\n2. If it finds that individual race fields are not in use, it will look at what is in the source field and populate the individual race fields.\r\nFor example, the source field value is \'1,2\'. This macro will set White - Y, Black - Y and single race field to 6 (more than one race)\r\nAnother example is source field value is \'1\'.  It will set White - Y and single race field (fieldA) to 1.\r\n'),(177,1,'Keep Top Ranked Value','KeepTopRanked',NULL,NULL,'KeepTopRanked',NULL,'','','Please enter crosswalk with rank list',NULL,'','This macro takes a list of values and compare with a crosswalk and keep only top matching value'),(178,1,'Remove Duplicate Value from List','Remove Dup Values from List',NULL,NULL,'removeDupFromList',NULL,'','','','','','This macro will remove duplicate values from the source field.'),(179,1,'Merge Records','Merge Records',NULL,NULL,'mergeTransactions',NULL,'Please enter the field number for site ID','Please enter the field number for Client Identifier (MRN)','Please enter the field number for visit date','Please enter the field number of the field to be merged (typically med svcs)','','This macro is typically used for family planning where the customer submits one record for each ICD/CPT code in a visit, resulting in multiple records in the submission for a single patient visit. This macro will merge records with the same site ID, patient ID and visit date. Medical services from all matched records will be stored in the first record and only the first matched record will be saved. \r\n\r\nThis macro does not generate errors.'),(180,1,'Prepend String with Value if Length matches','prependCon2IfCon1Length',NULL,NULL,'prependCon2IfCon1Length',NULL,'','','Please enter length of string','Please enter value to prepend','','This macro prepends a string to a field value that matches the length of the string specified.    For example, we would like to append \'0\' to any string that is 4 characters long in column 1.    We would enter 1 for \'Please enter column to prepend to\', 4 for \'Please enter length of string\' and \'0\' for \'Please enter value to prepend\'.    An example is \'2155\', the result will be \'02155\' This is most commonly used to add back the 0 in a  zip code '),(181,1,'Merge Values for Column','mergeValues',NULL,NULL,'mergeValues',NULL,'Please enter the field number (fieldNo) for Site Id (just #, no F)','Please enter the field number for Client Identifier','Please enter the field number for visit date','Please enter the field number for the column to merge','','This macro merges records for specified column (usually icd codes) and make  Site/Client Identifier/ Visit Date combination have the same value. For example, if Patient A, Site 123, Visit Date 1/1/2020 has two entries, one with ICD codes Z11.3,Z11.4,Z32.02, 2nd entry with ICD codes N76.0,Z30.011,Z01.419,Z30.49,Z31.9,N39.0, both entries will have ICD Codes Z11.3,Z11.4,Z32.02, N76.0,Z30.011,Z01.419,Z30.49,Z31.9,N39.0 after running this macro.'),(183,1,'Date - mmddyyyy to yyyymmdd','Convert Date mmddyyyy to yyyymmdd',NULL,NULL,'datemmddyyyyToyyyymmdd',NULL,'','','','','','This macro will convert a date value in mmddyyyy format to yyyymmdd format. If the date format is invalid, an error will be logged. Pass/clear logic and reject record/reject file logic will be activated when an error is logged.'),(184,1,'Date - dd-mon-yy to yyyymmdd','Convert Date dd-Mon-YY to yyyymmdd',NULL,NULL,'dateddmonyyWithDashesToyyyymmdd',NULL,'','','','','','This macro will convert a date value in dd-mon-yy format to yyyymmdd format. If the date format is invalid, an error will be logged. Pass/clear logic and reject record/reject file logic will be activated when an error is logged.'),(185,1,'Date - mm/dd/yyyy to yyyymmdd','Convert Date mm/dd/yyyy to yyyymmdd',NULL,NULL,'datemmddyyyyWithSlashesToyyyymmdd',NULL,'','','','','','This macro will convert a date value in mm/dd/yyyy format to yyyymmdd format. If the date format is invalid, an error will be logged. Pass/clear logic and reject record/reject file logic will be activated when an error is logged.'),(186,1,'Date - m/dd/yyyy to yyyymmdd','Convert Date m/dd/yyyy to yyyymmdd',NULL,NULL,'datemddyyyyWithSlashesToyyyymmdd',NULL,'','','','','','This macro will convert a date value in m/dd/yyyy format to yyyymmdd format. If the date format is invalid, an error will be logged. Pass/clear logic and reject record/reject file logic will be activated when an error is logged.'),(187,1,'Date - mm/d/yyyy to yyyymmdd','Convert Date mm/d/yyyy to yyyymmdd',NULL,NULL,'datemmdyyyyWithSlashesToyyyymmdd',NULL,'','','','','','This macro will convert a date value in mm/d/yyyy format to yyyymmdd format. If the date format is invalid, an error will be logged. Pass/clear logic and reject record/reject file logic will be activated when an error is logged.'),(188,1,'Date - m/d/yyyy to yyyymmdd','Convert Date m/d/yyyy to yyyymmdd',NULL,NULL,'datemdyyyyWithSlashesToyyyymmdd',NULL,'','','','','','This macro will convert a date value in m/d/yyyy format to yyyymmdd format. If the date format is invalid, an error will be logged. Pass/clear logic and reject record/reject file logic will be activated when an error is logged.'),(189,1,'Date - yyyy-mm-dd to yyyymmdd','Convert Date yyyy-mm-dd to yyyymmdd',NULL,NULL,'dateyyyymmddWithDashesToyyyymmdd',NULL,'','','','','','This macro will convert a date value in yyyy-mm-dd format to yyyymmdd format. If the date format is invalid, an error will be logged. Pass/clear logic and reject record/reject file logic will be activated when an error is logged.'),(190,1,'Date - mddyyyy (single digit month) to yyyymmdd','Convert Date mddyyyy to yyyymmdd',NULL,NULL,'datemddyyyyToyyyymmdd',NULL,'','','','','','This macro will convert a date value in mddyyyy format to yyyymmdd format. If the date format is invalid, an error will be logged. Pass/clear logic and reject record/reject file logic will be activated when an error is logged.'),(191,1,'Date - mm/dd/yy (two digit year) to yyyymmdd','Convert Date mm/dd/yy to yyyymmdd',NULL,NULL,'datemmddyyWithSlashesToyyyymmdd',NULL,'','','','','','This macro will convert a date value in mm/dd/yy format to yyyymmdd format. If the date format is invalid, an error will be logged. Pass/clear logic and reject record/reject file logic will be activated when an error is logged.'),(192,1,'Date - m/d/yy to yyyymmdd','Convert Date m/d/yy to yyyymmdd',NULL,NULL,'datedmyyWithSlashesToyyyymmdd',NULL,'','','','','','This macro will convert a date value in m/d/yy format to yyyymmdd format. If the date format is invalid, an error will be logged. Pass/clear logic and reject record/reject file logic will be activated when an error is logged.'),(193,1,'Date - Insert error for invalid dates','Error Invalid Date',NULL,NULL,'CheckInvalidDateAndError',NULL,'','','Please enter current date format - i.e. %Y%m%d for yyyymmdd','','','This macro checks the field for a valid date.  User will enter in the format of the date using corresponding MySQL format.\r\nFor example,  dates in yyyymmdd format will be %Y%m%d\r\n\r\nBelow are the acceptable formats - \r\n%c - (m) Numeric month name (0 to 12)\r\n%d - (dd) Day of the month as a numeric value (01 to 31)\r\n%e - (d) Day of the month as a numeric value (0 to 31)\r\n%M - (month) Month name in full (January to December)\r\n%m - (mon) Month name as a numeric value (00 to 12)\r\n%Y - (yyyy) Year as a numeric, 4-digit value\r\n%y - (yy) Year as a numeric, 2-digit value'),(194,1,'Numeric Range','Numeric Range',NULL,NULL,'NumericRange',NULL,'','','Please enter start range','Please enter end range','\0','This macro will verify that a field is numeric and that the value falls within the specified numeric range. If the field is not numeric or does not fall within the specified range, an error will be logged. Pass/clear logic and reject record/reject file logic will be activated when an error is logged.'),(195,1,'Apply CW to List without Tracking Dropped Values','Apply CW to List without Tracking Dropped Values',NULL,NULL,'applyCWTranslatedListNoTrackDroppedValues',NULL,NULL,NULL,'Please enter crosswalk Id','Enter Y for distinct value only, Enter N for all values','',NULL),(196,1,'Check - Regular Expression','regExCheck',NULL,NULL,'regExCheck',NULL,NULL,NULL,'Please enter the regular expression',NULL,'',NULL),(197,1,'Compare Two Fields and Update SF to Con2','Compare Two Fields and Update SF to Con2',NULL,NULL,'CompareTwoFieldsAndUpdateSF',NULL,'Please enter field to compare source field to',' ','Please enter comparison (< , <=, =, >, >=, !=)','Please enter value to update SF to','',NULL);
+
+SET FOREIGN_KEY_CHECKS = 1;
+
+
 
 
 
