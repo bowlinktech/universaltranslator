@@ -558,6 +558,13 @@ public class transactionInManagerImpl implements transactionInManager {
 	try {
 	    Macros macro = configurationManager.getMacroById(cdt.getMacroId());
 	    
+	    if (macro != null) {
+	    	cdt.setMacroName(macro.getmacroName());
+	    } else {
+	    	insertProcessingError(processingSysErrorId, configId, batchId, cdt.getFieldNo(),null, null, null,true, foroutboundProcessing, ("Macro " + cdt.getMacroId() + " doesn't exist in macro_names table"));
+	    	return 0;
+	    }
+	    
 	    int sysError = 0;
 		
 	    // we expect the target field back so we can figure out clear pass option
@@ -567,7 +574,8 @@ public class transactionInManagerImpl implements transactionInManager {
 	    Integer macroErrors = flagMacroErrors(configId, batchId, cdt, foroutboundProcessing);
 	    
 	    if(cdt.getPassClear() == 2) {
-		executePassClearLogic(batchId, cdt, foroutboundProcessing);
+	    	insertMacroDroppedValues(batchId, cdt, foroutboundProcessing);
+	    	executePassClearLogic(batchId, cdt, foroutboundProcessing);
 	    }
 
 	    //flag as error in transactionIn or transactionOut table (Only updating REQUIRED records from transactioninerrors)
@@ -2067,6 +2075,9 @@ public class transactionInManagerImpl implements transactionInManager {
 	
 	//first thing we do is get details, then we set it to  38
 	batchUploads batch = getBatchDetails(batchId);
+	
+	//Get a full list of macros
+	List<Macros> macroList = configurationManager.getMacros();
 
 	//we recheck status in case it was picked up in a loop
 	if (batch.getStatusId() == 42) {
@@ -2685,34 +2696,48 @@ public class transactionInManagerImpl implements transactionInManager {
 			    //we are reordering 1. cw/macro, 2. required and 3. validate 
 			    // 1. grab the configurationDataTranslations and run cw/macros
 			    List<configurationDataTranslations> dataTranslations = configurationManager.getDataTranslationsWithFieldNo(configId, 2); //pre processing
-			    Integer crosswalkError = 0;
+			    Integer crosswalkErrors = 0;
 			    Integer macroError = 0;
+			    String macroName = "";
 			    
 			    for (configurationDataTranslations cdt : dataTranslations) {
-				crosswalkError = 0;
+				crosswalkErrors = 0;
 				macroError = 0;
 				
 				if (cdt.getCrosswalkId() != 0) {
-				    crosswalkError = processCrosswalk(configId, batchId, cdt, false);
 				    
-				    if(crosswalkError > 0) {
-					sysErrors = sysErrors + crosswalkError;
-					
+				    crosswalkErrors = processCrosswalk(configId, batchId, cdt, false);
+			    
+				    if(crosswalkErrors == 9999999) {
+					sysErrors++; 
+				    }
+				    else if(crosswalkErrors > 0) {
 					//log batch activity
 					ba = new batchuploadactivity();
-					ba.setActivity("Crosswalk Error. CWId:" + cdt.getCrosswalkId() + " for configId:" + configId);
+					ba.setActivity("Crosswalk Error. CWId:" + cdt.getCrosswalkId() + " for configId:" + batch.getConfigId() + " total records with CW error: " + crosswalkErrors);
 					ba.setBatchUploadId(batchId);
 					transactionInDAO.submitBatchActivityLog(ba);
 				    }
-				} else if (cdt.getMacroId() != 0) {
-				    macroError = processMacro(configId, batchId, cdt, false);
 				    
-				    if(macroError > 0) {
-					sysErrors = sysErrors + macroError;
-					
+				} else if (cdt.getMacroId() != 0) {
+				    macroName = "";
+				    macroError = processMacro(configId, batchId, cdt, false);
+
+				    if(macroError == 9999999) {
+					sysErrors++; 
+				    }
+				    else if(macroError > 0) {
+					if(!macroList.isEmpty()) {
+					    for(Macros macro : macroList) {
+						if(macro.getId() == cdt.getMacroId()) {
+						    macroName = macro.getMacroName().trim();
+						}
+					    }
+					}
+
 					//log batch activity
 					ba = new batchuploadactivity();
-					ba.setActivity("Macro Error. macroId:" + cdt.getMacroId() + " for configId:" + configId);
+					ba.setActivity("Macro Error. macro: " + macroName + " macroId: " + cdt.getMacroId() + " for configId:" + batch.getConfigId() + " total records with Macro error: " + macroError);
 					ba.setBatchUploadId(batchId);
 					transactionInDAO.submitBatchActivityLog(ba);
 				    }
@@ -3103,14 +3128,17 @@ public class transactionInManagerImpl implements transactionInManager {
 		}
 
 		//Check to make sure all returned targets match the config of the uploaded batch
+		Integer checkTargets = 0;
 		for (configurationConnection bt : batchTargetList) {
 		    if (bt.getsourceConfigId() != sourceConfigId) {
 			sourceConfigId = bt.getsourceConfigId();
 
 			if (bt.getTargetOrgCol() != 0) {
-			    systemErrorCount = systemErrorCount + rejectInvalidTargetOrg(batchUploadId, bt);
+			    checkTargets = rejectInvalidTargetOrg(batchUploadId, bt);
+			    if(checkTargets == 9999999) {
+				systemErrorCount++; 
+			    }
 			}
-
 		    }
 		}
 	    }
@@ -4252,7 +4280,7 @@ public class transactionInManagerImpl implements transactionInManager {
 		}
 	    }
 	    
-	    String DMFile = myProps.getProperty("ut.directory.utRootDir") + fileDropDir.replace("/HELProductSuite/universalTranslator/", "");
+	    String DMFile = myProps.getProperty("ut.directory.utRootDir") + fileDropDir.replace("/Applications/HELProductSuite/universalTranslator/", "").replace("/HELProductSuite/universalTranslator/", "");
 	    batchInfo.setOriginalFolder(DMFile);
 
 	    //we reject
@@ -4292,9 +4320,13 @@ public class transactionInManagerImpl implements transactionInManager {
 		//copy file
 		writeToFile = fileNamePath;
 		
-		File encodedFile = new File(archivefileNamePath.replace("/HELProductSuite/universalTranslator/",myProps.getProperty("ut.directory.utRootDir")));
+		File encodedFile = new File(archivefileNamePath
+			.replace("/Applications/HELProductSuite/universalTranslator/",myProps.getProperty("ut.directory.utRootDir"))
+			.replace("/HELProductSuite/universalTranslator/",myProps.getProperty("ut.directory.utRootDir")));
 		
-		File movedFile = new File(fileNamePath.replace("/HELProductSuite/universalTranslator/",myProps.getProperty("ut.directory.utRootDir")));
+		File movedFile = new File(fileNamePath
+			.replace("/Applications/HELProductSuite/universalTranslator/",myProps.getProperty("ut.directory.utRootDir"))
+			.replace("/HELProductSuite/universalTranslator/",myProps.getProperty("ut.directory.utRootDir")));
 		
 		FileUtils.moveFile(new File(DMFile+directMessage.getReferralFileName()),movedFile);
 
@@ -4317,7 +4349,9 @@ public class transactionInManagerImpl implements transactionInManager {
 		    } 
 		    else {
 			String encodeArchivePath = myProps.getProperty("ut.directory.utRootDir") + "archivesIn/archive_" + batchName + fileExt;
-			Files.copy(new File(writeToFile.replace("/HELProductSuite/universalTranslator/",myProps.getProperty("ut.directory.utRootDir"))).toPath(), new File(encodeArchivePath).toPath(), REPLACE_EXISTING);
+			Files.copy(new File(writeToFile
+				.replace("/Applications/HELProductSuite/universalTranslator/",myProps.getProperty("ut.directory.utRootDir"))
+				.replace("/HELProductSuite/universalTranslator/",myProps.getProperty("ut.directory.utRootDir"))).toPath(), new File(encodeArchivePath).toPath(), REPLACE_EXISTING);
 			Files.copy(encodedFile.toPath(), new File(myProps.getProperty("ut.directory.utRootDir") + "archivesIn/" + batchName + fileExt.replace("/HELProductSuite/universalTranslator/",myProps.getProperty("ut.directory.utRootDir"))).toPath(), REPLACE_EXISTING);
 		    }
 
@@ -4336,7 +4370,9 @@ public class transactionInManagerImpl implements transactionInManager {
 			    delimiter = ct.getDelimChar();
 			}
 			
-			int delimCount = dir.checkFileDelimiter(new File(fileNamePath.replace("/HELProductSuite/universalTranslator/",myProps.getProperty("ut.directory.utRootDir"))), delimiter);
+			int delimCount = dir.checkFileDelimiter(new File(fileNamePath
+				.replace("/Applications/HELProductSuite/universalTranslator/",myProps.getProperty("ut.directory.utRootDir"))
+				.replace("/HELProductSuite/universalTranslator/",myProps.getProperty("ut.directory.utRootDir"))), delimiter);
 			if (delimCount < 3) {
 			    statusId = 7;
 			    errorId = 15;
@@ -4625,5 +4661,10 @@ public class transactionInManagerImpl implements transactionInManager {
     @Override
     public void executePassClearLogic(Integer batchId, configurationDataTranslations cdt, boolean foroutboundProcessing) throws Exception {
 	transactionInDAO.executePassClearLogic(batchId, cdt, foroutboundProcessing);
+    }
+    
+    @Override
+    public void insertMacroDroppedValues(Integer batchId, configurationDataTranslations cdt, boolean foroutboundProcessing) throws Exception {
+	transactionInDAO.insertMacroDroppedValues(batchId, cdt, foroutboundProcessing);
     }
 }

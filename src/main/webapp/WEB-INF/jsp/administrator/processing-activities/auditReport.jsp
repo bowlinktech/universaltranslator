@@ -192,7 +192,11 @@
 					    <strong>Date Created:</strong><br /><fmt:formatDate value="${batchDetails.dateCreated}" type="both" pattern="M/dd/yyyy h:mm:ss a" />
 					</c:when>
 					<c:otherwise>
-					    <strong>Date Uploaded:</strong><br /><fmt:formatDate value="${batchDetails.dateSubmitted}" type="both" pattern="M/dd/yyyy h:mm:ss a" />
+					   <strong>Date Uploaded:</strong><br /><fmt:formatDate value="${batchDetails.dateSubmitted}" type="both" pattern="M/dd/yyyy h:mm:ss a" />
+                                            <c:if test="${not empty batchDetails.startDateTime && batchDetails.startDateTime gt batchDetails.dateSubmitted}">
+                                               </br></br>
+                                               <strong>Date Reprocessed</strong><br /><fmt:formatDate value="${batchDetails.startDateTime}" type="both" pattern="M/dd/yyyy h:mm:ss a" />
+                                            </c:if>
 					</c:otherwise> 
 				    </c:choose>
 				</p>

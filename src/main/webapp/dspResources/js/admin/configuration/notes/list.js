@@ -7,22 +7,26 @@ require(['./main'], function () {
     if ($('.alert').length > 0) {
         $('.alert').delay(2000).fadeOut(1000);
     }
+    
+   
         
     var configurationnotesdatatable = $('#configurationnotes').dataTable({
         "bStateSave": false,
         "sPaginationType": "bootstrap",
+        columnDefs: [ { type: 'date', 'targets': [2] } ],
         "oLanguage": {
             "sSearch": "_INPUT_",
             "sLengthMenu": '<select class="form-control" style="width:150px">' +
-                    '<option value="10">10 Records</option>' +
-                    '<option value="20">20 Records</option>' +
-                    '<option value="30">30 Records</option>' +
-                    '<option value="40">40 Records</option>' +
-                    '<option value="50">50 Records</option>' +
-                    '<option value="-1">All</option>' +
-                    '</select>'
+            '<option value="10">10 Records</option>' +
+            '<option value="20">20 Records</option>' +
+            '<option value="30">30 Records</option>' +
+            '<option value="40">40 Records</option>' +
+            '<option value="50">50 Records</option>' +
+            '<option value="-1">All</option>' +
+            '</select>'
         }
     });
+    
     configurationnotesdatatable.fnSort([[2, 'desc']]);
     
     $(document).on('click','.printConfig',function() {

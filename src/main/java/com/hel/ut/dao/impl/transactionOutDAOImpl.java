@@ -45,6 +45,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import com.hel.ut.service.utConfigurationTransportManager;
+import org.hibernate.criterion.Criterion;
 
 /**
  *
@@ -236,6 +237,7 @@ public class transactionOutDAOImpl implements transactionOutDAO {
      *
      * @param fromDate
      * @param toDate
+     * @param batchName
      * @return This function will return a list of batch uploads
      * @throws Exception
      */
@@ -246,27 +248,47 @@ public class transactionOutDAOImpl implements transactionOutDAO {
 	int firstResult = 0;
 
 	Criteria findBatches = sessionFactory.getCurrentSession().createCriteria(batchDownloads.class);
-
-	if (fromDate != null) {
-	    if (!"".equals(fromDate)) {
-		findBatches.add(Restrictions.ge("dateCreated", fromDate));
-	    }
-	}
-
-	if (toDate != null) {
-	    if (!"".equals(toDate)) {
-		findBatches.add(Restrictions.lt("dateCreated", toDate));
-	    }
-	}
-
+	
 	if (!"".equals(batchName)) {
 	    findBatches.add(Restrictions.eq("utBatchName", batchName));
+	}
+	else {
+	    Criterion rest1 = null;
+	    Criterion rest2 = null;
+
+	    if (fromDate != null) {
+		if (!"".equals(fromDate)) {
+
+		    if (toDate != null) {
+			if (!"".equals(toDate)) {
+			    rest1 = Restrictions.and(Restrictions.ge("dateCreated", fromDate),Restrictions.lt("dateCreated", toDate));
+			    rest2 = Restrictions.and(Restrictions.ge("startDateTime", fromDate),Restrictions.lt("startDateTime", toDate));
+			}
+			else {
+			    rest1 = Restrictions.ge("dateCreated", fromDate);
+			    rest2 = Restrictions.ge("startDateTime", fromDate);
+			}
+		    }
+		    else {
+			rest1 = Restrictions.ge("dateCreated", fromDate);
+			rest2 = Restrictions.ge("startDateTime", fromDate);
+		    }
+		}
+	    }
+	    else {
+		if (toDate != null) {
+		    if (!"".equals(toDate)) {
+			rest1 = Restrictions.lt("dateCreated", toDate);
+			rest2 = Restrictions.lt("startDateTime", toDate);
+		    }
+		}
+	    }
+	    findBatches.add(Restrictions.and(Restrictions.ge("totalRecordCount", 0),Restrictions.or(rest1,rest2)));
 	}
 
 	findBatches.addOrder(Order.desc("dateCreated"));
 
 	return findBatches.list();
-
     }
 
 
@@ -1213,17 +1235,17 @@ public class transactionOutDAOImpl implements transactionOutDAO {
 	
 	if(batchDownloads != null) {
 	    if(!batchDownloads.isEmpty()) {
-		for(batchDownloads batch : batchDownloads) {
-		    deleteSQL += "DROP TABLE IF EXISTS `transactionoutdetailauditerrors_" + batch.getId() + "`;";
-		    deleteSQL += "DROP TABLE IF EXISTS `transactiontranslatedlistout_" + batch.getId() + "`;";
-		    deleteSQL += "DROP TABLE IF EXISTS `transactionoutrecords_" + batch.getId() + "`;";
-		    deleteSQL += "DROP TABLE IF EXISTS `transactionouterrors_" + batch.getId() + "`;";
-		    deleteSQL += "DROP TABLE IF EXISTS `transactionoutjsontable_" + batch.getId() + "`;";
-		    deleteSQL += "DROP TABLE IF EXISTS `transactiontranslatedout_" + batch.getId() + "`;";
-		    deleteSQL += "DROP TABLE IF EXISTS `transactionoutmacrodroppedvalues_" + batch.getId() + "`;";
-			deleteSQL += "DROP TABLE IF EXISTS `transactionoutmacrokeptvalues_" + batch.getId() + "`;";
-			
-		}
+			for(batchDownloads batch : batchDownloads) {
+			    deleteSQL += "DROP TABLE IF EXISTS `transactionoutdetailauditerrors_" + batch.getId() + "`;";
+			    deleteSQL += "DROP TABLE IF EXISTS `transactiontranslatedlistout_" + batch.getId() + "`;";
+			    deleteSQL += "DROP TABLE IF EXISTS `transactionoutrecords_" + batch.getId() + "`;";
+			    deleteSQL += "DROP TABLE IF EXISTS `transactionouterrors_" + batch.getId() + "`;";
+			    deleteSQL += "DROP TABLE IF EXISTS `transactionoutjsontable_" + batch.getId() + "`;";
+			    deleteSQL += "DROP TABLE IF EXISTS `transactiontranslatedout_" + batch.getId() + "`;";
+			    deleteSQL += "DROP TABLE IF EXISTS `transactionoutmacrodroppedvalues_" + batch.getId() + "`;";
+				deleteSQL += "DROP TABLE IF EXISTS `transactionoutmacrokeptvalues_" + batch.getId() + "`;";
+				deleteSQL += "delete from batchdownloaddroppedvalues where batchdownloadId = " + batch.getId() + ";";
+			}
 		
 		if(!"".equals(deleteSQL)) {
 		    deleteQuery = sessionFactory.getCurrentSession().createSQLQuery(deleteSQL);
@@ -1364,6 +1386,7 @@ public class transactionOutDAOImpl implements transactionOutDAO {
 	    + "OR fromBatchFile like '%"+searchTerm+"%' "		    
 	    + "OR statusValue like '%"+searchTerm+"%' "
 	    + "OR transportMethod like '%"+searchTerm+"%'"
+	    + "OR srcOrgName like '%"+searchTerm+"%'"
 	    + ") ";
 	}	
 	
