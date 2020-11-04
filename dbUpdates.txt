@@ -44,6 +44,10 @@ DROP COLUMN `entity3Id`,
 ADD COLUMN `translatedReportField1Data` VARCHAR(45) NULL DEFAULT NULL AFTER `reportField4Data`;
 
 
+ALTER TABLE `universaltranslator`.`batchuploaddroppedvalues` 
+ADD COLUMN `fromOutboundConfig` BIT(1) NULL DEFAULT False AFTER `translatedReportField1Data`;
+
+
 /** 
 CM - 10/215/202
 eReferral Configuration updates for replaced macros 
