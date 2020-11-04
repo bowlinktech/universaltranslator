@@ -84,3 +84,9 @@ BEGIN
         RETURN return_str;
 END$$
 DELIMITER ;
+
+ALTER TABLE `universaltranslatorca`.`macro_names` 
+ADD COLUMN `errorCondition` VARCHAR(255) NULL DEFAULT NULL AFTER `macroDesc`,
+ADD COLUMN `passClearLogic` VARCHAR(255) NULL DEFAULT NULL AFTER `errorCondition`,
+ADD COLUMN `droppedValueLogging` VARCHAR(255) NULL DEFAULT NULL AFTER `passClearLogic`,
+ADD COLUMN `rejectRecordFile` VARCHAR(255) NULL DEFAULT NULL AFTER `droppedValueLogging`;
