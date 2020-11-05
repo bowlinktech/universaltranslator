@@ -23,8 +23,7 @@ public class Macros {
     @Column(name = "MACRO_NAME", nullable = false)
     private String macroName;
 
-    @NotEmpty
-    @Column(name = "MACRO_SHORT_NAME", nullable = false)
+    @Column(name = "MACRO_SHORT_NAME", nullable = true)
     private String macroShortName;
 
     @Column(name = "REF_NUMBER", nullable = false)
