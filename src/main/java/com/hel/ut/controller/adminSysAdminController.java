@@ -136,7 +136,7 @@ public class adminSysAdminController {
         mav.setViewName("/administrator/sysadmin/macros");
 
         //Return a list of available macros
-        List<Macros> macroList = sysAdminManager.getMarcoList("%");
+        List<Macros> macroList = sysAdminManager.getMarcoList("");
         mav.addObject("macroList", macroList);
 
         return mav;
@@ -908,7 +908,7 @@ public class adminSysAdminController {
 	String fileName = "macro-list";
 	
 	try {
-	    List<Macros> macroList = sysAdminManager.getMarcoList("%");
+	    List<Macros> macroList = sysAdminManager.getMarcoList("");
 
 	    File file = new File("/tmp/" + fileName + ".xlsx");
 	    file.createNewFile();
@@ -935,8 +935,8 @@ public class adminSysAdminController {
 	    Row currentRow = sheet.createRow(rowNum);
 	    currentRow.createCell(cellNum).setCellValue("Name");
 	    cellNum++;
-	    currentRow.createCell(cellNum).setCellValue("Short Name");
-	    cellNum++;
+	    //currentRow.createCell(cellNum).setCellValue("Short Name");
+	    //cellNum++;
 	    currentRow.createCell(cellNum).setCellValue("Stored Procedure Name");
 	    cellNum++;
 	    currentRow.createCell(cellNum).setCellValue("Field A Question");
@@ -946,6 +946,14 @@ public class adminSysAdminController {
 	    currentRow.createCell(cellNum).setCellValue("Constant 1 Question");
 	    cellNum++;
 	    currentRow.createCell(cellNum).setCellValue("Constant 2 Question");
+	    cellNum++;
+	    currentRow.createCell(cellNum).setCellValue("Error Condition");
+	    cellNum++;
+	    currentRow.createCell(cellNum).setCellValue("Pass/Clear Logic");
+	    cellNum++;
+	    currentRow.createCell(cellNum).setCellValue("Dropped Values Logging");
+	    cellNum++;
+	    currentRow.createCell(cellNum).setCellValue("Reject Record/File");
 	    cellNum++;
 	    currentRow.createCell(cellNum).setCellValue("Description");
 
@@ -957,8 +965,6 @@ public class adminSysAdminController {
 			cellNum = 0;
 
 			currentRow.createCell(cellNum).setCellValue(macro.getMacroName().trim());
-			cellNum++;
-			currentRow.createCell(cellNum).setCellValue(macro.getMacroShortName().trim());
 			cellNum++;
 			currentRow.createCell(cellNum).setCellValue(macro.getFormula().trim());
 			cellNum++;
@@ -990,6 +996,34 @@ public class adminSysAdminController {
 			    currentRow.createCell(cellNum).setCellValue(macro.getCon2Question().trim());
 			}
 			cellNum++;
+			if(macro.getErrorCondition()== null) {
+			    currentRow.createCell(cellNum).setCellValue("");
+			}
+			else {
+			    currentRow.createCell(cellNum).setCellValue(macro.getErrorCondition().trim());
+			}
+			cellNum++;
+			if(macro.getPassClearLogic()== null) {
+			    currentRow.createCell(cellNum).setCellValue("");
+			}
+			else {
+			    currentRow.createCell(cellNum).setCellValue(macro.getPassClearLogic().trim());
+			}
+			cellNum++;
+			if(macro.getDroppedValueLogging()== null) {
+			    currentRow.createCell(cellNum).setCellValue("");
+			}
+			else {
+			    currentRow.createCell(cellNum).setCellValue(macro.getDroppedValueLogging().trim());
+			}
+			cellNum++;
+			if(macro.getRejectRecordFile()== null) {
+			    currentRow.createCell(cellNum).setCellValue("");
+			}
+			else {
+			    currentRow.createCell(cellNum).setCellValue(macro.getRejectRecordFile().trim());
+			}
+			cellNum++;
 			if(macro.getMacroDesc() == null) {
 			    currentRow.createCell(cellNum).setCellValue("");
 			}
@@ -1006,6 +1040,9 @@ public class adminSysAdminController {
 		    sheet.autoSizeColumn(5);
 		    sheet.autoSizeColumn(6);
 		    sheet.autoSizeColumn(7);
+		    sheet.autoSizeColumn(8);
+		    sheet.autoSizeColumn(9);
+		    sheet.autoSizeColumn(10);
 		}
 	    }
 

@@ -3531,14 +3531,15 @@ public class transactionInDAOImpl implements transactionInDAO {
 	    }
 	}
 	
-	String sqlQuery = "select id, statusName, orgName, dateCreated, configId, batchUploadId, batchName, totalMessages "
+	String sqlQuery = "select id, statusName, CASE WHEN orgName = '' THEN 'N/A' ELSE orgName END as orgName, dateCreated, configId, batchUploadId, "
+		+ "CASE WHEN batchUploadId = 0 THEN 'N/A' ELSE batchName END as batchName, totalMessages "
 		+ "from ("
 		+ "select a.id, a.batchUploadId, a.dateCreated, a.configId, IFNULL(b.orgName,\"\") as orgName,"
 		+ "CASE WHEN a.statusId = 1 THEN 'To be processed' WHEN a.statusId = 2 THEN 'Processed' ELSE 'Rejected' END as statusName,"
 		+ "IFNULL(c.utBatchName,\"\") as batchName,"
 		+ "(select count(id) as total from directmessagesin where "+dateSQLStringTotal+") as totalMessages "
 		+ "FROM directmessagesin a left outer join  "
-		+ "organizations b on b.id = a.orgId inner join  "
+		+ "organizations b on b.id = a.orgId left outer join  "
 		+ "batchuploads c on c.id = a.batchUploadId "
 		+ "where " + dateSQLString + ") as messagesIn ";
 	
