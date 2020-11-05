@@ -78,16 +78,7 @@
                             <select id="macro" class="form-control half">
                                 <option value="">- Select -</option>
                                 <c:forEach items="${macros}" var="macro" varStatus="mStatus">
-                                    <option value="${macro.id}">
-                                        <c:choose> 
-                                            <c:when test="${macro.macroShortName.contains('DATE')}">
-                                                ${macro.macroName} (${macro.dateDisplay})
-                                            </c:when>
-                                            <c:otherwise>
-                                                ${macro.macroName}
-                                            </c:otherwise>  
-                                        </c:choose>
-                                    </option>
+                                    <option value="${macro.id}">${macro.macroName}</option>
                                 </c:forEach>
                             </select>
                             <span id="macroMsg" class="control-label"></span>
