@@ -62,7 +62,7 @@ public class batchDownloadDroppedValues {
     private String reportField4Data;
     
     @Column(name = "translatedReportField1Data", nullable = false)
-    private int translatedReportField1Data = 0;
+    private String translatedReportField1Data;
 
     public int getId() {
 	return id;
@@ -168,11 +168,12 @@ public class batchDownloadDroppedValues {
 	this.reportField4Data = reportField4Data;
     }
 
-	public int getTranslatedReportField1Data() {
-		return translatedReportField1Data;
-	}
+    public String getTranslatedReportField1Data() {
+	return translatedReportField1Data;
+    }
 
-	public void setTranslatedReportField1Data(int translatedReportField1Data) {
-		this.translatedReportField1Data = translatedReportField1Data;
-	}
+    public void setTranslatedReportField1Data(String translatedReportField1Data) {
+	this.translatedReportField1Data = translatedReportField1Data;
+    }
+
 }
