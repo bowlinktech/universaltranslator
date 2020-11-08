@@ -314,3 +314,270 @@ end proc_main$$
 
 DELIMITER ;
 
+USE `universaltranslatorca`;
+DROP procedure IF EXISTS `stripCharAtPos`;
+
+DELIMITER $$
+USE `universaltranslatorca`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `stripCharAtPos`(in configId int, 
+in batchId int, in srcField varchar(10), in fieldA varchar(10), in fieldB varchar(10), in con1 varchar(255), 
+in con2 varchar(255), in macroId int, in foroutboundProcessing boolean, in passClear int, in transactionId int)
+proc_main:begin
+
+
+call setInboundOutBoundTables (foroutboundProcessing,batchId);
+select @translatedTable, @transactionTable, @batchTable, @batchIdType , @errorTable
+into @translatedTable, @transactionTable, @batchTable, @batchIdType , @errorTable;
+
+call getFinalStatusIds;
+select @finalStatusIds into @finalStatusIds;
+
+
+-- check to see if con1 is numeric
+      if con1 REGEXP '^[]?[0-9]*[]{0,1}[0-9]*$' = 0 then 
+					begin
+						set @stmt = concat("insert into ", @errorTable , 
+                            " (" , @batchIdColumn, ", configId, " , @translateCol, ", fieldNo, errorId, macroId, stackTrace, required) 
+                            select ",batchId,", ",configId,", 0, replace('",srcField,"', 'F', ''), '", 5, 
+							"', ",macroId,", ","'stripCharAtPos Con1 - ",con1,"  must be a numeric value'",", ",true);
+                            
+                            PREPARE stmt from @stmt;
+							EXECUTE stmt;
+							DEALLOCATE PREPARE stmt;
+                            
+                            -- update all transactions to macro_error
+							set @stmt = concat("update ",@translatedTable, " set forCW = 'MACRO_ERROR'  where  configId = ",configId," and ", @batchIdType," = ",batchId,";");
+							 
+                             PREPARE stmt from @stmt;
+							EXECUTE stmt;
+							DEALLOCATE PREPARE stmt;
+           
+			leave proc_main;
+        end;
+      end if;
+
+set @readField = srcField;
+set @strCompare = '';
+
+if (length(trim(con2)) != 0) then
+	begin 
+		set @strCompare = concat(" and substring(", @readField, ",", con1, ", 1) = '", con2, "'");
+	end;
+end if; 
+
+
+set @stmt = concat("update ",@translatedTable, " set ",srcField," = concat(substring(", @readField,", 1, (", con1, "-1)), 
+substring(", @readField, ", (", con1, " + 1),length(", @readField,")- ", con1,")) where length(", @readField,") >= " ,con1 , 
+@strCompare, "  and  configId = ",configId," and ",@batchIdType," = ",batchId," and statusId not in (",@finalStatusIds ,");");
+
+PREPARE stmt from @stmt;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+
+end proc_main$$
+
+DELIMITER ;
+
+USE `universaltranslatorca`;
+DROP procedure IF EXISTS `KeepTopRanked`;
+
+DELIMITER $$
+USE `universaltranslatorca`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `KeepTopRanked`(in configId int, 
+in batchId int, in srcField varchar(10),
+in fieldA varchar(10), in fieldB varchar(10), in con1 varchar(255), 
+in con2 varchar(255), in macroId int, in foroutboundProcessing boolean, in passClear int, in transactionId int)
+proc_main:begin 
+
+
+call setInboundOutBoundTables (foroutboundProcessing,batchId);
+select @translatedTable, @transactionTable, @batchTable, @batchIdType , @errorTable, @batchIdColumn, @listTable, @translateCol
+into @translatedTable, @transactionTable, @batchTable, @batchIdType , @errorTable, @batchIdColumn, @listTable, @translateCol;
+
+call getFinalStatusIds;
+select @finalStatusIds into @finalStatusIds;
+
+/** make sure con1 is numeric **/
+/** con1 must be numeric and greater than 1 **/
+
+				if (con1 REGEXP '^[]?[0-9]*[]{0,1}[0-9]*$' = 0 || length(@con1) = 0 || con1 < 1) then
+
+							set @stmt = concat("insert into ", @errorTable , 
+                            " (" , @batchIdColumn, ", configId, " , @translateCol, ", fieldNo, errorId, macroId, stackTrace, required) 
+                            select ",batchId,", ",configId,", 0, replace('",srcField,"', 'F', ''), '", 5, 
+							"', ",macroId,", ","'KeepTopRanked Macro - Crosswalk Id - ",con1," must be an integer greater than 0. '",", ",true);
+                            
+                            PREPARE stmt from @stmt;
+							EXECUTE stmt;
+							DEALLOCATE PREPARE stmt;
+                            
+                            
+							set @stmt = concat("update ",@translatedTable, " set forCW = 'MACRO_ERROR'  where  configId = ",configId," and ", @batchIdType," = ",batchId,";");
+							
+                            PREPARE stmt from @stmt;
+							EXECUTE stmt;
+							DEALLOCATE PREPARE stmt;
+
+
+leave proc_main;
+
+end if;
+
+set @stmt = concat("
+		SELECT max(CHAR_LENGTH(",srcField,") - CHAR_LENGTH( REPLACE ( ",srcField,", ',', '') )  + 1) from ",@translatedTable, " into @maxListLength");
+		
+		PREPARE stmt from @stmt;
+		EXECUTE stmt;
+		DEALLOCATE PREPARE stmt;
+         
+        if (@maxListLength is null) then
+			set @maxListLength = 108;
+        end if;
+
+
+set @whereString = concat(" and configId = ",configId," and ", @batchIdType," = ",batchId," and statusId not in (",@finalStatusIds ,");");
+
+set @fcol = replace(lcase(srcField), 'f', '');
+set @stmt = concat("truncate table ", @listTable);
+
+PREPARE stmt from @stmt;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+	set @stmt = concat("
+    insert into ", @listTable," (",@batchIdType,", ",@translateCol,", invalue, fcol)
+    SELECT ",@batchIdType,", ",@translateCol,", trim(SUBSTRING_INDEX(SUBSTRING_INDEX(t.",srcField,", ',', n.n), ',', -1)) value, ",@fcol,"
+    FROM ",@translatedTable ," t CROSS JOIN (
+    SELECT a.N + b.N * 10 + 1 n FROM  
+   (select id N from ref_numbers where id <= ",@maxListLength,") a
+   ,(select id N from ref_numbers where id <= ",@maxListLength,") b
+    ORDER BY n) n  WHERE n.n <= 1 + (LENGTH(t.",srcField,") - LENGTH(REPLACE(t.",srcField,", ',', ''))) ", @whereString);
+    
+
+    PREPARE stmt from @stmt;
+	EXECUTE stmt;
+    DEALLOCATE PREPARE stmt;
+     
+    -- we delete the single values from top rank look up 
+     set @stmt = concat("
+		delete t1 from  ", @listTable," t1 join (
+	   select t1.",@translateCol," from ", @listTable," t1 join (
+	   select count(",@translateCol,") recordCount, ",@translateCol,"
+	   from ", @listTable," group by ",@translateCol,"
+	   order by recordCount) t2 on 
+	   t1.",@translateCol," = t2.",@translateCol,"
+	   where recordCount = 1) t2 
+	   on t1.",@translateCol," = t2.",@translateCol,";");
+   
+		PREPARE stmt from @stmt;
+		EXECUTE stmt;
+		DEALLOCATE PREPARE stmt;
+     
+	set @stmt = concat("update ",@listTable," set invalue = replace(replace(invalue, '\n',''), '\r', '')");
+	 
+    PREPARE stmt from @stmt;
+	EXECUTE stmt;
+    DEALLOCATE PREPARE stmt;
+    
+    -- we need to keep all the values that are not part of top ranked cw
+	set @stmt = concat("update ",@listTable," join (select id, sourcevalue, targetvalue from rel_crosswalkdata where crosswalkid = ", con1 ,") cwdata
+	on invalue = sourcevalue set translatedvalue = targetvalue where ",@batchIdType," = ", batchId);
+  
+    PREPARE stmt from @stmt;
+	EXECUTE stmt;
+    DEALLOCATE PREPARE stmt;
+    
+    set @stmt = concat("ALTER TABLE ",@listTable," ADD COLUMN topRankedValue TEXT NULL AFTER fCol;");
+  
+	PREPARE stmt from @stmt;
+	EXECUTE stmt;
+    DEALLOCATE PREPARE stmt;
+    
+	set @selDistinct = ' distinct ';
+    
+    set @stmt = concat("update ",@listTable," join  (
+		SELECT tt.",@translateCol," as matchId,  invalue label
+		FROM ",@listTable," tt
+		INNER JOIN
+		(SELECT ",@translateCol,", min(CONVERT(translatedValue,UNSIGNED INTEGER) ) AS topRanked
+		FROM ",@listTable," 
+		where ",@batchIdType," = ",batchid," and fcol = ",@fCol," 
+		GROUP BY ",@translateCol," order by ",@translateCol,") groupedtt 
+		ON tt.",@translateCol," = groupedtt.",@translateCol," 
+		AND tt.translatedValue = groupedtt.topRanked
+		where ",@batchIdType," = ",batchid," and fcol = ",@fCol," 
+		order by tt.",@translateCol,"
+	   ) cwmatch on ",@translateCol," = matchid set  toprankedvalue = label 
+	   where label is not null
+	   ");
+	
+    PREPARE stmt from @stmt;
+	EXECUTE stmt;
+    DEALLOCATE PREPARE stmt;
+    
+    set @stmt = concat("update ",@listTable," set toprankedvalue = invalue where translatedValue is null;");
+	
+    PREPARE stmt from @stmt;
+	EXECUTE stmt;
+    DEALLOCATE PREPARE stmt;
+    
+    set @stmt = concat("update ",@listTable," set toprankedvalue = null where invalue != toprankedvalue;");
+	
+	PREPARE stmt from @stmt;
+	EXECUTE stmt;
+    DEALLOCATE PREPARE stmt;
+   
+    -- update the translated with topranked value order by the original list order
+    
+    set @stmt = concat("
+		   update ",@translatedTable ," table1 join (
+		   select ",@translateCol," , 
+		   group_concat(toprankedvalue order by id) label
+		   from ",@listTable,"
+		   where topRankedValue is not null 
+		   group by ",@translateCol," 
+		   order by ",@translateCol," ) table2
+		   on table1.",@translateCol,"  = table2.",@translateCol," 
+		   set table1.",srcField," = table2.label;");
+    
+    PREPARE stmt from @stmt;
+	EXECUTE stmt;
+    DEALLOCATE PREPARE stmt;
+    
+    /** track dropped values , we only drop values that are part of the cw **/
+    set @colText = "in";
+    if (foroutboundProcessing) then
+		set @colText = "out";
+    end if;
+    
+	
+    set @stmt = concat("
+			insert into transaction",@colText,"macrodroppedvalues_",batchId," (",@batchIdColumn ,", transaction",@colText,"RecordsId, fieldNo, fieldValue, matchId, configId) 
+			select distinct ",batchId,", transaction",@colText,"RecordsId, fcol, invalue,concat('keepTopRanked_',",configId,", '_', fcol, '_', invalue), ",configId," from transactiontranslatedlist",@colText,"_",batchId," 
+            where toprankedvalue is null;
+	");
+    
+    PREPARE stmt from @stmt;
+	EXECUTE stmt;
+	DEALLOCATE PREPARE stmt;
+    
+    
+    set @stmt = concat("truncate table ", @listTable);
+	
+    PREPARE stmt from @stmt;
+	EXECUTE stmt;
+    DEALLOCATE PREPARE stmt;
+    
+    set @stmt = concat("ALTER TABLE ",@listTable," DROP COLUMN topRankedValue;");
+	
+    PREPARE stmt from @stmt;
+	EXECUTE stmt;
+    DEALLOCATE PREPARE stmt;
+
+end proc_main$$
+
+DELIMITER ;
+
+
+
