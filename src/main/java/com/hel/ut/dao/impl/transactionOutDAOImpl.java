@@ -1092,7 +1092,7 @@ public class transactionOutDAOImpl implements transactionOutDAO {
 		    //Check to see if field has a default value
 		    if(configfield.getDefaultValue() != null) {
 			if(!configfield.getDefaultValue().isEmpty()) {
-			    selectFields.append(configfield.getDefaultValue()).append(",");
+			    selectFields.append("'").append(configfield.getDefaultValue()).append("',");
 			}
 			else {
 			    selectFields.append("''").append(",");
