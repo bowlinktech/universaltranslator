@@ -639,7 +639,6 @@ public class adminConfigConnectionController {
 	    mav.setViewName("/administrator/configurations/connections/targetConfigurationDataElements");
 	    List<configurationFormFields> sourceconfigurationDataElements = utconfigurationTransportManager.getConfigurationFields(sourceConfigId, 0);
 	    
-	     
 	    configurationTransport targetConfigTransportDetails = utconfigurationTransportManager.getTransportDetails(selConfigId);
 	    
 	    if(targetConfigTransportDetails.isPopulateInboundAuditReport()) {
@@ -652,9 +651,9 @@ public class adminConfigConnectionController {
 		if(!fieldMappings.isEmpty()) {
 		    for(configurationconnectionfieldmappings fieldMapping : fieldMappings) {
 			for(configurationFormFields tgtDataElements : configurationDataElements) {
-			    if(fieldMapping.getFieldNo() == tgtDataElements.getFieldNo() && !fieldMapping.isUseField()) {
+			    /*if(fieldMapping.getFieldNo() == tgtDataElements.getFieldNo() && !fieldMapping.isUseField()) {
 				tgtDataElements.setUseField(false);
-			    }
+			    }*/
 			    if(fieldMapping.getFieldNo() == tgtDataElements.getFieldNo()) {
 				tgtDataElements.setMappedErrorField(fieldMapping.getPopulateErrorFieldNo());
 				tgtDataElements.setMappedToField(fieldMapping.getAssociatedFieldNo());
