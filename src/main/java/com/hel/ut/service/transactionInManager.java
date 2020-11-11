@@ -120,7 +120,7 @@ public interface transactionInManager {
 
     Integer getRecordCounts(Integer batchId, List<Integer> statusIds, boolean foroutboundProcessing, boolean inStatusIds);
 
-    Integer insertLoadData(Integer batchId, Integer configId, String delimChar, String fileWithPath, String loadTableName, boolean containsHeaderRow, String lineTerminator);
+    Integer insertLoadData(Integer batchId, Integer configId, String delimChar, String fileWithPath, String loadTableName, boolean containsHeaderRow, Integer totalHeaderRows, String lineTerminator);
 
     Integer updateConfigIdForBatch(Integer batchId, Integer configId);
 
