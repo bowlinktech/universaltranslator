@@ -662,8 +662,8 @@ public class transactionInManagerImpl implements transactionInManager {
     }
 
     @Override
-    public Integer insertLoadData(Integer batchId, Integer configId, String delimChar, String fileWithPath, String loadTableName, boolean containsHeaderRow, String lineTerminator) {
-	return transactionInDAO.insertLoadData(batchId, configId, delimChar, fileWithPath, loadTableName, containsHeaderRow, lineTerminator);
+    public Integer insertLoadData(Integer batchId, Integer configId, String delimChar, String fileWithPath, String loadTableName, boolean containsHeaderRow, Integer totalHeaderRows, String lineTerminator) {
+	return transactionInDAO.insertLoadData(batchId, configId, delimChar, fileWithPath, loadTableName, containsHeaderRow, totalHeaderRows, lineTerminator);
     }
 
     @Override
@@ -2558,8 +2558,18 @@ public class transactionInManagerImpl implements transactionInManager {
 			if ("".equals(lineTerminator)) {
 			    lineTerminator = "\\n";
 			}
+			
+			configurationMessageSpecs configSpecs = configurationManager.getMessageSpecs(batch.getConfigId());
+			
+			Integer totalHeaderRows = 0;
+			
+			if(configSpecs != null) {
+			    if(!"".equals(configSpecs.getTotalHeaderRows())) {
+				totalHeaderRows = configSpecs.getTotalHeaderRows();
+			    }
+			}
 
-			int errorHere = insertLoadData(batch.getId(), batch.getConfigId(), delimChar, actualFileName, "transactionInRecords_" + batch.getId(), batch.isContainsHeaderRow(), lineTerminator);
+			int errorHere = insertLoadData(batch.getId(), batch.getConfigId(), delimChar, actualFileName, "transactionInRecords_" + batch.getId(), batch.isContainsHeaderRow(), totalHeaderRows, lineTerminator);
 
 			if (errorHere > 0) {
 			    insertProcessingError(7, null, batchId, null, null, null, null, false, false, "insertLoadData, please login and check logs.");
