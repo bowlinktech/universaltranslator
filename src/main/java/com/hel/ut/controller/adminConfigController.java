@@ -1424,12 +1424,6 @@ public class adminConfigController {
 
         Macros macroDetails = utconfigurationmanager.getMacroById(macroId);
 
-        mav.addObject("fieldA_Question", macroDetails.getfieldAQuestion());
-        mav.addObject("fieldB_Question", macroDetails.getfieldBQuestion());
-        mav.addObject("Con1_Question", macroDetails.getcon1Question());
-        mav.addObject("Con2_Question", macroDetails.getcon2Question());
-        mav.addObject("populateFieldA", macroDetails.isPopulateFieldA());
-	
 	boolean questionContainsCW = false;
 	boolean con1ContainsCW = false;
 	boolean con2ContainsCW = false;
@@ -1468,10 +1462,10 @@ public class adminConfigController {
 	    }
 	}
 	
-	mav.addObject("fieldA_Question", macroDetails.getfieldAQuestion());
-        mav.addObject("fieldB_Question", macroDetails.getfieldBQuestion());
-        mav.addObject("Con1_Question", macroDetails.getcon1Question());
-        mav.addObject("Con2_Question", macroDetails.getcon2Question());
+	mav.addObject("fieldA_Question", macroDetails.getfieldAQuestion().trim());
+        mav.addObject("fieldB_Question", macroDetails.getfieldBQuestion().trim());
+        mav.addObject("Con1_Question", macroDetails.getcon1Question().trim());
+        mav.addObject("Con2_Question", macroDetails.getcon2Question().trim());
         mav.addObject("populateFieldA", macroDetails.isPopulateFieldA());
 	mav.addObject("con1ContainsCW", con1ContainsCW);
 	mav.addObject("con2ContainsCW", con2ContainsCW);

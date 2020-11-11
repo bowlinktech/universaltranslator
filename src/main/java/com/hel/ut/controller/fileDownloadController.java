@@ -24,10 +24,11 @@ import com.hel.ut.service.fileManager;
 import com.hel.ut.service.organizationManager;
 import com.hel.ut.service.userManager;
 import com.hel.ut.service.utConfigurationManager;
+import java.io.BufferedReader;
 
 import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import javax.annotation.Resource;
@@ -347,9 +348,42 @@ public class fileDownloadController {
 	try {
 	    byte[] fileAsBytes = filemanager.loadFileAsBytesArray(directory + actualFileName);
 	    
-	    List<String> fileStream = Files.readAllLines(Paths.get(directory + actualFileName));
+	    FileInputStream fileInput = new FileInputStream(f);
+	    BufferedReader br = new BufferedReader(new InputStreamReader(fileInput));
 	    
-	    if(Base64.isBase64(new String(fileAsBytes)) && fileStream.size() == 1) {
+	    String line;
+	    Integer delimCount = 0;
+	    boolean isBase64Encoded = true;
+	    
+	    List<String> delims = new ArrayList<>();
+	    delims.add("t");
+	    delims.add("|");
+	    delims.add(":");
+	    delims.add(";");
+	    delims.add(",");
+	    
+	    for(String delim : delims) {
+		delimCount = 0;
+		try {
+		    while ((line = br.readLine()) != null) {
+			if (delim == "t") {
+			    delimCount = line.split("\t", -1).length - 1;
+			} else {
+			    delimCount = line.split("\\" + delim, -1).length - 1;
+			}
+			break;
+		    }
+		} catch (IOException ex) {}
+		
+		if(delimCount > 0) {
+		    isBase64Encoded = false;
+		    break;
+		}
+	    }
+	    br.close();
+	    fileInput.close();
+	    
+	    if(isBase64Encoded) {
 		byte[] decodedBytes = Base64.decodeBase64(fileAsBytes);
 		String decodedString = new String(decodedBytes);
 		response.setContentLength((int) decodedString.length());
@@ -377,3 +411,4 @@ public class fileDownloadController {
     }
 
 }
+

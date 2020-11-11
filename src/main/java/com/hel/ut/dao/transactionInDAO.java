@@ -102,7 +102,7 @@ public interface transactionInDAO {
 
     Integer getRecordCounts(Integer batchId, List<Integer> statusIds, boolean foroutboundProcessing, boolean inStatusIds);
 
-    Integer insertLoadData(Integer batchId, Integer configId, String delimChar, String fileWithPath, String tableName, boolean containsHeaderRow, String lineTerminator);
+    Integer insertLoadData(Integer batchId, Integer configId, String delimChar, String fileWithPath, String tableName, boolean containsHeaderRow, Integer startRow, String lineTerminator);
 
     Integer updateConfigIdForBatch(Integer batchId, Integer configId);
 

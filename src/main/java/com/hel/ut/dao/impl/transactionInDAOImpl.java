@@ -1266,7 +1266,7 @@ public class transactionInDAOImpl implements transactionInDAO {
 
     @Override
     @Transactional(readOnly = false)
-    public Integer insertLoadData(Integer batchId, Integer configId,String delimChar, String fileWithPath, String loadTableName, boolean containsHeaderRow, String lineTerminator) {
+    public Integer insertLoadData(Integer batchId, Integer configId,String delimChar, String fileWithPath, String loadTableName, boolean containsHeaderRow, Integer totalHeaderRows, String lineTerminator) {
 
 	try {
 
@@ -1279,6 +1279,13 @@ public class transactionInDAOImpl implements transactionInDAO {
 
 	    if (containsHeaderRow) {
 		ignoreSyntax = "  IGNORE 1 LINES ";
+		
+		if(totalHeaderRows != null) {
+		    if(totalHeaderRows > 0) {
+			ignoreSyntax = "  IGNORE " + totalHeaderRows + " LINES ";
+		    }
+		}
+		
 	    }
 	    String sql = ("LOAD DATA LOCAL INFILE '" + fileWithPath + "' INTO TABLE " + loadTableName + " fields terminated by '" + delimChar + "' "
 		    + " optionally ENCLOSED BY '\"' ESCAPED BY '\\b' LINES TERMINATED BY '" + lineTerminator + "'  " + ignoreSyntax

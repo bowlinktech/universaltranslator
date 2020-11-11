@@ -85,6 +85,9 @@ public class configurationMessageSpecs {
     @Column(name = "fileNameConfigHeader", nullable = false)
     private String fileNameConfigHeader;
     
+    @Column(name = "totalHeaderRows", nullable = false)
+    private int totalHeaderRows = 1;
+    
     public int getId() {
         return id;
     }
@@ -244,5 +247,13 @@ public class configurationMessageSpecs {
     public void setFileLayout(Integer fileLayout) {
 	this.fileLayout = fileLayout;
     }
-    
+
+    public int getTotalHeaderRows() {
+	return totalHeaderRows;
+    }
+
+    public void setTotalHeaderRows(int totalHeaderRows) {
+	this.totalHeaderRows = totalHeaderRows;
+    }
+
 }

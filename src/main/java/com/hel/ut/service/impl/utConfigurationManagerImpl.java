@@ -1223,8 +1223,12 @@ public class utConfigurationManagerImpl implements utConfigurationManager {
 		    reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>").append(messageSpecs.gettargetOrgCol()).append("</span><br /><br />");
 		}
 		
-		reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'><strong>Will the submission have a header row?</strong></span><br />");
+		reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'><strong>Will the submitted file have any header rows?</strong></span><br />");
 		reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>").append(submissionHeaderRow).append("</span><br /><br />");
+		if(submissionHeaderRow.toLowerCase().equals("yes")) {
+		    reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'><strong>How many header rows does the file have?</strong></span><br />");
+		    reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>").append(messageSpecs.getTotalHeaderRows()).append("</span><br /><br />");
+		}
 		if(messageSpecs.getParsingTemplate() != null) {
 		    if(!"".equals(messageSpecs.getParsingTemplate())) { 
 			reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'><strong>Configuration Parsing Script</strong></span><br />");
