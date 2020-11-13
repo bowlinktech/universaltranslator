@@ -196,6 +196,8 @@ public class adminConfigController {
 	requiredFormat.setTimeZone(timeZone);
 	String dateinTZ = "";
 	
+	List<utConfiguration> validSourceConfigurations = new ArrayList<>();
+	
         for (utConfiguration config : sourceconfigurations) {
 	    dateinTZ = requiredFormat.format(config.getDateCreated());
 	    
@@ -225,8 +227,14 @@ public class adminConfigController {
 		}
             }
 	    
+	    if(!"bowlinktest".equals(org.getCleanURL().trim().toLowerCase())) {
+		validSourceConfigurations.add(config);
+	    }
+	    
         }
-	mav.addObject("sourceconfigurations", sourceconfigurations);
+	mav.addObject("sourceconfigurations", validSourceConfigurations);
+	
+	List<utConfiguration> validTargetConfigurations = new ArrayList<>();
 	
 	for (utConfiguration config : targetconfigurations) {
 	    dateinTZ = requiredFormat.format(config.getDateCreated());
@@ -245,8 +253,12 @@ public class adminConfigController {
             if (transportDetails != null) {
                 config.settransportMethod(utconfigurationTransportManager.getTransportMethodById(transportDetails.gettransportMethodId()));
             }
+	    
+	    if(!"bowlinktest".equals(org.getCleanURL().trim().toLowerCase())) {
+		validTargetConfigurations.add(config);
+	    }
         }
-	mav.addObject("targetconfigurations", targetconfigurations);
+	mav.addObject("targetconfigurations", validTargetConfigurations);
 
         return mav;
 
@@ -269,7 +281,15 @@ public class adminConfigController {
 
         //Need to get a list of active organizations.
         List<Organization> organizations = organizationmanager.getAllActiveOrganizations();
-        mav.addObject("organizations", organizations);
+	List<Organization> validOrganizations = new ArrayList<>();
+	
+	for(Organization org : organizations) {
+	    if(!"bowlinktest".equals(org.getCleanURL().trim().toLowerCase())) {
+		validOrganizations.add(org);
+	    }
+	}
+	
+        mav.addObject("organizations", validOrganizations);
 
         mav.addObject("mappings", 1);
 	
@@ -380,7 +400,15 @@ public class adminConfigController {
 
         //Need to get a list of active organizations.
         List<Organization> organizations = organizationmanager.getAllActiveOrganizations();
-        mav.addObject("organizations", organizations);
+	
+	List<Organization> validOrganizations = new ArrayList<>();
+	for(Organization org : organizations) {
+	    if("bowlinkTest".equals(configurationDetails.getconfigName()) || "Bowlink Test Target".equals(configurationDetails.getconfigName()) || (!"bowlinktest".equals(org.getCleanURL().trim().toLowerCase()) && !"bowlinkTest".equals(configurationDetails.getconfigName()))) {
+		validOrganizations.add(org);
+	    }
+	}
+	
+        mav.addObject("organizations", validOrganizations);
 
         //Need to get a list of organization users 
         List<utUser> users = userManager.getUsersByOrganization(configurationDetails.getorgId());

@@ -205,7 +205,17 @@
 				    <br />
 				    <c:choose>
 					<c:when test="${batchDetails.configId > 0}">
-					    <a href="/administrator/configurations/details?i=${batchDetails.configId}">${batchDetails.configName}</a>
+                                            <c:choose>
+                                                <c:when test="${batchDetails.configName == 'bowlinkTest'}">
+                                                     Macro Test Configuration
+                                                </c:when>
+                                                <c:when test="${batchDetails.configName == 'Bowlink Test Target'}">
+                                                     Macro Test Configuration
+                                                </c:when>     
+                                                <c:otherwise>
+                                                     <a href="/administrator/configurations/details?i=${batchDetails.configId}">${batchDetails.configName}</a>
+                                                </c:otherwise>
+                                            </c:choose>
 					</c:when>
 					<c:otherwise>
 					    Could find a valid configuration based on the file uploaded (check the file extension).

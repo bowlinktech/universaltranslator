@@ -30,6 +30,7 @@ import com.hel.ut.model.mailMessage;
 import com.hel.ut.model.utUserLogin;
 import com.hel.ut.service.emailMessageManager;
 import com.hel.ut.service.hispManager;
+import com.hel.ut.service.transactionInManager;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -55,6 +56,7 @@ import java.util.Date;
 import java.util.Properties;
 import java.util.TimeZone;
 import javax.annotation.Resource;
+import org.apache.commons.io.FileUtils;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -86,6 +88,9 @@ public class adminSysAdminController {
 
     @Autowired
     private ServletContext servletContext;
+    
+    @Autowired
+    private transactionInManager transactioninmanager;
     
     @Resource(name = "myProps")
     private Properties myProps;
@@ -1086,4 +1091,43 @@ public class adminSysAdminController {
 	 // close stream and return to view
 	response.flushBuffer();
     } 
+    
+    /**
+     * The '/submitConfigFileForProcessing' function will be used to upload a new file for an existing crosswalk.
+     *
+     * @param configFile
+     * @param fileDropLocation
+     * @return 
+     * @throws java.lang.Exception 
+     * @Return The function will either return the crosswalk form on error or redirect to the data translation page.
+     */
+    @RequestMapping(value = "/macros/runTestFile", method = RequestMethod.POST)
+    public @ResponseBody 
+    int runMacroTestFile() throws Exception {
+
+	Integer returnVal = 1;
+	
+	String fileName = "SampleMacroTestFile.xlsx";
+
+	InputStream inputStream = null;
+	OutputStream outputStream = null;
+
+	try {
+	    File newFile = new File(myProps.getProperty("ut.directory.utRootDir") + "BowlinkTest/input files/bowlinktest/" + fileName);
+	    newFile.createNewFile();
+	    
+	    File sourceFile = new File(myProps.getProperty("ut.directory.utRootDir") + "BowlinkTest/templates/" + fileName);
+	    FileUtils.copyFile(sourceFile, newFile);
+
+	    //Call the method to start processing
+	    transactioninmanager.moveFileDroppedFiles();
+
+	} catch (IOException e) {
+	    returnVal = 0;
+	    e.printStackTrace();
+	}
+	  
+	
+	return returnVal;
+    }
 }
