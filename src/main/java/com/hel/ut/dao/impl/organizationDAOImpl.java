@@ -117,7 +117,7 @@ public class organizationDAOImpl implements organizationDAO {
     @Override
     @Transactional(readOnly = true)
     public Long findTotalOrgs() {
-        Query query = sessionFactory.getCurrentSession().createQuery("select count(id) as totalOrgs from Organization where cleanURL is not ''");
+        Query query = sessionFactory.getCurrentSession().createQuery("select count(id) as totalOrgs from Organization where cleanURL <> ''");
 
         Long totalOrgs = (Long) query.uniqueResult();
 
@@ -137,7 +137,7 @@ public class organizationDAOImpl implements organizationDAO {
     @SuppressWarnings("unchecked")
     public List<Organization> getOrganizations() {
 	
-        Query query = sessionFactory.getCurrentSession().createQuery("from Organization where cleanURL is not '' order by orgName asc");
+        Query query = sessionFactory.getCurrentSession().createQuery("from Organization where cleanURL <> '' order by orgName asc");
 
         List<Organization> organizationList = query.list();
 
@@ -179,7 +179,7 @@ public class organizationDAOImpl implements organizationDAO {
     @Transactional(readOnly = true)
     @SuppressWarnings("unchecked")
     public List<Organization> getAllActiveOrganizations() {
-        Query query = sessionFactory.getCurrentSession().createQuery("from Organization where cleanURL is not '' and status = 1 order by orgName asc");
+        Query query = sessionFactory.getCurrentSession().createQuery("from Organization where cleanURL <> '' and status = 1 order by orgName asc");
 
         List<Organization> organizationList = query.list();
         return organizationList;
@@ -410,7 +410,7 @@ public class organizationDAOImpl implements organizationDAO {
 		 + "WHEN orgType = 4 THEN 'Data Warehouse' "
 		 + "ELSE 'Internal Health-e-link Registry' "
 	    + "END AS organizationType "
-	    + "from organizations) as orgs where cleanURL <> '' ";
+	    + "from organizations) as orgs where cleanURL <> '' and cleanURL <> 'BowlinkTest' ";
 	
 	if(!"".equals(searchTerm)){
 	    query += " and ("

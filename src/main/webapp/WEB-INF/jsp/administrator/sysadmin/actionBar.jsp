@@ -50,7 +50,10 @@
                     <li><a href="javascript:void(0);" id="saveDetails" title="Save this Configuration initial setup" role="button"><span class="glyphicon glyphicon-ok icon-stacked"></span> Save </a></li>
                 </c:when>
                 <c:when test="${param['page'] == 'macros'}">
-                     <li>
+                    <li>
+                        <a href="javascript:void(0);" class="runTestMacroFile" title="Run Test Macro File" role="button"><span class="glyphicon glyphicon-play icon-stacked"></span> Run Test Macro File</a>
+                    </li>
+                    <li>
                         <a href="javascript:void(0);" class="printMacros" title="Print Full Macro List" role="button"><span class="glyphicon glyphicon-print icon-stacked"></span> Print Macros</a>
                     </li>
                 </c:when>

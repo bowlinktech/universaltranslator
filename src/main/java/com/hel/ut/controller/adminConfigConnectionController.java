@@ -133,6 +133,8 @@ public class adminConfigConnectionController {
         List<configurationConnection> connections = utconfigurationmanager.getAllConnections();
 
         Long totalConnections = (long) 0;
+	
+	List<configurationConnection> currentConnections = new ArrayList<>();
 
         /* Loop over the connections to get the utConfiguration details */
         if (connections != null) {
@@ -141,40 +143,46 @@ public class adminConfigConnectionController {
                 /* Array to holder the users */
                 List<utUser> connectionSenders = new ArrayList<utUser>();
                 List<utUser> connectonReceivers = new ArrayList<utUser>();
-
+		
                 utConfiguration srcconfigDetails = utconfigurationmanager.getConfigurationById(connection.getsourceConfigId());
                 configurationTransport srctransportDetails = utconfigurationTransportManager.getTransportDetails(srcconfigDetails.getId());
-
-                srcconfigDetails.setOrgName(organizationmanager.getOrganizationById(srcconfigDetails.getorgId()).getOrgName());
 		
-                srcconfigDetails.settransportMethod(utconfigurationTransportManager.getTransportMethodById(srctransportDetails.gettransportMethodId()));
-                if (srctransportDetails.gettransportMethodId() == 1 && srcconfigDetails.getType() == 2) {
-                    srcconfigDetails.settransportMethod("File Download");
-                } else {
-                    srcconfigDetails.settransportMethod(utconfigurationTransportManager.getTransportMethodById(srctransportDetails.gettransportMethodId()));
-                }
-
-                connection.setsrcConfigDetails(srcconfigDetails);
-
-                utConfiguration tgtconfigDetails = utconfigurationmanager.getConfigurationById(connection.gettargetConfigId());
-                configurationTransport tgttransportDetails = utconfigurationTransportManager.getTransportDetails(tgtconfigDetails.getId());
-
-                tgtconfigDetails.setOrgName(organizationmanager.getOrganizationById(tgtconfigDetails.getorgId()).getOrgName());
+		Organization srcOrg = organizationmanager.getOrganizationById(srcconfigDetails.getorgId());
 		
-                if (tgttransportDetails.gettransportMethodId() == 1 && tgtconfigDetails.getType() == 2) {
-                    tgtconfigDetails.settransportMethod("File Download");
-                } else {
-                    tgtconfigDetails.settransportMethod(utconfigurationTransportManager.getTransportMethodById(tgttransportDetails.gettransportMethodId()));
-                }
+		if(!"bowlinktest".equals(srcOrg.getCleanURL().trim().toLowerCase())) {
+		    srcconfigDetails.setOrgName(srcOrg.getOrgName());
+		
+		    srcconfigDetails.settransportMethod(utconfigurationTransportManager.getTransportMethodById(srctransportDetails.gettransportMethodId()));
+		    if (srctransportDetails.gettransportMethodId() == 1 && srcconfigDetails.getType() == 2) {
+			srcconfigDetails.settransportMethod("File Download");
+		    } else {
+			srcconfigDetails.settransportMethod(utconfigurationTransportManager.getTransportMethodById(srctransportDetails.gettransportMethodId()));
+		    }
 
-                connection.settgtConfigDetails(tgtconfigDetails);
+		    connection.setsrcConfigDetails(srcconfigDetails);
+
+		    utConfiguration tgtconfigDetails = utconfigurationmanager.getConfigurationById(connection.gettargetConfigId());
+		    configurationTransport tgttransportDetails = utconfigurationTransportManager.getTransportDetails(tgtconfigDetails.getId());
+
+		    tgtconfigDetails.setOrgName(organizationmanager.getOrganizationById(tgtconfigDetails.getorgId()).getOrgName());
+
+		    if (tgttransportDetails.gettransportMethodId() == 1 && tgtconfigDetails.getType() == 2) {
+			tgtconfigDetails.settransportMethod("File Download");
+		    } else {
+			tgtconfigDetails.settransportMethod(utconfigurationTransportManager.getTransportMethodById(tgttransportDetails.gettransportMethodId()));
+		    }
+
+		    connection.settgtConfigDetails(tgtconfigDetails);
+		    
+		    currentConnections.add(connection);
+		}
             }
 
             /* Return the total list of connections */
-            totalConnections = (long) connections.size();
+            totalConnections = (long) currentConnections.size();
         }
 
-        mav.addObject("connections", connections);
+        mav.addObject("connections", currentConnections);
 
         /* Set the variable to hold the number of completed steps for this utConfiguration */
         mav.addObject("stepsCompleted", session.getAttribute("configStepsCompleted"));
@@ -251,7 +259,6 @@ public class adminConfigConnectionController {
 			       sourceOrganizations.add(org);
 			   }
 		       }
-		       
 		   }
 	       } 
 	       for(utConfiguration tgtConfig : targetConfigurations) {
@@ -275,8 +282,36 @@ public class adminConfigConnectionController {
 	   }
 	}
 	
-        mav.addObject("sourceOrganizations", sourceOrganizations);
-	mav.addObject("targetOrganizations", targetOrganizations);
+	List<Organization> validSourceOrganizations = new ArrayList<>();
+	for(Organization org : sourceOrganizations) {
+	    
+	    if(id == null) {
+		if(!"bowlinktest".equals(org.getCleanURL().trim().toLowerCase())) {
+		    validSourceOrganizations.add(org);
+		}
+	    }
+	    else {
+		validSourceOrganizations.add(org);
+	    }
+	}
+	
+        mav.addObject("sourceOrganizations", validSourceOrganizations);
+	
+	
+	List<Organization> validTargetOrganizations = new ArrayList<>();
+	for(Organization org : targetOrganizations) {
+	    
+	    if(id == null) {
+		if(!"bowlinktest".equals(org.getCleanURL().trim().toLowerCase())) {
+		    validTargetOrganizations.add(org);
+		}
+	    }
+	    else {
+		validTargetOrganizations.add(org);
+	    }
+	}
+	
+	mav.addObject("targetOrganizations", validTargetOrganizations);
 
         return mav;
     }
