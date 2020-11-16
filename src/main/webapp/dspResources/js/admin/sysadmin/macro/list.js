@@ -111,6 +111,24 @@ require(['./main'], function () {
         return false;
 
     });
+    
+    
+     //This function will remove the macro is clicked 
+    $(document).on('click', '.runTestMacroFile', function () {
+      
+        $.ajax({
+            url: "macros/runTestFile",
+            type: "POST",
+            async: false,
+            success: function (data) {
+                window.location.href = "/administrator/processing-activity/inbound";
+            }
+
+        });
+        event.preventDefault();
+        return false;
+    });
+
 });
 
 

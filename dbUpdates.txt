@@ -1,4 +1,0 @@
-ALTER TABLE `universaltranslatorca`.`configurationmessagespecs` 
-ADD COLUMN `totalHeaderRows` INT(11) NULL DEFAULT '1' AFTER `fileNameConfigHeader`;
-
-UPDATE `universaltranslatorca`.`configurationmessagespecs` SET totalHeaderRows = 0 where containsHeaderRow = 0;
