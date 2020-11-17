@@ -6,37 +6,17 @@
 package com.hel.ut.dao.impl;
 
 import com.hel.ut.dao.transactionOutDAO;
-import com.hel.ut.model.RestAPIMessagesOut;
-import com.hel.ut.model.batchDLRetry;
-import com.hel.ut.model.batchDownloadDroppedValues;
-import com.hel.ut.model.batchDownloads;
-import com.hel.ut.model.batchdownloadactivity;
-import com.hel.ut.model.utConfiguration;
-import com.hel.ut.model.configurationConnection;
-import com.hel.ut.model.configurationConnectionReceivers;
-import com.hel.ut.model.configurationFormFields;
-import com.hel.ut.model.configurationSchedules;
-import com.hel.ut.model.configurationTransport;
-import com.hel.ut.model.configurationconnectionfieldmappings;
+import com.hel.ut.model.*;
 import com.hel.ut.model.custom.ConfigOutboundForInsert;
 import com.hel.ut.model.custom.batchErrorSummary;
-import com.hel.ut.model.directmessagesout;
-import com.hel.ut.model.targetOutputRunLogs;
-import com.hel.ut.model.transactionOutRecords;
 import com.hel.ut.service.sysAdminManager;
 import com.hel.ut.service.transactionInManager;
 import com.hel.ut.service.userManager;
-
-import java.math.BigInteger;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-
+import com.hel.ut.service.utConfigurationTransportManager;
 import org.hibernate.Criteria;
 import org.hibernate.Query;
 import org.hibernate.SessionFactory;
+import org.hibernate.criterion.Criterion;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
 import org.hibernate.transform.Transformers;
@@ -44,8 +24,13 @@ import org.hibernate.type.StandardBasicTypes;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
-import com.hel.ut.service.utConfigurationTransportManager;
-import org.hibernate.criterion.Criterion;
+
+import java.math.BigInteger;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
 
 /**
  *
@@ -646,8 +631,16 @@ public class transactionOutDAOImpl implements transactionOutDAO {
 	    sql = ("call getJSONForConfig(:batchConfigId, :batchDownloadId, :filePathAndName, :jsonWrapperElement);");
 	} 
 	else {
+		if(transportDetails.isAddTargetFileHeaderRow()) {
+			String configFieldHeadings = getConfigFieldHeadingsForOutput(transportDetails.getconfigId());
+			if(configFieldHeadings != null) {
+				if(!"".equals(configFieldHeadings)) {
+					sql += "SELECT " + configFieldHeadings + " UNION ALL ";
+				}
+			}
+		}
 	   
-	    sql = "SELECT " + fieldNos + " "
+	    sql += "SELECT " + fieldNos + " "
 		+ "FROM transactionTranslatedOut_" + batchDownloadId + " "
 		+ "where configId = " + transportDetails.getconfigId() + " and ";
 	    
@@ -662,7 +655,7 @@ public class transactionOutDAOImpl implements transactionOutDAO {
 	}
 	
 	if (!"".equals(sql)) {
-	    Query query = sessionFactory.getCurrentSession().createSQLQuery(sql);
+		Query query = sessionFactory.getCurrentSession().createSQLQuery(sql);
 	    
 	    if (transportDetails.getfileType() == 12) {
 		query.setParameter("batchConfigId", transportDetails.getconfigId());
@@ -1774,4 +1767,19 @@ public class transactionOutDAOImpl implements transactionOutDAO {
 
 	deletActivityLog.executeUpdate();
     }
+
+	@Transactional(readOnly = true)
+	public String getConfigFieldHeadingsForOutput(Integer configId) {
+
+    	String sql = "select group_concat(CONCAT(\"'\", fieldDesc, \"'\") order by fieldNo asc) as fieldHeadings "
+		+ "from configurationFormFields where configId = " + configId;
+
+		Query query = sessionFactory.getCurrentSession().createSQLQuery(sql);
+		List<String> fieldHeadings = query.list();
+		if (!fieldHeadings.isEmpty()) {
+			return fieldHeadings.get(0);
+		} else {
+			return null;
+		}
+	}
 }
