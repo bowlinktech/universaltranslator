@@ -5,88 +5,25 @@
  */
 package com.hel.ut.service.impl;
 
-import com.hel.ut.service.convertTextToPDF;
 import com.hel.ut.dao.messageTypeDAO;
 import com.hel.ut.dao.transactionInDAO;
 import com.hel.ut.dao.transactionOutDAO;
-import com.hel.ut.model.HL7Details;
-import com.hel.ut.model.HL7ElementComponents;
-import com.hel.ut.model.HL7Elements;
-import com.hel.ut.model.HL7Segments;
-import com.hel.ut.model.Macros;
-import com.hel.ut.model.Organization;
-import com.hel.ut.model.Transaction;
-import com.hel.ut.model.batchDLRetry;
-import com.hel.ut.model.batchDownloadDroppedValues;
-import com.hel.ut.model.batchDownloads;
-import com.hel.ut.model.batchUploads;
-import com.hel.ut.model.batchdownloadactivity;
-import com.hel.ut.model.utConfiguration;
-import com.hel.ut.model.configurationCCDElements;
-import com.hel.ut.model.configurationConnection;
-import com.hel.ut.model.configurationConnectionReceivers;
-import com.hel.ut.model.configurationConnectionSenders;
-import com.hel.ut.model.configurationDataTranslations;
-import com.hel.ut.model.configurationFTPFields;
-import com.hel.ut.model.configurationFormFields;
-import com.hel.ut.model.configurationFileDropFields;
-import com.hel.ut.model.configurationMessageSpecs;
-import com.hel.ut.model.configurationSchedules;
-import com.hel.ut.model.configurationTransport;
-import com.hel.ut.service.emailMessageManager;
-import com.hel.ut.model.mailMessage;
-import com.hel.ut.model.pendingDeliveryTargets;
-import com.hel.ut.model.systemSummary;
-import com.hel.ut.model.transactionOutRecords;
+import com.hel.ut.model.*;
 import com.hel.ut.model.custom.ConfigOutboundForInsert;
 import com.hel.ut.model.custom.batchErrorSummary;
-import com.hel.ut.model.directmessagesout;
-import com.hel.ut.model.hisps;
-import com.hel.ut.model.organizationDirectDetails;
 import com.hel.ut.reference.fileSystem;
 import com.hel.ut.restAPI.directManager;
 import com.hel.ut.restAPI.restfulManager;
-import com.hel.ut.service.fileManager;
-import com.hel.ut.service.hispManager;
-import com.hel.ut.service.organizationManager;
-import com.hel.ut.service.transactionInManager;
-import com.hel.ut.service.transactionOutManager;
-import com.hel.ut.service.userManager;
-import com.hel.ut.service.utilManager;
+import com.hel.ut.service.*;
 import com.hel.ut.webServices.WSManager;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.math.BigInteger;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import javax.annotation.Resource;
-
+import com.registryKit.registry.helRegistry;
+import com.registryKit.registry.helRegistryManager;
+import com.registryKit.registry.submittedMessages.submittedMessage;
+import com.registryKit.registry.submittedMessages.submittedMessageManager;
 import org.apache.commons.beanutils.BeanUtils;
+import org.apache.commons.beanutils.PropertyUtils;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.net.ftp.FTPClient;
 import org.docx4j.Docx4J;
 import org.docx4j.convert.out.FOSettings;
 import org.docx4j.model.fields.FieldUpdater;
@@ -94,22 +31,28 @@ import org.docx4j.model.fields.merge.DataFieldName;
 import org.docx4j.model.fields.merge.MailMerger.OutputField;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.security.crypto.codec.Base64;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
+import java.io.*;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.math.BigInteger;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.security.SecureRandom;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import com.hel.ut.service.utConfigurationManager;
-import com.hel.ut.service.utConfigurationTransportManager;
-import com.registryKit.registry.helRegistry;
-import com.registryKit.registry.helRegistryManager;
-import com.registryKit.registry.submittedMessages.submittedMessage;
-import com.registryKit.registry.submittedMessages.submittedMessageManager;
-import java.security.SecureRandom;
-import org.apache.commons.beanutils.PropertyUtils;
-import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.net.ftp.FTPClient;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -907,71 +850,85 @@ public class transactionOutManagerImpl implements transactionOutManager {
 		}
 	    } 
 	    else {
-                
-		StringBuilder sb = new StringBuilder("");
-		
-		for(transactionOutRecords record : records) {
-                    
-                    for (configurationFormFields field : formFields) {
 
-                        //String colName = new StringBuilder().append("f").append(i).toString();
-                        //NEW
-                        if (field.getUseField() == true) {
-                            //NEW
-                            String colName = new StringBuilder().append("f").append(field.getFieldNo()).toString();
+			StringBuilder sb = new StringBuilder("");
 
-                            try {
-                                String fieldValue = BeanUtils.getProperty(record, colName);
+			boolean addHeader = true;
 
-                                if (fieldValue == null) {
-                                    fieldValue = "";
-                                } else if ("null".equals(fieldValue)) {
-                                    fieldValue = "";
-                                } else if (fieldValue.isEmpty()) {
-                                    fieldValue = "";
-                                } else if (fieldValue.length() == 0) {
-                                    fieldValue = "";
-                                }
+			if(addHeader) {
+				for (configurationFormFields field : formFields) {
+					if (field.getUseField() == true) {
+						if (field.getFieldNo() == maxFieldNo) {
+							sb.append(field.getFieldDesc().trim()).append(System.getProperty("line.separator"));
+						} else {
+							sb.append(field.getFieldDesc().trim()).append(delimChar);
+						}
+					}
+				}
+			}
 
-                                //if (i == maxFieldNo) {
-                                //New
-                                if (field.getFieldNo() == maxFieldNo) {
-                                    sb.append(recordRow).append(fieldValue).append(System.getProperty("line.separator"));
-                                } else {
-                                    sb.append(recordRow).append(fieldValue).append(delimChar);
-                                }
+			for(transactionOutRecords record : records) {
 
-                            } catch (IllegalAccessException ex) {
-                                Logger.getLogger(transactionOutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
-                            } catch (InvocationTargetException ex) {
-                                Logger.getLogger(transactionOutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
-                            } catch (NoSuchMethodException ex) {
-                                Logger.getLogger(transactionOutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
-                            }
-                            //NEW
-                        }
-                    }
-                }
-                
-                if ("".equals(sb.toString())) {
-                    recordRow = "";
-                } else {
-                    recordRow = sb.toString();
-                }
-		
-                if (!"".equals(recordRow)) {
-                    try {
-                        if (encrypt == true) {
-                            byte[] encoded = Base64.encode(recordRow.getBytes());
-                            fw.write(new String(encoded));
-                        } else {
-                            fw.write(recordRow);
-                        }
-                        fw.close();
-                    } catch (IOException ex) {
-                        throw new IOException(ex);
-                    }
-                }
+				for (configurationFormFields field : formFields) {
+
+					//String colName = new StringBuilder().append("f").append(i).toString();
+					//NEW
+					if (field.getUseField() == true) {
+						//NEW
+						String colName = new StringBuilder().append("f").append(field.getFieldNo()).toString();
+
+						try {
+							String fieldValue = BeanUtils.getProperty(record, colName);
+
+							if (fieldValue == null) {
+								fieldValue = "";
+							} else if ("null".equals(fieldValue)) {
+								fieldValue = "";
+							} else if (fieldValue.isEmpty()) {
+								fieldValue = "";
+							} else if (fieldValue.length() == 0) {
+								fieldValue = "";
+							}
+
+							//if (i == maxFieldNo) {
+							//New
+							if (field.getFieldNo() == maxFieldNo) {
+								sb.append(recordRow).append(fieldValue).append(System.getProperty("line.separator"));
+							} else {
+								sb.append(recordRow).append(fieldValue).append(delimChar);
+							}
+
+						} catch (IllegalAccessException ex) {
+							Logger.getLogger(transactionOutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
+						} catch (InvocationTargetException ex) {
+							Logger.getLogger(transactionOutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
+						} catch (NoSuchMethodException ex) {
+							Logger.getLogger(transactionOutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
+						}
+						//NEW
+					}
+				}
+			}
+
+			if ("".equals(sb.toString())) {
+				recordRow = "";
+			} else {
+				recordRow = sb.toString();
+			}
+
+			if (!"".equals(recordRow)) {
+				try {
+					if (encrypt == true) {
+						byte[] encoded = Base64.encode(recordRow.getBytes());
+						fw.write(new String(encoded));
+					} else {
+						fw.write(recordRow);
+					}
+					fw.close();
+				} catch (IOException ex) {
+					throw new IOException(ex);
+				}
+			}
 	    }
 	}
 	strFileLoc = file.getAbsolutePath();
