@@ -361,25 +361,22 @@ public class fileDownloadController {
 	    delims.add(":");
 	    delims.add(";");
 	    delims.add(",");
-	    
-	    for(String delim : delims) {
-		delimCount = 0;
+
 		try {
-		    while ((line = br.readLine()) != null) {
-			if (delim == "t") {
-			    delimCount = line.split("\t", -1).length - 1;
-			} else {
-			    delimCount = line.split("\\" + delim, -1).length - 1;
+			while ((line = br.readLine()) != null) {
+				for(String delim : delims) {
+					if ("t".equals(delim)) {
+						delimCount += line.split("\t", -1).length - 1;
+					} else {
+						delimCount += line.split("\\" + delim, -1).length - 1;
+					}
+				}
 			}
-			break;
-		    }
 		} catch (IOException ex) {}
-		
+
 		if(delimCount > 0) {
-		    isBase64Encoded = false;
-		    break;
+			isBase64Encoded = false;
 		}
-	    }
 	    br.close();
 	    fileInput.close();
 	    

@@ -257,7 +257,7 @@ function populateMessages(fromDate,toDate) {
                         
                         var dateS = new Date(row.startDateTime);
                         minutes = dateS.getMinutes();
-                        
+                       
                         if(isDST == 1) {
                             hours = dateS.getHours()-1;
                             if(hours < 0) {
@@ -276,7 +276,7 @@ function populateMessages(fromDate,toDate) {
                         hours = hours ? hours : 12;
                         minutes = minutes < 10 ? '0'+minutes : minutes;
                         
-                        if((dateS.getMonth()*1)+1 != (dateC.getMonth()*1)+1) {
+                        if((dateS.getMonth()*1)+1 != (dateC.getMonth()*1)+1 || (dateS.getDate() != dateC.getDate())) {
                              myDateFormatted += '<br /><strong>Reprocessed: ' + ((dateS.getMonth()*1)+1)+'/'+dateS.getDate()+'/'+dateS.getFullYear() + '</strong>';
                         }
                         
