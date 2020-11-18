@@ -366,9 +366,9 @@ public class fileDownloadController {
 			while ((line = br.readLine()) != null) {
 				for(String delim : delims) {
 					if ("t".equals(delim)) {
-						delimCount = line.split("\t", -1).length - 1;
+						delimCount += line.split("\t", -1).length - 1;
 					} else {
-						delimCount = line.split("\\" + delim, -1).length - 1;
+						delimCount += line.split("\\" + delim, -1).length - 1;
 					}
 				}
 			}

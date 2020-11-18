@@ -24,6 +24,9 @@ import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.net.ftp.FTPClient;
+import org.apache.poi.xssf.usermodel.XSSFRow;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.docx4j.Docx4J;
 import org.docx4j.convert.out.FOSettings;
 import org.docx4j.model.fields.FieldUpdater;
@@ -1923,12 +1926,52 @@ public class transactionOutManagerImpl implements transactionOutManager {
 		}
 
 	    } else {
-		ba = new batchdownloadactivity();
-		ba.setActivity("Writing records to output file:" + myProps.getProperty("ut.directory.massOutputPath") + batchDownload.getUtBatchName() + "." + fileExt);
-		ba.setBatchDownloadId(batchDownload.getId());
-		transactionOutDAO.submitBatchActivityLog(ba);
-		
-		Integer writeOutCome = writeOutputToTextFile(transportDetails, batchDownload.getId(), myProps.getProperty("ut.directory.massOutputMySQLPath") + batchDownload.getUtBatchName() + "." + fileExt, configFields,batchDownload.getBatchUploadId());
+			ba = new batchdownloadactivity();
+			ba.setActivity("Writing records to output file:" + myProps.getProperty("ut.directory.massOutputPath") + batchDownload.getUtBatchName() + "." + fileExt);
+			ba.setBatchDownloadId(batchDownload.getId());
+			transactionOutDAO.submitBatchActivityLog(ba);
+
+			boolean isExcel = false;
+			String finalFileExt = "";
+			if("xlsx".equals(fileExt) || "xls".equals(fileExt)) {
+				finalFileExt = fileExt;
+				fileExt = "csv";
+				isExcel = true;
+
+				if(!",".equals(transportDetails.getDelimChar())) {
+					transportDetails.setDelimChar(",");
+				}
+			}
+
+			Integer writeOutCome = writeOutputToTextFile(transportDetails, batchDownload.getId(), myProps.getProperty("ut.directory.massOutputMySQLPath") + batchDownload.getUtBatchName() + "." + fileExt, configFields,batchDownload.getBatchUploadId());
+
+			//Need to convert the csv into xlsx file
+			if(isExcel) {
+				XSSFWorkbook workBook = new XSSFWorkbook();
+				XSSFSheet sheet = workBook.createSheet("sheet1");
+
+				String currentLine=null;
+				int RowNum=0;
+				BufferedReader br = new BufferedReader(new FileReader(myProps.getProperty("ut.directory.massOutputMySQLPath") + batchDownload.getUtBatchName() + "." + fileExt));
+				while ((currentLine = br.readLine()) != null) {
+					String str[] = currentLine.split(",");
+					XSSFRow currentRow=sheet.createRow(RowNum);
+					for(int i=0;i<str.length;i++){
+						currentRow.createCell(i).setCellValue(str[i]);
+					}
+					RowNum++;
+				}
+
+				FileOutputStream fileOutputStream =  new FileOutputStream(myProps.getProperty("ut.directory.massOutputMySQLPath") + batchDownload.getUtBatchName() + "." + finalFileExt);
+				workBook.write(fileOutputStream);
+				fileOutputStream.close();
+
+				//Delete csv file
+				File csvFile = new File(myProps.getProperty("ut.directory.massOutputMySQLPath") + batchDownload.getUtBatchName() + "." + fileExt);
+				if(csvFile.exists()) {
+					csvFile.delete();
+				}
+			}
 	    }
 
 	    if (!massOutFile.exists()) {
