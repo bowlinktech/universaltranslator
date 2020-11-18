@@ -624,53 +624,52 @@ public class transactionOutDAOImpl implements transactionOutDAO {
     @Transactional(readOnly = false)
     public Integer writeOutputToTextFile(configurationTransport transportDetails, Integer batchDownloadId, String filePathAndName, String fieldNos, Integer batchUploadId) {
 
-	String sql = "";
+		String sql = "";
 
-	//If file type == JSON
-	if (transportDetails.getfileType() == 12) {
-	    sql = ("call getJSONForConfig(:batchConfigId, :batchDownloadId, :filePathAndName, :jsonWrapperElement);");
-	} 
-	else {
-		if(transportDetails.isAddTargetFileHeaderRow()) {
-			String configFieldHeadings = getConfigFieldHeadingsForOutput(transportDetails.getconfigId());
-			if(configFieldHeadings != null) {
-				if(!"".equals(configFieldHeadings)) {
-					sql += "SELECT " + configFieldHeadings + " UNION ALL ";
+		//If file type == JSON
+		if (transportDetails.getfileType() == 12) {
+			sql = ("call getJSONForConfig(:batchConfigId, :batchDownloadId, :filePathAndName, :jsonWrapperElement);");
+		}
+		else {
+			if(transportDetails.isAddTargetFileHeaderRow()) {
+				String configFieldHeadings = getConfigFieldHeadingsForOutput(transportDetails.getconfigId());
+				if(configFieldHeadings != null) {
+					if(!"".equals(configFieldHeadings)) {
+						sql += "SELECT " + configFieldHeadings + " UNION ALL ";
+					}
 				}
 			}
-		}
-	   
-	    sql += "SELECT " + fieldNos + " "
-		+ "FROM transactionTranslatedOut_" + batchDownloadId + " "
-		+ "where configId = " + transportDetails.getconfigId() + " and ";
-	    
-	    if(transportDetails.geterrorHandling() == 4) {
-		sql += "statusId in (9,14) ";
-	    }
-	    else {
-		sql += "statusId = 9 ";
-	    }
-	    sql += "INTO OUTFILE  '" + filePathAndName + "' "
-	    + "FIELDS TERMINATED BY '" + transportDetails.getDelimChar()+"' LINES TERMINATED BY '\\n';";
-	}
-	
-	if (!"".equals(sql)) {
-		Query query = sessionFactory.getCurrentSession().createSQLQuery(sql);
-	    
-	    if (transportDetails.getfileType() == 12) {
-		query.setParameter("batchConfigId", transportDetails.getconfigId());
-		query.setParameter("batchDownloadId", batchDownloadId);
-		query.setParameter("filePathAndName", filePathAndName);
-		query.setParameter("jsonWrapperElement", transportDetails.getJsonWrapperElement());
-	    }
-           
-            try {
-		query.list();
-	    } catch (Exception ex) {
-	    }
-	}
 
-	return 0;
+			sql += "SELECT " + fieldNos + " "
+			+ "FROM transactionTranslatedOut_" + batchDownloadId + " "
+			+ "where configId = " + transportDetails.getconfigId() + " and ";
+
+			if(transportDetails.geterrorHandling() == 4) {
+				sql += "statusId in (9,14) ";
+			}
+			else {
+				sql += "statusId = 9 ";
+			}
+			sql += "INTO OUTFILE  '" + filePathAndName + "' "
+			+ "FIELDS TERMINATED BY '" + transportDetails.getDelimChar()+"' LINES TERMINATED BY '\\n';";
+		}
+
+		if (!"".equals(sql)) {
+			Query query = sessionFactory.getCurrentSession().createSQLQuery(sql);
+
+			if (transportDetails.getfileType() == 12) {
+				query.setParameter("batchConfigId", transportDetails.getconfigId());
+				query.setParameter("batchDownloadId", batchDownloadId);
+				query.setParameter("filePathAndName", filePathAndName);
+				query.setParameter("jsonWrapperElement", transportDetails.getJsonWrapperElement());
+			}
+
+			try {
+				query.list();
+			} catch (Exception ex) {}
+		}
+
+		return 0;
     }
 
     @SuppressWarnings("unchecked")
