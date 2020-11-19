@@ -1971,24 +1971,26 @@ public class transactionOutManagerImpl implements transactionOutManager {
 				if(csvFile.exists()) {
 					csvFile.delete();
 				}
+
+				fileExt = finalFileExt;
 			}
 	    }
 
 	    if (!massOutFile.exists()) {
-		//we induce time because file is not done writing
-		TimeUnit.SECONDS.sleep(30);
+			//we induce time because file is not done writing
+			TimeUnit.SECONDS.sleep(30);
 	    }
 	    //check one more time to be safe
 	    if (!massOutFile.exists()) {
-		//we induce time because file is not done writing
-		TimeUnit.SECONDS.sleep(30);
+			//we induce time because file is not done writing
+			TimeUnit.SECONDS.sleep(30);
 	    }
 	    
 	    if(massOutFile.exists()) {
-		ba = new batchdownloadactivity();
-		ba.setActivity("MassOutFile was created:" + massOutFile.getAbsolutePath());
-		ba.setBatchDownloadId(batchDownload.getId());
-		transactionOutDAO.submitBatchActivityLog(ba);
+			ba = new batchdownloadactivity();
+			ba.setActivity("MassOutFile was created:" + massOutFile.getAbsolutePath());
+			ba.setBatchDownloadId(batchDownload.getId());
+			transactionOutDAO.submitBatchActivityLog(ba);
 	    }
 
 	    //cp file to archiveOut and correct putput folder
@@ -2170,7 +2172,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
 			fileDropDir = dropField.getDirectory();
 		    }
 		}
-		
+
 		if(!"".equals(fileDropDir)) {
 		    
 		    String targetDirectory = fileDropDir;
@@ -2184,20 +2186,25 @@ public class transactionOutManagerImpl implements transactionOutManager {
 		    
 		    //File targetFile = new File(targetDirectory + batchDownload.getUtBatchName() + "." + fileExt);
 		    File targetFile = new File(targetDirectory + batchDownload.getOutputFileName());
+
+		    if(!targetFile.exists()) {
+		    	targetFile.createNewFile();
+			}
 		    
 		    try {
-			Files.copy(archiveFile.toPath(), targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-		    
-			ba = new batchdownloadactivity();
-			ba.setActivity("Moved the archive file: " + archiveFile.getAbsolutePath() + " to the config drop directory: "+ targetFile.getAbsolutePath());
-			ba.setBatchDownloadId(batchDownload.getId());
-			transactionOutDAO.submitBatchActivityLog(ba);
+				Files.copy(archiveFile.toPath(), targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+
+				ba = new batchdownloadactivity();
+				ba.setActivity("Moved the archive file: " + archiveFile.getAbsolutePath() + " to the config drop directory: "+ targetFile.getAbsolutePath());
+				ba.setBatchDownloadId(batchDownload.getId());
+				transactionOutDAO.submitBatchActivityLog(ba);
 		    }
 		    catch (Exception ex) {
-			ba = new batchdownloadactivity();
-			ba.setActivity("Failed to move the archive file: " + archiveFile.getAbsolutePath() + ". Drop Directory: "+ targetFile.getAbsolutePath() + " does not exist.");
-			ba.setBatchDownloadId(batchDownload.getId());
-			transactionOutDAO.submitBatchActivityLog(ba);
+		    	System.out.println("ERROR OCCURRED");
+				ba = new batchdownloadactivity();
+				ba.setActivity("Failed to move the archive file: " + archiveFile.getAbsolutePath() + ". Drop Directory: "+ targetFile.getAbsolutePath() + " does not exist.");
+				ba.setBatchDownloadId(batchDownload.getId());
+				transactionOutDAO.submitBatchActivityLog(ba);
 		    }
 		    
 		}
