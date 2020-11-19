@@ -95,3 +95,6 @@ ALTER TABLE `universaltranslator`.`configurationmessagespecs`
 ADD COLUMN `totalHeaderRows` INT(11) NULL DEFAULT '1' AFTER `fileNameConfigHeader`;
 
 UPDATE `universaltranslator`.`configurationmessagespecs` SET totalHeaderRows = 0 where containsHeaderRow = 0;
+
+ALTER TABLE `universaltranslator`.`configurationtransportdetails`
+ADD COLUMN `addTargetFileHeaderRow` BIT(1) NULL DEFAULT b'0' AFTER `populateInboundAuditReport`;
