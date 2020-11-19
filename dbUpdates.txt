@@ -1,2 +1,0 @@
-ALTER TABLE `universaltranslatorca`.`configurationtransportdetails`
-ADD COLUMN `addTargetFileHeaderRow` BIT(1) NULL DEFAULT b'0' AFTER `populateInboundAuditReport`;
