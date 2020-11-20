@@ -1746,8 +1746,6 @@ public class transactionInDAOImpl implements transactionInDAO {
 	sql = "update "+tableName + " set " + trimTableFields;
 	sql += " where configId = :configId";
 
-	System.out.println(sql);
-	
 	Query updateData = sessionFactory.getCurrentSession().createSQLQuery(sql);
 	updateData.setParameter("configId", configId);
 
