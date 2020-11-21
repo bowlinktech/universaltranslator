@@ -84,7 +84,7 @@ public interface transactionInDAO {
 
     void updateFieldNoWithCWData(Integer configId, Integer batchId, Integer fieldNo, Integer passClear, boolean foroutboundProcessing);
 
-    void flagCWErrors(Integer configId, Integer batchId, configurationDataTranslations cdt, boolean foroutboundProcessing);
+    Integer flagCWErrors(Integer configId, Integer batchId, configurationDataTranslations cdt, boolean foroutboundProcessing, boolean isFieldRequired);
 
     Integer flagMacroErrors(Integer configId, Integer batchId, configurationDataTranslations cdt, boolean foroutboundProcessing);
 
@@ -102,7 +102,7 @@ public interface transactionInDAO {
 
     Integer getRecordCounts(Integer batchId, List<Integer> statusIds, boolean foroutboundProcessing, boolean inStatusIds);
 
-    Integer insertLoadData(Integer batchId, Integer configId, String delimChar, String fileWithPath, String tableName, boolean containsHeaderRow, String lineTerminator);
+    Integer insertLoadData(Integer batchId, Integer configId, String delimChar, String fileWithPath, String tableName, boolean containsHeaderRow, Integer startRow, String lineTerminator);
 
     Integer updateConfigIdForBatch(Integer batchId, Integer configId);
 
@@ -204,7 +204,7 @@ public interface transactionInDAO {
 
     void cleanAuditErrorTable(Integer batchUploadId) throws Exception;
 
-    Integer executeCWDataForSingleFieldValue(Integer configId, Integer batchId, configurationDataTranslations cdt, boolean foroutboundProcessing);
+    void executeCWDataForSingleFieldValue(Integer configId, Integer batchId, configurationDataTranslations cdt, boolean foroutboundProcessing);
 
     void deleteMoveFileLogsByStatus(Integer statusId, Integer transportMethodId) throws Exception;
 
@@ -290,7 +290,7 @@ public interface transactionInDAO {
     
     List<directmessagesin> getDirectMessagesInListPaged(Date fromDate, Date toDate, Integer displayStart, Integer displayRecords, String searchTerm, String sortColumnName, String sortDirection) throws Exception;
     
-    void insertCWDroppedValues(Integer configId, Integer batchId, configurationFormFields cff, configurationDataTranslations cdt, boolean foroutboundProcessing) throws Exception;
+    void insertCWDroppedValues(Integer configId, Integer batchId, configurationDataTranslations cdt, boolean foroutboundProcessing) throws Exception;
     
     void populateDroppedValues(Integer batchUploadId, Integer configId, boolean foroutboundProcessing) throws Exception;
     
@@ -299,4 +299,16 @@ public interface transactionInDAO {
     Integer getTotalErroredRows(Integer batchUploadId) throws Exception;
     
     List<batchErrorSummary> getBatchSystemErrorSummary(int batchId, String inboundOutbound) throws Exception;
+    
+    List<batchUploads> findRejectedBatchesToCleanUp() throws Exception;
+    
+    void rejectedBatchUploadTableCleanUp(List<batchUploads> batchesToCleanup) throws Exception;
+    
+    void clearBatchActivityLogTable(Integer batchId) throws Exception;
+    
+    Integer getMacroErrorRecordCountForTable(Integer batchId, boolean forOutboundProcessing, Integer configId, Integer macroId) throws Exception;
+    
+    void executePassClearLogic(Integer batchId, configurationDataTranslations cdt, boolean foroutboundProcessing) throws Exception;
+    
+    void insertMacroDroppedValues(Integer batchId, configurationDataTranslations cdt, boolean foroutboundProcessing) throws Exception;
 }

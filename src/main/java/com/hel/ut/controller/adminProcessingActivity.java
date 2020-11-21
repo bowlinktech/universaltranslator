@@ -34,6 +34,7 @@ import com.hel.ut.model.directmessagesin;
 import com.hel.ut.model.directmessagesout;
 import com.hel.ut.model.fieldSelectOptions;
 import com.hel.ut.model.lutables.lu_ProcessStatus;
+import com.hel.ut.model.mailMessage;
 import com.hel.ut.model.referralActivityExports;
 import com.hel.ut.model.systemSummary;
 import com.hel.ut.model.transactionOutRecords;
@@ -43,6 +44,7 @@ import com.hel.ut.restAPI.directManager;
 import com.hel.ut.restAPI.restfulManager;
 import com.hel.ut.security.decryptObject;
 import com.hel.ut.security.encryptObject;
+import com.hel.ut.service.emailMessageManager;
 import com.hel.ut.service.fileManager;
 import com.hel.ut.service.messageTypeManager;
 import com.hel.ut.service.organizationManager;
@@ -88,9 +90,28 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.servlet.view.RedirectView;
 import com.hel.ut.service.utConfigurationManager;
 import com.hel.ut.service.utConfigurationTransportManager;
+import com.itextpdf.text.Document;
+import com.itextpdf.text.PageSize;
+import com.itextpdf.text.pdf.PdfWriter;
+import com.itextpdf.tool.xml.XMLWorkerHelper;
+import java.io.BufferedWriter;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.text.ParseException;
 import java.util.Iterator;
 import java.util.Properties;
 import javax.annotation.Resource;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.util.FileCopyUtils;
 
 /**
  *
@@ -99,6 +120,9 @@ import javax.annotation.Resource;
 @Controller
 @RequestMapping("/administrator/processing-activity")
 public class adminProcessingActivity {
+    
+    @Value("${siteTimeZone}")
+    private String siteTimeZone; 
     
     @Autowired
     private transactionInManager transactionInManager;
@@ -135,6 +159,9 @@ public class adminProcessingActivity {
     
     @Autowired
     private directManager directmanager;
+    
+    @Autowired
+    private emailMessageManager emailMessageManager;
 
     private String topSecret = "Hello123JavaTomcatMysqlDPHSystem2016";
 
@@ -168,15 +195,32 @@ public class adminProcessingActivity {
 
         /* Retrieve search parameters from session */
         searchParameters searchParameters = (searchParameters) session.getAttribute("searchParameters");
+	
+	searchParameters.setsection("activityReport");
+	session.setAttribute("searchParameters", searchParameters);
+	
+	if(searchParameters.getfromDate() == null) {
+	     searchParameters.setfromDate(fromDate);
+	     session.setAttribute("searchParameters", searchParameters);
+	}
+	if(searchParameters.gettoDate() == null) {
+	     searchParameters.settoDate(toDate);
+	     session.setAttribute("searchParameters", searchParameters);
+	}
+	
+	fromDate = searchParameters.getfromDate();
+	toDate = searchParameters.gettoDate();
+	
+	
 
-        if ("".equals(searchParameters.getsection()) || !"activityReport".equals(searchParameters.getsection())) {
+        /*if ("".equals(searchParameters.getsection()) || !"activityReport".equals(searchParameters.getsection())) {
             searchParameters.setfromDate(fromDate);
             searchParameters.settoDate(toDate);
             searchParameters.setsection("activityReport");
         } else {
             fromDate = searchParameters.getfromDate();
             toDate = searchParameters.gettoDate();
-        }
+        }*/
 
         mav.addObject("fromDate", fromDate);
         mav.addObject("toDate", toDate);
@@ -311,7 +355,41 @@ public class adminProcessingActivity {
 	
 	String searchTerm = "";
 	
-        if ("".equals(searchParameters.getsection()) || !"inbound".equals(searchParameters.getsection())) {
+	if(searchParameters.getfromDate() == null) {
+	     searchParameters.setfromDate(fromDate);
+	     session.setAttribute("searchParameters", searchParameters);
+	}
+	if(searchParameters.gettoDate() == null) {
+	     searchParameters.settoDate(toDate);
+	     session.setAttribute("searchParameters", searchParameters);
+	}
+	if(!"".equals(searchParameters.getsearchTerm().trim()) && "inbound".equals(searchParameters.getsection())) {
+	    searchTerm = searchParameters.getsearchTerm().trim();
+	}
+	else {
+	    if(pathVariables.get("batchName") != null) {
+		if(!"".equals(pathVariables.get("batchName"))) {
+		    searchTerm = pathVariables.get("batchName");
+		    searchParameters.setsearchTerm(pathVariables.get("batchName"));
+		    session.setAttribute("searchParameters", searchParameters);
+		}
+		else {
+		    searchParameters.setsearchTerm("");
+		    session.setAttribute("searchParameters", searchParameters);
+		}
+	    }
+	    else {
+		searchParameters.setsearchTerm("");
+		session.setAttribute("searchParameters", searchParameters);
+	    }
+	}
+	searchParameters.setsection("inbound");
+	session.setAttribute("searchParameters", searchParameters);
+	
+	fromDate = searchParameters.getfromDate();
+	toDate = searchParameters.gettoDate();
+	
+        /*if ("".equals(searchParameters.getsection()) || !"inbound".equals(searchParameters.getsection())) {
             searchParameters.setfromDate(fromDate);
             searchParameters.settoDate(toDate);
             searchParameters.setsection("inbound");
@@ -324,8 +402,7 @@ public class adminProcessingActivity {
 	    
 	    searchParameters.setsearchTerm("");
 	    session.setAttribute("searchParameters", searchParameters);
-        }
-	
+        }*/
 	
 	mav.addObject("searchFilter", searchTerm);
         mav.addObject("fromDate", fromDate);
@@ -361,6 +438,7 @@ public class adminProcessingActivity {
         searchParameters.setfromDate(fromDate);
         searchParameters.settoDate(toDate);
         searchParameters.setsection("inbound");
+	searchParameters.setsearchTerm(searchTerm);
 	
 	if(!"".equals(batchName)) {
 	    searchTerm = batchName;
@@ -377,6 +455,28 @@ public class adminProcessingActivity {
 	else {
 	    totalRecords = batchUploadList.get(0).getTotalMessages();
 	}
+	
+	TimeZone timeZone = TimeZone.getTimeZone(siteTimeZone);
+	DateFormat requiredFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	DateFormat dft = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	requiredFormat.setTimeZone(timeZone);
+	String dateinTZ = "";
+	
+	for (batchUploads batch : batchUploadList) {
+	    dateinTZ = requiredFormat.format(batch.getDateSubmitted());
+	    
+	    batch.setDateSubmitted(dft.parse(dateinTZ));
+	    
+	    if(batch.getStartDateTime()!= null) {
+		dateinTZ = requiredFormat.format(batch.getStartDateTime());
+		batch.setStartDateTime(dft.parse(dateinTZ));
+	    }
+	    
+	    if(batch.getEndDateTime()!= null) {
+		dateinTZ = requiredFormat.format(batch.getEndDateTime());
+		batch.setEndDateTime(dft.parse(dateinTZ));
+	    }
+        }
 	
 	jsonResponse.addProperty("sEcho", sEcho);
         jsonResponse.addProperty("iTotalRecords", totalRecords);
@@ -418,7 +518,50 @@ public class adminProcessingActivity {
 	
 	String searchTerm = "";
 	
-        if ("".equals(searchParameters.getsection()) || !"outbound".equals(searchParameters.getsection())) {
+	if(pathVariables.get("batchName") != null) {
+	     if(!"".equals(pathVariables.get("batchName"))) {
+		 fromDate = null;
+		 toDate = null;
+	     }
+	}
+	
+	if(fromDate != null && searchParameters.getfromDate() == null) {
+	     searchParameters.setfromDate(fromDate);
+	     session.setAttribute("searchParameters", searchParameters);
+	}
+	if(toDate != null && searchParameters.gettoDate() == null) {
+	     searchParameters.settoDate(toDate);
+	     session.setAttribute("searchParameters", searchParameters);
+	}
+	
+	if(!"".equals(searchParameters.getsearchTerm().trim()) && "outbound".equals(searchParameters.getsection())) {
+	   searchTerm = searchParameters.getsearchTerm().trim();
+	}
+	else {
+	    if(pathVariables.get("batchName") != null) {
+		if(!"".equals(pathVariables.get("batchName"))) {
+		    searchTerm = pathVariables.get("batchName");
+		    searchParameters.setsearchTerm(pathVariables.get("batchName"));
+		    session.setAttribute("searchParameters", searchParameters);
+		}
+		else {
+		    searchParameters.setsearchTerm("");
+		    session.setAttribute("searchParameters", searchParameters);
+		}
+	    }
+	    else {
+		searchParameters.setsearchTerm("");
+		session.setAttribute("searchParameters", searchParameters);
+	    }
+	}
+	
+	searchParameters.setsection("outbound");
+	session.setAttribute("searchParameters", searchParameters);
+	
+	fromDate = searchParameters.getfromDate();
+	toDate = searchParameters.gettoDate();
+	
+        /*if ("".equals(searchParameters.getsection()) || !"outbound".equals(searchParameters.getsection())) {
             searchParameters.setfromDate(fromDate);
             searchParameters.settoDate(toDate);
             searchParameters.setsection("outbound");
@@ -431,7 +574,7 @@ public class adminProcessingActivity {
 	    
 	    searchParameters.setsearchTerm("");
 	    session.setAttribute("searchParameters", searchParameters);
-        }
+        }*/
 	
 	mav.addObject("searchFilter", searchTerm);
         mav.addObject("fromDate", fromDate);
@@ -468,6 +611,7 @@ public class adminProcessingActivity {
         searchParameters.setfromDate(fromDate);
         searchParameters.settoDate(toDate);
         searchParameters.setsection("outbound");
+	searchParameters.setsearchTerm(searchTerm);
 	
 	if(!"".equals(batchName)) {
 	    searchTerm = batchName;
@@ -484,6 +628,28 @@ public class adminProcessingActivity {
 	else {
 	    totalRecords = batchDownloadList.get(0).getTotalMessages();
 	}
+	
+	TimeZone timeZone = TimeZone.getTimeZone(siteTimeZone);
+	DateFormat requiredFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	DateFormat dft = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	requiredFormat.setTimeZone(timeZone);
+	String dateinTZ = "";
+	
+	for (batchDownloads batch : batchDownloadList) {
+	    dateinTZ = requiredFormat.format(batch.getDateCreated());
+	    
+	    batch.setDateCreated(dft.parse(dateinTZ));
+	    
+	    if(batch.getStartDateTime()!= null) {
+		dateinTZ = requiredFormat.format(batch.getStartDateTime());
+		batch.setStartDateTime(dft.parse(dateinTZ));
+	    }
+	    
+	    if(batch.getEndDateTime()!= null) {
+		dateinTZ = requiredFormat.format(batch.getEndDateTime());
+		batch.setEndDateTime(dft.parse(dateinTZ));
+	    }
+        } 
 	
 	jsonResponse.addProperty("sEcho", sEcho);
         jsonResponse.addProperty("iTotalRecords", totalRecords);
@@ -700,7 +866,7 @@ public class adminProcessingActivity {
         mav.setViewName("/administrator/processing-activity/batchActivities");
         mav.addObject("page", path);
 	
-	if("inbound".equals(path)) {
+	if("inbound".equals(path) || "invalidIn".equals(path) || "rejected".equals(path)) {
 	    // Get the details of the batch
 	    batchUploads batchDetails = transactionInManager.getBatchDetailsByBatchName(batchName);
 
@@ -712,7 +878,19 @@ public class adminProcessingActivity {
 		mav.addObject("batchDetails", batchDetails);
 
 		try {
+		    
+		    TimeZone timeZone = TimeZone.getTimeZone(siteTimeZone);
+		    DateFormat requiredFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		    DateFormat dft = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		    requiredFormat.setTimeZone(timeZone);
+		    String dateinTZ = "";
+		    
 		    List<batchuploadactivity> batchActivities = transactionInManager.getBatchActivities(batchDetails);
+
+		    for (batchuploadactivity batchActivity : batchActivities) {
+			batchActivity.setDateCreated(dft.parse(requiredFormat.format(batchActivity.getDateCreated())));
+		    }
+		    
 		    mav.addObject("batchActivities", batchActivities);
 
 		} catch (Exception e) {
@@ -732,6 +910,17 @@ public class adminProcessingActivity {
 
 		try {
 		    List<batchdownloadactivity> batchActivities = transactionOutManager.getBatchActivities(batchDetails);
+		    
+		    TimeZone timeZone = TimeZone.getTimeZone(siteTimeZone);
+		    DateFormat requiredFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		    DateFormat dft = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		    requiredFormat.setTimeZone(timeZone);
+		    String dateinTZ = "";
+		    
+		    for (batchdownloadactivity batchActivity : batchActivities) {
+			batchActivity.setDateCreated(dft.parse(requiredFormat.format(batchActivity.getDateCreated())));
+		    }
+		    
 		    mav.addObject("batchActivities", batchActivities);
 
 		} catch (Exception e) {
@@ -790,8 +979,8 @@ public class adminProcessingActivity {
      *
      * @throws Exception
      */
-    @RequestMapping(value = "/inbound/auditReport/{batchName}", method = RequestMethod.GET)
-    public ModelAndView viewInboundAuditReport(@PathVariable String batchName) throws Exception {
+    @RequestMapping(value = {"/inbound/auditReport/{batchName}", "/invalidIn/auditReport/{batchName}", "/rejected/auditReport/{batchName}"}, method = RequestMethod.GET)
+    public ModelAndView viewInboundAuditReport(@PathVariable String batchName, HttpServletRequest request) throws Exception {
 
         ModelAndView mav = new ModelAndView();
         mav.setViewName("/administrator/processing-activity/auditReport");
@@ -802,6 +991,14 @@ public class adminProcessingActivity {
 	boolean showButtons = true;
 	
 	Integer totalErroredRows = 0;
+	
+	String page = "inbound";
+	if(request.getRequestURL().toString().contains("invalidIn")) {
+	    page = "invalid";
+	}
+	else if(request.getRequestURL().toString().contains("rejected")) {
+	    page = "rejected";
+	}
 
         /* Get the details of the batch */
         batchUploads batchDetails = transactionInManager.getBatchDetailsByBatchName(batchName);
@@ -835,6 +1032,7 @@ public class adminProcessingActivity {
 		if(!associatedDownloadBatches.isEmpty()) {
 		    
 		    for(batchDownloads batchDownload : associatedDownloadBatches) {
+			
 			Organization tgtOrgDetails = organizationmanager.getOrganizationById(batchDownload.getOrgId());
 			File targetFile = null;
 			//Check if target file has been generated
@@ -898,6 +1096,15 @@ public class adminProcessingActivity {
             } else {
                 batchDetails.setConfigName("Multiple Message Types");
             }
+	    
+	    TimeZone timeZone = TimeZone.getTimeZone(siteTimeZone);
+	    DateFormat requiredFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	    DateFormat dft = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	    requiredFormat.setTimeZone(timeZone);
+	    String dateinTZ = "";
+
+	    batchDetails.setDateSubmitted(dft.parse(requiredFormat.format(batchDetails.getDateSubmitted())));
+	  
             mav.addObject("batchDetails", batchDetails);
 	    
             if (batchDetails.getErrorRecordCount() > 0) {
@@ -940,7 +1147,7 @@ public class adminProcessingActivity {
         mav.addObject("canSend", canSend);
 	mav.addObject("batchDownload",false);
 	mav.addObject("totalErroredRows", totalErroredRows);
-	
+	mav.addObject("page", page);
 	
 	if(canReset || canCancel || canEdit || canSend || batchDetails.getStatusId() == 2 || batchDetails.getStatusId() == 3 || batchDetails.getStatusId() == 36) {
 	    showButtons = true;
@@ -974,6 +1181,9 @@ public class adminProcessingActivity {
         if (userInfo != null && batchDetails != null) {
             
 	    if (batchOption.equalsIgnoreCase("processBatch")) {
+		//Clear Batch Activity Log table
+		transactionInManager.clearBatchActivityLogTable(batchId);
+		
 		//Clear transaction counts
 		transactionInManager.resetTransactionCounts(batchId);
 		
@@ -986,6 +1196,7 @@ public class adminProcessingActivity {
                 strBatchOption = "Cancelled Batch";
                 transactionInManager.updateBatchStatus(batchId, 4, "startDateTime");
                 transactionInManager.updateBatchStatus(batchId, 32, "endDateTime");
+		
                 //need to cancel targets also
                 transactionInManager.updateBatchDLStatusByUploadBatchId(batchId, 0, 32, "endDateTime");
 		
@@ -998,6 +1209,9 @@ public class adminProcessingActivity {
             } 
 	    else if (batchOption.equalsIgnoreCase("reset")) {
                 strBatchOption = "Reset Batch";
+		
+		//Clear Batch Activity Log table
+		transactionInManager.clearBatchActivityLogTable(batchId);
 		
 		//Clear transaction counts
 		transactionInManager.resetTransactionCounts(batchId);
@@ -1367,93 +1581,24 @@ public class adminProcessingActivity {
 
 	String searchTerm = "";
 	
-        if ("".equals(searchParameters.getsection()) || !"rejected".equals(searchParameters.getsection())) {
-            searchParameters.setfromDate(fromDate);
-            searchParameters.settoDate(toDate);
-	    searchParameters.setsearchTerm("");
-            searchParameters.setsection("rejected");
-	    session.setAttribute("searchParameters", searchParameters);
-        } else {
-            fromDate = searchParameters.getfromDate();
-            toDate = searchParameters.gettoDate();
-	    searchTerm = searchParameters.getsearchTerm();
+	searchParameters.setsection("rejected");
+	session.setAttribute("searchParameters", searchParameters);
+	 
+	if(!"".equals(searchParameters.getsearchTerm().trim())) {
+	    searchTerm = searchParameters.getsearchTerm().trim();
 	    searchParameters.setsearchTerm("");
 	    session.setAttribute("searchParameters", searchParameters);
-        }
+	}
+	
+	fromDate = searchParameters.getfromDate();
+	toDate = searchParameters.gettoDate();
 	
 	mav.addObject("searchFilter", searchTerm);
         mav.addObject("fromDate", fromDate);
         mav.addObject("toDate", toDate);
         mav.addObject("originalDate", originalDate);
+	mav.addObject("DTS", "");
 	
-	try {
-
-            Integer fetchCount = 0;
-	    
-	    List<batchUploads> rejectedBatches = transactionInManager.getAllRejectedBatches(fromDate, toDate, fetchCount);
-
-            if (!rejectedBatches.isEmpty()) {
-		
-		//we can map the process status so we only have to query once
-                List<utConfiguration> configurationList = configurationManager.getConfigurations();
-                Map<Integer, String> cMap = new HashMap<>();
-		configurationList.forEach((c) -> {
-		    cMap.put(c.getId(), c.getconfigName());
-		});
-		
-                //we can map the process status so we only have to query once
-                List<lu_ProcessStatus> processStatusList = sysAdminManager.getAllProcessStatus();
-                Map<Integer, String> psMap = new HashMap<>();
-		processStatusList.forEach((ps) -> {
-		    psMap.put(ps.getId(), ps.getDisplayCode());
-		});
-
-                //same with transport method names
-                List<TransportMethod> transporthMethods = configurationTransportManager.getTransportMethods(Arrays.asList(0, 1));
-                Map<Integer, String> tmMap = new HashMap<>();
-		transporthMethods.forEach((tms) -> {
-		    tmMap.put(tms.getId(), tms.getTransportMethod());
-		});
-
-                //if we have lots of organization in the future we can tweak this to narrow down to orgs with batches
-                List<Organization> organizations = organizationmanager.getOrganizations();
-                Map<Integer, String> orgMap = new HashMap<>();
-		organizations.forEach((org) -> {
-		    orgMap.put(org.getId(), org.getOrgName());
-		});
-
-                //same goes for users
-                List<utUser> users = usermanager.getAllUsers();
-                Map<Integer, String> userMap = new HashMap<>();
-		users.forEach((user) -> {
-		    userMap.put(user.getId(), (user.getFirstName() + " " + user.getLastName()));
-		});
-
-		rejectedBatches.stream().map((batch) -> {
-		    //the count is in totalRecordCount already, can skip re-count
-		    // batch.settotalTransactions(transactionInManager.getRecordCounts(batch.getId(), statusIds, false, false));
-		    batch.setStatusValue(psMap.get(batch.getStatusId()));
-		    return batch;
-		}).map((batch) -> {
-		    batch.setOrgName(orgMap.get(batch.getOrgId()));
-		    return batch;
-		}).map((batch) -> {
-		    batch.setTransportMethod(tmMap.get(batch.getTransportMethodId()));
-		    return batch;
-		}).map((batch) -> {
-		    batch.setUsersName(userMap.get(batch.getUserId()));
-		    return batch;
-		}).forEachOrdered((batch) -> {
-		    batch.setConfigName(cMap.get(batch.getConfigId()));
-		});
-            }
-
-            mav.addObject("batches", rejectedBatches);
-
-        } catch (Exception e) {
-            throw new Exception("Error occurred viewing the all uploaded batches.", e);
-        }
-
         return mav;
 
     }
@@ -1464,6 +1609,7 @@ public class adminProcessingActivity {
      * @param fromDate
      * @param toDate
      * @param request
+     * @param DTS
      * @param response
      * @param session
      * @return The list of batches with rejected transactions
@@ -1473,7 +1619,9 @@ public class adminProcessingActivity {
      * @throws Exception
      */
     @RequestMapping(value = "/rejected", method = RequestMethod.POST)
-    public ModelAndView listRejectedBatches(@RequestParam Date fromDate, @RequestParam Date toDate, HttpServletRequest request, HttpServletResponse response, HttpSession session) throws Exception {
+    public ModelAndView listRejectedBatches(@RequestParam Date fromDate, 
+	    @RequestParam Date toDate, HttpServletRequest request, @RequestParam(value = "DTS", required=false) Integer DTS,
+	    HttpServletResponse response, HttpSession session) throws Exception {
 
         int year = 114;
         int month = 0;
@@ -1486,12 +1634,17 @@ public class adminProcessingActivity {
         mav.addObject("fromDate", fromDate);
         mav.addObject("toDate", toDate);
         mav.addObject("originalDate", originalDate);
-
+	mav.addObject("DTS", DTS);
+	
         /* Retrieve search parameters from session */
         searchParameters searchParameters = (searchParameters) session.getAttribute("searchParameters");
         searchParameters.setfromDate(fromDate);
         searchParameters.settoDate(toDate);
         searchParameters.setsection("rejected");
+	
+	/* Get system inbound summary */
+        systemSummary summaryDetails = transactionInManager.generateSystemInboundSummary();
+        mav.addObject("summaryDetails", summaryDetails);
 
         try {
 
@@ -1535,8 +1688,44 @@ public class adminProcessingActivity {
 		users.forEach((user) -> {
 		    userMap.put(user.getId(), (user.getFirstName() + " " + user.getLastName()));
 		});
+		
+		Calendar cal = Calendar.getInstance();
+		
+		TimeZone timeZone = TimeZone.getTimeZone(siteTimeZone);
+		DateFormat requiredFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		DateFormat dft = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		requiredFormat.setTimeZone(timeZone);
+		String dateinTZ = "";
 
 		rejectedBatches.stream().map((batch) -> {
+		   
+		    try {
+			batch.setDateSubmitted(dft.parse(requiredFormat.format(batch.getDateSubmitted())));
+
+			if(batch.getStartDateTime() != null) {
+			    batch.setStartDateTime(dft.parse(requiredFormat.format(batch.getStartDateTime())));
+			}
+
+			if(batch.getEndDateTime() != null) {
+			    batch.setEndDateTime(dft.parse(requiredFormat.format(batch.getEndDateTime())));
+			}
+		    }
+		    catch (ParseException ex) {}
+		    
+		    if(DTS != null) {
+			if(DTS == 1) {
+			    cal.setTime(batch.getStartDateTime());
+			    cal.add(Calendar.HOUR,-1);
+			    batch.setStartDateTime(cal.getTime());
+			    
+			    if(batch.getEndDateTime() != null) {
+				cal.setTime(batch.getEndDateTime());
+				cal.add(Calendar.HOUR,-1);
+				batch.setEndDateTime(cal.getTime());
+			    }
+			}
+		    }
+		    
 		    //the count is in totalRecordCount already, can skip re-count
 		    // batch.settotalTransactions(transactionInManager.getRecordCounts(batch.getId(), statusIds, false, false));
 		    batch.setStatusValue(psMap.get(batch.getStatusId()));
@@ -2148,6 +2337,7 @@ public class adminProcessingActivity {
 	
 	String sql = "";
 	
+	
 	customCols.add("From Outbound");
 	customCols.add("Row No.");
 	customCols.add("Field No.");
@@ -2171,7 +2361,7 @@ public class adminProcessingActivity {
 		    customCols.add("Field Value");
 		
 		    sql = "select fromOutboundConfig, a.rownumber as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name,a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
-			+ "from batchuploadauditerrors a left outer  join "
+			+ "from batchuploadauditerrors a left outer join "
 			+ "configurationmessagespecs b on a.configId = b.configId "
 			+ "where a.batchUploadId = " + batchId + " and a.errorId = " + errorId + " order by a.rownumber asc";
 		}
@@ -2179,7 +2369,7 @@ public class adminProcessingActivity {
 		    customCols.add("Field Value");
 		
 		    sql = "select 'false' as fromOutboundConfig,a.rownumber as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name,a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
-			+ "from batchdownloadauditerrors a left outer  join "
+			+ "from batchdownloadauditerrors a left outer join "
 			+ "configurationmessagespecs b on a.configId = b.configId "
 			+ "where a.batchDownloadId = " + batchId + " and a.errorId = " + errorId + " order by a.rownumber asc";
 		}
@@ -2193,7 +2383,7 @@ public class adminProcessingActivity {
 		    customCols.add("Field Value");
 
 		    sql = "select fromOutboundConfig, a.rownumber as rownumber, a.fieldNo as fieldNumber, a.fieldName as column_name, a.errorDetails as validation_type, a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
-			+ "from batchuploadauditerrors a left outer  join "
+			+ "from batchuploadauditerrors a left outer join "
 			+ "configurationmessagespecs b on a.configId = b.configId "
 			+ "where a.batchUploadId = " + batchId + " and a.errorId = " + errorId + " order by a.rownumber asc";
 		}
@@ -2201,7 +2391,7 @@ public class adminProcessingActivity {
 		    customCols.add("Field Value");
 
 		    sql = "select 'false' as fromOutboundConfig,a.rownumber as rownumber, a.fieldNo as fieldNumber, a.fieldName as column_name, a.errorDetails as validation_type, a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
-			+ "from batchdownloadauditerrors a left outer  join "
+			+ "from batchdownloadauditerrors a left outer join "
 			+ "configurationmessagespecs b on a.configId = b.configId "
 			+ "where a.batchDownloadId = " + batchId + " and a.errorId = " + errorId + " order by a.rownumber asc";
 		}
@@ -2220,10 +2410,13 @@ public class adminProcessingActivity {
 			+ "where a.batchUploadId = " + batchId + " and a.errorId = " + errorId + " order by a.rownumber asc";
 		}
 		else {
+		    customCols.add("Field Value");	
+		    
 		    sql = "select 'false' as fromOutboundConfig,a.rownumber as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name, a.errorDetails as crosswalk, a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
 			+ "from batchdownloadauditerrors a left outer join "
 			+ "configurationmessagespecs b on a.configId = b.configId "
 			+ "where a.batchDownloadId = " + batchId + " and a.errorId = " + errorId + " order by a.rownumber asc";
+		    
 		}
 		break;
 		
@@ -2234,7 +2427,7 @@ public class adminProcessingActivity {
 		    customCols.add("Field Value");
 
 		    sql = "select fromOutboundConfig, a.rownumber as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name,a.errorDetails as macro, a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
-			+ "from batchuploadauditerrors a left outer  join "
+			+ "from batchuploadauditerrors a left outer join "
 			+ "configurationmessagespecs b on a.configId = b.configId "
 			+ "where a.batchUploadId = " + batchId + " and a.errorId = " + errorId + " order by a.rownumber asc";
 		}
@@ -2242,7 +2435,7 @@ public class adminProcessingActivity {
 		    customCols.add("Field Value");
 
 		    sql = "select 'false' as fromOutboundConfig,a.rownumber as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name,a.errorDetails as macro, a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
-			+ "from batchdownloadauditerrors a left outer  join "
+			+ "from batchdownloadauditerrors a left outer join "
 			+ "configurationmessagespecs b on a.configId = b.configId "
 			+ "where a.batchDownloadId = " + batchId + " and a.errorId = " + errorId + " order by a.rownumber asc";
 		}
@@ -2251,18 +2444,28 @@ public class adminProcessingActivity {
 		
 	    default:
 		if("inbound".equals(type)) {
-		    customCols.add("Field Value");
+		    if(errorId == 5) {
+			customCols.add("Error");
+		    }
+		    else {
+			customCols.add("Field Value");
+		    }
 
-		    sql = "select fromOutboundConfig, a.rownumber as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name,a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
-			+ "from batchuploadauditerrors a left outer  join "
+		    sql = "select fromOutboundConfig, a.rownumber as rownumber, a.fieldNo as fieldNumber,CASE WHEN a.fieldName IS NULL THEN (select fieldDesc from configurationformfields where configId = a.configId and fieldNo = a.fieldNo) ELSE a.fieldName END as column_name,a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
+			+ "from batchuploadauditerrors a left outer join "
 			+ "configurationmessagespecs b on a.configId = b.configId "
 			+ "where a.batchUploadId = " + batchId + " and a.errorId = " + errorId + " order by a.rownumber asc";
 		}
 		else {
-		    customCols.add("Field Value");
+		    if(errorId == 5) {
+			customCols.add("Error");
+		    }
+		    else {
+			customCols.add("Field Value");
+		    }
 
-		    sql = "select 'false' as fromOutboundConfig,a.rownumber as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name,a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
-			+ "from batchdownloadauditerrors a left outer  join "
+		    sql = "select 'false' as fromOutboundConfig,a.rownumber as rownumber, a.fieldNo as fieldNumber,CASE WHEN a.fieldName IS NULL THEN (select fieldDesc from configurationformfields where configId = a.configId and fieldNo = a.fieldNo) ELSE a.fieldName END as column_name,a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
+			+ "from batchdownloadauditerrors a left outer join "
 			+ "configurationmessagespecs b on a.configId = b.configId "
 			+ "where a.batchDownloadId = " + batchId + " and a.errorId = " + errorId + " order by a.rownumber asc";
 		}
@@ -2270,7 +2473,7 @@ public class adminProcessingActivity {
 		break;
 	}
 	
-	if(reportableFields != null) {
+	if(reportableFields != null && errorId != 5) {
 	    Iterator reportableFieldsIt = reportableFields.iterator();
 	
 	    while (reportableFieldsIt.hasNext()) {
@@ -2290,15 +2493,11 @@ public class adminProcessingActivity {
 	mav.addObject("errors", errors);
         
         return mav;
-
     }
     
     /**
      * The '/invalidIn' GET request will serve up the list of inbound batches that errored
      *
-     *
-     * @param fromDate
-     * @param toDate
      * @param request
      * @param response
      * @param session
@@ -2307,11 +2506,82 @@ public class adminProcessingActivity {
      *
      * @throws Exception
      */
-    @RequestMapping(value = "/invalidIn", method = {RequestMethod.GET, RequestMethod.POST})
+    @RequestMapping(value = "/invalidIn", method = RequestMethod.GET)
+    public ModelAndView listInvalidInBatches(HttpServletRequest request, HttpServletResponse response, HttpSession session) throws Exception {
+	
+        int year = 114;
+        int month = 0;
+        int day = 1;
+        Date originalDate = new Date(year, month, day);
+        
+        // Retrieve search parameters from session
+        searchParameters searchParameters = (searchParameters) session.getAttribute("searchParameters");
+	
+	Date fromDate;
+	Date toDate;
+	
+	if(searchParameters.getfromDate() != null) {
+	    fromDate = searchParameters.getfromDate();
+	}
+	else {
+	    fromDate = getMonthDate("LAST30");
+	}
+	if(searchParameters.gettoDate() != null) {
+	    toDate = searchParameters.gettoDate();
+	}
+	else {
+	    toDate = getMonthDate("END-TODAY");
+	}
+	
+	String searchTerm = "";
+	
+	searchParameters.setsection("invalidIn");
+	session.setAttribute("searchParameters", searchParameters);
+	 
+	if(!"".equals(searchParameters.getsearchTerm().trim())) {
+	    searchTerm = searchParameters.getsearchTerm().trim();
+	    searchParameters.setsearchTerm("");
+	    session.setAttribute("searchParameters", searchParameters);
+	}
+	
+	fromDate = searchParameters.getfromDate();
+	toDate = searchParameters.gettoDate();
+	
+        ModelAndView mav = new ModelAndView();
+        mav.setViewName("/administrator/processing-activity/invalidIn");
+	mav.addObject("searchFilter", searchTerm);
+        mav.addObject("fromDate", fromDate);
+        mav.addObject("toDate", toDate);
+        mav.addObject("originalDate", originalDate);
+	mav.addObject("DTS", "");
+	
+	// Get system inbound summary
+        systemSummary summaryDetails = transactionInManager.generateSystemInboundSummary();
+        mav.addObject("summaryDetails", summaryDetails);
+	
+        return mav;
+    }
+    
+    /**
+     * The '/invalidIn' POST request will serve up the list of inbound batches that errored
+     *
+     *
+     * @param fromDate
+     * @param toDate
+     * @param DTS
+     * @param request
+     * @param response
+     * @param session
+     * @return 
+     * @Objects	(1) An object containing all the found invalidIn
+     *
+     * @throws Exception
+     */
+    @RequestMapping(value = "/invalidIn", method = RequestMethod.POST)
     public ModelAndView listInvalidInBatches(@RequestParam(value = "fromDate", required=false) Date fromDate,
-    		@RequestParam(value = "toDate", required=false) Date toDate,
+    		@RequestParam(value = "toDate", required=false) Date toDate, @RequestParam(value = "DTS", required=false) Integer DTS,
             HttpServletRequest request, HttpServletResponse response, HttpSession session) throws Exception {
-
+	
         int year = 114;
         int month = 0;
         int day = 1;
@@ -2319,11 +2589,22 @@ public class adminProcessingActivity {
         
         /* Retrieve search parameters from session */
         searchParameters searchParameters = (searchParameters) session.getAttribute("searchParameters");
+	
         if (fromDate == null) {
-	    fromDate = getMonthDate("LAST30");
+	    if(searchParameters.getfromDate() != null) {
+		fromDate = searchParameters.getfromDate();
+	    }
+	    else {
+		fromDate = getMonthDate("LAST30");
+	    }
         }
         if (toDate == null) {
-	    toDate = getMonthDate("END-TODAY");
+	    if(searchParameters.getfromDate() != null) {
+		toDate = searchParameters.gettoDate();
+	    }
+	    else {
+		toDate = getMonthDate("END-TODAY");
+	    }
         } 
 	searchParameters.setfromDate(fromDate);
         searchParameters.settoDate(toDate);
@@ -2347,6 +2628,7 @@ public class adminProcessingActivity {
         mav.addObject("fromDate", fromDate);
         mav.addObject("toDate", toDate);
         mav.addObject("originalDate", originalDate);
+	mav.addObject("DTS", DTS);
 	
 	/* Get system inbound summary */
         systemSummary summaryDetails = transactionInManager.generateSystemInboundSummary();
@@ -2395,8 +2677,43 @@ public class adminProcessingActivity {
 		users.forEach((user) -> {
 		    userMap.put(user.getId(), (user.getFirstName() + " " + user.getLastName()));
 		});
+		
+		Calendar cal = Calendar.getInstance();
+		
+		TimeZone timeZone = TimeZone.getTimeZone(siteTimeZone);
+		DateFormat requiredFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		DateFormat dft = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		requiredFormat.setTimeZone(timeZone);
+		String dateinTZ = "";
 
 		invalidInboundBatches.stream().map((batch) -> {
+		    
+		    try {
+			batch.setDateSubmitted(dft.parse(requiredFormat.format(batch.getDateSubmitted())));
+
+			if(batch.getStartDateTime() != null) {
+			    batch.setStartDateTime(dft.parse(requiredFormat.format(batch.getStartDateTime())));
+			}
+
+			if(batch.getEndDateTime() != null) {
+			    batch.setEndDateTime(dft.parse(requiredFormat.format(batch.getEndDateTime())));
+			}
+		    }
+		    catch (ParseException ex) {}
+		    
+		    if(DTS != null) {
+			if(DTS == 1) {
+			    cal.setTime(batch.getStartDateTime());
+			    cal.add(Calendar.HOUR,-1);
+			    batch.setStartDateTime(cal.getTime());
+			    if(batch.getEndDateTime() != null) {
+				cal.setTime(batch.getEndDateTime());
+				cal.add(Calendar.HOUR,-1);
+				batch.setEndDateTime(cal.getTime());
+			    }
+			}
+		    }
+		    
 		    //the count is in totalRecordCount already, can skip re-count
 		    // batch.settotalTransactions(transactionInManager.getRecordCounts(batch.getId(), statusIds, false, false));
 		    batch.setStatusValue(psMap.get(batch.getStatusId()));
@@ -2426,7 +2743,76 @@ public class adminProcessingActivity {
     }
     
     /**
-     * The '/invalidOut' GET / Post request will serve up the list of inbound batches that errored
+     * The '/invalidOut' GET  request will serve up the list of inbound batches that errored
+     *
+     *
+     * @param request
+     * @param response
+     * @param session
+     * @return 
+     * @Objects	(1) An object containing all the found invalidIn
+     *
+     * @throws Exception
+     */
+    @RequestMapping(value = "/invalidOut", method = RequestMethod.GET)
+    public ModelAndView listInvalidOutBatches(HttpServletRequest request, HttpServletResponse response, HttpSession session) throws Exception {
+
+    	int year = 114;
+        int month = 0;
+        int day = 1;
+        Date originalDate = new Date(year, month, day);
+	
+	Date fromDate;
+	Date toDate;
+	
+	searchParameters searchParameters = (searchParameters) session.getAttribute("searchParameters");
+	if(searchParameters.getfromDate() != null) {
+	    fromDate = searchParameters.getfromDate();
+	}
+	else {
+	    fromDate = getMonthDate("LAST30");
+	}
+	if(searchParameters.gettoDate() != null) {
+	    toDate = searchParameters.gettoDate();
+	}
+	else {
+	    toDate = getMonthDate("END-TODAY");
+	}
+	
+	searchParameters.setfromDate(fromDate);
+        searchParameters.settoDate(toDate);
+       
+	String searchTerm = "";
+	
+        if ("".equals(searchParameters.getsection()) || !"invalidOut".equals(searchParameters.getsection())) {
+            searchParameters.setsection("invalidOut");
+	    searchParameters.setsearchTerm("");
+	    session.setAttribute("searchParameters", searchParameters);
+        } else {
+	    searchTerm = searchParameters.getsearchTerm().trim();
+	    
+	    searchParameters.setsearchTerm("");
+	    session.setAttribute("searchParameters", searchParameters);
+        }
+
+        ModelAndView mav = new ModelAndView();
+        mav.setViewName("/administrator/processing-activity/invalidOut");
+	mav.addObject("searchFilter", searchTerm);
+        mav.addObject("fromDate", fromDate);
+        mav.addObject("toDate", toDate);
+        mav.addObject("originalDate", originalDate);
+	mav.addObject("DTS", "");
+	
+	/* Get system inbound summary */
+        systemSummary summaryDetails = transactionInManager.generateSystemInboundSummary();
+        mav.addObject("summaryDetails", summaryDetails);
+	
+        return mav;
+
+    }
+    
+    /**
+     * The '/invalidOut' Post request will serve up the list of inbound batches that errored
      *
      *
      * @param fromDate
@@ -2439,10 +2825,10 @@ public class adminProcessingActivity {
      *
      * @throws Exception
      */
-    @RequestMapping(value = "/invalidOut", method = {RequestMethod.GET, RequestMethod.POST})
+    @RequestMapping(value = "/invalidOut", method = RequestMethod.POST)
     public ModelAndView listInvalidOutBatches(
     		@RequestParam(value = "fromDate", required=false) Date fromDate,
-    		@RequestParam(value = "toDate", required=false) Date toDate,
+    		@RequestParam(value = "toDate", required=false) Date toDate, @RequestParam(value = "DTS", required=false) Integer DTS,
             HttpServletRequest request, HttpServletResponse response, HttpSession session) throws Exception {
 
     	int year = 114;
@@ -2480,6 +2866,7 @@ public class adminProcessingActivity {
         mav.addObject("fromDate", fromDate);
         mav.addObject("toDate", toDate);
         mav.addObject("originalDate", originalDate);
+	mav.addObject("DTS", DTS);
 	
 	/* Get system inbound summary */
         systemSummary summaryDetails = transactionInManager.generateSystemInboundSummary();
@@ -2527,8 +2914,42 @@ public class adminProcessingActivity {
 		users.forEach((user) -> {
 		    userMap.put(user.getId(), (user.getFirstName() + " " + user.getLastName()));
 		});
+		
+		Calendar cal = Calendar.getInstance();
+		
+		TimeZone timeZone = TimeZone.getTimeZone(siteTimeZone);
+		DateFormat requiredFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		DateFormat dft = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		requiredFormat.setTimeZone(timeZone);
+		String dateinTZ = "";
 
                 for (batchDownloads batch : invalidOutboundBatches) {
+		    
+		    try {
+			batch.setDateCreated(dft.parse(requiredFormat.format(batch.getDateCreated())));
+
+			if(batch.getStartDateTime() != null) {
+			    batch.setStartDateTime(dft.parse(requiredFormat.format(batch.getStartDateTime())));
+			}
+
+			if(batch.getEndDateTime() != null) {
+			    batch.setEndDateTime(dft.parse(requiredFormat.format(batch.getEndDateTime())));
+			}
+		    }
+		    catch (ParseException ex) {}
+		    
+		    if(DTS != null) {
+			if(DTS == 1) {
+			    cal.setTime(batch.getStartDateTime());
+			    cal.add(Calendar.HOUR,-1);
+			    batch.setStartDateTime(cal.getTime());
+			    if(batch.getEndDateTime() != null) {
+				cal.setTime(batch.getEndDateTime());
+				cal.add(Calendar.HOUR,-1);
+				batch.setEndDateTime(cal.getTime());
+			    }
+			}
+		    }
 
 		    String fileDownloadExt = batch.getOutputFileName().substring(batch.getOutputFileName().lastIndexOf(".") + 1);
 		    String newfileName = new StringBuilder().append(batch.getUtBatchName()).append(".").append(fileDownloadExt).toString();
@@ -2563,7 +2984,6 @@ public class adminProcessingActivity {
             throw new Exception("Error occurred viewing the all downloaded batches. Error:" + e.getMessage(), e);
         }
        
-        
         return mav;
 
     }
@@ -2831,6 +3251,12 @@ public class adminProcessingActivity {
 	
 	List<batchUploads> batchUploadsToReturn = new ArrayList<>();
 	
+	TimeZone timeZone = TimeZone.getTimeZone(siteTimeZone);
+	DateFormat requiredFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	DateFormat dft = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	requiredFormat.setTimeZone(timeZone);
+	String dateinTZ = "";
+	
 	if(batchUploadList.isEmpty()) {
 	    totalRecords = 0;
 	}
@@ -2838,6 +3264,19 @@ public class adminProcessingActivity {
 	    totalRecords = batchUploadList.get(0).getTotalMessages();
 	    
 	    for(batchUploads batchUpload : batchUploadList) {
+		dateinTZ = requiredFormat.format(batchUpload.getDateSubmitted());
+	    
+		batchUpload.setDateSubmitted(dft.parse(dateinTZ));
+
+		if(batchUpload.getStartDateTime()!= null) {
+		    dateinTZ = requiredFormat.format(batchUpload.getStartDateTime());
+		    batchUpload.setStartDateTime(dft.parse(dateinTZ));
+		}
+
+		if(batchUpload.getEndDateTime()!= null) {
+		    dateinTZ = requiredFormat.format(batchUpload.getEndDateTime());
+		    batchUpload.setEndDateTime(dft.parse(dateinTZ));
+		}
 		batchUploadsToReturn.add(batchUpload);
 	    }
 	}
@@ -2911,6 +3350,29 @@ public class adminProcessingActivity {
 	    totalRecords = 0;
 	}
 	else {
+	    
+	    TimeZone timeZone = TimeZone.getTimeZone(siteTimeZone);
+	    DateFormat requiredFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	    DateFormat dft = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	    requiredFormat.setTimeZone(timeZone);
+	    String dateinTZ = "";
+
+	    for(batchDownloads batchDownload : outboundBatches) {
+		dateinTZ = requiredFormat.format(batchDownload.getDateCreated());
+
+		batchDownload.setDateCreated(dft.parse(dateinTZ));
+
+		if(batchDownload.getStartDateTime()!= null) {
+		    dateinTZ = requiredFormat.format(batchDownload.getStartDateTime());
+		    batchDownload.setStartDateTime(dft.parse(dateinTZ));
+		}
+
+		if(batchDownload.getEndDateTime()!= null) {
+		    dateinTZ = requiredFormat.format(batchDownload.getEndDateTime());
+		    batchDownload.setEndDateTime(dft.parse(dateinTZ));
+		}
+	    }
+	    
 	    totalRecords = outboundBatches.get(0).getTotalMessages();
 	}
 	
@@ -2947,12 +3409,12 @@ public class adminProcessingActivity {
 	
         searchParameters.setfromDate(fromDate);
         searchParameters.settoDate(toDate);
-        searchParameters.setsection("himdashboard");
+        searchParameters.setsection("dashboard");
 	
         /* Get all inbound transactions */
         toDate = DateUtils.addDays(toDate, 1);
 	
-	//try {
+	try {
 	    
 	    List<batchUploads> dashboardUploads = new ArrayList<>();
 
@@ -2981,12 +3443,26 @@ public class adminProcessingActivity {
 		    });
 		}
 	    }
+	    
+	    if(!dashboardUploads.isEmpty()) {
+		TimeZone timeZone = TimeZone.getTimeZone(siteTimeZone);
+		DateFormat requiredFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		DateFormat dft = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		requiredFormat.setTimeZone(timeZone);
+		String dateinTZ = "";
+
+		for(batchUploads watchListEntry : dashboardUploads) {
+		    dateinTZ = requiredFormat.format(watchListEntry.getDateSubmitted());
+
+		    watchListEntry.setDateSubmitted(dft.parse(dateinTZ));
+		}
+	    }
 
             mav.addObject("genericbatches", dashboardUploads);
 
-        //} catch (Exception e) {
-            //throw new Exception("Error occurred viewing the dashboard inbound messages.", e);
-       // }
+        } catch (Exception e) {
+            throw new Exception("Error occurred viewing the dashboard inbound messages.", e);
+        }
 
         return mav;
     }
@@ -3029,7 +3505,7 @@ public class adminProcessingActivity {
      * @throws Exception
      */
     @RequestMapping(value = "/outbound/auditReport/{batchName}", method = RequestMethod.GET)
-    public ModelAndView viewOutboundAuditReport(@PathVariable String batchName) throws Exception {
+    public ModelAndView viewOutboundAuditReport(@PathVariable String batchName, HttpSession session) throws Exception {
 
         ModelAndView mav = new ModelAndView();
         mav.setViewName("/administrator/processing-activity/outbound/auditReport");
@@ -3038,7 +3514,11 @@ public class adminProcessingActivity {
 	boolean canEdit = false;
 	boolean canSend = false;
         boolean showButtons = true;
-
+	
+	searchParameters searchParameters = (searchParameters) session.getAttribute("searchParameters");
+	searchParameters.setsection("outbound");
+	session.setAttribute("searchParameters", searchParameters);
+	
         /* Get the details of the batch */
 	batchDownloads batchDetails = transactionOutManager.getBatchDetailsByBatchName(batchName);
 	
@@ -3074,6 +3554,13 @@ public class adminProcessingActivity {
 	    }
 	    
             batchDetails.setConfigName(configurationManager.getMessageTypeNameByConfigId(batchDetails.getConfigId()));
+	    
+	    TimeZone timeZone = TimeZone.getTimeZone(siteTimeZone);
+	    DateFormat requiredFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	    DateFormat dft = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	    requiredFormat.setTimeZone(timeZone);
+
+	    batchDetails.setDateCreated(dft.parse(requiredFormat.format(batchDetails.getDateCreated())));
             
             mav.addObject("batchDetails", batchDetails);
 	    
@@ -3146,6 +3633,9 @@ public class adminProcessingActivity {
             } 
 	    else if (batchOption.equalsIgnoreCase("reset")) {
                 strBatchOption = "Reset Outbound Batch";
+		
+		//Clear Batch Activity Log table
+		transactionOutManager.clearBatchActivityLogTable(batchId);
 		
 		//Delete all target tables
 		transactionOutManager.deleteBatchDownloadTables(batchId);
@@ -3530,7 +4020,7 @@ public class adminProcessingActivity {
 	String sql = "";
 	
 	customCols.add("Row No.");
-	customCols.add("Field Number");
+	customCols.add("Field No.");
 	
 	List reportableFields = null;
 	
@@ -3541,17 +4031,20 @@ public class adminProcessingActivity {
 	    reportableFields = transactionOutManager.getErrorReportField(batchId);
 	}
 	
-	customCols.add("Client Identifier");
-	customCols.add("Field");
+	customCols.add("Column Name");
 	customCols.add("Field Value");
 	
 	if("inbound".equals(type)) {
-	    sql = "select a.transactionInRecordsId as rownumber, a.fieldNo as fieldNumber,a.entity3Id as clientIdentifier, a.fieldName as column_name,a.fieldValue as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
-	    + "from batchuploaddroppedvalues a "
+	    // sql = "select a.transactionInRecordsId as rownumber, a.fieldNo as fieldNumber, a.fieldName as column_name,a.translatedReportField1Data as clientIdentifier,a.fieldValue as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
+		sql = "select fromOutboundConfig, a.transactionInRecordsId as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name,"
+				+ "a.fieldValue as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
+		+ "from batchuploaddroppedvalues a "
 	    + "where a.batchUploadId = " + batchId + " order by a.id asc limit 50 ";
 	}
 	else {
-	    sql = "select a.transactionOutRecordsId as rownumber, a.fieldNo as fieldNumber,a.entity3Id as clientIdentifier, a.fieldName as column_name,a.fieldValue as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
+	    //sql = "select a.transactionOutRecordsId as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name,a.translatedReportField1Data as clientIdentifier,a.fieldValue as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
+	    sql = "select 'false' as fromOutboundConfig,a.transactionOutRecordsId as rownumber, "
+	    + " a.fieldNo as fieldNumber,a.fieldName as column_name, a.fieldValue as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
 	    + "from batchdownloaddroppedvalues a "
 	    + "where a.batchDownloadId = " + batchId + " order by a.id asc limit 50 ";
 	}
@@ -3578,4 +4071,1349 @@ public class adminProcessingActivity {
         return mav;
 
     }
+    
+    /**
+     * The 'createAuditErrorsToExcel.do' method will create an excel file containing all dropped values, system errors and transaction errors for
+     * the passed in batch.
+     * @param batchName
+     * @param type
+     * @return 
+     * @throws java.lang.Exception
+     */
+    @RequestMapping(value = "/createAuditErrorsToExcel.do", method = RequestMethod.GET)
+    @ResponseBody
+    public String createAuditErrorsToExcel(@RequestParam String batchName, @RequestParam String type) throws Exception {
+	
+	String fileName = "";
+	
+	try {
+	    List<batchErrorSummary> batchErrorSummary = null;
+	    List<batchErrorSummary> batchSystemErrors = null;
+	    List<batchUploadDroppedValues> inboundDroppedValues = null;
+	    List<batchDownloadDroppedValues> outboundDroppedValues = null;
+	    List reportableFields = null;
+	    Integer batchId = 0;
+	    
+	    utConfiguration configDetails = null;
+	    
+	    if("inbound".equals(type)) {
+		
+		/* Get the details of the batch */
+		batchUploads batchDetails = transactionInManager.getBatchDetailsByBatchName(batchName);
+		batchId = batchDetails.getId();
+		
+		reportableFields = transactionInManager.getErrorReportField(batchId);
+
+		if (batchDetails.getErrorRecordCount() > 0) {
+		    batchErrorSummary = transactionInManager.getBatchErrorSummary(batchId,"inbound");
+		}
+
+		//Check to see if we have any dropped values
+		inboundDroppedValues = transactionInManager.getBatchDroppedValues(batchId);
+		
+		if(batchDetails.getConfigId() > 0) {
+		    configDetails = configurationManager.getConfigurationById(batchDetails.getConfigId());
+		}
+	    }
+	    else {
+		batchDownloads batchDetails = transactionOutManager.getBatchDetailsByBatchName(batchName);
+		batchId = batchDetails.getId();
+		
+		reportableFields = transactionOutManager.getErrorReportField(batchId);
+		
+		if (batchDetails.getTotalErrorCount() > 0) {
+		    batchErrorSummary = transactionInManager.getBatchErrorSummary(batchDetails.getId(),"outbound");
+		}
+
+		//Check to see if we have any dropped values
+		outboundDroppedValues = transactionOutManager.getBatchDroppedValues(batchDetails.getId());
+		
+		if(batchDetails.getConfigId() > 0) {
+		    configDetails = configurationManager.getConfigurationById(batchDetails.getConfigId());
+		}
+	    }
+	    
+	    DateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmm");
+	    Date date = new Date();
+	    
+	    if(configDetails != null) {
+		fileName = configDetails.getconfigName().toLowerCase().replaceAll(" ","-")+"-"+batchName;
+	    }
+	    else {
+		fileName = batchName + "-auditErrors";
+	    }
+
+	    File file = new File("/tmp/" + fileName + ".xlsx");
+	    file.createNewFile();
+
+	    FileInputStream fileInput = null;
+	    fileInput = new FileInputStream(file);
+
+	    FileWriter fw = null;
+
+	    try {
+		fw = new FileWriter(file, true);
+	    } catch (IOException ex) {
+
+	    }
+
+	    StringBuilder exportRow = new StringBuilder();
+
+	    String required = "";
+	    String usefield = "Y";
+	    String validationValue = "None";
+
+	    Workbook wb = new XSSFWorkbook();
+	    Sheet sheet = wb.createSheet("sheet1");
+
+	    Integer rowNum = 0;
+	    Integer cellNum = 0;
+
+	    String sql = "";
+	    String errorType = "";
+	    List errors = null;
+	    Row currentRow;
+	    
+	    if(inboundDroppedValues != null) {
+		if(!inboundDroppedValues.isEmpty()) {
+		    errorType = "Dropped Crosswalk Values";
+		    
+		    sql = "select 'source' as fromOutboundConfig, a.transactionInRecordsId as rownumber, a.fieldNo as fieldNumber, a.fieldName as column_name,a.translatedReportField1Data as clientIdentifier,a.fieldValue as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
+		    + "from batchuploaddroppedvalues a "
+		    + "where a.batchUploadId = " + batchId + " order by a.id asc";
+		    
+		    currentRow = sheet.createRow(rowNum);
+		    currentRow.createCell(cellNum).setCellValue("Error Type");
+		    cellNum++;
+		    currentRow.createCell(cellNum).setCellValue("S/T Config");
+		    cellNum++;
+		    currentRow.createCell(cellNum).setCellValue("Row No.");
+		    cellNum++;
+		    currentRow.createCell(cellNum).setCellValue("Field No.");
+		    cellNum++;
+		    currentRow.createCell(cellNum).setCellValue("Column Name");
+		    cellNum++;
+		    currentRow.createCell(cellNum).setCellValue("Client Identifier");
+		    cellNum++;
+		    currentRow.createCell(cellNum).setCellValue("Field Value");
+
+		    if(reportableFields != null) {
+			Iterator reportableFieldsIt = reportableFields.iterator();
+
+			while (reportableFieldsIt.hasNext()) {
+			    Object rptFieldrow[] = (Object[]) reportableFieldsIt.next();
+			    cellNum++;
+			    currentRow.createCell(cellNum).setCellValue(rptFieldrow[0].toString());
+			    cellNum++;
+			    currentRow.createCell(cellNum).setCellValue(rptFieldrow[1].toString());
+			    cellNum++;
+			    currentRow.createCell(cellNum).setCellValue(rptFieldrow[2].toString());
+			    cellNum++;
+			    currentRow.createCell(cellNum).setCellValue(rptFieldrow[3].toString());
+			}
+		    }
+
+		    if(!"".equals(sql)) {
+			errors = transactionInManager.getErrorDataBySQLStmt(sql);
+
+			 if(errors != null) {
+			     if(!errors.isEmpty()) {
+				 Iterator errorsIt = errors.iterator();
+
+				 while (errorsIt.hasNext()) {
+				     rowNum++;
+				     currentRow = sheet.createRow(rowNum);
+				     cellNum = 0;
+
+				     Object errorsRow[] = (Object[]) errorsIt.next();
+				     currentRow.createCell(cellNum).setCellValue(errorType);
+				     cellNum++;
+				     currentRow.createCell(cellNum).setCellValue(errorsRow[0].toString());
+				     cellNum++;
+				     currentRow.createCell(cellNum).setCellValue(errorsRow[1].toString());
+				     cellNum++;
+				     currentRow.createCell(cellNum).setCellValue(errorsRow[2].toString());
+				     cellNum++;
+				     currentRow.createCell(cellNum).setCellValue(errorsRow[3].toString());
+				     cellNum++;
+				     currentRow.createCell(cellNum).setCellValue(errorsRow[4].toString());
+				     cellNum++;
+				     
+				     if(errorsRow[5] != null) {
+					currentRow.createCell(cellNum).setCellValue(errorsRow[5].toString());
+				     }
+				     else {
+					currentRow.createCell(cellNum).setCellValue("");
+				     }
+				     cellNum++;
+				     
+				     if(errorsRow[6] != null) {
+					currentRow.createCell(cellNum).setCellValue(errorsRow[6].toString());
+				     }
+				     else {
+					currentRow.createCell(cellNum).setCellValue("");
+				     }
+				     cellNum++;
+				     
+				     if(errorsRow[7] != null) {
+					currentRow.createCell(cellNum).setCellValue(errorsRow[7].toString());
+				     }
+				     else {
+					currentRow.createCell(cellNum).setCellValue("");
+				     }
+				     cellNum++;
+				     
+				     if(errorsRow[8] != null) {
+					currentRow.createCell(cellNum).setCellValue(errorsRow[8].toString());
+				     }
+				     else {
+					currentRow.createCell(cellNum).setCellValue("");
+				     }
+				     cellNum++;
+				     
+				     if(errorsRow[9] != null) {
+					currentRow.createCell(cellNum).setCellValue(errorsRow[9].toString());
+				     }
+				     else {
+					currentRow.createCell(cellNum).setCellValue("");
+				     }
+				}
+				 
+				rowNum++;
+				rowNum++;
+				rowNum++;
+			     }
+			 }
+		     }
+
+		}
+	    }
+	    
+	    if(outboundDroppedValues != null) {
+		if(!outboundDroppedValues.isEmpty()) {
+		    errorType = "Dropped Crosswalk Values";
+		    
+		    sql = "select 'target' as fromOutboundConfig, a.transactionInRecordsId as rownumber, a.fieldNo as fieldNumber, a.fieldName as column_name,a.translatedReportField1Data as clientIdentifier,a.fieldValue as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
+		    + "from batchdownloaddroppedvalues a "
+		    + "where a.batchDownloadId = " + batchId + " order by a.id asc";
+		    
+		    currentRow = sheet.createRow(rowNum);
+		    currentRow.createCell(cellNum).setCellValue("Error Type");
+		    cellNum++;
+		    currentRow.createCell(cellNum).setCellValue("S/T Config");
+		    cellNum++;
+		    currentRow.createCell(cellNum).setCellValue("Row No.");
+		    cellNum++;
+		    currentRow.createCell(cellNum).setCellValue("Field No.");
+		    cellNum++;
+		    currentRow.createCell(cellNum).setCellValue("Column Name");
+		    cellNum++;
+		    currentRow.createCell(cellNum).setCellValue("Client Identifier");
+		    cellNum++;
+		    currentRow.createCell(cellNum).setCellValue("Field Value");
+
+		    if(reportableFields != null) {
+			Iterator reportableFieldsIt = reportableFields.iterator();
+
+			while (reportableFieldsIt.hasNext()) {
+			    Object rptFieldrow[] = (Object[]) reportableFieldsIt.next();
+			    cellNum++;
+			    currentRow.createCell(cellNum).setCellValue(rptFieldrow[0].toString());
+			    cellNum++;
+			    currentRow.createCell(cellNum).setCellValue(rptFieldrow[1].toString());
+			    cellNum++;
+			    currentRow.createCell(cellNum).setCellValue(rptFieldrow[2].toString());
+			    cellNum++;
+			    currentRow.createCell(cellNum).setCellValue(rptFieldrow[3].toString());
+			}
+		    }
+
+		    if(!"".equals(sql)) {
+			errors = transactionInManager.getErrorDataBySQLStmt(sql);
+
+			 if(errors != null) {
+			     if(!errors.isEmpty()) {
+				 Iterator errorsIt = errors.iterator();
+
+				 while (errorsIt.hasNext()) {
+				     rowNum++;
+				     currentRow = sheet.createRow(rowNum);
+				     cellNum = 0;
+
+				     Object errorsRow[] = (Object[]) errorsIt.next();
+				     currentRow.createCell(cellNum).setCellValue(errorType);
+				     cellNum++;
+				     currentRow.createCell(cellNum).setCellValue(errorsRow[0].toString());
+				     cellNum++;
+				     currentRow.createCell(cellNum).setCellValue(errorsRow[1].toString());
+				     cellNum++;
+				     currentRow.createCell(cellNum).setCellValue(errorsRow[2].toString());
+				     cellNum++;
+				     currentRow.createCell(cellNum).setCellValue(errorsRow[3].toString());
+				     cellNum++;
+				     currentRow.createCell(cellNum).setCellValue(errorsRow[4].toString());
+				     cellNum++;
+				     
+				     if(errorsRow[5] != null) {
+					currentRow.createCell(cellNum).setCellValue(errorsRow[5].toString());
+				     }
+				     else {
+					currentRow.createCell(cellNum).setCellValue("");
+				     }
+				     cellNum++;
+				     
+				     if(errorsRow[6] != null) {
+					currentRow.createCell(cellNum).setCellValue(errorsRow[6].toString());
+				     }
+				     else {
+					currentRow.createCell(cellNum).setCellValue("");
+				     }
+				     cellNum++;
+				     
+				     if(errorsRow[7] != null) {
+					currentRow.createCell(cellNum).setCellValue(errorsRow[7].toString());
+				     }
+				     else {
+					currentRow.createCell(cellNum).setCellValue("");
+				     }
+				     cellNum++;
+				     
+				     if(errorsRow[8] != null) {
+					currentRow.createCell(cellNum).setCellValue(errorsRow[8].toString());
+				     }
+				     else {
+					currentRow.createCell(cellNum).setCellValue("");
+				     }
+				     cellNum++;
+				     
+				     if(errorsRow[9] != null) {
+					currentRow.createCell(cellNum).setCellValue(errorsRow[9].toString());
+				     }
+				     else {
+					currentRow.createCell(cellNum).setCellValue("");
+				     }
+				}
+				 
+				rowNum++;
+				rowNum++;
+				rowNum++;
+			     }
+			 }
+		    }
+		}
+	    }
+	    
+	    if(batchErrorSummary != null) {
+		if(!batchErrorSummary.isEmpty()) {
+		    errors = null;
+		    Integer errorId = 0;
+		    
+		    for(batchErrorSummary error : batchErrorSummary) {
+			
+			if(errorId == 0 || errorId != error.getErrorId()) {
+			    
+			    if(errorId > 0) {
+				rowNum++;
+				rowNum++;
+				rowNum++;
+			    }
+			    
+			    errorId = error.getErrorId();
+			    cellNum = 0;
+
+			    currentRow = sheet.createRow(rowNum);
+			    currentRow.createCell(cellNum).setCellValue("Error Type");
+			    cellNum++;
+			    currentRow.createCell(cellNum).setCellValue("S/T Config");
+			    cellNum++;
+			    currentRow.createCell(cellNum).setCellValue("Row No.");
+			    cellNum++;
+			    currentRow.createCell(cellNum).setCellValue("Field No.");
+			    cellNum++;
+			    currentRow.createCell(cellNum).setCellValue("Column Name");
+			    cellNum++;
+			    if(errorId == 2) {
+				currentRow.createCell(cellNum).setCellValue("Validation");
+				cellNum++;
+			    }
+			    else if(errorId == 3) {
+				currentRow.createCell(cellNum).setCellValue("Crosswalk Name");
+				cellNum++;
+			    }
+			    else if(errorId == 4) {
+				currentRow.createCell(cellNum).setCellValue("Macro Name");
+				cellNum++;
+			    }
+			    else {
+				currentRow.createCell(cellNum).setCellValue("");
+				cellNum++;
+			    }
+			    
+			    if(errorId == 5) {
+				currentRow.createCell(cellNum).setCellValue("Error");
+				
+				if(reportableFields != null) {
+				     Iterator reportableFieldsIt = reportableFields.iterator();
+				      while (reportableFieldsIt.hasNext()) {
+					Object rptFieldrow[] = (Object[]) reportableFieldsIt.next();  
+					cellNum++;
+					currentRow.createCell(cellNum).setCellValue("");
+				      }
+				}
+			    }
+			    else {
+				currentRow.createCell(cellNum).setCellValue("Field Value");
+
+				if(reportableFields != null) {
+				    Iterator reportableFieldsIt = reportableFields.iterator();
+
+				    while (reportableFieldsIt.hasNext()) {
+					Object rptFieldrow[] = (Object[]) reportableFieldsIt.next();
+					cellNum++;
+					currentRow.createCell(cellNum).setCellValue(rptFieldrow[0].toString());
+					cellNum++;
+					currentRow.createCell(cellNum).setCellValue(rptFieldrow[1].toString());
+					cellNum++;
+					currentRow.createCell(cellNum).setCellValue(rptFieldrow[2].toString());
+					cellNum++;
+					currentRow.createCell(cellNum).setCellValue(rptFieldrow[3].toString());
+				    }
+				}
+			    }
+			}
+			
+			
+			//Set the custom columns based on the error selected
+			switch(errorId) {
+			    case 1:
+				errorType = "Required Field Error";
+
+				if("inbound".equals(type)) {
+				    sql = "select fromOutboundConfig, a.rownumber as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name,'' as errorType, a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
+					+ "from batchuploadauditerrors a left outer  join "
+					+ "configurationmessagespecs b on a.configId = b.configId "
+					+ "where a.batchUploadId = " + batchId + " and a.errorId = " + error.getErrorId() + " order by a.rownumber asc";
+				}
+				else {
+				    sql = "select 'true' as fromOutboundConfig,a.rownumber as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name,'' as errorType,a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
+					+ "from batchdownloadauditerrors a left outer  join "
+					+ "configurationmessagespecs b on a.configId = b.configId "
+					+ "where a.batchDownloadId = " + batchId + " and a.errorId = " + error.getErrorId() + " order by a.rownumber asc";
+				}
+				
+				break;
+
+			    case 2:
+				errorType = "Validation Error";
+				
+				if("inbound".equals(type)) {
+				    sql = "select fromOutboundConfig, a.rownumber as rownumber, a.fieldNo as fieldNumber, a.fieldName as column_name, a.errorDetails as validation_type, a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
+					+ "from batchuploadauditerrors a left outer  join "
+					+ "configurationmessagespecs b on a.configId = b.configId "
+					+ "where a.batchUploadId = " + batchId + " and a.errorId = " + error.getErrorId() + " order by a.rownumber asc";
+				}
+				else {
+
+				    sql = "select 'true' as fromOutboundConfig,a.rownumber as rownumber, a.fieldNo as fieldNumber, a.fieldName as column_name, a.errorDetails as validation_type, a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
+					+ "from batchdownloadauditerrors a left outer  join "
+					+ "configurationmessagespecs b on a.configId = b.configId "
+					+ "where a.batchDownloadId = " + batchId + " and a.errorId = " + error.getErrorId() + " order by a.rownumber asc";
+				}
+				
+				break;
+
+			    case 3:
+				errorType = "Crosswalk Error";
+
+				if("inbound".equals(type)) {	
+
+				    sql = "select fromOutboundConfig,a.rownumber as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name, a.errorDetails as crosswalk, a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
+					+ "from batchuploadauditerrors a left outer join "
+					+ "configurationmessagespecs b on a.configId = b.configId "
+					+ "where a.batchUploadId = " + batchId + " and a.errorId = " + error.getErrorId() + " order by a.rownumber asc";
+				}
+				else {
+				    sql = "select 'true' as fromOutboundConfig,a.rownumber as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name, a.errorDetails as crosswalk, a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
+					+ "from batchdownloadauditerrors a left outer join "
+					+ "configurationmessagespecs b on a.configId = b.configId "
+					+ "where a.batchDownloadId = " + batchId + " and a.errorId = " + error.getErrorId() + " order by a.rownumber asc";
+				}
+				
+				break;
+
+			    case 4:
+				errorType = "Macro Error";
+				
+				if("inbound".equals(type)) {
+				    sql = "select fromOutboundConfig, a.rownumber as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name,a.errorDetails as macro, a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
+					+ "from batchuploadauditerrors a left outer  join "
+					+ "configurationmessagespecs b on a.configId = b.configId "
+					+ "where a.batchUploadId = " + batchId + " and a.errorId = " + error.getErrorId() + " order by a.rownumber asc";
+				}
+				else {
+				    sql = "select 'true' as fromOutboundConfig,a.rownumber as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name,a.errorDetails as macro, a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
+					+ "from batchdownloadauditerrors a left outer  join "
+					+ "configurationmessagespecs b on a.configId = b.configId "
+					+ "where a.batchDownloadId = " + batchId + " and a.errorId = " + error.getErrorId() + " order by a.rownumber asc";
+				}
+				
+				break;
+				
+			    case 5:
+				errorType = "System Error";
+			    
+				if("inbound".equals(type)) {
+				    sql = "select fromOutboundConfig, a.rownumber as rownumber, a.fieldNo as fieldNumber,CASE WHEN a.fieldName IS NULL THEN (select fieldDesc from configurationformfields where configId = a.configId and fieldNo = a.fieldNo) ELSE a.fieldName END as column_name,'' as errorType, a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
+					+ "from batchuploadauditerrors a left outer join "
+					+ "configurationmessagespecs b on a.configId = b.configId "
+					+ "where a.batchUploadId = " + batchId + " and a.errorId = " + error.getErrorId() + " order by a.rownumber asc";
+				}
+				else {
+				    sql = "select 'true' as fromOutboundConfig,a.rownumber as rownumber, a.fieldNo as fieldNumber,CASE WHEN a.fieldName IS NULL THEN (select fieldDesc from configurationformfields where configId = a.configId and fieldNo = a.fieldNo) ELSE a.fieldName END as column_name,'' as errorType, a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
+					+ "from batchdownloadauditerrors a left outer join "
+					+ "configurationmessagespecs b on a.configId = b.configId "
+					+ "where a.batchDownloadId = " + batchId + " and a.errorId = " + error.getErrorId() + " order by a.rownumber asc";
+				}
+
+				break;
+				
+			    case 41:
+				errorType = "Zip Code Check";
+
+				if("inbound".equals(type)) {
+				    sql = "select fromOutboundConfig, a.rownumber as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name,'' as errorType, a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
+					+ "from batchuploadauditerrors a left outer  join "
+					+ "configurationmessagespecs b on a.configId = b.configId "
+					+ "where a.batchUploadId = " + batchId + " and a.errorId = " + error.getErrorId() + " order by a.rownumber asc";
+				}
+				else {
+				    sql = "select 'true' as fromOutboundConfig,a.rownumber as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name,'' as errorType,a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
+					+ "from batchdownloadauditerrors a left outer  join "
+					+ "configurationmessagespecs b on a.configId = b.configId "
+					+ "where a.batchDownloadId = " + batchId + " and a.errorId = " + error.getErrorId() + " order by a.rownumber asc";
+				}
+				
+				break;
+			
+			    case 46:
+				errorType = "Invalid Date Format";
+
+				if("inbound".equals(type)) {
+				    sql = "select fromOutboundConfig, a.rownumber as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name,'' as errorType, a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
+					+ "from batchuploadauditerrors a left outer  join "
+					+ "configurationmessagespecs b on a.configId = b.configId "
+					+ "where a.batchUploadId = " + batchId + " and a.errorId = " + error.getErrorId() + " order by a.rownumber asc";
+				}
+				else {
+				    sql = "select 'true' as fromOutboundConfig,a.rownumber as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name,'' as errorType,a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
+					+ "from batchdownloadauditerrors a left outer  join "
+					+ "configurationmessagespecs b on a.configId = b.configId "
+					+ "where a.batchDownloadId = " + batchId + " and a.errorId = " + error.getErrorId() + " order by a.rownumber asc";
+				}
+				
+				break;
+			}
+			
+			if(!"".equals(sql)) {
+			   errors = transactionInManager.getErrorDataBySQLStmt(sql);
+			   
+			    if(errors != null) {
+				if(!errors.isEmpty()) {
+				    
+				    Iterator errorsIt = errors.iterator();
+
+				    while (errorsIt.hasNext()) {
+					rowNum++;
+					currentRow = sheet.createRow(rowNum);
+					cellNum = 0;
+					
+					Object errorsRow[] = (Object[]) errorsIt.next();
+					
+					currentRow.createCell(cellNum).setCellValue(errorType);
+					cellNum++;
+					
+					if(errorsRow[0].toString().equals("true")) {
+					    currentRow.createCell(cellNum).setCellValue("target");
+					}
+					else {
+					    currentRow.createCell(cellNum).setCellValue("source");
+					}
+					cellNum++;
+					if("0".equals(errorsRow[1].toString())) {
+					    currentRow.createCell(cellNum).setCellValue("All Rows");
+					}
+					else {
+					    currentRow.createCell(cellNum).setCellValue(errorsRow[1].toString());
+					}
+					cellNum++;
+					currentRow.createCell(cellNum).setCellValue(errorsRow[2].toString());
+					cellNum++;
+					currentRow.createCell(cellNum).setCellValue(errorsRow[3].toString());
+					cellNum++;
+					if(errorId != 1 && errorId != 5 && errorId != 41 && errorId != 46) {
+					    currentRow.createCell(cellNum).setCellValue(errorsRow[4].toString());
+					    cellNum++;
+					}
+					else {
+					    currentRow.createCell(cellNum).setCellValue("");
+					    cellNum++;
+					}
+					
+					if(errorsRow[5] != null) {
+					    currentRow.createCell(cellNum).setCellValue(errorsRow[5].toString());
+					}
+					else {
+					    currentRow.createCell(cellNum).setCellValue("");
+					}
+					cellNum++;
+					
+					if(errorsRow[6] != null) {
+					    currentRow.createCell(cellNum).setCellValue(errorsRow[6].toString());
+					}
+					else {
+					    currentRow.createCell(cellNum).setCellValue("");
+					}
+					cellNum++;
+					
+					if(errorsRow[7] != null) {
+					    currentRow.createCell(cellNum).setCellValue(errorsRow[7].toString());
+					}
+					else {
+					    currentRow.createCell(cellNum).setCellValue("");
+					}
+					cellNum++;
+					
+					if(errorsRow[8] != null) {
+					    currentRow.createCell(cellNum).setCellValue(errorsRow[8].toString());
+					}
+					else {
+					    currentRow.createCell(cellNum).setCellValue("");
+					}
+					cellNum++;
+					
+					if(errorsRow[9] != null) {
+					    currentRow.createCell(cellNum).setCellValue(errorsRow[9].toString());
+					}
+					else {
+					    currentRow.createCell(cellNum).setCellValue("");
+					}
+				    }
+				}
+			    }
+			}
+		    }
+		    
+		}
+	    }
+	    
+	    try (OutputStream stream = new FileOutputStream(file)) {
+		wb.write(stream);
+	    }
+	}
+	catch (Exception ex) {
+	    System.out.println(ex.getMessage());
+	    //we notify admin
+	    mailMessage mail = new mailMessage();
+	    mail.settoEmailAddress(myProps.getProperty("admin.email"));
+	    mail.setfromEmailAddress("support@health-e-link.net");
+	    mail.setmessageSubject("Error printing out the excel audit report for a batch - " + " " + myProps.getProperty("server.identity"));
+	    StringBuilder emailBody = new StringBuilder();
+	    emailBody.append("There was an error creating a the excel audit report for a batch.");
+	    emailBody.append("<br/>Batch Name: " + batchName);
+	    emailBody.append("<br/>Type: " + type);
+	    emailBody.append("<br/><br/>: " + ex.getMessage());
+	    mail.setmessageBody(emailBody.toString());
+	    emailMessageManager.sendEmail(mail);
+	    fileName = "";
+	}
+
+	return fileName;
+    }
+    
+    @RequestMapping(value = "/printAuditErrorsToExcel/{file}", method = RequestMethod.GET)
+    public void printAuditErrorsToExcel(@PathVariable("file") String file,HttpServletResponse response) throws Exception {
+	
+	File templatePrintFile = new File ("/tmp/" + file + ".xlsx");
+	InputStream is = new FileInputStream(templatePrintFile);
+
+	response.setHeader("Content-Disposition", "attachment; filename=\"" + file + ".xlsx\"");
+	FileCopyUtils.copy(is, response.getOutputStream());
+
+	//Delete the file
+	templatePrintFile.delete();
+
+	 // close stream and return to view
+	response.flushBuffer();
+    } 
+    
+    /**
+     * The 'createAuditErrorsToPDF.do' method will create an PDF file containing all dropped values, system errors and transaction errors for
+     * the passed in batch.
+     * @param batchName
+     * @param type
+     * @return 
+     * @throws java.lang.Exception
+     */
+    @RequestMapping(value = "/createAuditErrorsToPDF.do", method = RequestMethod.GET)
+    @ResponseBody
+    public String createAuditErrorsToPDF(@RequestParam String batchName, @RequestParam String type) throws Exception {
+
+        List<batchErrorSummary> batchErrorSummary = null;
+	List<batchErrorSummary> batchSystemErrors = null;
+	List<batchUploadDroppedValues> inboundDroppedValues = null;
+	List<batchDownloadDroppedValues> outboundDroppedValues = null;
+	List reportableFields = null;
+	Integer batchId = 0;
+	utConfiguration configDetails = null;
+	Organization orgDetails = null;
+
+	if("inbound".equals(type)) {
+
+	    // Get the details of the batch
+	    batchUploads batchDetails = transactionInManager.getBatchDetailsByBatchName(batchName);
+	    batchId = batchDetails.getId();
+
+	    reportableFields = transactionInManager.getErrorReportField(batchId);
+
+	    if (batchDetails.getErrorRecordCount() > 0) {
+		batchErrorSummary = transactionInManager.getBatchErrorSummary(batchId,"inbound");
+	    }
+
+	    //Check to see if we have any dropped values
+	    inboundDroppedValues = transactionInManager.getBatchDroppedValues(batchId);
+	    
+	    if(batchDetails.getConfigId() > 0) {
+		configDetails = configurationManager.getConfigurationById(batchDetails.getConfigId());
+	    }
+	    
+	    if(batchDetails.getOrgId() > 0) {
+		orgDetails = organizationmanager.getOrganizationById(batchDetails.getOrgId());
+	    }
+
+	}
+	else {
+	    batchDownloads batchDetails = transactionOutManager.getBatchDetailsByBatchName(batchName);
+	    batchId = batchDetails.getId();
+
+	    reportableFields = transactionOutManager.getErrorReportField(batchId);
+
+	    if (batchDetails.getTotalErrorCount() > 0) {
+		batchErrorSummary = transactionInManager.getBatchErrorSummary(batchDetails.getId(),"outbound");
+	    }
+
+	    //Check to see if we have any dropped values
+	    outboundDroppedValues = transactionOutManager.getBatchDroppedValues(batchDetails.getId());
+	    
+	    if(batchDetails.getConfigId() > 0) {
+		configDetails = configurationManager.getConfigurationById(batchDetails.getConfigId());
+	    }
+	    
+	    if(batchDetails.getOrgId() > 0) {
+		orgDetails = organizationmanager.getOrganizationById(batchDetails.getOrgId());
+	    }
+	}
+	
+	String auditReportDetailFile = "/tmp/" + batchName + "-auditErrors.txt";
+	
+	String auditReportPrintFile = "/tmp/";
+	
+	if(configDetails != null) {
+	    auditReportPrintFile = auditReportPrintFile + configDetails.getconfigName().toLowerCase().replaceAll(" ","-")+"-"+batchName + ".pdf";
+	}
+	else {
+	    auditReportPrintFile = auditReportPrintFile + batchName + "-auditErrors.pdf";
+	}
+	
+	File detailsFile = new File(auditReportDetailFile);
+	detailsFile.delete();
+	
+	File printFile = new File(auditReportPrintFile);
+	printFile.delete();
+	
+	Document document = new Document(PageSize.A4);
+	
+	StringBuffer reportBody = new StringBuffer();
+	
+	PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(auditReportDetailFile, true)));
+	out.println("<html><body>");
+	
+	List errors = null;
+	String sql = "";
+	
+	if(orgDetails != null) {
+	    reportBody.append("<div style='padding-top:10px;'>");
+	    reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 16px;'><strong>Sending Organization:</strong></span><br />");
+	    reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 16px;'>"+orgDetails.getOrgName()+"</span><br />");
+	    reportBody.append("</div>");
+	}
+	
+	if(configDetails != null) {
+	    reportBody.append("<div style='padding-top:10px;'>");
+	    reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 16px;'><strong>Configuration Name:</strong></span><br />");
+	    reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 16px;'>"+configDetails.getconfigName()+"</span><br />");
+	    reportBody.append("</div>");
+	}
+	
+	reportBody.append("<div style='padding-top:10px;'>");
+	reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 16px;'><strong>Batch Id:</strong></span><br />");
+	reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 16px;'>"+batchName+"</span><br />");
+	reportBody.append("</div>");
+	
+	if(inboundDroppedValues != null) {
+	    if(!inboundDroppedValues.isEmpty()) {
+		
+		reportBody.append("<div style='padding-top:10px;'>");
+		reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 16px;'><strong>Dropped Values</strong></span><br />");
+		reportBody.append("</div>");
+		
+		reportBody.append("<div style='padding-top:10px;'>");
+		reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 16px;'><strong>Error: Dropped Values</strong></span><br /><br />");
+		reportBody.append("</div>");
+		
+		reportBody.append("<div><table border='1' cellpadding='1' cellspacing='1' width='100%'>").append("<thead><tr>")
+		.append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>S/T Config</th>")	
+		.append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Row No.</th>")	
+		.append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Field No.</th>")
+		.append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Column Name</th>")
+		.append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Client Identifier</th>")
+		.append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Field Value</th>");
+		
+		if(reportableFields != null) {
+		    Iterator reportableFieldsIt = reportableFields.iterator();
+
+		    while (reportableFieldsIt.hasNext()) {
+			Object rptFieldrow[] = (Object[]) reportableFieldsIt.next();
+			reportBody.append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>"+rptFieldrow[0].toString()+"</th>")
+			.append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>"+rptFieldrow[1].toString()+"</th>")
+			.append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>"+rptFieldrow[2].toString()+"</th>")
+			.append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>"+rptFieldrow[3].toString()+"</th>");
+		    }
+		}
+		reportBody.append("</tr></thead><tbody>");
+
+		sql = "select 'source' as fromOutboundConfig, a.transactionInRecordsId as rownumber, a.fieldNo as fieldNumber, a.fieldName as column_name,a.translatedReportField1Data as clientIdentifier,a.fieldValue as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
+		+ "from batchuploaddroppedvalues a "
+		+ "where a.batchUploadId = " + batchId + " order by a.id asc";
+
+		if(!"".equals(sql)) {
+		    errors = transactionInManager.getErrorDataBySQLStmt(sql);
+
+		     if(errors != null) {
+			 if(!errors.isEmpty()) {
+			     Iterator errorsIt = errors.iterator();
+
+			     while (errorsIt.hasNext()) {
+				Object errorsRow[] = (Object[]) errorsIt.next();
+
+				reportBody.append("<tr><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>")
+				.append(errorsRow[0].toString())
+				.append("</td><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>")
+				.append(errorsRow[1].toString())
+				.append("</td><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>")
+				.append(errorsRow[2].toString())
+				.append("</td><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>")
+				.append(errorsRow[3].toString())
+				.append("</td>")
+				.append("<td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>")
+				.append(errorsRow[4].toString()).append("</td>")
+				.append("<td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>");
+				
+				if(errorsRow[5] != null) {
+				   reportBody.append(errorsRow[5].toString());
+				}
+				else {
+				   reportBody.append("");
+				}
+				
+				reportBody.append("</td><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>");
+				if(errorsRow[6] != null) {
+				   reportBody.append(errorsRow[6].toString());
+				}
+				else {
+				   reportBody.append("");
+				}
+				reportBody.append("</td><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>");
+				if(errorsRow[7] != null) {
+				   reportBody.append(errorsRow[7].toString());
+				}
+				else {
+				   reportBody.append("");
+				}
+				reportBody.append("</td><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>");
+				if(errorsRow[8] != null) {
+				   reportBody.append(errorsRow[8].toString());
+				}
+				else {
+				   reportBody.append("");
+				}
+				reportBody.append("</td><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>");
+				if(errorsRow[9] != null) {
+				   reportBody.append(errorsRow[9].toString()).append("</td></tr>");
+				}
+				else {
+				   reportBody.append("").append("</td></tr>");
+				}
+			    }
+			 }
+		     }
+		 }
+		reportBody.append("</tbody></table></div><br />");
+	    }
+	}
+	
+	if(outboundDroppedValues != null) {
+	    if(!outboundDroppedValues.isEmpty()) {
+		
+		reportBody.append("<div style='padding-top:10px;'>");
+		reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 16px;'><strong>Dropped Values</strong></span><br />");
+		reportBody.append("</div>");
+		
+		reportBody.append("<div style='padding-top:10px;'>");
+		reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 16px;'><strong>Error: Dropped Values</strong></span><br /><br />");
+		reportBody.append("</div>");
+		
+		reportBody.append("<div><table border='1' cellpadding='1' cellspacing='1' width='100%'>").append("<thead><tr>")
+		.append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>S/T Config</th>")	
+		.append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Row No.</th>")	
+		.append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Field No.</th>")
+		.append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Column Name</th>")
+		.append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Client Identifier</th>")
+		.append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Field Value</th>");
+		
+		if(reportableFields != null) {
+		    Iterator reportableFieldsIt = reportableFields.iterator();
+
+		    while (reportableFieldsIt.hasNext()) {
+			Object rptFieldrow[] = (Object[]) reportableFieldsIt.next();
+			reportBody.append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>"+rptFieldrow[0].toString()+"</th>")
+			.append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>"+rptFieldrow[1].toString()+"</th>")
+			.append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>"+rptFieldrow[2].toString()+"</th>")
+			.append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>"+rptFieldrow[3].toString()+"</th>");
+		    }
+		}
+		reportBody.append("</tr></thead><tbody>");
+
+		sql = "select 'target' as fromOutboundConfig, a.transactionInRecordsId as rownumber, a.fieldNo as fieldNumber, a.fieldName as column_name,a.translatedReportField1Data as clientIdentifier,a.fieldValue as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
+		+ "from batchdownloaddroppedvalues a "
+		+ "where a.batchDownloadId = " + batchId + " order by a.id asc";
+
+		if(!"".equals(sql)) {
+		    errors = transactionInManager.getErrorDataBySQLStmt(sql);
+
+		     if(errors != null) {
+			 if(!errors.isEmpty()) {
+			     Iterator errorsIt = errors.iterator();
+
+			     while (errorsIt.hasNext()) {
+				Object errorsRow[] = (Object[]) errorsIt.next();
+
+				reportBody.append("<tr><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>")
+				.append(errorsRow[0].toString())
+				.append("</td><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>")
+				.append(errorsRow[1].toString())
+				.append("</td><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>")
+				.append(errorsRow[2].toString())
+				.append("</td><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>")
+				.append(errorsRow[3].toString())
+				.append("</td>")
+				.append("<td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>")
+				.append(errorsRow[4].toString()).append("</td>")
+				.append("<td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>");
+				if(errorsRow[5] != null) {
+				   reportBody.append(errorsRow[5].toString());
+				}
+				else {
+				   reportBody.append("");
+				}
+				reportBody.append("</td><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>");
+				if(errorsRow[6] != null) {
+				    reportBody.append(errorsRow[6].toString());
+				}
+				else {
+				    reportBody.append("");
+				}
+				reportBody.append("</td><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>");
+				if(errorsRow[7] != null) {
+				    reportBody.append(errorsRow[7].toString());
+				}
+				else {
+				    reportBody.append("");
+				}
+				reportBody.append("</td><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>");
+				if(errorsRow[8] != null) {
+				    reportBody.append(errorsRow[8].toString());
+				}
+				else {
+				    reportBody.append("");
+				}
+				reportBody.append("</td><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>");
+				if(errorsRow[9] != null) {
+				    reportBody.append(errorsRow[9].toString()).append("</td></tr>");
+				}
+				else {
+				    reportBody.append("").append("</td></tr>");
+				}
+			    }
+			 }
+		     }
+		 }
+		reportBody.append("</tbody></table></div><br />");
+	    }
+	}
+	
+	if(batchErrorSummary != null) {
+	    if(!batchErrorSummary.isEmpty()) {
+		
+		reportBody.append("<div style='padding-top:10px;'>");
+		reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 16px;'><strong>Transaction Errors</strong></span><br />");
+		reportBody.append("</div>");
+		
+		errors = null;
+		Integer errorId = 0;
+
+		for(batchErrorSummary error : batchErrorSummary) {
+		    if(errorId == 0 || errorId != error.getErrorId()) {
+			
+			if(errorId > 0) {
+			    reportBody.append("</tbody></table></div><br />");
+			}
+			
+			errorId = error.getErrorId();
+			
+			if(errorId == 1) {
+			    reportBody.append("<div style='padding-top:10px;'>");
+			    reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 16px;'><strong>Error: Invalid value for Required Field</strong></span><br /><br />");
+			    reportBody.append("</div>");
+			}
+			else if(errorId == 2) {
+			    reportBody.append("<div style='padding-top:10px;'>");
+			    reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 16px;'><strong>Error: Failed Validation</strong></span><br /><br />");
+			    reportBody.append("</div>");
+			}
+			else if(errorId == 3) {
+			    reportBody.append("<div style='padding-top:10px;'>");
+			    reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 16px;'><strong>Error: Failed Crosswalk</strong></span><br /><br />");
+			    reportBody.append("</div>");
+			}
+			else if(errorId == 3) {
+			    reportBody.append("<div style='padding-top:10px;'>");
+			    reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 16px;'><strong>Error: Failed Macro</strong></span><br /><br />");
+			    reportBody.append("</div>");
+			}
+			else if(errorId == 5) {
+			    reportBody.append("<div style='padding-top:10px;'>");
+			    reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 16px;'><strong>Error: System Error</strong></span><br /><br />");
+			    reportBody.append("</div>");
+			}
+			else if(errorId == 41) {
+			    reportBody.append("<div style='padding-top:10px;'>");
+			    reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 16px;'><strong>Error: Zip Code Check</strong></span><br /><br />");
+			    reportBody.append("</div>");
+			}
+			else if(errorId == 46) {
+			    reportBody.append("<div style='padding-top:10px;'>");
+			    reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 16px;'><strong>Error: Invalid Data Format</strong></span><br /><br />");
+			    reportBody.append("</div>");
+			}
+			
+			reportBody.append("<div><table border='1' cellpadding='1' cellspacing='1' width='100%'>");
+			reportBody.append("<thead><tr>")
+			.append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>S/T Config</th>")	
+			.append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Row No.</th>")	
+			.append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Field No.</th>")
+			.append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Column Name</th>");
+
+			if(errorId == 2) {
+			    reportBody.append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Validation</th>");
+			}
+			else if(errorId == 3) {
+			    reportBody.append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Crosswalk</th>");
+			}
+			else if(errorId == 4) {
+			    reportBody.append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Macro</th>");
+			}
+			
+			if(errorId == 5) {
+			    reportBody.append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Error</th>");
+			}
+			else {
+			    reportBody.append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Field Value</th>");
+			    if(reportableFields != null) {
+				Iterator reportableFieldsIt = reportableFields.iterator();
+
+				while (reportableFieldsIt.hasNext()) {
+				    Object rptFieldrow[] = (Object[]) reportableFieldsIt.next();
+				    reportBody.append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>"+rptFieldrow[0].toString()+"</th>")
+				    .append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>"+rptFieldrow[1].toString()+"</th>")
+				    .append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>"+rptFieldrow[2].toString()+"</th>")
+				    .append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>"+rptFieldrow[3].toString()+"</th>");
+				}
+			    }
+			}
+			
+			reportBody.append("</tr></thead><tbody>");
+		    }
+		    
+		    //Set the custom columns based on the error selected
+		    switch(errorId) {
+			case 1:
+
+			    if("inbound".equals(type)) {
+				sql = "select fromOutboundConfig, a.rownumber as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name,'' as errorType, a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
+				    + "from batchuploadauditerrors a left outer  join "
+				    + "configurationmessagespecs b on a.configId = b.configId "
+				    + "where a.batchUploadId = " + batchId + " and a.errorId = " + error.getErrorId() + " order by a.rownumber asc";
+			    }
+			    else {
+				sql = "select 'true' as fromOutboundConfig,a.rownumber as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name,'' as errorType,a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
+				    + "from batchdownloadauditerrors a left outer  join "
+				    + "configurationmessagespecs b on a.configId = b.configId "
+				    + "where a.batchDownloadId = " + batchId + " and a.errorId = " + error.getErrorId() + " order by a.rownumber asc";
+			    }
+
+			    break;
+
+			case 2:
+
+			    if("inbound".equals(type)) {
+				sql = "select fromOutboundConfig, a.rownumber as rownumber, a.fieldNo as fieldNumber, a.fieldName as column_name, a.errorDetails as validation_type, a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
+				    + "from batchuploadauditerrors a left outer  join "
+				    + "configurationmessagespecs b on a.configId = b.configId "
+				    + "where a.batchUploadId = " + batchId + " and a.errorId = " + error.getErrorId() + " order by a.rownumber asc";
+			    }
+			    else {
+
+				sql = "select 'true' as fromOutboundConfig,a.rownumber as rownumber, a.fieldNo as fieldNumber, a.fieldName as column_name, a.errorDetails as validation_type, a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
+				    + "from batchdownloadauditerrors a left outer  join "
+				    + "configurationmessagespecs b on a.configId = b.configId "
+				    + "where a.batchDownloadId = " + batchId + " and a.errorId = " + error.getErrorId() + " order by a.rownumber asc";
+			    }
+
+			    break;
+
+			case 3:
+
+			    if("inbound".equals(type)) {	
+
+				sql = "select fromOutboundConfig,a.rownumber as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name, a.errorDetails as crosswalk, a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
+				    + "from batchuploadauditerrors a left outer join "
+				    + "configurationmessagespecs b on a.configId = b.configId "
+				    + "where a.batchUploadId = " + batchId + " and a.errorId = " + error.getErrorId() + " order by a.rownumber asc";
+			    }
+			    else {
+				sql = "select 'true' as fromOutboundConfig,a.rownumber as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name, a.errorDetails as crosswalk, a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
+				    + "from batchdownloadauditerrors a left outer join "
+				    + "configurationmessagespecs b on a.configId = b.configId "
+				    + "where a.batchDownloadId = " + batchId + " and a.errorId = " + error.getErrorId() + " order by a.rownumber asc";
+			    }
+
+			    break;
+
+			case 4:
+
+			    if("inbound".equals(type)) {
+				sql = "select fromOutboundConfig, a.rownumber as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name,a.errorDetails as macro, a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
+				    + "from batchuploadauditerrors a left outer  join "
+				    + "configurationmessagespecs b on a.configId = b.configId "
+				    + "where a.batchUploadId = " + batchId + " and a.errorId = " + error.getErrorId() + " order by a.rownumber asc";
+			    }
+			    else {
+				sql = "select 'true' as fromOutboundConfig,a.rownumber as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name,a.errorDetails as macro, a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
+				    + "from batchdownloadauditerrors a left outer  join "
+				    + "configurationmessagespecs b on a.configId = b.configId "
+				    + "where a.batchDownloadId = " + batchId + " and a.errorId = " + error.getErrorId() + " order by a.rownumber asc";
+			    }
+
+			    break;
+			    
+			case 5:
+			    
+			    if("inbound".equals(type)) {
+				sql = "select fromOutboundConfig, a.rownumber as rownumber, a.fieldNo as fieldNumber,CASE WHEN a.fieldName IS NULL THEN (select fieldDesc from configurationformfields where configId = a.configId and fieldNo = a.fieldNo) ELSE a.fieldName END as column_name,'' as errorType, a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
+				    + "from batchuploadauditerrors a left outer join "
+				    + "configurationmessagespecs b on a.configId = b.configId "
+				    + "where a.batchUploadId = " + batchId + " and a.errorId = " + error.getErrorId() + " order by a.rownumber asc";
+			    }
+			    else {
+				sql = "select 'true' as fromOutboundConfig,a.rownumber as rownumber, a.fieldNo as fieldNumber,CASE WHEN a.fieldName IS NULL THEN (select fieldDesc from configurationformfields where configId = a.configId and fieldNo = a.fieldNo) ELSE a.fieldName END as column_name,'' as errorType, a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
+				    + "from batchdownloadauditerrors a left outer join "
+				    + "configurationmessagespecs b on a.configId = b.configId "
+				    + "where a.batchDownloadId = " + batchId + " and a.errorId = " + error.getErrorId() + " order by a.rownumber asc";
+			    }
+			    
+			    break;
+			
+			case 41:
+
+			    if("inbound".equals(type)) {
+				sql = "select fromOutboundConfig, a.rownumber as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name,'' as errorType, a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
+				    + "from batchuploadauditerrors a left outer  join "
+				    + "configurationmessagespecs b on a.configId = b.configId "
+				    + "where a.batchUploadId = " + batchId + " and a.errorId = " + error.getErrorId() + " order by a.rownumber asc";
+			    }
+			    else {
+				sql = "select 'true' as fromOutboundConfig,a.rownumber as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name,'' as errorType,a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
+				    + "from batchdownloadauditerrors a left outer  join "
+				    + "configurationmessagespecs b on a.configId = b.configId "
+				    + "where a.batchDownloadId = " + batchId + " and a.errorId = " + error.getErrorId() + " order by a.rownumber asc";
+			    }
+
+			    break;
+			    
+			case 46:
+
+			    if("inbound".equals(type)) {
+				sql = "select fromOutboundConfig, a.rownumber as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name,'' as errorType, a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
+				    + "from batchuploadauditerrors a left outer  join "
+				    + "configurationmessagespecs b on a.configId = b.configId "
+				    + "where a.batchUploadId = " + batchId + " and a.errorId = " + error.getErrorId() + " order by a.rownumber asc";
+			    }
+			    else {
+				sql = "select 'true' as fromOutboundConfig,a.rownumber as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name,'' as errorType,a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
+				    + "from batchdownloadauditerrors a left outer  join "
+				    + "configurationmessagespecs b on a.configId = b.configId "
+				    + "where a.batchDownloadId = " + batchId + " and a.errorId = " + error.getErrorId() + " order by a.rownumber asc";
+			    }
+
+			    break;
+		    }
+
+		    if(!"".equals(sql)) {
+		       errors = transactionInManager.getErrorDataBySQLStmt(sql);
+
+			if(errors != null) {
+			    if(!errors.isEmpty()) {
+				Iterator errorsIt = errors.iterator();
+				
+				while (errorsIt.hasNext()) {
+				    Object errorsRow[] = (Object[]) errorsIt.next();
+				    
+				    reportBody.append("<tr><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>");
+				    
+				    if(errorsRow[0].toString().equals("true")) {
+					reportBody.append("target");
+				    }
+				    else {
+					reportBody.append("source");
+				    }
+				    
+				    reportBody.append("</td><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>");
+				    
+				    if("0".equals(errorsRow[1].toString())) {
+					reportBody.append("All Rows");
+				    }
+				    else {
+					reportBody.append(errorsRow[1].toString());
+				    }
+				    
+				    reportBody.append("</td><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>")
+				    .append(errorsRow[2].toString())
+				    .append("</td><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>")
+				    .append(errorsRow[3].toString())
+				    .append("</td>");
+				    
+				    if(errorId != 1 && errorId != 5 && errorId != 41 && errorId != 46) {
+					reportBody.append("<td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>")
+					.append(errorsRow[4].toString().replace("<","&#60;").replace(">","&#62;")).append("</td>");
+				    }
+				    reportBody.append("<td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>");
+				    if(errorsRow[5] != null) {
+					reportBody.append(errorsRow[5].toString().replace("<","&#60;").replace(">","&#62;"));
+				    }
+				    else {
+					reportBody.append("");
+				    }
+				    if(errorId == 5) {
+					reportBody.append("</td></tr>");
+				    }
+				    else {
+					reportBody.append("</td><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>");
+					if(errorsRow[6] != null) {
+					    reportBody.append(errorsRow[6].toString().replace("<","&#60;").replace(">","&#62;"));
+					}
+					else {
+					    reportBody.append("");
+					}
+					reportBody.append("</td><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>");
+					if(errorsRow[7] != null) {
+					    reportBody.append(errorsRow[7].toString().replace("<","&#60;").replace(">","&#62;"));
+					}
+					else {
+					    reportBody.append("");
+					}
+					reportBody.append("</td><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>");
+					if(errorsRow[8] != null) {
+					    reportBody.append(errorsRow[8].toString().replace("<","&#60;").replace(">","&#62;"));
+					}
+					else {
+					    reportBody.append("");
+					}
+					reportBody.append("</td><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>");
+
+					if(errorsRow[9] != null) {
+					    reportBody.append(errorsRow[9].toString().replace("<","&#60;").replace(">","&#62;")).append("</td></tr>");
+					}
+					else {
+					    reportBody.append("").append("</td></tr>");
+					}
+				    }
+				}
+			    }
+			}
+		    }
+		}
+		reportBody.append("</tbody></table></div>");
+	    }
+	}
+	
+	out.println(reportBody.toString());
+	
+	out.println("</body></html>");
+	
+	out.close();
+	
+	PdfWriter pdfWriter = PdfWriter.getInstance(document, new FileOutputStream(auditReportPrintFile));
+			  
+	document.open();
+			    
+	XMLWorkerHelper worker = XMLWorkerHelper.getInstance();
+
+	//replace with actual code to generate html info
+	//we get image location here 
+	FileInputStream fis = new FileInputStream(auditReportDetailFile);
+	worker.parseXHtml(pdfWriter, document, fis);
+;
+	fis.close();
+	document.close();
+	pdfWriter.close();
+	
+	File auditReportDetailsFile = new File(auditReportDetailFile);
+	auditReportDetailsFile.delete();
+	
+	if(configDetails != null) {
+	    return configDetails.getconfigName().toLowerCase().replaceAll(" ","-")+"-"+batchName;
+	}
+	else {
+	    return batchName + "-auditErrors";
+	}
+
+    }
+    
+    @RequestMapping(value = "/printAuditErrorsToPDF/{file}", method = RequestMethod.GET)
+    public void printAuditErrorsToPDF(@PathVariable("file") String file,HttpServletResponse response
+    ) throws Exception {
+	
+	File configPrintFile = new File ("/tmp/" + file + ".pdf");
+	InputStream is = new FileInputStream(configPrintFile);
+
+	response.setHeader("Content-Disposition", "attachment; filename=\"" + file + ".pdf\"");
+	FileCopyUtils.copy(is, response.getOutputStream());
+
+	//Delete the file
+	configPrintFile.delete();
+
+	 // close stream and return to view
+	response.flushBuffer();
+    } 
+    
 }

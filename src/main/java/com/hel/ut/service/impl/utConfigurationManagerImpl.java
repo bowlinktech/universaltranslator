@@ -43,12 +43,21 @@ import com.hel.ut.model.configurationFTPFields;
 import com.hel.ut.model.configurationFileDropFields;
 import com.hel.ut.model.configurationFormFields;
 import com.hel.ut.model.configurationTransport;
+import com.hel.ut.model.configurationUpdateLogs;
 import com.hel.ut.model.configurationconnectionfieldmappings;
+import com.hel.ut.model.mailMessage;
+import com.hel.ut.service.emailMessageManager;
+import java.io.FileWriter;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Properties;
+import java.util.TimeZone;
+import java.util.stream.Collectors;
 import javax.annotation.Resource;
+import org.apache.commons.io.FileUtils;
 
 @Service
 public class utConfigurationManagerImpl implements utConfigurationManager {
@@ -67,6 +76,9 @@ public class utConfigurationManagerImpl implements utConfigurationManager {
     
     @Autowired
     private messageTypeDAO messageTypeDAO;
+    
+     @Autowired
+    private emailMessageManager emailMessageManager;
     
     @Resource(name = "myProps")
     private Properties myProps;
@@ -701,15 +713,15 @@ public class utConfigurationManagerImpl implements utConfigurationManager {
     @Override
     public List getDataTranslationsForDownload(Integer configId) throws Exception {
 	
-	String sqlStatement = "select configName, category, processOrder, fieldDesc, macroId, macroName, crosswalkId, crosswalkname,  passClear,  fieldA, fieldB, constant1, constant2 "
-	    + "from (select cff.configId configId, case when categoryId = 1 then 'During' when categoryId = 2 then 'Pre' end category,"
+	String sqlStatement = "select configName, processOrder, fieldDesc, macroId, macroName, crosswalkId, crosswalkname,  passClear,  fieldA, fieldB, constant1, constant2 "
+	    + "from (select cff.configId configId, "
 	    + "processOrder, fieldDesc, crosswalkId, IFNULL(name,'') as crosswalkname, macroId, IFNULL(concat(Macro_Short_Name, ' (', formula,')'),'') macroname,"
 	    + "fieldA, fieldB, replace(replace(replace(constant1, '\\\\', '^^'), '''', '|_|'), '\"', '&') constant1 , constant2, case when passclear = 1 then 'Pass' else 'Clear' end passClear "
 	    + "from (select dts.*, name from (select configurationdatatranslations.*, Macro_Short_Name, formula  from configurationdatatranslations left join "
 	    + "(select * from macro_names) macros on macros.id = configurationdatatranslations.macroId where configId = " + configId
 	    + " order by categoryId, processOrder)  dts left join (Select * from crosswalks) cws on cws.id = crosswalkId ) dts inner join "
 	    + "(select * from configurationformfields ) cff on cff.id = fieldId) cff join (select configName, id from configurations) configurations on configurations.id = cff.configId "
-	    + "order by configName, category desc, processOrder";
+	    + "order by configName, processOrder";
 	
 	return utConfigurationDAO.getDTCWForDownload(sqlStatement);
 	
@@ -718,7 +730,13 @@ public class utConfigurationManagerImpl implements utConfigurationManager {
     @Override
     public List getCrosswalksForDownload (Integer configId) throws Exception {
 	
-	String sqlStatement = "select name,  crosswalkId, sourcevalue, targetvalue, descValue from crosswalks cw join ("
+	String sqlStatement = "select name,  crosswalkId, sourcevalue, targetvalue, descValue " 
+	    + "from crosswalks inner join " 
+	    + "rel_crosswalkdata on rel_crosswalkdata.crosswalkId = crosswalks.id " 
+	    + " where orgId in (select orgId from configurations where id = " + configId + ") " 
+	    + "order by name,crosswalks.id";
+	
+	/*String sqlStatement = "select name,  crosswalkId, sourcevalue, targetvalue, descValue from crosswalks cw join ("
 	    + "select * from rel_crosswalkdata where crosswalkId in ("
 	    + "select distinct crosswalkId from ("
 	    + "select crosswalkId from configurationdatatranslations where configId = " + configId
@@ -726,18 +744,20 @@ public class utConfigurationManagerImpl implements utConfigurationManager {
 	    + "select crosswalkId from rel_crosswalkdata where crosswalkId in ("
 	    + "select crosswalkId from configurationdatatranslations where configId = " + configId + " order by processOrder)) cws"
 	    + ")) cwdata on cw.id = cwdata.crosswalkId "
-	    + "order by name, cwdata.id";
+	    + "order by name, cwdata.id";*/
 	
 	return utConfigurationDAO.getDTCWForDownload(sqlStatement);
     }
     
     @Override 
-    public StringBuffer printDetailsSection(utConfiguration configDetails, Organization orgDetails) throws Exception {
+    public StringBuffer printDetailsSection(utConfiguration configDetails, Organization orgDetails, String siteTimeZone) throws Exception {
 	
 	configurationSchedules scheduleDetails = utConfigurationDAO.getScheduleDetails(configDetails.getId());
 	
-	DateFormat df = new SimpleDateFormat("MM/dd/yyyy");
-	Date today = Calendar.getInstance().getTime();
+	//Get the last updated date for this configuration
+	configurationUpdateLogs lastConfigUpdatelog = utConfigurationDAO.getLastConfigUpdateLog(configDetails.getId());
+	
+	//DateFormat dft = new SimpleDateFormat("MM/dd/yyyy h:mm a");
 	
 	String configType = "Source Configuration";
 	String messageType = "eReferral Configuration";
@@ -757,20 +777,34 @@ public class utConfigurationManagerImpl implements utConfigurationManager {
 	if(!configDetails.getStatus()) {
 	    status = "Inactive";
 	}
-
+	
+	TimeZone timeZone = TimeZone.getTimeZone(siteTimeZone);
+	DateFormat requiredFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	DateFormat dft = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	requiredFormat.setTimeZone(timeZone);
+	String dateinTZ = requiredFormat.format(configDetails.getDateCreated());
+	
+	Date createDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(dateinTZ);
+	
 	StringBuffer reportBody = new StringBuffer();
 	reportBody.append("<div style='text-align:center'>");
 	reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 16px;'>").append(configDetails.getconfigName()).append("</span><br />");
 	reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 14px;'>Organization: ").append(orgDetails.getOrgName()).append("</span><br />");
-	reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>This configuration was created on ").append(df.format(configDetails.getDateCreated())).append("</span><br /><br />");
+	reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>This configuration was created on ").append(new SimpleDateFormat("M/dd/yyyy h:mm a").format(createDate)).append("</span><br />");
+	if(lastConfigUpdatelog != null) {
+	    dateinTZ = requiredFormat.format(lastConfigUpdatelog.getDateCreated());
+	    Date updateDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(dateinTZ);
+	    reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>This configuration was last updated on ").append(new SimpleDateFormat("M/dd/yyyy h:mm a").format(updateDate)).append("</span><br />");
+	}
 	reportBody.append("</div>");
-
 	reportBody.append("<div>");
-	reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 16px;'><strong>DETAILS</strong></span><br />");
+	reportBody.append("<br /><span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 16px;'><strong>DETAILS</strong></span><br />");
 	reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'><strong>Status: </strong>").append(status).append("</span><br /><br />");
 	reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'><strong>Configuration Type: </strong>").append(configType).append("</span><br /><br />");
 	reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'><strong>Message Type: </strong>").append(messageType).append("</span><br /><br />");
 	reportBody.append("</div>");
+	
+	reportBody.append(printConfigurationNotesSection(configDetails,siteTimeZone));
 	
 	String scheduleType = "Automatically";
 	String processingType = "";
@@ -850,7 +884,7 @@ public class utConfigurationManagerImpl implements utConfigurationManager {
 	configurationTransport transportDetails = configurationTransportDAO.getTransportDetails(configDetails.getId());
 	
 	StringBuffer reportBody = new StringBuffer();
-	reportBody.append("<div>");
+	reportBody.append("<div style='padding-top:10px;'>");
 	reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 16px;'><strong>TRANSPORT METHOD</strong></span><br />");
 	
 	if(transportDetails != null) {
@@ -1189,8 +1223,12 @@ public class utConfigurationManagerImpl implements utConfigurationManager {
 		    reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>").append(messageSpecs.gettargetOrgCol()).append("</span><br /><br />");
 		}
 		
-		reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'><strong>Will the submission have a header row?</strong></span><br />");
+		reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'><strong>Will the submitted file have any header rows?</strong></span><br />");
 		reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>").append(submissionHeaderRow).append("</span><br /><br />");
+		if(submissionHeaderRow.toLowerCase().equals("yes")) {
+		    reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'><strong>How many header rows does the file have?</strong></span><br />");
+		    reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>").append(messageSpecs.getTotalHeaderRows()).append("</span><br /><br />");
+		}
 		if(messageSpecs.getParsingTemplate() != null) {
 		    if(!"".equals(messageSpecs.getParsingTemplate())) { 
 			reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'><strong>Configuration Parsing Script</strong></span><br />");
@@ -1291,7 +1329,7 @@ public class utConfigurationManagerImpl implements utConfigurationManager {
     }
 
     @Override 
-    public StringBuffer printDataTranslationsSection(utConfiguration configDetails) throws Exception {
+    public StringBuffer printDataTranslationsSection(utConfiguration configDetails, String siteTimeZone) throws Exception {
 	
 	configurationTransport transportDetails = configurationTransportDAO.getTransportDetails(configDetails.getId());
 	
@@ -1303,7 +1341,7 @@ public class utConfigurationManagerImpl implements utConfigurationManager {
 	
 	List<Crosswalks> crosswalks = messageTypeDAO.getCrosswalks(1, 0, configDetails.getorgId());
 	
-	List crosswalksWithData = messageTypeDAO.getCrosswalksWithData(configDetails.getorgId());
+	List crosswalksWithData = messageTypeDAO.getConfigCrosswalksWithData(configDetails.getorgId(),configDetails.getId());
 	
 	StringBuffer reportBody = new StringBuffer();
 	reportBody.append("<div style='padding-top:10px;'>");
@@ -1359,8 +1397,8 @@ public class utConfigurationManagerImpl implements utConfigurationManager {
 		    }
 		    reportBody.append("<td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>").append(dt.getFieldA()).append("</td>");
 		    reportBody.append("<td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>").append(dt.getFieldB()).append("</td>");
-		    reportBody.append("<td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>").append(dt.getConstant1()).append("</td>");
-		    reportBody.append("<td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>").append(dt.getConstant2()).append("</td>");
+		    reportBody.append("<td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>").append(dt.getConstant1().replaceAll("[:*\"?|<>']", " ")).append("</td>");
+		    reportBody.append("<td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>").append(dt.getConstant2().replaceAll("[:*\"?|<>']", " ")).append("</td>");
 		    reportBody.append("<td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>").append(dt.getProcessOrder()).append("</td>");
 		    reportBody.append("</tr>");
 		}
@@ -1377,13 +1415,16 @@ public class utConfigurationManagerImpl implements utConfigurationManager {
 	}
 	
 	reportBody.append("<div style='padding-top:10px;'>");
-	reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 16px;'><strong>ORGANIZATION CROSSWALKS</strong></span><br /><br />");
+	reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 16px;'><strong>CONFIGURATION CROSSWALKS</strong></span><br /><br />");
 	
 	if(crosswalksWithData != null) {
 	    if(!crosswalksWithData.isEmpty()) {
 		reportBody.append("</div>");
 		Iterator<Object[]> cwIterator = crosswalksWithData.iterator();
 		String cwname = "";
+		String delim = "";
+		String dateCreated = "";
+		String lastUpdated = "";
 		while(cwIterator.hasNext()) {
 		    Object[] cwData = cwIterator.next();
 		    
@@ -1392,18 +1433,49 @@ public class utConfigurationManagerImpl implements utConfigurationManager {
 			     reportBody.append("</tbody></table></div><br />");
 			}
 			cwname = (String) cwData[0];
-			reportBody.append("<div><span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 14px;'><strong>CW Name: "+cwname+" (ID=" + cwData[4].toString() + ")</strong></span><br /><table border='1' cellpadding='1' cellspacing='1' width='100%'>");
+			if((Integer) cwData[5] == 1) {
+			    delim = "comma";
+			}
+			else if((Integer) cwData[5] == 2) {
+			    delim = "pipe";
+			}
+			else if((Integer) cwData[5] == 3) {
+			    delim = "colon";
+			}
+			else if((Integer) cwData[5] == 11) {
+			    delim = "semi-colon";
+			}
+			else if((Integer) cwData[5] == 12) {
+			    delim = "tab";
+			}
+			
+			dateCreated = cwData[6].toString();
+			lastUpdated = cwData[7].toString();
+			
+			TimeZone timeZone = TimeZone.getTimeZone(siteTimeZone);
+			DateFormat requiredFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+			DateFormat dft = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+			requiredFormat.setTimeZone(timeZone);
+			
+			Date createDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(dateCreated);
+			Date lastUpdateDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(lastUpdated);
+			
+			reportBody.append("<div><span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 14px;'><strong>CW Name: "+cwname+" (ID=" + cwData[4].toString() + ")</strong></span><br />");
+			reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 14px;'><strong>Date Created: " + new SimpleDateFormat("M/dd/yyyy").format(createDate) + "</strong></span><br />");
+			reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 14px;'><strong>Last Updated: " + new SimpleDateFormat("M/dd/yyyy").format(lastUpdateDate) + "</strong></span><br />");
+			reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 14px;'><strong>Delimiter Used: " + delim+ "</strong></span><br />");
+			reportBody.append("<table border='1' cellpadding='1' cellspacing='1' width='100%'>");
 			reportBody.append("<thead><tr><th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Source Value</th><th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Target Value</th><th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Desc</th>");
 			reportBody.append("</tr></thead><tbody>");
 		    }
 		   
 		    reportBody.append("<tr><td>")
-			.append(cwData[1].toString().replaceAll("[:\\\\/*\"?|<>']", " "))
-			.append("</td><td>")
-			.append(cwData[2].toString().replaceAll("[:\\\\/*\"?|<>']", " "))
-			.append("</td><td>")
-			.append(cwData[3].toString().replaceAll("[:\\\\/*\"?|<>']", " "))
-			.append("</td></tr>");
+		    .append(cwData[1].toString().replaceAll("[:*\"?|<>']", " "))
+		    .append("</td><td>")
+		    .append(cwData[2].toString().replaceAll("[:*\"?|<>']", " "))
+		    .append("</td><td>")
+		    .append(cwData[3].toString().replaceAll("[:*\"?|<>']", " "))
+		    .append("</td></tr>");
 		    
 		}
 		
@@ -1532,6 +1604,266 @@ public class utConfigurationManagerImpl implements utConfigurationManager {
 	
 	return reportBody;
 	
+    }
+    
+    @Override
+    public void updateConfigurationDirectories(List<Integer> configIds, String oldCleanURL, String newCleanURL) throws Exception {
+	
+	String joinedList = configIds.stream().map(String::valueOf).collect(Collectors.joining(","));
+	
+	String sqlStatement = "update configurationtransportdetails set fileLocation = REPLACE(fileLocation,'/HELProductSuite/universalTranslator/"+oldCleanURL+"','/HELProductSuite/universalTranslator/"+newCleanURL+"') "
+	    + "where configId in ("+joinedList+"); "
+	    + "update rel_transportfiledropdetails set directory = REPLACE(directory,'/HELProductSuite/universalTranslator/"+oldCleanURL+"','/HELProductSuite/universalTranslator/"+newCleanURL+"') "
+	    + "where transportId in (select id from configurationtransportdetails where configId in ("+joinedList+"));";
+	
+	messageTypeDAO.executeSQLStatement(sqlStatement);
+	
+	//Need to copy crosswalks, input files and templates from the old folder to the new one
+	File sourceCrosswalkFolder = new File(myProps.getProperty("ut.directory.utRootDir") + oldCleanURL + "/crosswalks");
+	File destinationCrossalkFolder = new File(myProps.getProperty("ut.directory.utRootDir") + newCleanURL + "/crosswalks");
+	
+	if(!sourceCrosswalkFolder.equals(destinationCrossalkFolder)) {
+	    try {
+		FileUtils.copyDirectory(sourceCrosswalkFolder, destinationCrossalkFolder);
+	    } catch (IOException e) {
+		e.printStackTrace();
+	    }
+	}
+	
+	File sourceTemplateFolder = new File(myProps.getProperty("ut.directory.utRootDir") + oldCleanURL + "/templates");
+	File destinationTemplateFolder = new File(myProps.getProperty("ut.directory.utRootDir") + newCleanURL + "/templates");
+	
+	if(!sourceTemplateFolder.equals(destinationTemplateFolder)) {
+	    try {
+		FileUtils.copyDirectory(sourceTemplateFolder, destinationTemplateFolder);
+	    } catch (IOException e) {
+		e.printStackTrace();
+	    }
+	}
+	
+	File sourceInputFolder = new File(myProps.getProperty("ut.directory.utRootDir") + oldCleanURL + "/input files");
+	File destinationInputFolder = new File(myProps.getProperty("ut.directory.utRootDir") + newCleanURL + "/input files");
+	
+	if(!sourceInputFolder.equals(destinationInputFolder)) {
+	    try {
+		FileUtils.copyDirectory(sourceInputFolder, destinationInputFolder);
+	    } catch (IOException e) {
+		e.printStackTrace();
+	    }
+	}
+	
+	File sourceOutputFolder = new File(myProps.getProperty("ut.directory.utRootDir") + oldCleanURL + "/output files");
+	File destinationOutputFolder = new File(myProps.getProperty("ut.directory.utRootDir") + newCleanURL + "/output files");
+	
+	if(!sourceOutputFolder.equals(destinationOutputFolder)) {
+	    try {
+		FileUtils.copyDirectory(sourceOutputFolder, destinationOutputFolder);
+	    } catch (IOException e) {
+		e.printStackTrace();
+	    }
+	}
+    }
+    
+    @Override
+    public void generateMissingCrosswalk(String cleanURL, String fileName) throws Exception {
+	
+	Organization orgDetails = null;
+	
+	Integer orgId = 0;
+	
+	if(!"".equals(cleanURL) && !"libraryFiles".equals(cleanURL)) {
+	    List<Organization> orgs = organizationDAO.getOrganizationByName(cleanURL);
+	    
+	    if(orgs != null) {
+		if(!orgs.isEmpty()) {
+		    orgDetails = orgs.get(0);
+		    orgId = orgDetails.getId();
+		}
+	    }
+	}
+	
+	if(fileName != null) {
+	    
+	    if(!"".equals(fileName)) {
+		List crosswalksWithData = messageTypeDAO.getCrosswalksWithDataByFileName(orgId, fileName);
+		
+		if(crosswalksWithData != null) {
+		    if(!crosswalksWithData.isEmpty()) {
+			
+			Iterator<Object[]> cwIterator = crosswalksWithData.iterator();
+			
+			//Create the file
+			File crosswalkFile = new File(myProps.getProperty("ut.directory.utRootDir") + cleanURL + "/crosswalks/"+ fileName);
+			
+			if(crosswalkFile.createNewFile()) {
+			    
+			    FileWriter fileWriter = new FileWriter(crosswalkFile);
+			    
+			    while(cwIterator.hasNext()) {
+				Object[] cwData = cwIterator.next();
+				
+				fileWriter.write(cwData[0].toString());
+				
+				if("tab".equals(cwData[3].toString())) {
+				    fileWriter.write("\t");
+				}
+				else {
+				    fileWriter.write(cwData[4].toString());
+				}
+				
+				fileWriter.write(cwData[1].toString());
+				
+				if("tab".equals(cwData[3].toString())) {
+				    fileWriter.write("\t");
+				}
+				else {
+				    fileWriter.write(cwData[4].toString());
+				}
+				
+				fileWriter.write(cwData[2].toString());
+				
+				if(cwIterator.hasNext()) {
+				    fileWriter.write(System.getProperty( "line.separator" ));
+				}
+
+			    }
+			    
+			    fileWriter.close();
+			}
+			
+			
+		    }
+		}
+	    }
+	}
+	
+    }
+    
+    @Override
+    public void saveConfigurationUpdateLog(configurationUpdateLogs updateLog) throws Exception {
+	utConfigurationDAO.saveConfigurationUpdateLog(updateLog);
+    }
+    
+    @Override
+    public void checkForUnusedFolders() throws Exception {
+	
+	//Get folder structures no longer in use
+	ArrayList invalidFoldernames = new ArrayList();
+	
+	List<Organization> orgs = organizationDAO.getOrganizations();
+	
+	if(!orgs.isEmpty()) {
+	    String[] validDirectories = {"medAlliesArchives","massoutputfiles","archivesOut","sFTP","archivesIn","loadFiles","webServicesIn","bowlink","libraryFiles"};
+	    List<String> dirToSkip = Arrays.asList(validDirectories);  
+	    
+	    String UTDirectory = myProps.getProperty("ut.directory.utRootDir");
+	    File[] directories = new File(UTDirectory.replace("/home/","/")).listFiles(File::isDirectory);
+	    boolean folderFound = false;
+	    boolean checkFolder = true;
+	    
+	    List<String> unUsedFolders = new ArrayList();
+	    
+	    for(File dir : directories) {
+		checkFolder = true;
+		
+		if(dirToSkip.stream().anyMatch(s -> s.equals(dir.getName()))) {
+		    checkFolder = false;
+		}
+		
+		if(checkFolder) {
+		    folderFound = false;
+		    for(Organization org : orgs) {
+			if(dir.getName().equals(org.getCleanURL())) {
+			    folderFound = true;
+			    break;
+			}
+		    }
+		    if(!folderFound) {
+			unUsedFolders.add(dir.getAbsolutePath());
+		    }
+		}
+	    }
+	    
+	    if(!unUsedFolders.isEmpty()) {
+		mailMessage messageDetails = new mailMessage();
+
+		messageDetails.settoEmailAddress("cmccue@health-e-link.net");
+		messageDetails.setmessageSubject("Unused Folders on UT" + myProps.getProperty("server.identity"));
+
+		StringBuilder sb = new StringBuilder();
+		
+		for(String unUsedFolder: unUsedFolders) {
+		    sb.append(unUsedFolder + "<br />");
+		}
+		
+		messageDetails.setmessageBody(sb.toString());
+		messageDetails.setfromEmailAddress("support@health-e-link.net");
+		
+		emailMessageManager.sendEmail(messageDetails);
+	    }
+	}
+    }
+    
+    @Override
+    public List<configurationUpdateLogs> getConfigurationUpdateLogs(Integer configId) throws Exception {
+	return utConfigurationDAO.getConfigurationUpdateLogs(configId);
+    }
+    
+    @Override
+    public configurationUpdateLogs getConfigurationUpdateLog(Integer noteId) throws Exception {
+	return utConfigurationDAO.getConfigurationUpdateLog(noteId);
+    }
+    
+    @Override
+    public void updateConfigurationUpdateLog(configurationUpdateLogs updateLog) throws Exception {
+	utConfigurationDAO.updateConfigurationUpdateLog(updateLog);
+    }
+    
+    @Override
+    public void deletConfigurationNote(Integer noteId) throws Exception {
+	utConfigurationDAO.deletConfigurationNote(noteId);
+    }
+    
+    @Override 
+    public StringBuffer printConfigurationNotesSection(utConfiguration configDetails, String siteTimeZone) throws Exception {
+	
+	List<configurationUpdateLogs> configurationNotes = utConfigurationDAO.getConfigurationUpdateLogs(configDetails.getId());
+	
+	StringBuffer reportBody = new StringBuffer();
+	reportBody.append("<div>");
+	reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 16px;'><strong>CONFIGURATION NOTES</strong></span><br />");
+	
+	
+	if(!configurationNotes.isEmpty()) {
+	    TimeZone timeZone = TimeZone.getTimeZone(siteTimeZone);
+	    DateFormat requiredFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	    DateFormat dft = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	    requiredFormat.setTimeZone(timeZone);
+	    String dateinTZ = "";
+	    Date createDate;
+	    
+	    reportBody.append("</div>");
+	    reportBody.append("<div><table border='1' cellpadding='1' cellspacing='1' width='100%'>");
+	    reportBody.append("<thead><tr><th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px; width:80%'>Note</th><th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px; width:20%'>Created By</th><th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px; width:20%'>Date Created</th>");
+	    reportBody.append("</tr></thead><tbody>");
+	    for(configurationUpdateLogs note : configurationNotes) {
+		
+		dateinTZ = requiredFormat.format(note.getDateCreated());
+		createDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(dateinTZ);
+		
+		reportBody.append("<tr><td valign='top' style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>").append(note.getUpdateMade()).append("</td>");
+		reportBody.append("<td valign='top' style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>").append(note.getUsersName()).append("</td>");
+		reportBody.append("<td valign='top' style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>").append(new SimpleDateFormat("M/dd/yyyy h:mm a").format(createDate)).append("</td>");
+		reportBody.append("</tr>");
+	    }
+	    reportBody.append("</tbody></table></div><br />");
+	}
+	else {
+	   reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 16px;'>No notes have been made for this configuration.</span><br />");
+	   reportBody.append("</div><br />");
+	}
+	
+	return reportBody;
     }
 }
 

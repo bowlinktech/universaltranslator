@@ -156,13 +156,13 @@ function showCorrectFieldsByTransportMethod(transportMethod) {
     $('#fileDropDetailsDiv').hide();
    
     if(transportMethod == 13) {
-	$('#fileDropDetailsDiv').show();
+		$('#fileDropDetailsDiv').show();
     }
     else if(transportMethod == 9) {
-	$('#restDetailsDiv').show();
+		$('#restDetailsDiv').show();
     }
     else if(transportMethod == 12) {
-	$('#directMessageDetailsDiv').show();
+		$('#directMessageDetailsDiv').show();
     }
 }
 
@@ -173,6 +173,7 @@ function showCorrectFileDetails(fileType,fileTypeChanged) {
     $('#fileDelimiterDiv').hide();
     $('#lineTerminatortDiv').hide();
     $('#encodingDiv').hide();
+	$('#addTargetFileHeaderRowDiv').hide();
 
     $('#fileDelimiterDiv').show();
     $('#lineTerminatortDiv').show();
@@ -187,6 +188,7 @@ function showCorrectFileDetails(fileType,fileTypeChanged) {
         $('#lineTerminatortDiv').show();
         $('#fileExtDiv').hide();
         $('#encodingDiv').show();
+		$('#addTargetFileHeaderRowDiv').show();
     } 
     else if (fileType == 3) {
         $('#fileExt').val('csv');
@@ -196,8 +198,9 @@ function showCorrectFileDetails(fileType,fileTypeChanged) {
         }
         $('#fileDelimiterDiv').show();
         $('#lineTerminatortDiv').show();
-         $('#fileExtDiv').hide();
+        $('#fileExtDiv').hide();
         $('#encodingDiv').show();
+		$('#addTargetFileHeaderRowDiv').show();
     } 
     else if (fileType == 4) {
         $('#fileExt').val('hr');
@@ -207,6 +210,7 @@ function showCorrectFileDetails(fileType,fileTypeChanged) {
         $('#lineTerminatortDiv').hide();
         $('#fileExtDiv').hide();
         $('#encodingDiv').show();
+		$("#addTargetFileHeaderRow2").prop("checked", true);
     } 
     else if (fileType == 8) {
         $('#fileExt').val('xls');
@@ -216,6 +220,7 @@ function showCorrectFileDetails(fileType,fileTypeChanged) {
         $('#lineTerminatortDiv').hide();
         $('#fileExtDiv').hide();
         $('#encodingDiv').show();
+		$('#addTargetFileHeaderRowDiv').show();
     } 
     else if (fileType == 9) {
         $('#fileExt').val('xml');
@@ -225,6 +230,8 @@ function showCorrectFileDetails(fileType,fileTypeChanged) {
         $('#lineTerminatortDiv').hide();
         $('#fileExtDiv').hide();
         $('#encodingDiv').show();
+		$('#addTargetFileHeaderRow').val(0);
+		$("#addTargetFileHeaderRow2").prop("checked", true);
     }
     else if (fileType == 11) {
         $('#fileExt').val('xlsx');
@@ -234,6 +241,7 @@ function showCorrectFileDetails(fileType,fileTypeChanged) {
         $('#lineTerminatortDiv').hide();
         $('#fileExtDiv').hide();
         $('#encodingDiv').show();
+		$('#addTargetFileHeaderRowDiv').show();
     }
     else if (fileType == 12) {
         $('#jsonWrapperElementDiv').show();
@@ -241,6 +249,8 @@ function showCorrectFileDetails(fileType,fileTypeChanged) {
         $('#fileDelimiterDiv').hide();
         $('#lineTerminatortDiv').hide();
         $('#encodingDiv').show();
+		$('#addTargetFileHeaderRow').val(0);
+		$("#addTargetFileHeaderRow2").prop("checked", true);
     }
 }
 

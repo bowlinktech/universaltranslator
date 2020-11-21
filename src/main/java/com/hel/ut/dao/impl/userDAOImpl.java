@@ -559,7 +559,7 @@ public class userDAOImpl implements userDAO {
         OrgIds.add(orgId);
 	
 	String sql = "select a.id, a.firstName, a.lastName, a.status, b.role as roleType," 
-		+ "(select dateCreated from rel_userlogins where userId = a.id order by dateCreated desc limit 1) as lastLogInDate,"
+		+ "(select dateCreated from rel_userlogins where userId = a.id order by dateCreated desc limit 1) as dateLastLoggedIn,"
 		+ "(select TIMESTAMPDIFF(MINUTE,dateCreated,dateLoggedOut) as totalTimeLoggedIn from rel_userlogins where userId = a.id order by dateCreated desc limit 1) as totalTimeLoggedIn," 
 		+ "(select count(id) from rel_userlogins where userId = a.id) as totalLogins " 
 		+ "from users a inner join userroles b on a.roleId = b.id " 
@@ -570,7 +570,7 @@ public class userDAOImpl implements userDAO {
                 .addScalar("firstName", StandardBasicTypes.STRING)
 		.addScalar("lastName", StandardBasicTypes.STRING)
                 .addScalar("status", StandardBasicTypes.BOOLEAN)
-		.addScalar("lastLogInDate", StandardBasicTypes.STRING)
+		.addScalar("dateLastLoggedIn", StandardBasicTypes.TIMESTAMP)
                 .addScalar("totalTimeLoggedIn", StandardBasicTypes.INTEGER)
                 .addScalar("totalLogins", StandardBasicTypes.INTEGER)
 		.addScalar("roleType", StandardBasicTypes.STRING)
@@ -593,13 +593,13 @@ public class userDAOImpl implements userDAO {
     @Transactional(readOnly = true)
     public List<utUserLogin> getUserLogins(int userId) {
 
-	String sql = "select dateCreated as logInDate,IFNULL(TIMESTAMPDIFF(MINUTE,dateCreated,dateLoggedOut),0) as totalTimeLoggedIn " 
+	String sql = "select dateCreated,IFNULL(TIMESTAMPDIFF(MINUTE,dateCreated,dateLoggedOut),0) as totalTimeLoggedIn " 
 		+ "from rel_userlogins " 
 		+ "where userId = " + userId 
 		+ " order by dateCreated desc";
 	
 	 Query query = sessionFactory.getCurrentSession().createSQLQuery(sql)
-		.addScalar("logInDate", StandardBasicTypes.STRING)
+		.addScalar("dateCreated", StandardBasicTypes.TIMESTAMP)
                 .addScalar("totalTimeLoggedIn", StandardBasicTypes.INTEGER)
 		.setResultTransformer(Transformers.aliasToBean(utUserLogin.class));
 

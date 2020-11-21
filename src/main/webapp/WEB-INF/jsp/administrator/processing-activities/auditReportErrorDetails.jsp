@@ -16,9 +16,9 @@
     </c:forEach>     
 </c:if>   
 
-<div class="pull-right" style="margin-bottom:10px;">
+<%-- <div class="pull-right" style="margin-bottom:10px;">
    ${i.index} <button class="btn btn-minier btn-grey print" rel2="${batchId}" rel="${indexVal}"><i class="fa fa-print"> Print</i></button>
-</div>
+</div>--%>
 <span><strong>Showing <fmt:formatNumber value = "${fn:length(errors)}" type = "number"/> out of <fmt:formatNumber value = "${totalErrors}" type = "number"/></strong></span>
 <div id="errorTable-${indexVal}">
 <c:if test="${hasOutboundError == 1}">
@@ -41,7 +41,16 @@
                     <tr <c:if test="${errorRow[0] == 'true'}">bgcolor="#ffe3a4"</c:if>>
 			<c:forEach varStatus="i" var="colValue" items="${customCols}">
                             <c:if test="${i.index > 0}">
-                                 <td scope="row">${errorRow[i.index]}</td>
+                                 <td scope="row">
+                                     <c:choose>
+                                         <c:when test="${colValue == 'Row No.' && errorRow[i.index] == 0}">
+                                             All Rows
+                                         </c:when>
+                                         <c:otherwise>
+                                             ${errorRow[i.index]}
+                                         </c:otherwise>
+                                     </c:choose>
+                                 </td>
                             </c:if>
 			</c:forEach>
 		    </tr>

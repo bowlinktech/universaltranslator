@@ -230,7 +230,8 @@ public class fileSystem {
             }
         } finally {
             try {
-                br.close();
+		br.close();
+		fileInput.close();
             } catch (IOException e) {
                 errorMessage = errorMessage + "<br/>" + e.getMessage();
                 e.printStackTrace();
@@ -280,5 +281,17 @@ public class fileSystem {
 	    System.out.println(e.getMessage());
             e.printStackTrace();
         }
+    }
+    
+    public void deleteDirectory(String directory) {
+
+        try {
+            File directoryFolder = new File(directory);
+	    delete(directoryFolder);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
     }
 }

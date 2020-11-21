@@ -55,8 +55,11 @@ public class batchUploadDroppedValues {
     @Column(name = "reportField4Data", nullable = false)
     private String reportField4Data;
     
-    @Column(name = "entity3Id", nullable = false)
-    private int entity3Id = 0;
+    @Column(name = "translatedReportField1Data", nullable = false)
+    private String translatedReportField1Data;
+    
+    @Column(name = "fromOutboundConfig", nullable = false)
+    private boolean fromOutboundConfig = false;
 
     public int getId() {
 	return id;
@@ -146,14 +149,19 @@ public class batchUploadDroppedValues {
 	this.reportField4Data = reportField4Data;
     }
 
-    public int getEntity3Id() {
-	return entity3Id;
+    public String getTranslatedReportField1Data() {
+	return translatedReportField1Data;
     }
 
-    public void setEntity3Id(int entity3Id) {
-	this.entity3Id = entity3Id;
+    public void setTranslatedReportField1Data(String translatedReportField1Data) {
+	this.translatedReportField1Data = translatedReportField1Data;
     }
-    
-    
-    
+
+    public boolean isFromOutboundConfig() {
+	    return fromOutboundConfig;
+    }
+
+    public void setFromOutboundConfig(boolean fromOutboundConfig) {
+	    this.fromOutboundConfig = fromOutboundConfig;
+    }
 }

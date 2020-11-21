@@ -216,9 +216,9 @@ public class sysAdminDAOImpl implements sysAdminDAO {
     public List<Macros> getMarcoList(String searchTerm) {
 
         Query query = sessionFactory.getCurrentSession().createQuery("from Macros where "
-                + "macro_short_name like :searchTerm "
+                + "macro_short_name like :searchTerm OR macro_name like :searchTerm "
                 + "order by categoryId, macro_short_name asc");
-        query.setParameter("searchTerm", searchTerm);
+        query.setParameter("searchTerm", "%"+searchTerm+"%");
 
         return query.list();
     }

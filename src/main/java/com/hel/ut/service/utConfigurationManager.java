@@ -18,6 +18,7 @@ import com.hel.ut.model.configurationDataTranslations;
 import com.hel.ut.model.configurationExcelDetails;
 import com.hel.ut.model.configurationMessageSpecs;
 import com.hel.ut.model.configurationSchedules;
+import com.hel.ut.model.configurationUpdateLogs;
 import com.hel.ut.model.watchlist;
 import com.hel.ut.model.watchlistEntry;
 import java.util.Date;
@@ -201,7 +202,7 @@ public interface utConfigurationManager {
   
     List getCrosswalksForDownload (Integer configId) throws Exception;
     
-    StringBuffer printDetailsSection(utConfiguration configDetails, Organization orgDetails) throws Exception;
+    StringBuffer printDetailsSection(utConfiguration configDetails, Organization orgDetails, String siteTimeZone) throws Exception;
     
     StringBuffer printTransportMethodSection(utConfiguration configDetails) throws Exception;
     
@@ -209,8 +210,25 @@ public interface utConfigurationManager {
     
     StringBuffer printFieldSettingsSection(utConfiguration configDetails) throws Exception;
     
-    StringBuffer printDataTranslationsSection(utConfiguration configDetails) throws Exception;
+    StringBuffer printDataTranslationsSection(utConfiguration configDetails, String siteTimeZone) throws Exception;
     
     StringBuffer printConnectionDetails(utConfiguration srcconfigDetails,utConfiguration tgtconfigDetails) throws Exception;
     
+    void updateConfigurationDirectories(List<Integer> configIds, String oldCleanURL, String newCleanURL) throws Exception;
+    
+    void generateMissingCrosswalk(String cleanURL, String fileName) throws Exception;
+    
+    void saveConfigurationUpdateLog(configurationUpdateLogs updateLog) throws Exception;
+    
+    void checkForUnusedFolders() throws Exception;
+    
+    List<configurationUpdateLogs> getConfigurationUpdateLogs(Integer configId) throws Exception;
+    
+    configurationUpdateLogs getConfigurationUpdateLog(Integer noteId) throws Exception;
+    
+    void updateConfigurationUpdateLog(configurationUpdateLogs updateLog) throws Exception;
+    
+    void deletConfigurationNote(Integer noteId) throws Exception;
+    
+    StringBuffer printConfigurationNotesSection(utConfiguration configDetails, String siteTimeZone) throws Exception;
 }

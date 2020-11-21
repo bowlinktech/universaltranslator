@@ -23,8 +23,13 @@ import com.hel.ut.model.utUserActivity;
 import com.hel.ut.service.fileManager;
 import com.hel.ut.service.organizationManager;
 import com.hel.ut.service.userManager;
+import com.hel.ut.service.utConfigurationManager;
+import java.io.BufferedReader;
 
 import java.io.File;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 import javax.annotation.Resource;
 
@@ -50,6 +55,9 @@ public class fileDownloadController {
 
     @Autowired
     private fileManager filemanager;
+    
+    @Autowired
+    private utConfigurationManager utconfigurationmanager;
 
     @Resource(name = "myProps")
     private Properties myProps;
@@ -70,6 +78,13 @@ public class fileDownloadController {
 	    HttpServletResponse response, RedirectAttributes redirectAttr, HttpSession session) throws Exception {
 	
 	String desc = "";
+	
+	//Check to see if foldername is Base64 encoded
+	if("config".equals(fromPage) && Base64.isBase64(foldername)) {
+	    byte[] decodedBytes = Base64.decodeBase64(foldername);
+	    foldername = new String(decodedBytes);;
+	}
+	
 	try {
 
 	    utUser userDetails = usermanager.getUserByUserName(authentication.getName());
@@ -189,48 +204,7 @@ public class fileDownloadController {
 	    }
 	    
 	    if(fileExists) {
-		if (mimeType == null) {
-		    // set to binary type if MIME mapping not found
-		    mimeType = "application/octet-stream";
-		}
-		response.setContentType(mimeType);
-		
-		byte[] buffer = new byte[BUFFER_SIZE];
-		int bytesRead = 0;
-
-		response.setHeader("Content-Transfer-Encoding", "binary");
-		response.setHeader("Content-Disposition", "attachment;filename=\"" + actualFileName + "\"");
-
-		outputStream = response.getOutputStream();
-
-		try {
-		    byte[] fileAsBytes = filemanager.loadFileAsBytesArray(directory + actualFileName);
-		    if(Base64.isBase64(new String(fileAsBytes))) {
-			byte[] decodedBytes = Base64.decodeBase64(fileAsBytes);
-			String decodedString = new String(decodedBytes);
-			response.setContentLength((int) decodedString.length());
-			outputStream.write(decodedString.getBytes());
-			in.close();
-			outputStream.close();
-		    }
-		    else {
-			response.setContentLength((int) f.length());
-			while (0 < (bytesRead = in.read(buffer))) {
-			    outputStream.write(buffer, 0, bytesRead);
-			}
-			in.close();
-			outputStream.close();
-		    }
-		}
-		catch (Exception ex) {
-		    response.setContentLength((int) f.length());
-		    while (0 < (bytesRead = in.read(buffer))) {
-			outputStream.write(buffer, 0, bytesRead);
-		    }
-		    in.close();
-		    outputStream.close();
-		}
-		
+		downloadfile(f, in, mimeType, actualFileName, directory, response, outputStream);
 		return null;
 
 	    }
@@ -272,13 +246,55 @@ public class fileDownloadController {
 			   mav = new ModelAndView(new RedirectView("/administrator/processing-activity/outbound/auditReport/"+utBatchId)); 
 			}
 			else if("config".equals(fromPage)) {
-			   mav = new ModelAndView(new RedirectView("/administrator/configurations/translations")); 
+			   mav = new ModelAndView(new RedirectView("/administrator/configurations/translations"));
+			   
+			   //Check to see if the file is a crosswalk, if it is lets create the crosswalk
+			   if(foldername != null) {
+			       if(!"".equals(foldername)) {
+				   if(foldername.contains("crosswalks")) {
+					utconfigurationmanager.generateMissingCrosswalk(foldername.split("/")[0],filename);
+					
+					directory = myProps.getProperty("ut.directory.utRootDir") + foldername.split("/")[0] + "/crosswalks/";
+					
+					f = new File(directory + filename);
+					
+					mimeType = context.getMimeType(directory + filename);
+					in = new FileInputStream(directory + filename);
+
+					actualFileName = filename;
+					
+					downloadfile(f, in, mimeType, actualFileName, directory, response, outputStream);
+
+					return null;
+				   }
+			       }
+			   }
 			}
 			else if("messagespec".equals(fromPage)) {
 			   mav = new ModelAndView(new RedirectView("/administrator/configurations/messagespecs")); 
 			}
 			else if("crosswalks".equals(fromPage)) {
 			   mav = new ModelAndView(new RedirectView("/administrator/sysadmin/crosswalks")); 
+			   
+			   //Check to see if the file is a crosswalk, if it is lets create the crosswalk
+			   if(foldername != null) {
+			       if(!"".equals(foldername)) {
+				    utconfigurationmanager.generateMissingCrosswalk(foldername,filename);
+
+				    directory = myProps.getProperty("ut.directory.utRootDir") + foldername + "/crosswalks/";
+
+				    f = new File(directory + filename);
+
+				    mimeType = context.getMimeType(directory + filename);
+				    in = new FileInputStream(directory + filename);
+
+				    actualFileName = filename;
+
+				    downloadfile(f, in, mimeType, actualFileName, directory, response, outputStream);
+
+				    return null;
+			       }
+			   }
 			}
 		    }
 		}
@@ -312,5 +328,84 @@ public class fileDownloadController {
 	
 	return null;
     }
+    
+    private void downloadfile(File f, InputStream in, String mimeType, String actualFileName, String directory, HttpServletResponse response, OutputStream outputStream) throws Exception {
+	
+	if (mimeType == null) {
+	    // set to binary type if MIME mapping not found
+	    mimeType = "application/octet-stream";
+	}
+	response.setContentType(mimeType);
+
+	byte[] buffer = new byte[BUFFER_SIZE];
+	int bytesRead = 0;
+
+	response.setHeader("Content-Transfer-Encoding", "binary");
+	response.setHeader("Content-Disposition", "attachment;filename=\"" + actualFileName + "\"");
+
+	outputStream = response.getOutputStream();
+	
+	try {
+	    byte[] fileAsBytes = filemanager.loadFileAsBytesArray(directory + actualFileName);
+	    
+	    FileInputStream fileInput = new FileInputStream(f);
+	    BufferedReader br = new BufferedReader(new InputStreamReader(fileInput));
+	    
+	    String line;
+	    Integer delimCount = 0;
+	    boolean isBase64Encoded = true;
+	    
+	    List<String> delims = new ArrayList<>();
+	    delims.add("t");
+	    delims.add("|");
+	    delims.add(":");
+	    delims.add(";");
+	    delims.add(",");
+
+		try {
+			while ((line = br.readLine()) != null) {
+				for(String delim : delims) {
+					if ("t".equals(delim)) {
+						delimCount += line.split("\t", -1).length - 1;
+					} else {
+						delimCount += line.split("\\" + delim, -1).length - 1;
+					}
+				}
+			}
+		} catch (IOException ex) {}
+
+		if(delimCount > 0) {
+			isBase64Encoded = false;
+		}
+	    br.close();
+	    fileInput.close();
+	    
+	    if(isBase64Encoded) {
+		byte[] decodedBytes = Base64.decodeBase64(fileAsBytes);
+		String decodedString = new String(decodedBytes);
+		response.setContentLength((int) decodedString.length());
+		outputStream.write(decodedString.getBytes());
+		in.close();
+		outputStream.close();
+	    }
+	    else {
+		response.setContentLength((int) f.length());
+		while (0 < (bytesRead = in.read(buffer))) {
+		    outputStream.write(buffer, 0, bytesRead);
+		}
+		in.close();
+		outputStream.close();
+	    }
+	}
+	catch (Exception ex) {
+	    response.setContentLength((int) f.length());
+	    while (0 < (bytesRead = in.read(buffer))) {
+		outputStream.write(buffer, 0, bytesRead);
+	    }
+	    in.close();
+	    outputStream.close();
+	}
+    }
 
 }
+

@@ -150,7 +150,11 @@ public class directMessaging {
 					
                                         String DMDomain = messageInfo.getFromDirectAddress().substring(messageInfo.getFromDirectAddress().indexOf("@")+1,messageInfo.getFromDirectAddress().length());
 
-                                        organizationDirectDetails directDetails = configurationtransportmanager.getDirectMessagingDetails(DMDomain);
+                                        if(DMDomain.contains("elationemr")) {
+					    DMDomain = DMDomain.substring(DMDomain.indexOf(".")+1,DMDomain.length());
+					}
+					
+					organizationDirectDetails directDetails = configurationtransportmanager.getDirectMessagingDetails(DMDomain);
 
                                         if(directDetails != null) {
                                             Organization orgDetails = organizationmanager.getOrganizationById(directDetails.getOrgId());
@@ -204,7 +208,7 @@ public class directMessaging {
 							    }
 							}
 							
-							FileOutputStream fos = new FileOutputStream(utRootDir + fileDropDir.replace("/HELProductSuite/universalTranslator/", "") + CCDATitle);
+							FileOutputStream fos = new FileOutputStream(utRootDir + fileDropDir.replace("/Applications/HELProductSuite/universalTranslator/", "").replace("/HELProductSuite/universalTranslator/", "") + CCDATitle);
 							
 							//Check if content is base64 encoded
 							if(Base64.isBase64(CCDAContent.replace("\n", ""))) {

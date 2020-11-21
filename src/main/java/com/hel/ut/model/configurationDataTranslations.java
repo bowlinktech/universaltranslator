@@ -1,6 +1,6 @@
 package com.hel.ut.model;
 
-import com.hel.ut.validator.NoHtml;
+import java.util.Date;
 import java.util.Map;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -9,22 +9,20 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.Transient;
+import org.springframework.format.annotation.DateTimeFormat;
 
 @Entity
 @Table(name = "CONFIGURATIONDATATRANSLATIONS")
 public class configurationDataTranslations {
 
     @Transient
-    String fieldName = null;
-
-    @Transient
-    String crosswalkName = null;
-
-    @Transient
-    String macroName = null;
+    String fieldName = null, crosswalkName = null, macroName = null, fieldDesc = null;
 
     @Transient
     int fieldNo;
+    
+    @Transient
+    boolean requiredField;
 
     @Transient
     Map<String, String> defaultValues;
@@ -69,6 +67,10 @@ public class configurationDataTranslations {
 
     @Column(name = "DEFAULTVALUE", nullable = true)
     private String defaultValue;
+    
+    @DateTimeFormat(pattern = "dd/MM/yyyy hh:mm:ss")
+    @Column(name = "dateAdded", nullable = true)
+    private Date dateAdded = new Date();
 
     public int getId() {
         return id;
@@ -214,4 +216,27 @@ public class configurationDataTranslations {
         this.defaultValue = defaultValue;
     }
 
+    public boolean isRequiredField() {
+	return requiredField;
+    }
+
+    public void setRequiredField(boolean requiredField) {
+	this.requiredField = requiredField;
+    }
+
+    public String getFieldDesc() {
+	return fieldDesc;
+    }
+
+    public void setFieldDesc(String fieldDesc) {
+	this.fieldDesc = fieldDesc;
+    }
+
+    public Date getDateAdded() {
+	return dateAdded;
+    }
+
+    public void setDateAdded(Date dateAdded) {
+	this.dateAdded = dateAdded;
+    }
 }

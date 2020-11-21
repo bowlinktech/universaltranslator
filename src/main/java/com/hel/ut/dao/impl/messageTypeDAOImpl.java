@@ -353,6 +353,7 @@ public class messageTypeDAOImpl implements messageTypeDAO {
     
     @Transactional(readOnly = false)
     public void executeSQLStatement(String sqlStmt) {
+	
 	if(sqlStmt != null) {
 	    if(!"".equals(sqlStmt)) {
 		 //Need to insert all the fields into the crosswalk data Fields table
@@ -384,7 +385,7 @@ public class messageTypeDAOImpl implements messageTypeDAO {
     @Override
     @Transactional(readOnly = true)
     public List getCrosswalksWithData(Integer orgId) {
-        Query query = sessionFactory.getCurrentSession().createSQLQuery("select a.name,  b.sourceValue, b.targetValue, b.descValue, a.id from crosswalks a inner join rel_crosswalkdata b on b.crosswalkId = a.id where a.orgId = :orgId order by a.name asc");
+        Query query = sessionFactory.getCurrentSession().createSQLQuery("select a.name,  b.sourceValue, b.targetValue, b.descValue, a.id, a.fileDelimiter from crosswalks a inner join rel_crosswalkdata b on b.crosswalkId = a.id where a.orgId = :orgId order by a.name asc");
         query.setParameter("orgId", orgId);
 
         return query.list();
@@ -408,18 +409,6 @@ public class messageTypeDAOImpl implements messageTypeDAO {
 		+ "order by a.name asc";
 	}
 	
-	int firstResult = 0;
-
-        //Set the parameters for paging
-        //Set the page to load
-        if (page > 1) {
-            firstResult = (maxCrosswalks * (page - 1));
-        }
-        
-	if(maxCrosswalks > 0) {
-	    sql += " limit " + firstResult + ", " + maxCrosswalks;
-	}
-	
 	Query query = sessionFactory
 	    .getCurrentSession()
 	    .createSQLQuery(sql)
@@ -427,11 +416,41 @@ public class messageTypeDAOImpl implements messageTypeDAO {
 	    .addScalar("orgId", StandardBasicTypes.INTEGER)
 	    .addScalar("dtsId", StandardBasicTypes.INTEGER)
 	    .addScalar("name", StandardBasicTypes.STRING)
+	    .addScalar("dateCreated", StandardBasicTypes.TIMESTAMP)
+	    .addScalar("lastUpdated", StandardBasicTypes.TIMESTAMP)	
 	    .setResultTransformer( Transformers.aliasToBean(Crosswalks.class))
 	    .setParameter("orgId", orgId).setParameter("configId", configId);
 	
 	List<Crosswalks> crosswalks = query.list();
 	
         return crosswalks;
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public List getCrosswalksWithDataByFileName(Integer orgId, String fileName) {
+        Query query = sessionFactory.getCurrentSession().createSQLQuery("select b.sourceValue, b.targetValue, b.descValue, c.delimiter, c.delimChar from crosswalks a inner join rel_crosswalkdata b on b.crosswalkId = a.id inner join ref_delimiters c on c.id = a.fileDelimiter where a.orgId = :orgId and a.fileName = :fileName order by b.id asc");
+        query.setParameter("orgId", orgId);
+	query.setParameter("fileName", fileName);
+
+        return query.list();
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public List getConfigCrosswalksWithData(Integer orgId, Integer configId) {
+	
+	String sql = "select a.name,  b.sourceValue, b.targetValue, b.descValue, a.id, a.fileDelimiter, a.dateCreated, ifnull(a.lastUpdated,a.dateCreated) as lastUpdated "
+	    + "from crosswalks a inner join "
+	    + "rel_crosswalkdata b on b.crosswalkId = a.id "
+	    + "where a.orgId = :orgId "
+	    + "and ((a.id in (select crosswalkId from configurationdatatranslations where configId = :configId)) OR (a.id in (select constant1 from configurationdatatranslations where configId = :configId))) "
+	    + "order by a.name asc";
+	
+        Query query = sessionFactory.getCurrentSession().createSQLQuery(sql);
+        query.setParameter("orgId", orgId);
+	query.setParameter("configId", configId);
+
+        return query.list();
     }
 }

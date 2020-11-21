@@ -66,7 +66,7 @@
 var chartSpeed;*/
 
 require(['./main'], function () {
-	
+    
     getGenericMessages();
     getInboundMessages();
     getOutboundMessages();
@@ -131,6 +131,23 @@ function getGenericMessages() {
 }
 
 function getInboundMessages() {
+    
+    //CHeck if daylight savings time
+    Date.prototype.stdTimezoneOffset = function () {
+        var jan = new Date(this.getFullYear(), 0, 1);
+        var jul = new Date(this.getFullYear(), 6, 1);
+        return Math.max(jan.getTimezoneOffset(), jul.getTimezoneOffset());
+    }
+
+    Date.prototype.isDstObserved = function () {
+        return this.getTimezoneOffset() < this.stdTimezoneOffset();
+    }
+
+    var today = new Date();
+    var isDST = 0;
+    if (today.isDstObserved()) { 
+       isDST = 1;
+    }
   
     var fromDate = $('.daterange span').attr('rel');
     var toDate = $('.daterange span').attr('rel2');
@@ -264,21 +281,47 @@ function getInboundMessages() {
 		    var myDateFormatted = 'Received: ' + ((dateC.getMonth()*1)+1)+'/'+dateC.getDate()+'/'+dateC.getFullYear() + ' ' + hours+':'+minutes+ ' ' + ampm;
                     
                     if(row.startDateTime != null) {
-                        dateC = new Date(row.startDateTime);
-                        minutes = dateC.getMinutes();
-                        hours = dateC.getHours()-1;
+                        var dateS = new Date(row.startDateTime);
+                        minutes = dateS.getMinutes();
+                        if(isDST == 1) {
+                            hours = dateS.getHours()-1;
+                            if(hours < 0) {
+                                hours = 11;
+                            }
+                            else if(hours == 0) {
+                                hours = 12;
+                            }
+                        }
+                        else {
+                            hours = dateS.getHours();
+                        }
                         ampm =  hours >= 12 ? 'pm' : 'am';
                         hours = hours % 12;
                         hours = hours ? hours : 12;
                         minutes = minutes < 10 ? '0'+minutes : minutes;
                         
-                        myDateFormatted += '<br />Start: ' + ((dateC.getMonth()*1)+1)+'/'+dateC.getDate()+'/'+dateC.getFullYear() + ' ' + hours+':'+minutes+ ' ' + ampm;
+                        if((dateS.getMonth()*1)+1 != (dateC.getMonth()*1)+1 || (dateS.getDate() != dateC.getDate())) {
+                             myDateFormatted += '<br /><strong>Reprocessed: ' + ((dateS.getMonth()*1)+1)+'/'+dateS.getDate()+'/'+dateS.getFullYear() + '</strong>';
+                        }
+                        
+                        myDateFormatted += '<br />Start: ' + ((dateS.getMonth()*1)+1)+'/'+dateS.getDate()+'/'+dateS.getFullYear() + ' ' + hours+':'+minutes+ ' ' + ampm;
                     }
                     
                     if(row.endDateTime != null) {
                         dateC = new Date(row.endDateTime);
                         minutes = dateC.getMinutes();
-                        hours = dateC.getHours()-1;
+                        if(isDST == 1) {
+                            hours = dateC.getHours()-1;
+                            if(hours < 0) {
+                                hours = 11;
+                            }
+                            else if(hours == 0) {
+                                hours = 12;
+                            }
+                        }
+                        else {
+                            hours = dateC.getHours();
+                        }
                         ampm =  hours >= 12 ? 'pm' : 'am';
                         hours = hours % 12;
                         hours = hours ? hours : 12;
@@ -291,18 +334,18 @@ function getInboundMessages() {
 		}
 	    },
 	    {
-		"mData": "uploadType", 
+		"mData": "utBatchName", 
 		"defaultContent": "",
 		"bSortable":true,
 		"sWidth": "10%",
 		"render": function ( data, type, row, meta ) {
 		    var returnData = '';
 		    
-		    if(data === 'Watch List Entry') {
+		    if(row.uploadType === 'Watch List Entry') {
 			returnData = 'N/A';
 		    }
 		    else {
-			returnData = '<a href="/administrator/processing-activity/inbound/'+row.utBatchName+'" class="dashboard-link" title="View Inbound Batch" role="button">'+row.utBatchName+'</a>';
+			returnData = '<a href="/administrator/processing-activity/inbound/'+data+'" class="dashboard-link" title="View Inbound Batch" role="button">'+data+'</a>';
 		    }
 		    return returnData;
 		}
@@ -335,7 +378,7 @@ function getInboundMessages() {
 		}
 	    },
 	    {
-		"mData": "uploadType", 
+		"mData": "totalRecordCount", 
 		"defaultContent": "",
 		"bSortable":true,
 		"sWidth": "10%",
@@ -343,17 +386,17 @@ function getInboundMessages() {
 		"render": function ( data, type, row, meta ) {
 		    var returnData = '';
 		    
-		    if(data === 'Watch List Entry') {
+		    if(row.uploadType === 'Watch List Entry') {
 			returnData = 'N/A';
 		    }
 		    else {
-			returnData = commaSeparateNumber(row.totalRecordCount);
+			returnData = commaSeparateNumber(data);
 		    }
 		    return returnData;
 		}
 	    },
 	    {
-		"mData": "uploadType", 
+		"mData": "errorRecordCount", 
 		"defaultContent": "",
 		"bSortable":true,
 		"sWidth": "10%",
@@ -361,24 +404,24 @@ function getInboundMessages() {
 		"render": function ( data, type, row, meta ) {
 		    var returnData = '';
 		    
-		    if(data === 'Watch List Entry') {
+		    if(row.uploadType === 'Watch List Entry') {
 			returnData = 'N/A';
 		    }
 		    else {
-			returnData = commaSeparateNumber(row.errorRecordCount);
+			returnData = commaSeparateNumber(data);
 		    }
 		    return returnData;
 		}
 	    },
 	    {
-		"mData": "uploadType", 
+		"mData": "threshold", 
 		"defaultContent": "",
 		"bSortable":true,
 		"sWidth": "5%",
 		"className": "center-text",
 		"render": function ( data, type, row, meta ) {
                     var returnData = ''
-                    if(data === 'Watch List Entry') {
+                    if(row.uploadType === 'Watch List Entry') {
                         returnData = 'N/A';
                     }
                     else {
@@ -387,7 +430,7 @@ function getInboundMessages() {
                             percent = 100;
                         }
                         returnData = '<figure class="highcharts-figure"><div id="threshold-chart-'+row.id+'" rel1="'+row.id+'" rel2="'+percent+'" rel3="'+row.threshold+'" class="inrecords chart-container"></div></figure>'; */
-                        returnData = row.threshold + '%';
+                        returnData = data + '%';
                     }
 		    
 		    return returnData;
@@ -442,6 +485,23 @@ function getInboundMessages() {
 })(Highcharts);*/
 
 function getOutboundMessages() {
+    
+    //CHeck if daylight savings time
+    Date.prototype.stdTimezoneOffset = function () {
+        var jan = new Date(this.getFullYear(), 0, 1);
+        var jul = new Date(this.getFullYear(), 6, 1);
+        return Math.max(jan.getTimezoneOffset(), jul.getTimezoneOffset());
+    }
+
+    Date.prototype.isDstObserved = function () {
+        return this.getTimezoneOffset() < this.stdTimezoneOffset();
+    }
+
+    var today = new Date();
+    var isDST = 0;
+    if (today.isDstObserved()) { 
+       isDST = 1;
+    }
     
     var fromDate = $('.daterange span').attr('rel');
     var toDate = $('.daterange span').attr('rel2');
@@ -564,11 +624,24 @@ function getOutboundMessages() {
 		    minutes = minutes < 10 ? '0'+minutes : minutes;
                     
                     var myDateFormatted = '';
-		    
+                    
+                    
+                    
                     if(row.startDateTime != null) {
                         dateC = new Date(row.startDateTime);
                         minutes = dateC.getMinutes();
-                        hours = dateC.getHours()-1;
+                        if(isDST == 1) {
+                            hours = dateC.getHours()-1;
+                            if(hours < 0) {
+                                hours = 11;
+                            }
+                            else if(hours == 0) {
+                                hours = 12;
+                            }
+                        }
+                        else {
+                            hours = dateC.getHours();
+                        }
                         ampm =  hours >= 12 ? 'pm' : 'am';
                         hours = hours % 12;
                         hours = hours ? hours : 12;
@@ -580,7 +653,18 @@ function getOutboundMessages() {
                     if(row.endDateTime != null) {
                         dateC = new Date(row.endDateTime);
                         minutes = dateC.getMinutes();
-                        hours = dateC.getHours()-1;
+                        if(isDST == 1) {
+                            hours = dateC.getHours()-1;
+                            if(hours < 0) {
+                                hours = 11;
+                            }
+                            else if(hours == 0) {
+                                hours = 12;
+                            }
+                        }
+                        else {
+                            hours = dateC.getHours();
+                        }
                         ampm =  hours >= 12 ? 'pm' : 'am';
                         hours = hours % 12;
                         hours = hours ? hours : 12;
@@ -652,14 +736,14 @@ function getOutboundMessages() {
 		}
 	    },
 	    {
-		"mData": "uploadType", 
+		"mData": "threshold", 
 		"defaultContent": "",
 		"bSortable":true,
 		"sWidth": "5%",
 		"className": "center-text",
 		"render": function ( data, type, row, meta ) {
                     var returnData = ''
-                    if(data === 'Watch List Entry') {
+                    if(row.uploadType === 'Watch List Entry') {
                         returnData = 'N/A';
                     }
                     else {
@@ -668,7 +752,7 @@ function getOutboundMessages() {
                             percent = 100;
                         }
                         //returnData = '<figure class="highcharts-figure"><div id="out-threshold-chart-'+row.id+'" rel1="'+row.id+'" rel2="'+percent+'" rel3="'+row.threshold+'" class="outrecords chart-container"></div></figure>'; 
-                        returnData = Math.round(percent) + '% of ' + row.threshold + '%';
+                        returnData = Math.round(percent) + '% of ' + data + '%';
                     }
 		    
 		    return returnData;

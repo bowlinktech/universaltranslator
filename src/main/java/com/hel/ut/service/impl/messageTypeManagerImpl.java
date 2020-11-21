@@ -127,8 +127,6 @@ public class messageTypeManagerImpl implements messageTypeManager {
 	     directory = myProps.getProperty("ut.directory.utRootDir") + "libraryFiles/crosswalks/";
         }
 	
-	System.out.println(directory + fileName);
-
         File newFile = null;
         newFile = new File(directory + fileName);
 
@@ -341,7 +339,10 @@ public class messageTypeManagerImpl implements messageTypeManager {
             e.printStackTrace();
             throw new Exception(e);
         }
-
-        
+    }
+    
+    @Override
+    public List getConfigCrosswalksWithData(Integer orgId, Integer configId) {
+	return getConfigCrosswalksWithData(orgId,configId);
     }
 }

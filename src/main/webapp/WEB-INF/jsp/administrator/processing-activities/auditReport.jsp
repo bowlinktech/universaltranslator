@@ -72,7 +72,7 @@
 					</li>
 					<li class="divider"></li> 
 				    </c:if>   
-				    <c:if test="${canCancel && batchDetails.statusId != 4 && batchDetails.statusId != 24}">
+				    <c:if test="${canCancel && batchDetails.configId > 0 && batchDetails.statusId != 4 && batchDetails.statusId != 24}">
 					<c:choose>
 					    <c:when test="${batchDownload}">
 						<li>
@@ -92,7 +92,7 @@
 					    </c:otherwise>
 					</c:choose>
 				    </c:if> 
-				    <c:if test="${canReset && batchDetails.statusId != 64 && batchDetails.statusId != 42 && batchDetails.statusId != 43}">
+				    <c:if test="${canReset && batchDetails.configId > 0 && batchDetails.statusId != 64 && batchDetails.statusId != 42 && batchDetails.statusId != 43}">
 					<c:choose>
 					    <c:when test="${batchDownload}">
 						<li class="divider"></li> 
@@ -126,9 +126,9 @@
 				    <c:if test="${!batchDownload && sessionScope.userDetails.roleId == 1 && canReset}">
 					<li class="divider"></li>
 					<li>
-					    <a href="#!" rel="${batchDetails.utBatchName}" class="deleteTransactions" title="Delete Inbound Batch">
+					    <a href="#!" rel="${batchDetails.utBatchName}" class="deleteTransactions" title="Delete Batch">
 						<span class="glyphicon glyphicon-remove"></span>
-						<strong>Delete Inbound Batch</strong>
+						<strong>Delete Batch</strong>
 					    </a>
 					</li>
 				    </c:if>	
@@ -192,7 +192,11 @@
 					    <strong>Date Created:</strong><br /><fmt:formatDate value="${batchDetails.dateCreated}" type="both" pattern="M/dd/yyyy h:mm:ss a" />
 					</c:when>
 					<c:otherwise>
-					    <strong>Date Uploaded:</strong><br /><fmt:formatDate value="${batchDetails.dateSubmitted}" type="both" pattern="M/dd/yyyy h:mm:ss a" />
+					   <strong>Date Uploaded:</strong><br /><fmt:formatDate value="${batchDetails.dateSubmitted}" type="both" pattern="M/dd/yyyy h:mm:ss a" />
+                                            <c:if test="${not empty batchDetails.startDateTime && batchDetails.startDateTime gt batchDetails.dateSubmitted}">
+                                               </br></br>
+                                               <strong>Date Reprocessed</strong><br /><fmt:formatDate value="${batchDetails.startDateTime}" type="both" pattern="M/dd/yyyy h:mm:ss a" />
+                                            </c:if>
 					</c:otherwise> 
 				    </c:choose>
 				</p>
@@ -201,10 +205,20 @@
 				    <br />
 				    <c:choose>
 					<c:when test="${batchDetails.configId > 0}">
-					    <a href="/administrator/configurations/details?i=${batchDetails.configId}">${batchDetails.configName}</a>
+                                            <c:choose>
+                                                <c:when test="${batchDetails.configName == 'bowlinkTest'}">
+                                                     Macro Test Configuration
+                                                </c:when>
+                                                <c:when test="${batchDetails.configName == 'Bowlink Test Target'}">
+                                                     Macro Test Configuration
+                                                </c:when>     
+                                                <c:otherwise>
+                                                     <a href="/administrator/configurations/details?i=${batchDetails.configId}">${batchDetails.configName}</a>
+                                                </c:otherwise>
+                                            </c:choose>
 					</c:when>
 					<c:otherwise>
-					    Could not figure out the source configuration based on the file uploaded.
+					    Could find a valid configuration based on the file uploaded (check the file extension).
 					</c:otherwise>
 				    </c:choose>
 				</p>
@@ -216,7 +230,7 @@
                                             <c:set var="text" value="${fn:split(batchDetails.outputFileName,'.')}" />
                                             <c:set var="ext" value="${text[fn:length(text)-1]}" />
                                             <c:url value="/FileDownload/downloadFile.do" var="hrefLink">
-                                                <c:param name="fromPage" value="inboundAudit" />
+                                                <c:param name="fromPage" value="outboundAudit" />
                                                 <c:param name="filename" value="${batchDetails.outputFileName}" />
                                                 <c:param name="foldername" value="archivesOut" />
                                                 <c:param name="orgId" value="${batchDetails.orgId}" />
@@ -269,7 +283,7 @@
 						    <br />Batch is ready to be processed
 						</c:when>
 						<c:otherwise>
-						    <br />Could not generate target file(s) because of errors 
+						    <br />The processing of the outbound batch has not started yet. 
 						</c:otherwise>
 					    </c:choose>
 					</p> 
@@ -346,6 +360,22 @@
             </section>
         </div>
     </div>
+                            
+    <c:if test="${not empty batchDroppedValues || not empty batchErrorSummary}">
+        <div class="row-fluid clearfix" style="margin-bottom:10px;">
+            <div class="col-md-12">
+                <div class="pull-right">
+                    <button class="btn btn-success printErrorsToExcel" rel="${batchDetails.utBatchName}" rel2="${batchDownload ? 'outbound' : 'inbound'}" type="button">
+                        <i class="fa fa-file-excel"></i> Print Errors to Excel
+                    </button>
+                    <button class="btn btn-success printErrorsToPDF" rel="${batchDetails.utBatchName}" rel2="${batchDownload ? 'outbound' : 'inbound'}" type="button">
+                        <i class="fa fa-file-pdf"></i> Print Errors to PDF
+                    </button>
+                </div>
+            </div>
+        </div>
+    </c:if>                
+                            
     <c:if test="${not empty batchDroppedValues}">
 	<div class="row-fluid">
 	    <div class="col-md-12">
@@ -385,7 +415,7 @@
 	    </div>
 	</div>
     </c:if>    
-    <c:if test="${not empty batchSystemErrors}">
+    <c:if test="${not empty batchSystemErrors && empty batchErrorSummary}">
 	<div class="row-fluid">
 	    <div class="col-md-12">
 		<section class="panel panel-default">
@@ -399,7 +429,7 @@
                                     <div class="panel-heading">
                                         <div class="clearfix">
                                              <div class="pull-left">
-                                                 <h3 class="panel-title">Error: ${batchError.errorDisplayText} <c:if test="${batchError.fromOutboundConfig}"><span class="text-info">(From Outbound Config)</span></c:if></h3>
+                                                 <h3 class="panel-title">Error: ${batchError.errorDisplayText}</h3>
                                              </div>
                                              <div class="pull-right">
                                                  <h3 class="panel-title" style="color:red">Total Found: <fmt:formatNumber value = "${batchError.totalErrors}" type = "number"/></h3>
@@ -429,7 +459,7 @@
                                         <a data-toggle="collapse" rel="${batchDetails.id}" error="${batchError.errorId}" total="${batchError.totalErrors}" rel2="${i.index}" rel3="${batchDownload ? 'outbound' : 'inbound'}" class="errorCollapse" href="#collapse-${i.index}">
                                            <div class="clearfix">
                                                 <div class="pull-left">
-                                                    <h3 class="panel-title">Error: ${batchError.errorDisplayText} <c:if test="${batchError.fromOutboundConfig}"><span class="text-info">(From Outbound Config)</span></c:if></h3>
+                                                    <h3 class="panel-title">Error: ${batchError.errorDisplayText}</h3>
                                                 </div>
                                                 <div class="pull-right">
                                                     <h3 class="panel-title" style="color:red">Total Found: <fmt:formatNumber value = "${batchError.totalErrors}" type = "number"/></h3>

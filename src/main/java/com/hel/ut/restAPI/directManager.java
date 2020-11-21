@@ -210,8 +210,6 @@ public class directManager {
 	    apiResponse.append("Response: ").append(System.getProperty("line.separator"));
 	    apiResponse.append(response.getEntity(String.class)); 
 	    
-	    System.out.println(apiResponse.toString());
-
 	    response.close();
 	    client.destroy();
 	} 

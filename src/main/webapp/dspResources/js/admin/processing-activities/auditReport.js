@@ -9,6 +9,73 @@
 require(['./main'], function () {
 
     $("input:text,form").attr("autocomplete", "off");
+    
+    $(document).on('click','.printErrorsToExcel',function() {
+        
+        $('body').overlay({
+            glyphicon : 'print',
+            message : 'Gathering Details...'
+        });
+        $('.overlay').css('display','block');
+      
+        var batchName = $(this).attr('rel');
+        var type = $(this).attr('rel2');
+
+        $.ajax({
+            url: '/administrator/processing-activity/createAuditErrorsToExcel.do',
+            data: {
+                'batchName': batchName,
+                'type': type
+            },
+            type: "GET",
+            dataType : 'text',
+            contentType : 'application/json;charset=UTF-8',
+            success: function(data) {
+                if(data !== '') {
+                    $('.overlay').css('display','none');
+                    window.location.href = '/administrator/processing-activity/printAuditErrorsToExcel/'+ data;
+                }
+                else {
+                    $('.overlay').css('display','none');
+                    alert("An error occurred creating your audit error excel file. A Health-e-Link system administrator has been notified.");
+                }
+            }
+        });
+    });
+    
+    
+    $(document).on('click','.printErrorsToPDF',function() {
+        
+        $('body').overlay({
+            glyphicon : 'print',
+            message : 'Gathering Details...'
+        });
+        $('.overlay').css('display','block');
+      
+        var batchName = $(this).attr('rel');
+        var type = $(this).attr('rel2');
+
+        $.ajax({
+            url: '/administrator/processing-activity/createAuditErrorsToPDF.do',
+            data: {
+                'batchName': batchName,
+                'type': type
+            },
+            type: "GET",
+            dataType : 'text',
+            contentType : 'application/json;charset=UTF-8',
+            success: function(data) {
+                if(data !== '') {
+                    $('.overlay').css('display','none');
+                    window.location.href = '/administrator/processing-activity/printAuditErrorsToPDF/'+ data;
+                }
+                else {
+                    $('.overlay').css('display','none');
+                    alert("An error occurred creating your audit error PDF file. A Health-e-Link system administrator has been notified.");
+                }
+            }
+        });
+    });
 
     $(document).on('click', '.print', function() {
         var index = $(this).attr('rel');
@@ -20,7 +87,8 @@ require(['./main'], function () {
 
         newWin.document.open();
 
-        newWin.document.write('<html><body onload="window.print()"><div>'+divHeadingToPrint.html()+'</div><div>'+divToPrint.html()+'</div></body></html>');
+        newWin.document.write('<html><body><div>'+divHeadingToPrint.html()+'</div><div>'+divToPrint.html()+'</div></body></html>');
+        newWin.print();
 
         newWin.document.close();
 
@@ -99,6 +167,29 @@ require(['./main'], function () {
 		    type: "GET",
 		    success: function (data) {
 			$(".spinner-"+indexVal).hide();
+                        
+                         data = $(data);
+                        
+                        data.find('#errordatatable').dataTable({
+                            "bStateSave": true,
+                            "iCookieDuration": 60,
+                            "sPaginationType": "bootstrap",
+                             "bSort": false,
+                             "pageLength": 100,
+                             "dom": 't<"bottom"p><"clear">' ,
+                            "oLanguage": {
+                                "sSearch": "_INPUT_",
+                                "sLengthMenu": '<select class="form-control" style="width:150px">' +
+                                        '<option value="10">10 Records</option>' +
+                                        '<option value="20">20 Records</option>' +
+                                        '<option value="30">30 Records</option>' +
+                                        '<option value="40">40 Records</option>' +
+                                        '<option value="50">50 Records</option>' +
+                                        '<option value="-1">All</option>' +
+                                        '</select>'
+                            }
+                        });
+                        
 			$(".errorList-"+indexVal).html(data);
 		    }
 		});
@@ -240,13 +331,13 @@ require(['./main'], function () {
 
         var batchName = $(this).attr('rel');
 
-        if(confirm("Are you sure you want to remove this inbound batch?")) {
+        if(confirm("Are you sure you want to remove this batch?")) {
 
             $('body').overlay({
                 glyphicon : 'floppy-disk',
                 message : 'Deleting...'
             });
-
+            
             $.ajax({
                 url: '../../deleteBatch.do',
                 data: {
@@ -254,10 +345,20 @@ require(['./main'], function () {
                 },
                 type: 'POST',
                 success: function(data) {
-                   location.reload();
+                   if(window.location.href.indexOf('invalidIn') > -1) {
+                        window.location.href = '/administrator/processing-activity/invalidIn';
+                   }
+                   else if(window.location.href.indexOf('inbound') > -1) {
+                        window.location.href = '/administrator/processing-activity/inbound';
+                   }
+                   else if(window.location.href.indexOf('outbound') > -1) {
+                        window.location.href = '/administrator/processing-activity/outbound';
+                   }
+                   else if(window.location.href.indexOf('rejected') > -1) {
+                        window.location.href = '/administrator/processing-activity/rejected';
+                   }
                 }
             });
-
         }
 
     });

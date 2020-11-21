@@ -49,8 +49,9 @@
 				    <th scope="col" class="center-text" style="width:5%">Id</th>
 				    <th scope="col" style="width:20%">Organization</th>
 				    <th scope="col" style="width:30%">Configuration Name</th>
-				    <th scope="col" class="center-text"style="width:20%">Transport Method</th>
-				    <th scope="col" class="center-text" style="width:20%">Date Created</th>
+				    <th scope="col" class="center-text"style="width:10%">Transport Method</th>
+				    <th scope="col" class="center-text" style="width:15%">Date Created</th>
+                                    <th scope="col" class="center-text" style="width:15%">Date Last Updated</th>
 				    <th scope="col" style="width:5%"></th>
 				</tr>
 			    </thead>
@@ -72,7 +73,17 @@
 						     <c:choose><c:when test="${config.transportMethod == 'File Upload'}"><c:choose><c:when test="${config.type == 1}">File Upload</c:when><c:otherwise>File Download</c:otherwise></c:choose></c:when><c:otherwise>${config.transportMethod}</c:otherwise></c:choose>
 						 </td>
 						 <td class="center-text">
-						     <fmt:formatDate value="${config.dateCreated}" type="date" pattern="M/dd/yyyy" />
+						     <fmt:formatDate value="${config.dateCreated}" type="date" pattern="M/dd/yyyy h:mm a" />
+						 </td>
+                                                 <td class="center-text">
+                                                     <c:choose>
+                                                         <c:when test="${empty config.dateUpdated}">
+                                                             <fmt:formatDate value="${config.dateCreated}" type="date" pattern="M/dd/yyyy h:mm a" />
+                                                         </c:when>
+                                                         <c:otherwise>
+                                                             <fmt:formatDate value="${config.dateUpdated}" type="date" pattern="M/dd/yyy h:mm a" />
+                                                         </c:otherwise>
+                                                     </c:choose>
 						 </td>
 						 <td>
 						     <div class="dropdown pull-left">
@@ -140,14 +151,15 @@
 		       <div class="form-container scrollable">
 			   <table class="table table-striped table-hover table-default" <c:if test="${not empty targetconfigurations}">id="targetconfigdatatable"</c:if>>
 				<thead>
-				    <tr>
-					<th scope="col" class="center-text" style="width:5%">Id</th>
-					<th scope="col" style="width:20%">Organization</th>
-					<th scope="col" style="width:30%">Configuration Name</th>
-					<th scope="col" class="center-text"style="width:20%">Transport Method</th>
-					<th scope="col" class="center-text" style="width:20%">Date Created</th>
-					<th scope="col" style="width:5%"></th>
-				    </tr>
+                                    <tr>
+                                        <th scope="col" class="center-text" style="width:5%">Id</th>
+                                        <th scope="col" style="width:20%">Organization</th>
+                                        <th scope="col" style="width:30%">Configuration Name</th>
+                                        <th scope="col" class="center-text"style="width:10%">Transport Method</th>
+                                        <th scope="col" class="center-text" style="width:15%">Date Created</th>
+                                        <th scope="col" class="center-text" style="width:15%">Date Last Updated</th>
+                                        <th scope="col" style="width:5%"></th>
+                                    </tr>
 				</thead>
 				<tbody>
 				    <c:choose>
@@ -165,7 +177,17 @@
 						    <c:choose><c:when test="${config.transportMethod == 'File Upload'}"><c:choose><c:when test="${config.type == 1}">File Upload</c:when><c:otherwise>File Download</c:otherwise></c:choose></c:when><c:otherwise>${config.transportMethod}</c:otherwise></c:choose>
 						</td>
 						<td class="center-text">
-						     <fmt:formatDate value="${config.dateCreated}" type="date" pattern="M/dd/yyyy" />
+						     <fmt:formatDate value="${config.dateCreated}" type="date" pattern="M/dd/yyyy h:mm a" />
+						 </td>
+                                                 <td class="center-text">
+                                                     <c:choose>
+                                                         <c:when test="${empty config.dateUpdated}">
+                                                             <fmt:formatDate value="${config.dateCreated}" type="date" pattern="M/dd/yyyy h:mm a" />
+                                                         </c:when>
+                                                         <c:otherwise>
+                                                             <fmt:formatDate value="${config.dateUpdated}" type="date" pattern="M/dd/yyy h:mm a" />
+                                                         </c:otherwise>
+                                                     </c:choose>
 						 </td>
 						<td>
 						    <div class="dropdown pull-left">

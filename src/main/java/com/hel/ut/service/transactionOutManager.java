@@ -44,8 +44,6 @@ public interface transactionOutManager {
 
     void updateTargetBatchStatus(Integer batchDLId, Integer statusId, String timeField) throws Exception;
 
-    Integer translateTargetRecords(int transactionTargetId, int configId, int batchId, int categoryId);
-
     List<batchDownloads> getdownloadableBatches(int userId, int orgId, Date fromDate, Date toDate) throws Exception;
 
     void updateLastDownloaded(int batchId) throws Exception;
@@ -127,4 +125,6 @@ public interface transactionOutManager {
     void updateMissingRequiredFieldStatus(Integer batchDownloadId) throws Exception;
     
     Integer genericValidation(configurationFormFields cff, Integer validationTypeId, Integer batchDownloadId, String regEx);
+    
+    void clearBatchActivityLogTable(Integer batchId) throws Exception;
 }

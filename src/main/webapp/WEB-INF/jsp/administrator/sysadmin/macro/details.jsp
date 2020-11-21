@@ -11,6 +11,8 @@
 	<div class="modal-body">
 	    <form:form id="macroform" commandName="Macros" modelAttribute="macroDetails"  method="post" role="form">
 		<form:hidden path="id" id="id" />
+                <form:hidden path="populateFieldA" id="populateFieldA" />
+                <form:hidden path="macroShortName" id="macroShortName" />
 		<div class="form-container">
 		    <div class="row col-lg-12">
 			<div class="col-lg-6">
@@ -22,13 +24,6 @@
 				</form:select>
 				<form:errors path="categoryId" cssClass="control-label" element="label" />
 			    </div>
-			    <spring:bind path="macroShortName">
-				<div class="form-group ${status.error ? 'has-error' : '' }">
-				    <label class="control-label" for="macroShortName">Macro Short Name*</label>
-				    <form:input path="macroShortName" id="macroShortName" class="form-control" type="text" maxLength="50" />
-				    <form:errors path="macroShortName" cssClass="control-label" element="label" />
-				</div>
-			    </spring:bind>
 			    <spring:bind path="macroName">
 				<div class="form-group ${status.error ? 'has-error' : '' }">
 				    <label class="control-label" for="macroName">Macro Name*</label>
@@ -43,7 +38,19 @@
 				    <form:errors path="formula" cssClass="control-label" element="label" />
 				</div>
 			    </spring:bind> 
-			    <div class="form-group">
+                            <spring:bind path="errorCondition">
+				<div class="form-group ${status.error ? 'has-error' : '' }">
+				    <label class="control-label" for="errorCondition">Error Condition</label>
+                                    <form:textarea path="errorCondition" id="errorCondition" class="form-control" rows="4" />
+				</div>
+			    </spring:bind> 
+                            <spring:bind path="passClearLogic">
+				<div class="form-group ${status.error ? 'has-error' : '' }">
+				    <label class="control-label" for="passClearLogic">Pass/Clear Logic</label>
+                                    <form:textarea path="passClearLogic" id="passClearLogic" class="form-control" rows="4" />
+				</div>
+			    </spring:bind> 
+			    <%--<div class="form-group">
 				<label for="status">Pre-Populate Field A with Source Field No.</label>
 				<div>
 				    <label class="radio-inline">
@@ -54,7 +61,7 @@
 				    </label>
 				</div>         
 				<br/> 
-			    </div>     
+			    </div>--%>
 			</div>
 			<div class="col-lg-6">
 			    <spring:bind path="fieldAQuestion">
@@ -85,6 +92,18 @@
 				    <form:errors path="con2Question" cssClass="control-label" element="label" />
 				</div>
 			    </spring:bind>  
+                            <spring:bind path="droppedValueLogging">
+				<div class="form-group ${status.error ? 'has-error' : '' }">
+				    <label class="control-label" for="droppedValueLogging">Dropped Value Logging</label>
+                                    <form:textarea path="droppedValueLogging" id="droppedValueLogging" class="form-control" rows="4" />
+				</div>
+			    </spring:bind> 
+                            <spring:bind path="rejectRecordFile">
+				<div class="form-group ${status.error ? 'has-error' : '' }">
+				    <label class="control-label" for="rejectRecordFile">Reject Record/File</label>
+                                    <form:textarea path="rejectRecordFile" id="rejectRecordFile" class="form-control" rows="4" />
+				</div>
+			    </spring:bind> 
 			</div>
 		    </div>
 		    <div class="row col-lg-12">

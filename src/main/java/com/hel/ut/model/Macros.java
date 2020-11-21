@@ -20,13 +20,10 @@ public class Macros {
     private int id;
 
     @NotEmpty
-    @NoHtml
     @Column(name = "MACRO_NAME", nullable = false)
     private String macroName;
 
-    @NotEmpty
-    @NoHtml
-    @Column(name = "MACRO_SHORT_NAME", nullable = false)
+    @Column(name = "MACRO_SHORT_NAME", nullable = true)
     private String macroShortName;
 
     @Column(name = "REF_NUMBER", nullable = false)
@@ -45,19 +42,15 @@ public class Macros {
     @Column(name = "INVALID_WHEN", nullable = true)
     private String invalidWhen = null;
 
-    @NoHtml
     @Column(name = "FIELDA_QUESTION", nullable = true)
     private String fieldAQuestion = null;
 
-    @NoHtml
     @Column(name = "FIELDB_QUESTION", nullable = true)
     private String fieldBQuestion = null;
 
-    @NoHtml
     @Column(name = "CON1_QUESTION", nullable = true)
     private String con1Question = null;
 
-    @NoHtml
     @Column(name = "CON2_QUESTION", nullable = true)
     private String con2Question = null;
 
@@ -69,6 +62,18 @@ public class Macros {
     
     @Column(name = "macroDesc", nullable = true)
     private String macroDesc = "";
+    
+    @Column(name = "errorCondition", nullable = true)
+    private String errorCondition = "";
+     
+    @Column(name = "passClearLogic", nullable = true)
+    private String passClearLogic = "";
+      
+    @Column(name = "droppedValueLogging", nullable = true)
+    private String droppedValueLogging = "";
+       
+    @Column(name = "rejectRecordFile", nullable = true)
+    private String rejectRecordFile = "";
 
     public boolean isPopulateFieldA() {
         return populateFieldA;
@@ -262,5 +267,36 @@ public class Macros {
 	this.macroDesc = macroDesc;
     }
 
-    
+    public String getErrorCondition() {
+	return errorCondition;
+    }
+
+    public void setErrorCondition(String errorCondition) {
+	this.errorCondition = errorCondition;
+    }
+
+    public String getPassClearLogic() {
+	return passClearLogic;
+    }
+
+    public void setPassClearLogic(String passClearLogic) {
+	this.passClearLogic = passClearLogic;
+    }
+
+    public String getDroppedValueLogging() {
+	return droppedValueLogging;
+    }
+
+    public void setDroppedValueLogging(String droppedValueLogging) {
+	this.droppedValueLogging = droppedValueLogging;
+    }
+
+    public String getRejectRecordFile() {
+	return rejectRecordFile;
+    }
+
+    public void setRejectRecordFile(String rejectRecordFile) {
+	this.rejectRecordFile = rejectRecordFile;
+    }
+
 }

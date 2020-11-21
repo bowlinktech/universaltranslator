@@ -101,11 +101,12 @@
 			</div>	
 			<div id="orgDetails" style="${organization.id > 0 ? 'display:block':'display:none'}">
 			    <spring:bind path="orgName">
-				<div class="form-group ${status.error ? 'has-error' : '' } ${not empty existingOrg ? 'has-error' : ''}">
+				<div id="orgNameDiv" class="form-group ${status.error ? 'has-error' : '' } ${not empty existingOrg ? 'has-error' : ''}">
 				    <label class="control-label" for="orgName">Organization Name *</label>
 				    <form:input path="orgName" id="orgName" class="form-control" type="text" maxLength="255" />
 				    <form:errors path="orgName" cssClass="control-label" element="label" />
 				    <c:if test="${not empty existingOrg}"><span class="control-label">${existingOrg}</span></c:if>
+                                    <span id="orgNameErrorMsg" class="control-label"></span>
 				</div>
 			    </spring:bind>
 			    <spring:bind path="address">

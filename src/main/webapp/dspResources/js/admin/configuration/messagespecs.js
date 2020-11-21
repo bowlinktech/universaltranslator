@@ -1,6 +1,17 @@
 
 require(['./main'], function () {
     
+    $(document).on('change', '.containsHeaderRow', function() {
+        if($(this).val() == 1) {
+            $('#totalHeaderRows').val(1);
+             $('#totalHeaderRowsDiv').show();
+        }
+        else {
+            $('#totalHeaderRows').val(0);
+            $('#totalHeaderRowsDiv').hide();
+        }
+    });
+    
     $(document).on('click','.createNewTemplate',function() {
       
         var configId = $(this).attr('rel');
@@ -160,6 +171,40 @@ function checkFormFields() {
         }
 
     }
+    
+    //Check the start row value if contains header row
+    var containsHeaderRow = $("input[name='containsHeaderRow']:checked").val();
+    
+    if(containsHeaderRow == 1) {
+        var totalHeaderRows = $('#totalHeaderRows').val();
+        
+        if(totalHeaderRows < 1) {
+            $('#totalHeaderRowsDiv').addClass("has-error");
+            $('#totalHeaderRowsMsg').addClass("has-error");
+            $('#totalHeaderRowsMsg').html('The number of header rows must be greater than 0. If there are no header rows select NO for "Will the submitted file have a header row?"');
+            hasErrors = 1;
+        }
+        else if(!$.isNumeric(totalHeaderRows)) {
+            $('#totalHeaderRowsDiv').addClass("has-error");
+            $('#totalHeaderRowsMsg').addClass("has-error");
+            $('#totalHeaderRowsMsg').html('The number of header rows must be a numeric value greater than 0.');
+            hasErrors = 1;
+        }
+    }
+    else {
+        $('#startRow').val(0);
+    }
+    
+     /*$(document).on('change', '.containsHeaderRow', function() {
+        if($(this).val() == 1) {
+            $('#startRow').val(1);
+             $('.startRowDiv').show();
+        }
+        else {
+            $('#startRow').val(0);
+            $('.startRowDiv').hide();
+        }
+    });*/
 
     //Make sure at least one reportable field is selected
     /*var rptField1 = $('#rptField1').val();

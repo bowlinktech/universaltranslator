@@ -404,75 +404,84 @@ public class transactionInManagerImpl implements transactionInManager {
     /**
      * This method finds all error transactionInId in TransactionInErrors / TransactionOutErrors and update transactionIn with the appropriate error status It can be passed, reject and error
      *
+     * @param batchId
+     * @param statusId
+     * @param foroutboundProcessing
+     * @throws java.lang.Exception
      */
     @Override
     public void updateStatusForErrorTrans(Integer batchId, Integer statusId, boolean foroutboundProcessing) throws Exception {
-
 	transactionInDAO.updateStatusForErrorTrans(batchId, statusId, foroutboundProcessing);
-
     }
 
     @Override
     public Integer runValidations(Integer batchUploadId, Integer configId) {
 	
+	Integer totalValidationErrors = 0;
 	Integer errorCount = 0;
-	//1. we get validation types
-	//2. we skip 1 as that is not necessary
-	//3. we skip date (4) as there is no isDate function in MySQL
-	//4. we skip the ids that are not null as Mysql will bomb out checking character placement
-	//5. back to date, we grab transaction info and we loop (errId 7)
-
-	//MySql RegEXP 
-	//validate numeric - ^-?[0-9]+[.]?[0-9]*$|^-?[.][0-9]+$ 
-	//validate email - ^[a-z0-9\._%+!$&*=^|~#%\'`?{}/\-]+@[a-z0-9\.-]+\.[a-z]{2,6}$ or ^[A-Z0-9._%-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$ 
-	//validate url - ^(https?://)?([\da-z.-]+).([a-z0-9])([0-9a-z]*)*[/]?$ - need to fix not correct - might have to run in java as mysql is not catching all. 
-	//validate phone - should be no longer than 11 digits ^[0-9]{7,11}$ 
-	//validate date - doing this in java
-	//TODO was hoping to have one SP but concat in SP not setting and not catching errors correctly. Need to recheck
+	
 	List<configurationFormFields> configurationFormFields = configurationtransportmanager.getCffByValidationType(configId, 0);
 	
 	if(configurationFormFields != null) {
 	    if(!configurationFormFields.isEmpty()) {
+		String validation = "";
+		Integer validationTypeId = 0; 
+		
 		for (configurationFormFields cff : configurationFormFields) {
-		    String regEx = "";
-
-		    Integer validationTypeId = cff.getValidationType();
+		    errorCount = 0;
+		    
+		    validationTypeId = cff.getValidationType();
+		    
 		    switch (cff.getValidationType()) {
 			// no validation
 			case 1:
 			    break;
 			//email calling SQL to validation and insert - one statement
 			case 2:
-			    errorCount = errorCount + genericValidation(cff, validationTypeId, batchUploadId, regEx);
+			    validation = "Email";
+			    errorCount = genericValidation(cff, validationTypeId, batchUploadId, "");
 			    break;
 			//phone  calling SP to validation and insert - one statement 
 			case 3:
-			    errorCount = errorCount + genericValidation(cff, validationTypeId, batchUploadId, regEx);
+			    validation = "Phone Number";
+			    errorCount = genericValidation(cff, validationTypeId, batchUploadId, "");
 			    break;
 			// need to loop through each record / each field
 			case 4:
-			    errorCount = errorCount + genericValidation(cff, validationTypeId, batchUploadId, regEx);
+			    validation = "Date";
+			    errorCount = genericValidation(cff, validationTypeId, batchUploadId, "");
 			    break;
 			//numeric   calling SQL to validation and insert - one statement      
 			case 5:
-			    errorCount = errorCount + genericValidation(cff, validationTypeId, batchUploadId, regEx);
+			    validation = "Numeric";
+			    errorCount = genericValidation(cff, validationTypeId, batchUploadId, "");
 			    break;
 			//url - need to rethink as regExp is not validating correctly
 			case 6:
-			    errorCount = errorCount + genericValidation(cff, validationTypeId, batchUploadId, regEx);
+			    validation = "URL";
+			    errorCount = genericValidation(cff, validationTypeId, batchUploadId, "");
 			    break;
 			//anything new we hope to only have to modify sp
 			default:
-			    errorCount = errorCount + genericValidation(cff, validationTypeId, batchUploadId, regEx);
+			    validation = "";
+			    //errorCount = genericValidation(cff, validationTypeId, batchUploadId, "");
 			    break;
 		    }
-
+		    
+		    if(errorCount > 0) {
+			totalValidationErrors = totalValidationErrors + errorCount;
+			
+			//log batch activity
+			batchuploadactivity ba = new batchuploadactivity();
+			ba.setActivity("Validation Error. Validation Type:" + validation + " for configId:" + configId + " Field No: " + cff.getFieldNo());
+			ba.setBatchUploadId(batchUploadId);
+			transactionInDAO.submitBatchActivityLog(ba);
+		    }
 		}
 	    }
 	}
-
-
-	return errorCount;
+	
+	return totalValidationErrors;
     }
 
     @Override
@@ -511,30 +520,31 @@ public class transactionInManagerImpl implements transactionInManager {
 		List<CrosswalkData> cdList = getCrosswalkDataForBatch(cdt, batchId, foroutboundProcessing);
 		// we loop through each field value in the list and apply cw
 		errors = processMultiValueCWData(configId, batchId, cdt, cdList, foroutboundProcessing);
-	    } else {
+	    } 
+	    else {
+		executeCWDataForSingleFieldValue(configId, batchId, cdt, foroutboundProcessing);
 		
-		Integer returnCW = executeCWDataForSingleFieldValue(configId, batchId, cdt, foroutboundProcessing);
-		//replacing with single query that will update entire cwlist
-		if (cdt.getPassClear() == 1) {
-		    //flag errors, anything row that is not null in F[FieldNo] but null in forCW
-		    flagCWErrors(configId, batchId, cdt, foroutboundProcessing);
-		    //flag as error in transactionIn or transactionOut table
+		//flag errors, anything row that is not null in F[FieldNo] but null in forCW
+		errors = flagCWErrors(configId, batchId, cdt, foroutboundProcessing, cdt.isRequiredField());
+	
+		//If field is required update transaction status if error is CW error is found
+		if(cdt.isRequiredField() && errors > 0) {
+		    //flag as error in transactionIn or transactionOut table (Only updating REQUIRED records from transactioninerrors)
 		    updateStatusForErrorTrans(batchId, 14, foroutboundProcessing);
-
-		} else {
-			configurationFormFields cff = configurationtransportmanager.getConfigurationFieldById(cdt.getFieldId());
-			if (!cff.getRequired()) {
-				//insert dropped values for non-required fields, required fields will be captured with error
-				insertCWDroppedValues(configId, batchId, cff, cdt, foroutboundProcessing);
-			}
 		}
-		//we replace original F[FieldNo] column with data in forcw
+		
+		//If field is REQUIRED OR OPTIONAL and DTS says clear bad CW data then log dropped value.
+		if(cdt.getPassClear() == 2) {
+		    insertCWDroppedValues(configId, batchId, cdt, foroutboundProcessing);
+		}
+		
+		//we replace original F[FieldNo] column with data in forcw, if clear then NULL will be set.
 		updateFieldNoWithCWData(configId, batchId, cdt.getFieldNo(), cdt.getPassClear(), foroutboundProcessing);
 	    }
 	    return errors;
 	} catch (Exception e) {
 	    e.printStackTrace();
-	    return 1;
+	    return 9999999;
 	}
 
     }
@@ -547,24 +557,35 @@ public class transactionInManagerImpl implements transactionInManager {
 
 	try {
 	    Macros macro = configurationManager.getMacroById(cdt.getMacroId());
-	    int sysError = 0;
-	    try {
-		// we expect the target field back so we can figure out clear pass option
-		sysError = sysError + executeMacro(configId, batchId, cdt, foroutboundProcessing, macro);
-		// insert macro errors
-		Integer intMacroReturn = flagMacroErrors(configId, batchId, cdt, foroutboundProcessing);
-		
-		//flag as error in transactionIn or transactionOut table
-		updateStatusForErrorTrans(batchId, 14, foroutboundProcessing);
-		
-		return sysError;
-	    } catch (Exception e) {
-		e.printStackTrace();
-		return 1;
+	    
+	    if (macro != null) {
+	    	cdt.setMacroName(macro.getmacroName());
+	    } else {
+	    	insertProcessingError(processingSysErrorId, configId, batchId, cdt.getFieldNo(),null, null, null,true, foroutboundProcessing, ("Macro " + cdt.getMacroId() + " doesn't exist in macro_names table"));
+	    	return 0;
 	    }
+	    
+	    int sysError = 0;
+		
+	    // we expect the target field back so we can figure out clear pass option
+	    sysError = executeMacro(configId, batchId, cdt, foroutboundProcessing, macro);
+	    
+	    // insert macro errors
+	    Integer macroErrors = flagMacroErrors(configId, batchId, cdt, foroutboundProcessing);
+	    
+	    if(cdt.getPassClear() == 2) {
+	    	insertMacroDroppedValues(batchId, cdt, foroutboundProcessing);
+	    	executePassClearLogic(batchId, cdt, foroutboundProcessing);
+	    }
+
+	    //flag as error in transactionIn or transactionOut table (Only updating REQUIRED records from transactioninerrors)
+	    updateStatusForErrorTrans(batchId, 14, foroutboundProcessing);
+
+	    return macroErrors;
+	    
 	} catch (Exception e) {
-	    e.printStackTrace();
-	    return 1;
+	   //e.printStackTrace();
+	   return 9999999;
 	}
 
     }
@@ -575,8 +596,8 @@ public class transactionInManagerImpl implements transactionInManager {
     }
 
     @Override
-    public Integer executeCWDataForSingleFieldValue(Integer configId, Integer batchId, configurationDataTranslations cdt, boolean foroutboundProcessing) {
-	return transactionInDAO.executeCWDataForSingleFieldValue(configId, batchId, cdt, foroutboundProcessing);
+    public void executeCWDataForSingleFieldValue(Integer configId, Integer batchId, configurationDataTranslations cdt, boolean foroutboundProcessing) {
+	transactionInDAO.executeCWDataForSingleFieldValue(configId, batchId, cdt, foroutboundProcessing);
     }
 
     @Override
@@ -585,8 +606,8 @@ public class transactionInManagerImpl implements transactionInManager {
     }
 
     @Override
-    public void flagCWErrors(Integer configId, Integer batchId, configurationDataTranslations cdt, boolean foroutboundProcessing) {
-	transactionInDAO.flagCWErrors(configId, batchId, cdt, foroutboundProcessing);
+    public Integer flagCWErrors(Integer configId, Integer batchId, configurationDataTranslations cdt, boolean foroutboundProcessing, boolean isFieldRequired) {
+	return transactionInDAO.flagCWErrors(configId, batchId, cdt, foroutboundProcessing,isFieldRequired);
     }
 
     @Override
@@ -597,7 +618,6 @@ public class transactionInManagerImpl implements transactionInManager {
     @Override
     public Integer executeMacro(Integer configId, Integer batchId, configurationDataTranslations cdt, boolean foroutboundProcessing, Macros macro) {
 	return transactionInDAO.executeMacro(configId, batchId, cdt, foroutboundProcessing, macro);
-
     }
 
     @Override
@@ -642,8 +662,8 @@ public class transactionInManagerImpl implements transactionInManager {
     }
 
     @Override
-    public Integer insertLoadData(Integer batchId, Integer configId, String delimChar, String fileWithPath, String loadTableName, boolean containsHeaderRow, String lineTerminator) {
-	return transactionInDAO.insertLoadData(batchId, configId, delimChar, fileWithPath, loadTableName, containsHeaderRow, lineTerminator);
+    public Integer insertLoadData(Integer batchId, Integer configId, String delimChar, String fileWithPath, String loadTableName, boolean containsHeaderRow, Integer totalHeaderRows, String lineTerminator) {
+	return transactionInDAO.insertLoadData(batchId, configId, delimChar, fileWithPath, loadTableName, containsHeaderRow, totalHeaderRows, lineTerminator);
     }
 
     @Override
@@ -1137,7 +1157,7 @@ public class transactionInManagerImpl implements transactionInManager {
 				    
 				    //log batch activity
 				    batchuploadactivity ba = new batchuploadactivity();
-				    ba.setActivity("No valid configuration transports were found.");
+				    ba.setActivity("No valid configuration was found for the selected organization and the file extension of the uploaded file.");
 				    ba.setBatchUploadId(batchId);
 				    transactionInDAO.submitBatchActivityLog(ba);
 				    
@@ -1423,12 +1443,12 @@ public class transactionInManagerImpl implements transactionInManager {
 					
 					//log batch activity
 					ba = new batchuploadactivity();
-					ba.setActivity("Invlaid file size. Uploaded file was "+ Files.size(target) + ". The configuration max file size was set to " + maxFileSize);
+					ba.setActivity("Invalid file size. Uploaded file was "+ Files.size(target) + ". The configuration max file size was set to " + maxFileSize);
 					ba.setBatchUploadId(batchId);
 					transactionInDAO.submitBatchActivityLog(ba);
 				    }
 				}
-
+				
 				if (statusId != 42) {
 				    insertProcessingError(errorId, 0, batchId, null, null, null, null, false, false, "");
 				}
@@ -2055,6 +2075,9 @@ public class transactionInManagerImpl implements transactionInManager {
 	
 	//first thing we do is get details, then we set it to  38
 	batchUploads batch = getBatchDetails(batchId);
+	
+	//Get a full list of macros
+	List<Macros> macroList = configurationManager.getMacros();
 
 	//we recheck status in case it was picked up in a loop
 	if (batch.getStatusId() == 42) {
@@ -2535,8 +2558,18 @@ public class transactionInManagerImpl implements transactionInManager {
 			if ("".equals(lineTerminator)) {
 			    lineTerminator = "\\n";
 			}
+			
+			configurationMessageSpecs configSpecs = configurationManager.getMessageSpecs(batch.getConfigId());
+			
+			Integer totalHeaderRows = 0;
+			
+			if(configSpecs != null) {
+			    if(!"".equals(configSpecs.getTotalHeaderRows())) {
+				totalHeaderRows = configSpecs.getTotalHeaderRows();
+			    }
+			}
 
-			int errorHere = insertLoadData(batch.getId(), batch.getConfigId(), delimChar, actualFileName, "transactionInRecords_" + batch.getId(), batch.isContainsHeaderRow(), lineTerminator);
+			int errorHere = insertLoadData(batch.getId(), batch.getConfigId(), delimChar, actualFileName, "transactionInRecords_" + batch.getId(), batch.isContainsHeaderRow(), totalHeaderRows, lineTerminator);
 
 			if (errorHere > 0) {
 			    insertProcessingError(7, null, batchId, null, null, null, null, false, false, "insertLoadData, please login and check logs.");
@@ -2659,6 +2692,10 @@ public class transactionInManagerImpl implements transactionInManager {
 
 			// we trim all values
 			trimFieldValues(batchId, false, batch.getConfigId(), true);
+			ba = new batchuploadactivity();
+			ba.setActivity("All batch entries were trimmed for batchId: " + batchId);
+			ba.setBatchUploadId(batchId);
+			transactionInDAO.submitBatchActivityLog(ba);
 
 			//now that we have our config, we will apply pre-processing cw and macros to manipulate our data
 			//1. find all configs for batch, loop and process
@@ -2669,34 +2706,48 @@ public class transactionInManagerImpl implements transactionInManager {
 			    //we are reordering 1. cw/macro, 2. required and 3. validate 
 			    // 1. grab the configurationDataTranslations and run cw/macros
 			    List<configurationDataTranslations> dataTranslations = configurationManager.getDataTranslationsWithFieldNo(configId, 2); //pre processing
-			    Integer crosswalkError = 0;
+			    Integer crosswalkErrors = 0;
 			    Integer macroError = 0;
+			    String macroName = "";
 			    
 			    for (configurationDataTranslations cdt : dataTranslations) {
-				crosswalkError = 0;
+				crosswalkErrors = 0;
 				macroError = 0;
 				
 				if (cdt.getCrosswalkId() != 0) {
-				    crosswalkError = processCrosswalk(configId, batchId, cdt, false);
 				    
-				    if(crosswalkError > 0) {
-					sysErrors = sysErrors + crosswalkError;
-					
+				    crosswalkErrors = processCrosswalk(configId, batchId, cdt, false);
+			    
+				    if(crosswalkErrors == 9999999) {
+					sysErrors++; 
+				    }
+				    else if(crosswalkErrors > 0) {
 					//log batch activity
 					ba = new batchuploadactivity();
-					ba.setActivity("Crosswalk Error. CWId:" + cdt.getCrosswalkId() + " for configId:" + configId);
+					ba.setActivity("Crosswalk Error. CWId:" + cdt.getCrosswalkId() + " for configId:" + batch.getConfigId() + " total records with CW error: " + crosswalkErrors);
 					ba.setBatchUploadId(batchId);
 					transactionInDAO.submitBatchActivityLog(ba);
 				    }
-				} else if (cdt.getMacroId() != 0) {
-				    macroError = processMacro(configId, batchId, cdt, false);
 				    
-				    if(macroError > 0) {
-					sysErrors = sysErrors + macroError;
-					
+				} else if (cdt.getMacroId() != 0) {
+				    macroName = "";
+				    macroError = processMacro(configId, batchId, cdt, false);
+
+				    if(macroError == 9999999) {
+					sysErrors++; 
+				    }
+				    else if(macroError > 0) {
+					if(!macroList.isEmpty()) {
+					    for(Macros macro : macroList) {
+						if(macro.getId() == cdt.getMacroId()) {
+						    macroName = macro.getMacroName().trim();
+						}
+					    }
+					}
+
 					//log batch activity
 					ba = new batchuploadactivity();
-					ba.setActivity("Macro Error. macroId:" + cdt.getMacroId() + " for configId:" + configId);
+					ba.setActivity("Macro Error. macro: " + macroName + " macroId: " + cdt.getMacroId() + " for configId:" + batch.getConfigId() + " total records with Macro error: " + macroError);
 					ba.setBatchUploadId(batchId);
 					transactionInDAO.submitBatchActivityLog(ba);
 				    }
@@ -2721,7 +2772,7 @@ public class transactionInManagerImpl implements transactionInManager {
 		    updateRecordCounts(batchId, new ArrayList<Integer>(), false, "totalRecordCount");
 		    updateBatchStatus(batchId, 7, "endDateTime");
 		    //need to insert error on why we are rejecting
-		    insertProcessingError(7, null, batchId, null, null, null, null, false, false, "No valid transactions were found for batch.");
+		    insertProcessingError(7, null, batchId, null, null, null, null, false, false, "No valid configurations were found for batch.");
 		    
 		    //log batch activity
 		    ba = new batchuploadactivity();
@@ -2897,6 +2948,9 @@ public class transactionInManagerImpl implements transactionInManager {
 	Integer batchStatusId = 29;
 	List<Integer> errorStatusIds = Arrays.asList(11, 13, 14, 16);
 	
+	//Get a full list of macros
+	List<Macros> macroList = configurationManager.getMacros();
+	
 	//get batch details
 	batchUploads batch = getBatchDetails(batchUploadId);
 
@@ -2960,54 +3014,13 @@ public class transactionInManagerImpl implements transactionInManager {
 		ba.setBatchUploadId(batchUploadId);
 		transactionInDAO.submitBatchActivityLog(ba);
 	    }
-
-	    //we need to run all checks before insert regardless 
-	    //1. cw/macro
-	    //2. required 
-	    //3. validate 
-	    // 1. grab the configurationDataTranslations and run cw/macros
-	    List<configurationDataTranslations> dataTranslations = configurationManager.getDataTranslationsWithFieldNo(batch.getConfigId(), 1);
 	    
-	    if(dataTranslations != null) {
-		if(!dataTranslations.isEmpty()) {
-		    Integer crosswalkError = 0;
-		    Integer macroError = 0;
-		    
-		    for (configurationDataTranslations cdt : dataTranslations) {
-			crosswalkError = 0;
-			macroError = 0;
-			
-			if (cdt.getCrosswalkId() != 0) {
-			    crosswalkError = processCrosswalk(batch.getConfigId(), batchUploadId, cdt, false);
-			    
-			    if(crosswalkError > 0) {
-				systemErrorCount++;
-
-				//log batch activity
-				ba = new batchuploadactivity();
-				ba.setActivity("Crosswalk Error. CWId:" + cdt.getCrosswalkId() + " for configId:" + batch.getConfigId());
-				ba.setBatchUploadId(batchUploadId);
-				transactionInDAO.submitBatchActivityLog(ba);
-			    }
-			} 
-			else if (cdt.getMacroId() != 0) {
-			    macroError = processMacro(batch.getConfigId(), batchUploadId, cdt, false);
-
-			    if(macroError > 0) {
-				systemErrorCount++;
-
-				//log batch activity
-				ba = new batchuploadactivity();
-				ba.setActivity("Macro Error. macroId:" + cdt.getMacroId() + " for configId:" + batch.getConfigId());
-				ba.setBatchUploadId(batchUploadId);
-				transactionInDAO.submitBatchActivityLog(ba);
-			    }
-			}
-		    }
-		}
-	    }
-
-	    //check R/O
+	    //we need to run all checks before insert regardless 
+	    //1. required
+	    //2. cw/macro 
+	    //3. validate 
+	    
+	    //Step 1: check R/O
 	    List<configurationFormFields> reqFields = getRequiredFieldsForConfig(batch.getConfigId());
 	    
 	    if(reqFields != null) {
@@ -3017,9 +3030,10 @@ public class transactionInManagerImpl implements transactionInManager {
 		    for (configurationFormFields cff : reqFields) {
 			reqError = insertFailedRequiredFields(cff, batchUploadId);
 			
-			if(reqError > 0) {
-			    systemErrorCount++;
-
+			if(reqError == 9999999) {
+			   systemErrorCount++; 
+			}
+			else if(reqError > 0) {
 			    //log batch activity
 			    ba = new batchuploadactivity();
 			    ba.setActivity("Required Field Error. Field No:" + cff.getFieldNo() + " Field Desc:" + cff.getFieldDesc() + " for configId:" + batch.getConfigId());
@@ -3030,22 +3044,74 @@ public class transactionInManagerImpl implements transactionInManager {
 		}
 	    }
 	    
-	    // update status of the failed records to ERR - 14
+	    // update status of the failed records to ERR - 14 (Only updating REQUIRED records from transactioninerrors)
 	    updateStatusForErrorTrans(batchUploadId, 14, false);
 	    
+	    //Step 2: grab the configurationDataTranslations and run cw/macros
+	    List<configurationDataTranslations> dataTranslations = configurationManager.getDataTranslationsWithFieldNo(batch.getConfigId(), 1);
+	    
+	    if(dataTranslations != null) {
+		if(!dataTranslations.isEmpty()) {
+		    Integer crosswalkErrors = 0;
+		    Integer macroError = 0;
+		    String macroName = "";
+		    
+		    for (configurationDataTranslations cdt : dataTranslations) {
+			crosswalkErrors = 0;
+			macroError = 0;
+			
+			if (cdt.getCrosswalkId() != 0) {
+			    crosswalkErrors = processCrosswalk(batch.getConfigId(), batchUploadId, cdt, false);
+			    
+			    if(crosswalkErrors == 9999999) {
+				systemErrorCount++; 
+			    }
+			    else if(crosswalkErrors > 0) {
+				//log batch activity
+				ba = new batchuploadactivity();
+				ba.setActivity("Crosswalk Error. CWId:" + cdt.getCrosswalkId() + " for configId:" + batch.getConfigId() + " total records with CW error: " + crosswalkErrors);
+				ba.setBatchUploadId(batchUploadId);
+				transactionInDAO.submitBatchActivityLog(ba);
+			    }
+			} 
+			else if (cdt.getMacroId() != 0) {
+			    macroName = "";
+			    macroError = processMacro(batch.getConfigId(), batchUploadId, cdt, false);
+			    
+			    if(macroError == 9999999) {
+				systemErrorCount++; 
+			    }
+			    else if(macroError > 0) {
+				if(!macroList.isEmpty()) {
+				    for(Macros macro : macroList) {
+					if(macro.getId() == cdt.getMacroId()) {
+					    macroName = macro.getMacroName().trim();
+					}
+				    }
+				}
+				
+				//log batch activity
+				ba = new batchuploadactivity();
+				ba.setActivity("Macro Error. macro: " + macroName + " macroId: " + cdt.getMacroId() + " for configId:" + batch.getConfigId() + " total records with Macro error: " + macroError);
+				ba.setBatchUploadId(batchUploadId);
+				transactionInDAO.submitBatchActivityLog(ba);
+			    }
+			}
+		    }
+		}
+	    }
+	    
+	    //Trim all field values again
+	    trimFieldValues(batchUploadId, false, batch.getConfigId(), true);
+	    ba = new batchuploadactivity();
+	    ba.setActivity("All final batch entries were trimmed for batchId: " + batchUploadId);
+	    ba.setBatchUploadId(batchUploadId);
+	    transactionInDAO.submitBatchActivityLog(ba);
+	   
+	    //Step 3: Check validation errors
 	    Integer validationErrors = runValidations(batchUploadId, batch.getConfigId());
 	    
-	    if(validationErrors > 0) {
-		systemErrorCount = systemErrorCount + validationErrors;
-		
-		//log batch activity
-		ba = new batchuploadactivity();
-		ba.setActivity("One or more validation errors occurred.");
-		ba.setBatchUploadId(batchUploadId);
-		transactionInDAO.submitBatchActivityLog(ba);
-	    }
-
-	    // update status of the failed records to ERR - 14
+	    // update status of the failed records to ERR - 14 (Only updating REQUIRED records from transactioninerrors)
 	    updateStatusForErrorTrans(batchUploadId, 14, false);
 
 	    /**
@@ -3072,14 +3138,17 @@ public class transactionInManagerImpl implements transactionInManager {
 		}
 
 		//Check to make sure all returned targets match the config of the uploaded batch
+		Integer checkTargets = 0;
 		for (configurationConnection bt : batchTargetList) {
 		    if (bt.getsourceConfigId() != sourceConfigId) {
 			sourceConfigId = bt.getsourceConfigId();
 
 			if (bt.getTargetOrgCol() != 0) {
-			    systemErrorCount = systemErrorCount + rejectInvalidTargetOrg(batchUploadId, bt);
+			    checkTargets = rejectInvalidTargetOrg(batchUploadId, bt);
+			    if(checkTargets == 9999999) {
+				systemErrorCount++; 
+			    }
 			}
-
 		    }
 		}
 	    }
@@ -3091,18 +3160,29 @@ public class transactionInManagerImpl implements transactionInManager {
 	    if(postDataTranslations != null) {
 		if(!postDataTranslations.isEmpty()) {
 		    Integer postMacroError = 0;
+		    String macroName = "";
 		    
 		    for (configurationDataTranslations cdt : postDataTranslations) {
+			macroName = "";
 			postMacroError = processMacro(batch.getConfigId(), batchUploadId, cdt, false);
-			
-			if(postMacroError > 0) {
+			    
+			if(postMacroError == 9999999) {
+			    systemErrorCount++; 
+			}
+			else if(postMacroError > 0) {
+			    if(!macroList.isEmpty()) {
+				for(Macros macro : macroList) {
+				    if(macro.getId() == cdt.getMacroId()) {
+					macroName = macro.getMacroName().trim();
+				    }
+				}
+			    }
+
 			    //log batch activity
 			    ba = new batchuploadactivity();
-			    ba.setActivity("Post macro processing error. macroId:" + cdt.getMacroId()+ " for configId:"+batch.getConfigId());
+			    ba.setActivity("Post Macro Error. macro: " + macroName + " macroId: " + cdt.getMacroId() + " for configId:" + batch.getConfigId() + " total records with Macro error: " + postMacroError);
 			    ba.setBatchUploadId(batchUploadId);
 			    transactionInDAO.submitBatchActivityLog(ba);
-			    
-			    systemErrorCount = systemErrorCount + postMacroError;
 			}
 		    }
 		}
@@ -3121,6 +3201,10 @@ public class transactionInManagerImpl implements transactionInManager {
 		
 		//populate dropped values 
 		populateDroppedValues(batch.getId(), batch.getConfigId(), false);
+		
+		updateRecordCounts(batchUploadId, new ArrayList<Integer>(), false, "totalRecordCount");
+
+		updateRecordCounts(batchUploadId, errorStatusIds, false, "errorRecordCount");
 		
 		//log batch activity
 		ba = new batchuploadactivity();
@@ -3150,7 +3234,7 @@ public class transactionInManagerImpl implements transactionInManager {
 		//run check to make sure we have records 
 		if (getRecordCounts(batchUploadId, Arrays.asList(12), false, true) > 0) {
 		    updateRecordCounts(batchUploadId, new ArrayList<Integer>(), false, "totalRecordCount");
-		    // do we count pass records as errors?
+		    //do we count pass records as errors?
 		    updateRecordCounts(batchUploadId, errorStatusIds, false, "errorRecordCount");
 		    updateBatchStatus(batchUploadId, 29, "endDateTime");
 
@@ -3167,8 +3251,51 @@ public class transactionInManagerImpl implements transactionInManager {
 	    updateRecordCounts(batchUploadId, new ArrayList<Integer>(), false, "totalRecordCount");
 
 	    updateRecordCounts(batchUploadId, errorStatusIds, false, "errorRecordCount");
-	    updateBatchStatus(batchUploadId, batchStatusId, "");
 	    
+	    // Insert all Targets if batch status = 24
+	    boolean targetsInserted = false;
+	    boolean noTargetsFound = false;
+
+	    updatedBatchDetails = getBatchDetails(batchUploadId);
+
+	    //clean
+	    cleanAuditErrorTable(batch.getId());
+
+	    //log batch activity
+	    ba = new batchuploadactivity();
+	    ba.setActivity("Clean Audit Error table for batchId:" + batchUploadId);
+	    ba.setBatchUploadId(batchUploadId);
+	    transactionInDAO.submitBatchActivityLog(ba);
+
+	    //populate the audit report if errors were found
+	    if(updatedBatchDetails.getErrorRecordCount() > 0) {
+
+		//log batch activity
+		ba = new batchuploadactivity();
+		ba.setActivity("Populate Audit Error table for batchId:" + batchUploadId);
+		ba.setBatchUploadId(batchUploadId);
+		transactionInDAO.submitBatchActivityLog(ba);
+
+		populateAuditReport(batch.getId(), configurationManager.getMessageSpecs(batch.getConfigId()));
+
+		//log batch activity
+		ba = new batchuploadactivity();
+		ba.setActivity("Audit Error table fully populated for batchId:" + batchUploadId);
+		ba.setBatchUploadId(batchUploadId);
+		transactionInDAO.submitBatchActivityLog(ba);
+	    }
+
+	    //populate dropped values
+	    populateDroppedValues(batch.getId(), batch.getConfigId(), false);
+
+	    //log batch activity
+	    ba = new batchuploadactivity();
+	    ba.setActivity("Populate Dropped Values for batchId:" + batchUploadId);
+	    ba.setBatchUploadId(batchUploadId);
+	    transactionInDAO.submitBatchActivityLog(ba);
+
+	    updateBatchStatus(batchUploadId, batchStatusId, "");
+
 	    //log batch activity
 	    ba = new batchuploadactivity();
 	    ba.setActivity("Uploaded batchId:" + batchUploadId + " status was set to " + batchStatusId);
@@ -3178,130 +3305,96 @@ public class transactionInManagerImpl implements transactionInManager {
 	    //we finish processing, we need to alert admin if there are any records there are rejected
 	    //we check batch to see if the batch has any rejected records. if it does, we send an email to notify reject.email in properties file
 	    updatedBatchDetails = getBatchDetails(batchUploadId);
-	    
+
 	    if (updatedBatchDetails.getErrorRecordCount() > 0) {
 		sendRejectNotification(updatedBatchDetails);
 	    }
 
-	} // end of single batch insert 
+	    if (updatedBatchDetails.getStatusId() == 24) {
 
-	// Insert all Targets if batch status = 24
-	boolean targetsInserted = false;
-	boolean noTargetsFound = false;
-	
-	updatedBatchDetails = getBatchDetails(batchUploadId);
-	
-	if (updatedBatchDetails.getStatusId() == 24) {
-	    
-	    //If no errors found then create the batch download entries
-	    if(updatedBatchDetails.getErrorRecordCount() == 0) {
-		targetsInserted = true;
-		noTargetsFound = assignBatchDLId(batchUploadId, batch.getConfigId());
-	    }
-	    else {
-		Integer totalErrorRows = 0;
-		
-		try {
-		    totalErrorRows = transactionInDAO.getTotalErroredRows(batchUploadId);
-		}
-		catch (Exception ex) {}
-		
-		//if errors are found and the configuration is not set to "Reject entire file on a single transaction error" then create the batch download entry.
-		if(handlingDetails.get(0).geterrorHandling() == 3) {
-		    batchStatusId = 7;
-		    updateBatchStatus(batchUploadId, batchStatusId, "endDateTime");
-		    
-		    //log batch activity
-		    batchuploadactivity ba = new batchuploadactivity();
-		    ba.setActivity("BatchId:" + batchUploadId + " was rejected because error handling is set to 'Reject entire file on a single transaction error' and has a total of " + updatedBatchDetails.getErrorRecordCount() + " errors.");
-		    ba.setBatchUploadId(batchUploadId);
-		    transactionInDAO.submitBatchActivityLog(ba);
-		}
-		else if(totalErrorRows >= updatedBatchDetails.getTotalRecordCount()) {
-		    batchStatusId = 7;
-		    updateBatchStatus(batchUploadId, batchStatusId, "endDateTime");
-		    
-		    //log batch activity
-		    batchuploadactivity ba = new batchuploadactivity();
-		    ba.setActivity("BatchId:" + batchUploadId + " was rejected because all the rows in the submitted file contained an error.");
-		    ba.setBatchUploadId(batchUploadId);
-		    transactionInDAO.submitBatchActivityLog(ba);
-		}
-		else {
+		//If no errors found then create the batch download entries
+		if(updatedBatchDetails.getErrorRecordCount() == 0) {
 		    targetsInserted = true;
 		    noTargetsFound = assignBatchDLId(batchUploadId, batch.getConfigId());
 		}
-	    }
-	}
-	
-	//clean
-	cleanAuditErrorTable(batch.getId());
-	
-	//log batch activity
-	batchuploadactivity ba = new batchuploadactivity();
-	ba.setActivity("Clean Audit Error table for batchId:" + batchUploadId);
-	ba.setBatchUploadId(batchUploadId);
-	transactionInDAO.submitBatchActivityLog(ba);
-	
-	//populate
-	populateAuditReport(batch.getId(), configurationManager.getMessageSpecs(batch.getConfigId()));
-	
-	//populate dropped values
-	populateDroppedValues(batch.getId(), batch.getConfigId(), false);
-	
-	//log batch activity
-	ba = new batchuploadactivity();
-	ba.setActivity("Populate Audit Error table for batchId:" + batchUploadId);
-	ba.setBatchUploadId(batchUploadId);
-	transactionInDAO.submitBatchActivityLog(ba);
-	
-	//If no targets were found
-	if(targetsInserted && !noTargetsFound) {
-	    //log batch activity
-	    ba = new batchuploadactivity();
-	    ba.setActivity("No valid connections were found for loading batch.");
-	    ba.setBatchUploadId(batchUploadId);
-	    transactionInDAO.submitBatchActivityLog(ba);
-	    
-	    insertProcessingError(10, null, batchUploadId, null, null, null, null, false, false, "No valid connections were found for loading batch.");
-	    updateRecordCounts(batchUploadId, new ArrayList<Integer>(), false, "errorRecordCount");
-	    updateRecordCounts(batchUploadId, new ArrayList<Integer>(), false, "totalRecordCount");
-	    updateBatchStatus(batchUploadId, 7, "endDateTime");
-	    
-	    return false;
-	}
-	
-	if (batchStatusId == 24) {
-	    
-	     Organization orgDetails = organizationmanager.getOrganizationById(batch.getOrgId());
-	    
-	    //Clear some files that are no longer needed
-	    //File in Load Files
-	    File fileToDelete = new File(myProps.getProperty("ut.directory.utRootDir") + "loadFiles/" + batch.getUtBatchName() + batch.getOriginalFileName().substring(batch.getOriginalFileName().lastIndexOf(".")).toLowerCase());
+		else {
+		    Integer totalErrorRows = 0;
 
-	    if (fileToDelete.exists()) {
+		    try {
+			totalErrorRows = transactionInDAO.getTotalErroredRows(batchUploadId);
+		    }
+		    catch (Exception ex) {}
+
+		    //if errors are found and the configuration is not set to "Reject entire file on a single transaction error" then create the batch download entry.
+		    if(totalErrorRows > 0 && handlingDetails.get(0).geterrorHandling() == 3) {
+			batchStatusId = 7;
+			updateBatchStatus(batchUploadId, batchStatusId, "endDateTime");
+
+			//log batch activity
+			ba = new batchuploadactivity();
+			ba.setActivity("BatchId:" + batchUploadId + " was rejected because error handling is set to 'Reject entire file on a single transaction error' and has a total of " + updatedBatchDetails.getErrorRecordCount() + " errors.");
+			ba.setBatchUploadId(batchUploadId);
+			transactionInDAO.submitBatchActivityLog(ba);
+		    }
+		    else {
+			targetsInserted = true;
+			noTargetsFound = assignBatchDLId(batchUploadId, batch.getConfigId());
+		    }
+		}
+	    }
+
+	    //If no targets were found
+	    if(targetsInserted && !noTargetsFound) {
 		//log batch activity
 		ba = new batchuploadactivity();
-		ba.setActivity("Deleted file: " + fileToDelete.getAbsolutePath());
+		ba.setActivity("No valid connections were found for loading batch.");
 		ba.setBatchUploadId(batchUploadId);
 		transactionInDAO.submitBatchActivityLog(ba);
-		
-		fileToDelete.delete();
+
+		insertProcessingError(10, null, batchUploadId, null, null, null, null, false, false, "No valid connections were found for loading batch.");
+		updateRecordCounts(batchUploadId, new ArrayList<Integer>(), false, "errorRecordCount");
+		updateRecordCounts(batchUploadId, new ArrayList<Integer>(), false, "totalRecordCount");
+		updateBatchStatus(batchUploadId, 7, "endDateTime");
+
+		return false;
+	    }
+
+	    if (batchStatusId == 24) {
+
+		 Organization orgDetails = organizationmanager.getOrganizationById(batch.getOrgId());
+
+		//Clear some files that are no longer needed
+		//File in Load Files
+		File fileToDelete = new File(myProps.getProperty("ut.directory.utRootDir") + "loadFiles/" + batch.getUtBatchName() + batch.getOriginalFileName().substring(batch.getOriginalFileName().lastIndexOf(".")).toLowerCase());
+
+		if (fileToDelete.exists()) {
+		    //log batch activity
+		    ba = new batchuploadactivity();
+		    ba.setActivity("Deleted file: " + fileToDelete.getAbsolutePath());
+		    ba.setBatchUploadId(batchUploadId);
+		    transactionInDAO.submitBatchActivityLog(ba);
+
+		    fileToDelete.delete();
+		}
+
+		//Input File
+		fileToDelete = new File(myProps.getProperty("ut.directory.utRootDir") + orgDetails.getCleanURL() + "/input files/" + batch.getUtBatchName() + batch.getOriginalFileName().substring(batch.getOriginalFileName().lastIndexOf(".")).toLowerCase());
+
+		if (fileToDelete.exists()) {
+		    //log batch activity
+		    ba = new batchuploadactivity();
+		    ba.setActivity("Deleted file: " + fileToDelete.getAbsolutePath());
+		    ba.setBatchUploadId(batchUploadId);
+		    transactionInDAO.submitBatchActivityLog(ba);
+
+		    fileToDelete.delete();
+		}
 	    }
 	    
-	    //Input File
-	    fileToDelete = new File(myProps.getProperty("ut.directory.utRootDir") + orgDetails.getCleanURL() + "/input files/" + batch.getUtBatchName() + batch.getOriginalFileName().substring(batch.getOriginalFileName().lastIndexOf(".")).toLowerCase());
 
-	    if (fileToDelete.exists()) {
-		//log batch activity
-		ba = new batchuploadactivity();
-		ba.setActivity("Deleted file: " + fileToDelete.getAbsolutePath());
-		ba.setBatchUploadId(batchUploadId);
-		transactionInDAO.submitBatchActivityLog(ba);
-		
-		fileToDelete.delete();
-	    }
-	}
+	} // end of single batch insert 
+
+	
 
 	return true;
     }
@@ -3352,7 +3445,7 @@ public class transactionInManagerImpl implements transactionInManager {
     @Override
     public void populateAuditReport(Integer batchUploadId, configurationMessageSpecs cms) throws Exception {
     	transactionInDAO.populateAuditReport(batchUploadId, cms.getconfigId());
-	}
+    }
 
     @Override
     public List<Integer> getErrorFieldNos(Integer batchUploadId)
@@ -3672,7 +3765,7 @@ public class transactionInManagerImpl implements transactionInManager {
 
 		batchId = submitBatchUpload(batchInfo);
 		
-		updateBatchStatus(batchId, 4, "startDateTime");
+		updateBatchStatus(batchId, statusId, "startDateTime");
 		
 		createBatchTables(batchId, configId);
 
@@ -3953,7 +4046,15 @@ public class transactionInManagerImpl implements transactionInManager {
 		transactionInDAO.batchUploadTableCleanUp(batchesToCleanup);
 	    }
 	}
-
+	
+	//Get a list of rejected batches to clean up
+	List<batchUploads> rejectedInboundBatchesToCleanup = transactionInDAO.findRejectedBatchesToCleanUp();
+	
+	if (rejectedInboundBatchesToCleanup != null) {
+	    if (!rejectedInboundBatchesToCleanup.isEmpty()) {
+		transactionInDAO.rejectedBatchUploadTableCleanUp(rejectedInboundBatchesToCleanup);
+	    }
+	}
     }
 
     @Override
@@ -4189,7 +4290,7 @@ public class transactionInManagerImpl implements transactionInManager {
 		}
 	    }
 	    
-	    String DMFile = myProps.getProperty("ut.directory.utRootDir") + fileDropDir.replace("/HELProductSuite/universalTranslator/", "");
+	    String DMFile = myProps.getProperty("ut.directory.utRootDir") + fileDropDir.replace("/Applications/HELProductSuite/universalTranslator/", "").replace("/HELProductSuite/universalTranslator/", "");
 	    batchInfo.setOriginalFolder(DMFile);
 
 	    //we reject
@@ -4229,9 +4330,13 @@ public class transactionInManagerImpl implements transactionInManager {
 		//copy file
 		writeToFile = fileNamePath;
 		
-		File encodedFile = new File(archivefileNamePath.replace("/HELProductSuite/universalTranslator/",myProps.getProperty("ut.directory.utRootDir")));
+		File encodedFile = new File(archivefileNamePath
+			.replace("/Applications/HELProductSuite/universalTranslator/",myProps.getProperty("ut.directory.utRootDir"))
+			.replace("/HELProductSuite/universalTranslator/",myProps.getProperty("ut.directory.utRootDir")));
 		
-		File movedFile = new File(fileNamePath.replace("/HELProductSuite/universalTranslator/",myProps.getProperty("ut.directory.utRootDir")));
+		File movedFile = new File(fileNamePath
+			.replace("/Applications/HELProductSuite/universalTranslator/",myProps.getProperty("ut.directory.utRootDir"))
+			.replace("/HELProductSuite/universalTranslator/",myProps.getProperty("ut.directory.utRootDir")));
 		
 		FileUtils.moveFile(new File(DMFile+directMessage.getReferralFileName()),movedFile);
 
@@ -4254,7 +4359,9 @@ public class transactionInManagerImpl implements transactionInManager {
 		    } 
 		    else {
 			String encodeArchivePath = myProps.getProperty("ut.directory.utRootDir") + "archivesIn/archive_" + batchName + fileExt;
-			Files.copy(new File(writeToFile.replace("/HELProductSuite/universalTranslator/",myProps.getProperty("ut.directory.utRootDir"))).toPath(), new File(encodeArchivePath).toPath(), REPLACE_EXISTING);
+			Files.copy(new File(writeToFile
+				.replace("/Applications/HELProductSuite/universalTranslator/",myProps.getProperty("ut.directory.utRootDir"))
+				.replace("/HELProductSuite/universalTranslator/",myProps.getProperty("ut.directory.utRootDir"))).toPath(), new File(encodeArchivePath).toPath(), REPLACE_EXISTING);
 			Files.copy(encodedFile.toPath(), new File(myProps.getProperty("ut.directory.utRootDir") + "archivesIn/" + batchName + fileExt.replace("/HELProductSuite/universalTranslator/",myProps.getProperty("ut.directory.utRootDir"))).toPath(), REPLACE_EXISTING);
 		    }
 
@@ -4273,7 +4380,9 @@ public class transactionInManagerImpl implements transactionInManager {
 			    delimiter = ct.getDelimChar();
 			}
 			
-			int delimCount = dir.checkFileDelimiter(new File(fileNamePath.replace("/HELProductSuite/universalTranslator/",myProps.getProperty("ut.directory.utRootDir"))), delimiter);
+			int delimCount = dir.checkFileDelimiter(new File(fileNamePath
+				.replace("/Applications/HELProductSuite/universalTranslator/",myProps.getProperty("ut.directory.utRootDir"))
+				.replace("/HELProductSuite/universalTranslator/",myProps.getProperty("ut.directory.utRootDir"))), delimiter);
 			if (delimCount < 3) {
 			    statusId = 7;
 			    errorId = 15;
@@ -4529,11 +4638,10 @@ public class transactionInManagerImpl implements transactionInManager {
 	
     }
 
-	@Override
-	public void insertCWDroppedValues(Integer configId, Integer batchId, configurationFormFields cff, configurationDataTranslations cdt,
-			boolean foroutboundProcessing) throws Exception {
-		transactionInDAO.insertCWDroppedValues(configId, batchId, cff, cdt, foroutboundProcessing);
-	}
+    @Override
+    public void insertCWDroppedValues(Integer configId, Integer batchId, configurationDataTranslations cdt, boolean foroutboundProcessing) throws Exception {
+	transactionInDAO.insertCWDroppedValues(configId, batchId, cdt, foroutboundProcessing);
+    }
     
     @Override
     public void populateDroppedValues(Integer batchUploadId, Integer configId, boolean foroutboundProcessing) throws Exception {
@@ -4553,5 +4661,20 @@ public class transactionInManagerImpl implements transactionInManager {
     @Override
     public List<batchErrorSummary> getBatchSystemErrorSummary(int batchId, String inboundOutbound) throws Exception {
 	return transactionInDAO.getBatchSystemErrorSummary(batchId,inboundOutbound);
+    }
+    
+    @Override
+    public void clearBatchActivityLogTable(Integer batchId) throws Exception {
+	transactionInDAO.clearBatchActivityLogTable(batchId);
+    }
+    
+    @Override
+    public void executePassClearLogic(Integer batchId, configurationDataTranslations cdt, boolean foroutboundProcessing) throws Exception {
+	transactionInDAO.executePassClearLogic(batchId, cdt, foroutboundProcessing);
+    }
+    
+    @Override
+    public void insertMacroDroppedValues(Integer batchId, configurationDataTranslations cdt, boolean foroutboundProcessing) throws Exception {
+	transactionInDAO.insertMacroDroppedValues(batchId, cdt, foroutboundProcessing);
     }
 }

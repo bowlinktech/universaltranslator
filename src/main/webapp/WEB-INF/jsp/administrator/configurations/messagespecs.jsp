@@ -152,15 +152,23 @@
                                         <c:when test="${transportType != 10}">
                                             <spring:bind path="containsHeaderRow">
                                                 <div class="form-group">
-                                                    <label class="control-label" for="containsHeaderRow">Will the submitted file have a header row? *</label>
+                                                    <label class="control-label" for="containsHeaderRow">Will the submitted file have any header rows? *</label>
                                                     <div>
                                                         <label class="radio-inline">
-                                                            <form:radiobutton id="containsHeaderRow" path="containsHeaderRow" value="1" /> Yes 
+                                                            <form:radiobutton class="containsHeaderRow" id="containsHeaderRow" path="containsHeaderRow" value="1" /> Yes 
                                                         </label>
                                                         <label class="radio-inline">
-                                                            <form:radiobutton id="containsHeaderRow" path="containsHeaderRow" value="0"/> No
+                                                            <form:radiobutton class="containsHeaderRow" id="containsHeaderRow" path="containsHeaderRow" value="0"/> No
                                                         </label>
                                                     </div>
+                                                </div>
+                                            </spring:bind>
+                                            <spring:bind path="totalHeaderRows">
+                                                <div id="totalHeaderRowsDiv" class="form-group ${status.error ? 'has-error' : '' }" style="display: ${messageSpecs.containsHeaderRow == true ? 'block' : 'none'}">
+                                                    <label class="control-label" for="totalHeaderRows">How many header rows does the file have? *</label>
+                                                    <form:input path="totalHeaderRows" id="totalHeaderRows" class="form-control sm-input" type="text" maxLength="2" />
+                                                    <form:errors path="totalHeaderRows" cssClass="control-label" element="label" />
+                                                    <span id="totalHeaderRowsMsg" class="control-label"></span>
                                                 </div>
                                             </spring:bind>
                                              <c:choose>

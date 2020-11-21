@@ -2,31 +2,46 @@
 
 require(['./main'], function () {
     
+    $(document).on('click', '.showMore', function() {
+       var macroId = $(this).attr('rel');
+       
+       if(!$('#macro-'+macroId).is(":visible")) {
+           $(this).html("Hide Details");
+           $('#macro-'+macroId).show();
+       }
+       else {
+           $(this).html("Show More Details");
+           $('#macro-'+macroId).hide();
+       }
+       
+    });
+    
     $(document).on('click','.deleteCrosswalk',function() {
         var dtsId = $(this).attr('rel2');
         var cwId = $(this).attr('rel');
         
         if((dtsId*1) > 0) {
-             alert("The crosswalk is currenlty being used below and can't be deleted.");
+             //alert("The selected crosswalk is currently associated to one of the below data translations and cannot be deleted. \n\nIf you are trying to upload a new file for the selected crosswalk click on the 'View' link to upload a new file. \n\nTo completely remove this crosswalk you must first remove the associated translation below.");
+             alert("The selected crosswalk is part of an existing configuration. You can click 'view' and upload an updated crosswalk file or you can delete the crosswalk after removing it from all configurations (data translations section) it is associated with.");
         }
         else {
-             if(confirm("Are you sure you want to remove this batch?")) {
-                    $('body').overlay({
-                        glyphicon : 'floppy-disk',
-                        message : 'Deleting...'
-                    });
+            if(confirm("Are you sure you want to remove this crosswalk?")) {
+                $('body').overlay({
+                    glyphicon : 'floppy-disk',
+                    message : 'Deleting...'
+                });
 
-                    $.ajax({
-                        url: 'deleteCrosswalk.do',
-                        data: {
-                            'cwId': cwId
-                        },
-                        type: 'POST',
-                        success: function(data) {
-                           location.reload();
-                        }
-                    });
-             }
+                $.ajax({
+                    url: 'deleteCrosswalk.do',
+                    data: {
+                        'cwId': cwId
+                    },
+                    type: 'POST',
+                    success: function(data) {
+                       location.reload();
+                    }
+                });
+            }
         }
     });
         
@@ -207,33 +222,51 @@ require(['./main'], function () {
 
     //Function that will take in the macro details
     $(document).on('click', '.submitMacroDetailsButton', function () {
+        var noErrors = 1;
+        
         var fieldA = $('#fieldAQuestion').val();
         var fieldB = $('#fieldBQuestion').val();
         var con1 = $('#Con1Question').val();
         var con2 = $('#Con2Question').val();
 
-        //Clear all fields
-        $('#fieldA').val("");
-        $('#fieldB').val("");
-        $('#constant1').val("");
-        $('#constant2').val("");
+        if(noErrors == 1) {
+            //Clear all fields
+            $('#fieldA').val("");
+            $('#fieldB').val("");
+            $('#constant1').val("");
+            $('#constant2').val("");
+            
+            if($('#Con1QuestionSelect').val() !== 'undefined') {
+                $('#constant1').attr('rel', $('#Con1Question option:selected').html());
+            }
+            if($('#Con2QuestionSelect').val() !== 'undefined') {
+                $('#constant2').attr('rel', $('#Con2Question option:selected').html());
+            }
+            if($('#fieldAQuestionSelect').val() !== 'undefined') {
+                $('#fieldA').attr('rel', $('#fieldAQuestion option:selected').html());
+            }
+            if($('#fieldBQuestionSelect').val() !== 'undefined') {
+                $('#fieldB').attr('rel', $('#fieldBQuestion option:selected').html());
+            }
+            
+            if (fieldA) {
+                $('#fieldA').val(fieldA);
+            }
+            if (fieldB) {
+                $('#fieldB').val(fieldB);
+            }
+            if (con1) {
+                $('#constant1').val(con1);
+            }
+            if (con2) {
+                $('#constant2').val(con2);
+            }
 
-        if (fieldA) {
-            $('#fieldA').val(fieldA);
+            //Close the modal window
+            $('#macroModal').modal('toggle');
+            $('#macroModal').modal('hide'); 
         }
-        if (fieldB) {
-            $('#fieldB').val(fieldB);
-        }
-        if (con1) {
-            $('#constant1').val(con1);
-        }
-        if (con2) {
-            $('#constant2').val(con2);
-        }
-
-        //Close the modal window
-        $('#macroModal').modal('toggle');
-        $('#macroModal').modal('hide');
+        
     });
 
 
@@ -417,7 +450,23 @@ require(['./main'], function () {
         var selectedCWText = $('#crosswalk').find(":selected").text();
         var selectedMacro = $('#macro').val();
         var selectedMacroText = $('#macro').find(":selected").text();
-
+        
+        if (typeof $('#constant1').attr('rel') !== 'undefined') {
+            selectedCWText = $('#constant1').attr('rel');
+        }
+        if (typeof $('#constant2').attr('rel') !== 'undefined') {
+            selectedCWText = $('#constant2').attr('rel');
+        }
+        if (typeof $('#constant1').attr('rel') !== 'undefined') {
+            selectedCWText = $('#constant1').attr('rel');
+        }
+        if (typeof $('#fieldA').attr('rel') !== 'undefined') {
+            selectedCWText = $('#fieldA').attr('rel');
+        }
+        if (typeof $('#fieldB').attr('rel') !== 'undefined') {
+            selectedCWText = $('#fieldB').attr('rel');
+        }
+        
         //Remove all error classes and error messages
         $('div').removeClass("has-error");
         $('span').html("");
@@ -461,6 +510,10 @@ require(['./main'], function () {
                     $('#fieldB').val("");
                     $('#constant1').val("");
                     $('#constant2').val("");
+                    $("#fieldA").removeAttr("rel");
+                    $("#fieldB").removeAttr("rel");
+                    $("#constant1").removeAttr("rel");
+                    $("#constant2").removeAttr("rel");
                 }
             });
         }
@@ -475,26 +528,16 @@ require(['./main'], function () {
         //Store the current position
         var currDspPos = $(this).attr('rel');
         var newDspPos = $(this).val();
-
-        $('.processOrder').each(function () {
-            if ($(this).attr('rel') == newDspPos) {
-                //Need to update the saved process order
-                $.ajax({
-                    url: 'updateTranslationProcessOrder?currProcessOrder=' + currDspPos + '&categoryId=1&newProcessOrder=' + newDspPos,
-                    type: "POST",
-                    success: function (data) {
-                        $('#translationMsgDiv').show();
-                        populateExistingTranslations(1);
-                    }
-                });
-                $(this).val(currDspPos);
-                $(this).attr('rel', currDspPos);
+        
+        $.ajax({
+            url: 'updateTranslationProcessOrder?currProcessOrder=' + currDspPos + '&categoryId=1&newProcessOrder=' + newDspPos,
+            type: "POST",
+            success: function (data) {
+                $('#translationMsgDiv').show();
+                populateExistingTranslations(1);
             }
         });
-
-        $(this).val(newDspPos);
-        $(this).attr('rel', newDspPos);
-
+        
     });
 
     //Function that will handle removing a line item from the
@@ -538,9 +581,45 @@ function populateCrosswalks(page) {
     $.ajax({
         url: 'getCrosswalks.do',
         type: "GET",
-        data: {'page': page, 'orgId': orgId, 'maxCrosswalks': 8, 'configId': configId},
+        data: {
+            'page': page, 
+            'orgId': orgId, 
+            'maxCrosswalks': 8, 
+            'configId': configId
+        },
         success: function (data) {
+            
             $("#crosswalksTable").html(data);
+            
+            $("#crosswalksTable").find('#cwDataTable').DataTable({
+                bServerSide: false,
+                bProcessing: false, 
+                deferRender: true,
+                aaSorting: [[3,'desc']],
+                 "columns": [
+                    { "width": "10%" },
+                    { "width": "20%" },
+                    { "width": "20%", "type": "date" },
+                    { "width": "20%", "type": "date" },
+                    { "width": "10%" },
+                    { "width": "10%" }
+                 ],
+                sPaginationType: "bootstrap", 
+                searching: false,
+                bLengthChange: false,
+                oLanguage: {
+                   sEmptyTable: "There were no files submitted for the selected date range.", 
+                   sSearch: "Filter Results: ",
+                   sLengthMenu: '<select class="form-control" style="width:150px">' +
+                        '<option value="10">10 Records</option>' +
+                        '<option value="20">20 Records</option>' +
+                        '<option value="30">30 Records</option>' +
+                        '<option value="40">40 Records</option>' +
+                        '<option value="50">50 Records</option>' +
+                        '<option value="-1">All</option>' +
+                        '</select>'
+                }
+            });
         }
     });
 }
