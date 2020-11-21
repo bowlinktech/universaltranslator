@@ -1,16 +1,10 @@
 package com.hel.ut.model;
 
 import com.hel.ut.validator.NoHtml;
-import java.util.List;
-
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
-import javax.persistence.Transient;
 import org.springframework.web.multipart.commons.CommonsMultipartFile;
+
+import javax.persistence.*;
+import java.util.List;
 
 @Entity
 @Table(name = "CONFIGURATIONTRANSPORTDETAILS")
@@ -160,7 +154,9 @@ public class configurationTransport {
     
     @Column(name = "populateInboundAuditReport", nullable = false)
     private boolean populateInboundAuditReport = false;
-    
+
+    @Column(name = "addTargetFileHeaderRow", nullable = false)
+    private boolean addTargetFileHeaderRow = false;
     
     public int getId() {
         return id;
@@ -546,6 +542,12 @@ public class configurationTransport {
     public void setNewfields(List<appenedNewconfigurationFormFields> newfields) {
 	this.newfields = newfields;
     }
-    
-    
+
+    public boolean isAddTargetFileHeaderRow() {
+        return addTargetFileHeaderRow;
+    }
+
+    public void setAddTargetFileHeaderRow(boolean addTargetFileHeaderRow) {
+        this.addTargetFileHeaderRow = addTargetFileHeaderRow;
+    }
 }

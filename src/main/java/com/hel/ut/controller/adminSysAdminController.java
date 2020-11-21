@@ -30,6 +30,7 @@ import com.hel.ut.model.mailMessage;
 import com.hel.ut.model.utUserLogin;
 import com.hel.ut.service.emailMessageManager;
 import com.hel.ut.service.hispManager;
+import com.hel.ut.service.transactionInManager;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -55,6 +56,7 @@ import java.util.Date;
 import java.util.Properties;
 import java.util.TimeZone;
 import javax.annotation.Resource;
+import org.apache.commons.io.FileUtils;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -86,6 +88,9 @@ public class adminSysAdminController {
 
     @Autowired
     private ServletContext servletContext;
+    
+    @Autowired
+    private transactionInManager transactioninmanager;
     
     @Resource(name = "myProps")
     private Properties myProps;
@@ -136,7 +141,7 @@ public class adminSysAdminController {
         mav.setViewName("/administrator/sysadmin/macros");
 
         //Return a list of available macros
-        List<Macros> macroList = sysAdminManager.getMarcoList("%");
+        List<Macros> macroList = sysAdminManager.getMarcoList("");
         mav.addObject("macroList", macroList);
 
         return mav;
@@ -908,7 +913,7 @@ public class adminSysAdminController {
 	String fileName = "macro-list";
 	
 	try {
-	    List<Macros> macroList = sysAdminManager.getMarcoList("%");
+	    List<Macros> macroList = sysAdminManager.getMarcoList("");
 
 	    File file = new File("/tmp/" + fileName + ".xlsx");
 	    file.createNewFile();
@@ -935,8 +940,8 @@ public class adminSysAdminController {
 	    Row currentRow = sheet.createRow(rowNum);
 	    currentRow.createCell(cellNum).setCellValue("Name");
 	    cellNum++;
-	    currentRow.createCell(cellNum).setCellValue("Short Name");
-	    cellNum++;
+	    //currentRow.createCell(cellNum).setCellValue("Short Name");
+	    //cellNum++;
 	    currentRow.createCell(cellNum).setCellValue("Stored Procedure Name");
 	    cellNum++;
 	    currentRow.createCell(cellNum).setCellValue("Field A Question");
@@ -946,6 +951,14 @@ public class adminSysAdminController {
 	    currentRow.createCell(cellNum).setCellValue("Constant 1 Question");
 	    cellNum++;
 	    currentRow.createCell(cellNum).setCellValue("Constant 2 Question");
+	    cellNum++;
+	    currentRow.createCell(cellNum).setCellValue("Error Condition");
+	    cellNum++;
+	    currentRow.createCell(cellNum).setCellValue("Pass/Clear Logic");
+	    cellNum++;
+	    currentRow.createCell(cellNum).setCellValue("Dropped Values Logging");
+	    cellNum++;
+	    currentRow.createCell(cellNum).setCellValue("Reject Record/File");
 	    cellNum++;
 	    currentRow.createCell(cellNum).setCellValue("Description");
 
@@ -957,8 +970,6 @@ public class adminSysAdminController {
 			cellNum = 0;
 
 			currentRow.createCell(cellNum).setCellValue(macro.getMacroName().trim());
-			cellNum++;
-			currentRow.createCell(cellNum).setCellValue(macro.getMacroShortName().trim());
 			cellNum++;
 			currentRow.createCell(cellNum).setCellValue(macro.getFormula().trim());
 			cellNum++;
@@ -990,6 +1001,34 @@ public class adminSysAdminController {
 			    currentRow.createCell(cellNum).setCellValue(macro.getCon2Question().trim());
 			}
 			cellNum++;
+			if(macro.getErrorCondition()== null) {
+			    currentRow.createCell(cellNum).setCellValue("");
+			}
+			else {
+			    currentRow.createCell(cellNum).setCellValue(macro.getErrorCondition().trim());
+			}
+			cellNum++;
+			if(macro.getPassClearLogic()== null) {
+			    currentRow.createCell(cellNum).setCellValue("");
+			}
+			else {
+			    currentRow.createCell(cellNum).setCellValue(macro.getPassClearLogic().trim());
+			}
+			cellNum++;
+			if(macro.getDroppedValueLogging()== null) {
+			    currentRow.createCell(cellNum).setCellValue("");
+			}
+			else {
+			    currentRow.createCell(cellNum).setCellValue(macro.getDroppedValueLogging().trim());
+			}
+			cellNum++;
+			if(macro.getRejectRecordFile()== null) {
+			    currentRow.createCell(cellNum).setCellValue("");
+			}
+			else {
+			    currentRow.createCell(cellNum).setCellValue(macro.getRejectRecordFile().trim());
+			}
+			cellNum++;
 			if(macro.getMacroDesc() == null) {
 			    currentRow.createCell(cellNum).setCellValue("");
 			}
@@ -1006,6 +1045,9 @@ public class adminSysAdminController {
 		    sheet.autoSizeColumn(5);
 		    sheet.autoSizeColumn(6);
 		    sheet.autoSizeColumn(7);
+		    sheet.autoSizeColumn(8);
+		    sheet.autoSizeColumn(9);
+		    sheet.autoSizeColumn(10);
 		}
 	    }
 
@@ -1049,4 +1091,43 @@ public class adminSysAdminController {
 	 // close stream and return to view
 	response.flushBuffer();
     } 
+    
+    /**
+     * The '/submitConfigFileForProcessing' function will be used to upload a new file for an existing crosswalk.
+     *
+     * @param configFile
+     * @param fileDropLocation
+     * @return 
+     * @throws java.lang.Exception 
+     * @Return The function will either return the crosswalk form on error or redirect to the data translation page.
+     */
+    @RequestMapping(value = "/macros/runTestFile", method = RequestMethod.POST)
+    public @ResponseBody 
+    int runMacroTestFile() throws Exception {
+
+	Integer returnVal = 1;
+	
+	String fileName = "SampleMacroTestFile.xlsx";
+
+	InputStream inputStream = null;
+	OutputStream outputStream = null;
+
+	try {
+	    File newFile = new File(myProps.getProperty("ut.directory.utRootDir") + "BowlinkTest/input files/bowlinktest/" + fileName);
+	    newFile.createNewFile();
+	    
+	    File sourceFile = new File(myProps.getProperty("ut.directory.utRootDir") + "BowlinkTest/templates/" + fileName);
+	    FileUtils.copyFile(sourceFile, newFile);
+
+	    //Call the method to start processing
+	    transactioninmanager.moveFileDroppedFiles();
+
+	} catch (IOException e) {
+	    returnVal = 0;
+	    e.printStackTrace();
+	}
+	  
+	
+	return returnVal;
+    }
 }

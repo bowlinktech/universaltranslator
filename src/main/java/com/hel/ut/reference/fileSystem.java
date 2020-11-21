@@ -230,7 +230,8 @@ public class fileSystem {
             }
         } finally {
             try {
-                br.close();
+		br.close();
+		fileInput.close();
             } catch (IOException e) {
                 errorMessage = errorMessage + "<br/>" + e.getMessage();
                 e.printStackTrace();

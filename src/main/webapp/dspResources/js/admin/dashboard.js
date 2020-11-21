@@ -300,7 +300,7 @@ function getInboundMessages() {
                         hours = hours ? hours : 12;
                         minutes = minutes < 10 ? '0'+minutes : minutes;
                         
-                        if((dateS.getMonth()*1)+1 != (dateC.getMonth()*1)+1) {
+                        if((dateS.getMonth()*1)+1 != (dateC.getMonth()*1)+1 || (dateS.getDate() != dateC.getDate())) {
                              myDateFormatted += '<br /><strong>Reprocessed: ' + ((dateS.getMonth()*1)+1)+'/'+dateS.getDate()+'/'+dateS.getFullYear() + '</strong>';
                         }
                         

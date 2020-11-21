@@ -121,7 +121,11 @@ public class adminOrgContoller {
 	List<Organization> organizations = organizationManager.getOrganizationsPaged(iDisplayStart, iDisplayLength, searchTerm, sortColumnName, sortDirection);
 	List<Organization> totalOrgs = organizationManager.getOrganizations();
 	
-	totalRecords = totalOrgs.size();
+	for(Organization org : totalOrgs) {
+	    if(!"bowlinktest".equals(org.getCleanURL().trim().toLowerCase())) {
+		totalRecords++;
+	    }
+	}
 	
 	jsonResponse.addProperty("sEcho", sEcho);
         jsonResponse.addProperty("iTotalRecords", totalRecords);

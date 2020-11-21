@@ -2,6 +2,20 @@
 
 require(['./main'], function () {
     
+    $(document).on('click', '.showMore', function() {
+       var macroId = $(this).attr('rel');
+       
+       if(!$('#macro-'+macroId).is(":visible")) {
+           $(this).html("Hide Details");
+           $('#macro-'+macroId).show();
+       }
+       else {
+           $(this).html("Show More Details");
+           $('#macro-'+macroId).hide();
+       }
+       
+    });
+    
     $(document).on('click','.deleteCrosswalk',function() {
         var dtsId = $(this).attr('rel2');
         var cwId = $(this).attr('rel');

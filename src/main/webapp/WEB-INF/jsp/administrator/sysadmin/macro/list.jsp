@@ -34,7 +34,6 @@
                             <thead>
                                 <tr>
                                     <th scope="col">Category</th>
-                                    <th scope="col">Macro Short Name</th>
                                     <th scope="col">Macro Name</th>
                                     <th scope="col">Formula</th>
                                     <th scope="col"></th>
@@ -48,18 +47,18 @@
                                             <td>
                                                 <c:if test="${macro.categoryId == 1}">Data Manipulation</c:if>
                                                 <c:if test="${macro.categoryId == 2}">Processing</c:if>
-                                                </td>
-                                                <td scope="row"><a href="#macroModal" data-toggle="modal" rel="${macro.id}" class="macroEdit" title="Edit this macro">${macro.macroShortName}</a>
                                             </td>
                                             <td>
+                                                <a href="#macroModal" data-toggle="modal" rel="${macro.id}" class="macroEdit" title="Edit this macro">
                                                 <c:choose>
-                                                    <c:when test="${fn:length(macro.macroName) > 45}">
-                                                        ${fn:substring(macro.macroName,0,44)}...
+                                                    <c:when test="${fn:length(macro.macroName) > 255}">
+                                                        ${fn:substring(macro.macroName,0,254)}...
                                                     </c:when>
                                                     <c:otherwise>
                                                         ${macro.macroName}
                                                     </c:otherwise>
                                                 </c:choose>
+                                                </a>
                                             </td>
                                             <td>
                                                 <c:choose>

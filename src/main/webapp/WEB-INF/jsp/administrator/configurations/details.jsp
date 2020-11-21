@@ -85,9 +85,10 @@
                                     </c:forEach>
                                 </form:select>
                                 <c:if test="${configurationDetails.id > 0}">
-				    <form:hidden id="organization" class="savedOrgId" path="orgId"/></c:if>  
-                                    <span id="configOrgMsg" class="control-label"></span>
-                                </div>
+				    <form:hidden id="organization" class="savedOrgId" path="orgId"/>
+                                </c:if>  
+                                <span id="configOrgMsg" class="control-label"></span>
+                            </div>
                         </spring:bind>
                         <spring:bind path="configName">
                             <div id="configNameDiv" class="form-group ${status.error ? 'has-error' : '' } ${not empty existingName ? 'has-error' : ''}">

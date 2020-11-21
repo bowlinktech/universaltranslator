@@ -221,21 +221,34 @@
 			</div>
 		    </spring:bind>
 		    <spring:bind path="appendDateTime">
-			<div class="form-group"  id="appendDateTimeDiv">
-			    <label class="control-label" for="appendDateTime">Append Date and Time to file Name? *</label>
-			    <div>
-				<label class="radio-inline">
-				    <form:radiobutton id="appendDateTime" path="appendDateTime" value="1" disabled="${transportDetails.copiedTransportId > 0 ? 'true' : 'false'}" /> Yes 
-				</label>
-				<label class="radio-inline">
-				    <form:radiobutton id="appendDateTime" path="appendDateTime" value="0" disabled="${transportDetails.copiedTransportId > 0 ? 'true' : 'false'}" /> No
-				</label>
-			    </div>
-			    <c:if test="${transportDetails.copiedTransportId > 0}">
-				<form:hidden path="appendDateTime" />
-			    </c:if>    
-			</div>
+				<div class="form-group"  id="appendDateTimeDiv">
+					<label class="control-label" for="appendDateTime">Append Date and Time to file Name? *</label>
+					<div>
+					<label class="radio-inline">
+						<form:radiobutton id="appendDateTime" path="appendDateTime" value="1" disabled="${transportDetails.copiedTransportId > 0 ? 'true' : 'false'}" /> Yes
+					</label>
+					<label class="radio-inline">
+						<form:radiobutton id="appendDateTime" path="appendDateTime" value="0" disabled="${transportDetails.copiedTransportId > 0 ? 'true' : 'false'}" /> No
+					</label>
+					</div>
+					<c:if test="${transportDetails.copiedTransportId > 0}">
+					<form:hidden path="appendDateTime" />
+					</c:if>
+				</div>
 		    </spring:bind>
+			<spring:bind path="addTargetFileHeaderRow">
+				<div class="form-group"  id="addTargetFileHeaderRowDiv">
+					<label class="control-label" for="appendDateTime">Add header row to the target file? *<span class="badge badge-help" data-placement="top" title="" data-original-title="Select &quot;Yes&quot; if you would like a header row added to the target file. The header row will include the Field Name for all Used fields from the Field settings page.">?</span></label>
+					<div>
+						<label class="radio-inline">
+							<form:radiobutton id="addTargetFileHeaderRow1" path="addTargetFileHeaderRow" value="1" disabled="${transportDetails.copiedTransportId > 0 ? 'true' : 'false'}" /> Yes
+						</label>
+						<label class="radio-inline">
+							<form:radiobutton id="addTargetFileHeaderRow2" path="addTargetFileHeaderRow" value="0" disabled="${transportDetails.copiedTransportId > 0 ? 'true' : 'false'}" /> No
+						</label>
+					</div>
+				</div>
+			</spring:bind>
 		</div>
 	    </div>
 	</div>
