@@ -5,55 +5,19 @@
  */
 package com.hel.ut.dao.impl;
 
-import com.hel.ut.model.activityReportList;
 import com.hel.ut.dao.transactionInDAO;
-import com.hel.ut.model.CrosswalkData;
-import com.hel.ut.model.Macros;
-import com.hel.ut.model.MoveFilesLog;
-import com.hel.ut.model.RestAPIMessagesIn;
-import com.hel.ut.model.Transaction;
-import com.hel.ut.model.utUser;
-import com.hel.ut.model.utUserActivity;
-import com.hel.ut.model.WSMessagesIn;
-import com.hel.ut.model.batchDownloads;
-import com.hel.ut.model.batchRetry;
-import com.hel.ut.model.batchUploadDroppedValues;
-import com.hel.ut.model.batchUploads;
-import com.hel.ut.model.batchuploadactivity;
-import com.hel.ut.model.utConfiguration;
-import com.hel.ut.model.configurationConnection;
-import com.hel.ut.model.configurationConnectionSenders;
-import com.hel.ut.model.configurationDataTranslations;
-import com.hel.ut.model.configurationFTPFields;
-import com.hel.ut.model.configurationFormFields;
-import com.hel.ut.model.configurationMessageSpecs;
-import com.hel.ut.model.configurationFileDropFields;
-import com.hel.ut.model.configurationTransport;
-import com.hel.ut.model.fieldSelectOptions;
+import com.hel.ut.model.*;
 import com.hel.ut.model.custom.ConfigErrorInfo;
 import com.hel.ut.model.custom.ConfigForInsert;
 import com.hel.ut.model.custom.IdAndFieldValue;
 import com.hel.ut.model.custom.batchErrorSummary;
-import com.hel.ut.model.directmessagesin;
-import com.hel.ut.model.referralActivityExports;
 import com.hel.ut.service.sysAdminManager;
 import com.hel.ut.service.userManager;
-
-import java.math.BigInteger;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
+import com.hel.ut.service.utConfigurationTransportManager;
 import org.hibernate.Criteria;
 import org.hibernate.Query;
 import org.hibernate.SessionFactory;
+import org.hibernate.criterion.Criterion;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
 import org.hibernate.transform.Transformers;
@@ -61,9 +25,13 @@ import org.hibernate.type.StandardBasicTypes;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
-import com.hel.ut.service.utConfigurationTransportManager;
-import org.hibernate.criterion.Criterion;
-import org.hibernate.type.DateType;
+
+import java.math.BigInteger;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -1759,7 +1727,11 @@ public class transactionInDAOImpl implements transactionInDAO {
 	
 	configFormFields.forEach(field -> {
 	    if(field.getUseField()) {
-		tableFields.append(" F").append(field.getFieldNo()).append(" = case when F").append(field.getFieldNo()).append(" is null then '' else TRIM(replace(F").append(field.getFieldNo()).append(", char(13), '')) end,");
+			tableFields.append(" F").append(field.getFieldNo())
+				.append(" = case ")
+				.append("when lcase(F").append(field.getFieldNo()).append(") = 'null' then '' ")
+				.append("when F").append(field.getFieldNo()).append(" is null then '' ")
+				.append("else TRIM(replace(F").append(field.getFieldNo()).append(", char(13), '')) end,");
 	    }
 	});
 	
@@ -1773,7 +1745,7 @@ public class transactionInDAOImpl implements transactionInDAO {
 
 	sql = "update "+tableName + " set " + trimTableFields;
 	sql += " where configId = :configId";
-	
+
 	Query updateData = sessionFactory.getCurrentSession().createSQLQuery(sql);
 	updateData.setParameter("configId", configId);
 
