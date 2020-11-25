@@ -1952,7 +1952,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
 
 				String currentLine=null;
 				int RowNum=0;
-				BufferedReader br = new BufferedReader(new FileReader(myProps.getProperty("ut.directory.massOutputMySQLPath") + batchDownload.getUtBatchName() + "." + fileExt));
+				BufferedReader br = new BufferedReader(new FileReader(myProps.getProperty("ut.directory.massOutputPath") + batchDownload.getUtBatchName() + "." + fileExt));
 				while ((currentLine = br.readLine()) != null) {
 					String str[] = currentLine.split(",");
 					XSSFRow currentRow=sheet.createRow(RowNum);
@@ -1962,12 +1962,12 @@ public class transactionOutManagerImpl implements transactionOutManager {
 					RowNum++;
 				}
 
-				FileOutputStream fileOutputStream =  new FileOutputStream(myProps.getProperty("ut.directory.massOutputMySQLPath") + batchDownload.getUtBatchName() + "." + finalFileExt);
+				FileOutputStream fileOutputStream =  new FileOutputStream(myProps.getProperty("ut.directory.massOutputPath") + batchDownload.getUtBatchName() + "." + finalFileExt);
 				workBook.write(fileOutputStream);
 				fileOutputStream.close();
 
 				//Delete csv file
-				File csvFile = new File(myProps.getProperty("ut.directory.massOutputMySQLPath") + batchDownload.getUtBatchName() + "." + fileExt);
+				File csvFile = new File(myProps.getProperty("ut.directory.massOutputPath") + batchDownload.getUtBatchName() + "." + fileExt);
 				if(csvFile.exists()) {
 					csvFile.delete();
 				}
