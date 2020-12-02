@@ -1059,6 +1059,13 @@ public class utConfigurationManagerImpl implements utConfigurationManager {
 		else {
 		    reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>No</span><br /><br />");
 		}
+		reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 14px;'><strong>Add header row to the target file?</strong></span><br />");
+		if(transportDetails.isAddTargetFileHeaderRow()) {
+		    reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Yes</span><br /><br />");
+		}
+		else {
+		    reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>No</span><br /><br />");
+		}
 		reportBody.append("</div>");
 	    }
 	    
@@ -1360,8 +1367,8 @@ public class utConfigurationManagerImpl implements utConfigurationManager {
                 }
                 reportBody.append("<td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>").append(escapeHtml(dt.getFieldA())).append("</td>");
                 reportBody.append("<td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>").append(escapeHtml(dt.getFieldB())).append("</td>");
-                reportBody.append("<td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>").append(escapeHtml(dt.getConstant1()).replaceAll("[:*\"?|<>']", " ")).append("</td>");
-                reportBody.append("<td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>").append(escapeHtml(dt.getConstant2()).replaceAll("[:*\"?|<>']", " ")).append("</td>");
+                reportBody.append("<td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>").append(escapeHtml(dt.getConstant1())).append("</td>");
+                reportBody.append("<td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>").append(escapeHtml(dt.getConstant2())).append("</td>");
                 reportBody.append("<td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>").append(dt.getProcessOrder()).append("</td>");
                 reportBody.append("</tr>");
             }
@@ -1433,11 +1440,11 @@ public class utConfigurationManagerImpl implements utConfigurationManager {
                 }
 
                 reportBody.append("<tr><td>")
-                .append(cwData[1].toString().replaceAll("[:*\"?|<>']", " "))
+                .append(escapeHtml(cwData[1].toString()))
                 .append("</td><td>")
-                .append(cwData[2].toString().replaceAll("[:*\"?|<>']", " "))
+                .append(escapeHtml(cwData[2].toString()))
                 .append("</td><td>")
-                .append(cwData[3].toString().replaceAll("[:*\"?|<>']", " "))
+                .append(escapeHtml(cwData[3].toString()))
                 .append("</td></tr>");
 
             }
