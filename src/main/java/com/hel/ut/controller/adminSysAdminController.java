@@ -752,13 +752,16 @@ public class adminSysAdminController {
 	    requiredFormat.setTimeZone(timeZone);
 	    String dateinTZ = "";
 	    for(utUser user : systemAdmins) {
-		user.setDateLastLoggedIn(dft.parse(requiredFormat.format(user.getDateLastLoggedIn())));
+		if(user.getDateLastLoggedIn() != null) {
+		    user.setDateLastLoggedIn(dft.parse(requiredFormat.format(user.getDateLastLoggedIn())));
 		
-		if(timeZone.getDSTSavings() == 3600000) {
-		    cal.setTime(user.getDateLastLoggedIn());
-		    cal.add(Calendar.HOUR,-1);
-		    user.setDateLastLoggedIn(cal.getTime());
+		    if(timeZone.getDSTSavings() == 3600000) {
+			cal.setTime(user.getDateLastLoggedIn());
+			cal.add(Calendar.HOUR,-1);
+			user.setDateLastLoggedIn(cal.getTime());
+		    }
 		}
+		
 	    }
 	}
 	mav.addObject("systemAdmins", systemAdmins);
