@@ -1,6 +1,29 @@
 
 require(['./main'], function () {
-
+    
+     $.ajaxSetup({
+        cache: false
+    });
+    
+    /* Table initialisation */
+    var sysadmindataTable = $('#sysadmindataTable').dataTable({
+        "bStateSave": false,
+        "sPaginationType": "bootstrap",
+         columnDefs: [ { type: 'date', 'targets': 3 } ],
+        "oLanguage": {
+            "sSearch": "_INPUT_",
+            "sLengthMenu": '<select class="form-control" style="width:150px">' +
+                '<option value="10">10 Records</option>' +
+                '<option value="20">20 Records</option>' +
+                '<option value="30">30 Records</option>' +
+                '<option value="40">40 Records</option>' +
+                '<option value="50">50 Records</option>' +
+                '<option value="-1">All</option>' +
+                '</select>'
+        }
+    });
+    sysadmindataTable.fnSort([[3, 'desc']]);
+    
     //Fade out the updated/created message after being displayed.
     if ($('.alert').length > 0) {
         $('.alert').delay(2000).fadeOut(5000);
@@ -146,6 +169,8 @@ require(['./main'], function () {
         var regex = /^([a-zA-Z0-9_.+-])+\@(([a-zA-Z0-9-])+\.)+([a-zA-Z0-9]{2,4})+$/;
         return regex.test(email);
     }
+    
+    
 });
 
 
