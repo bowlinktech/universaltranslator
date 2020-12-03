@@ -28,7 +28,7 @@
                 </div>
 
                 <div class="form-container scrollable">
-                    <table class="table table-striped table-hover table-default" <c:if test="${not empty systemAdmins}">id="dataTable"</c:if>>
+                    <table class="table table-striped table-hover table-default" <c:if test="${not empty systemAdmins}">id="sysadmindataTable"</c:if>>
                             <thead>
                                 <tr>
                                     <th scope="col">Name</th>
@@ -61,24 +61,30 @@
                                                ${systemAdmin.totalLogins}
                                             </td>
 					    <td class="center-text">
-						<c:choose>
-						    <c:when test="${not empty systemAdmin.dateLastLoggedIn}">
-                                                        <fmt:formatDate value="${systemAdmin.dateLastLoggedIn}" type="date" pattern="M/dd/yyyy h:mm a" />
-							<br /><a href="#lastloginsModal" id="lastloginsButton" rel="${systemAdmin.id}"  data-toggle="modal" title="View All Logins">
-							    <span class="glyphicon glyphicon-eye-open"></span>
-							    View All Logins	
-							</a>
-						    </c:when>
-						    <c:otherwise>
-							N/A
-						    </c:otherwise>
-						</c:choose>
+                                                 <fmt:formatDate value="${systemAdmin.dateLastLoggedIn}" type="date" pattern="M/dd/yyyy h:mm a" />
                                             </td>
-                                            <td class="actions-col center-text">
-						 <a href="#profileModal" id="profileButton" rel="${systemAdmin.id}" class="btn btn-primary btn-small updateprofile1"  data-toggle="modal" title="Edit this admin">
-						    <span class="glyphicon glyphicon-edit"></span>
-                                                    Edit	
-                                                </a>
+                                            <td>
+                                                <div class="dropdown pull-left">
+                                                    <button class="btn btn-sm btn-default dropdown-toggle" type="button" data-toggle="dropdown">
+                                                        <i class="fa fa-cog"></i>
+                                                    </button>
+                                                    <ul class="dropdown-menu pull-right">
+                                                        <li>
+                                                            <a href="#profileModal" id="profileButton" rel="${systemAdmin.id}" class="updateprofile1"  data-toggle="modal" title="Edit this admin">
+                                                                <span class="glyphicon glyphicon-edit"></span>
+                                                                Edit	
+                                                            </a>
+                                                         </li>  
+                                                         <c:if test="${systemAdmin.totalLogins > 0}">
+                                                            <li>
+                                                                <a href="#lastloginsModal" id="lastloginsButton" rel="${systemAdmin.id}"  data-toggle="modal" title="View All Logins">
+                                                                    <span class="glyphicon glyphicon-eye-open"></span>
+                                                                    View All Logins	
+                                                                </a>
+                                                            </li>
+                                                         </c:if>
+                                                    </ul>
+                                                </div>
                                             </td>
                                         </tr>
                                     </c:forEach>
