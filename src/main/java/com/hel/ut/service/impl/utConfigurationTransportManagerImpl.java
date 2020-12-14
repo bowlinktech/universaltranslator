@@ -316,7 +316,7 @@ public class utConfigurationTransportManagerImpl implements utConfigurationTrans
         configurationTransportDAO.saveTransportFileDrop(fileDropFields);
 	//Makes sure the directory is created
         fileSystem dir = new fileSystem();
-	dir.creatFTPDirectory(myProps.getProperty("ut.directory.utRootDir") + fileDropFields.getDirectory().replace("/Applications/HELProductSuite/universalTranslator/", "").replace("/home/HELProductSuite/universalTranslator/", "").replace("/HELProductSuite/universalTranslator/", ""));
+	dir.creatFTPDirectory(myProps.getProperty("ut.directory.utRootDir") + fileDropFields.getDirectory());
 	
     }
 

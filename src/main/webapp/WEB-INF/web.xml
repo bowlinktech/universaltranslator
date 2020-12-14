@@ -25,10 +25,6 @@
         <param-name>siteTimeZone</param-name>
         <param-value>US/Pacific</param-value>
     </context-param>
-    <context-param>
-        <param-name>utRootDir</param-name>
-        <param-value>/HELProductSuite/universalTranslatorEAH/</param-value>
-    </context-param>
     <!--  Set the default timeout setting for a logged in user/admin -->
     <session-config>
         <session-timeout>30</session-timeout>
