@@ -120,7 +120,7 @@ public class transactionInManagerImpl implements transactionInManager {
 
     @Resource(name = "myProps")
     private Properties myProps;
-
+    
     @Autowired
     private transactionInDAO transactionInDAO;
 
@@ -1560,9 +1560,7 @@ public class transactionInManagerImpl implements transactionInManager {
 	    File newFile = null;
 	    
 
-	    String filelocation = transportDetails.getfileLocation();
-	    filelocation = filelocation.replace("/HELProductSuite/universalTranslator/", "");
-
+	    String filelocation = transportDetails.getfileLocation().trim();
 	    newFile = new File(myProps.getProperty("ut.directory.utRootDir") + filelocation + fileName);
 
 	    if (newFile.exists()) {
@@ -1651,15 +1649,15 @@ public class transactionInManagerImpl implements transactionInManager {
 			fileSystem fileSystem = new fileSystem();
 			
 			//paths are from root instead of /home
-			String inPath = directoryHome + fileDropInfo.getDirectory().replace("/HELProductSuite/universalTranslator/","");
+			String inPath = directoryHome + fileDropInfo.getDirectory();
 			
 			File f = new File(inPath);
 			
 			if (!f.exists()) {
-			    moveJob.setNotes(("Directory " + directoryHome + fileDropInfo.getDirectory().replace("/HELProductSuite/universalTranslator/","") + " does not exist"));
+			    moveJob.setNotes(("Directory " + directoryHome + fileDropInfo.getDirectory() + " does not exist"));
 			    updateSFTPRun(moveJob);
 			    //need to get out of loop since set up was not done properly, will try to throw error
-			    sendEmailToAdmin((directoryHome + fileDropInfo.getDirectory().replace("/HELProductSuite/universalTranslator/","") + " does not exist"), "File Drop Job Error");
+			    sendEmailToAdmin((directoryHome + fileDropInfo.getDirectory() + " does not exist"), "File Drop Job Error");
 			}
 			//Folder exists lets proceed
 			else {
@@ -1669,7 +1667,7 @@ public class transactionInManagerImpl implements transactionInManager {
 			    
 			    configurationTransport transportDetails = configurationtransportmanager.getTransportDetailsByTransportId(fileDropInfo.getTransportId());
 			    
-			    sysErrors = sysErrors + moveFilesByPath(directoryHome, fileDropInfo.getDirectory().replace("/HELProductSuite/universalTranslator/",""), transportDetails.gettransportMethodId(), orgId, fileDropInfo.getTransportId());
+			    sysErrors = sysErrors + moveFilesByPath(directoryHome, fileDropInfo.getDirectory(), transportDetails.gettransportMethodId(), orgId, fileDropInfo.getTransportId());
 
 			    if (sysErrors == 0) {
 				moveJob.setStatusId(2);
@@ -2214,7 +2212,7 @@ public class transactionInManagerImpl implements transactionInManager {
 
 		//decoded files will always be in loadFiles folder with UTBatchName 
 		// all files are Base64 encoded at this point
-		String filePath = myProps.getProperty("ut.directory.utRootDir") + batch.getFileLocation().replace("/HELProductSuite/universalTranslator/","");
+		String filePath = myProps.getProperty("ut.directory.utRootDir") + batch.getFileLocation();
 		String encodedFileName = "encoded_"+batch.getUtBatchName();
 		
 		if(!encodedFileName.contains(".")) {
@@ -2231,7 +2229,7 @@ public class transactionInManagerImpl implements transactionInManager {
 		
 		if(encodedFile.exists()) {
 		    String decodedFile = decodedFilePath + decodedFileName + decodedFileExt;
-
+		    
 		    try {
 			filemanager.decode((filePath + encodedFileName), decodedFile);
 			fileFound = true;
@@ -2453,7 +2451,6 @@ public class transactionInManagerImpl implements transactionInManager {
 			else if (processFileName.endsWith(".xls")) {
 			    newfilename = xlstotxt.TranslateXLStoTxt(decodedFilePath, decodedFileName, batch);
 			}
-			
 			
 			if (newfilename.equals("ERRORERRORERROR")) {
 			    
@@ -3640,11 +3637,11 @@ public class transactionInManagerImpl implements transactionInManager {
 
 	    for(configurationFileDropFields dropField : fileDropFields){
 		if(dropField.getMethod() == 1) {
-		    fileDropDir = dropField.getDirectory();
+		    fileDropDir = dropField.getDirectory().trim();
 		}
 	    }
 	    
-	    String restFile = myProps.getProperty("ut.directory.utRootDir") + fileDropDir.replace("/HELProductSuite/universalTranslator/", "");
+	    String restFile = myProps.getProperty("ut.directory.utRootDir") + fileDropDir;
 	    batchInfo.setOriginalFolder(restFile);
 
 	    //we reject
@@ -3671,8 +3668,8 @@ public class transactionInManagerImpl implements transactionInManager {
 		encodingId = ct.getEncodingId();
 		String fileExt = "." + ct.getfileExt();
 		writeToFolder = ct.getfileLocation();
-		fileNamePath = writeToFolder + batchName + fileExt;
-		String archivefileNamePath = writeToFolder +"encoded_" + batchName + fileExt;
+		fileNamePath = myProps.getProperty("ut.directory.utRootDir") + writeToFolder + batchName + fileExt;
+		String archivefileNamePath = myProps.getProperty("ut.directory.utRootDir") + writeToFolder +"encoded_" + batchName + fileExt;
 		maxfileSize = ct.getmaxFileSize();
 
 		batchInfo.setContainsHeaderRow(ct.getContainsHeaderRow());
@@ -3684,9 +3681,9 @@ public class transactionInManagerImpl implements transactionInManager {
 		//copy file
 		writeToFile = fileNamePath;
 		
-		File encodedFile = new File(archivefileNamePath.replace("/HELProductSuite/universalTranslator/",myProps.getProperty("ut.directory.utRootDir")));
+		File encodedFile = new File(archivefileNamePath);
 		
-		File movedFile = new File(fileNamePath.replace("/HELProductSuite/universalTranslator/",myProps.getProperty("ut.directory.utRootDir")));
+		File movedFile = new File(fileNamePath);
 		
 		FileUtils.moveFile(new File(restFile+APIMessage.getMessageTitle()),movedFile);
 
@@ -3705,11 +3702,11 @@ public class transactionInManagerImpl implements transactionInManager {
 			filemanager.writeFile(decodeFilePath, strDecode);
 			
 			String encodeArchivePath = myProps.getProperty("ut.directory.utRootDir") + "archivesIn/" + batchName + fileExt;
-			Files.copy(new File(writeToFile.replace("/HELProductSuite/universalTranslator/",myProps.getProperty("ut.directory.utRootDir"))).toPath(), new File(encodeArchivePath).toPath(), REPLACE_EXISTING);
+			Files.copy(new File(writeToFile).toPath(), new File(encodeArchivePath).toPath(), REPLACE_EXISTING);
 		    } 
 		    else {
 			String encodeArchivePath = myProps.getProperty("ut.directory.utRootDir") + "archivesIn/archive_" + batchName + fileExt;
-			Files.copy(new File(writeToFile.replace("/HELProductSuite/universalTranslator/",myProps.getProperty("ut.directory.utRootDir"))).toPath(), new File(encodeArchivePath).toPath(), REPLACE_EXISTING);
+			Files.copy(new File(writeToFile).toPath(), new File(encodeArchivePath).toPath(), REPLACE_EXISTING);
 		    }
 
 		    statusId = 2;
@@ -3727,7 +3724,7 @@ public class transactionInManagerImpl implements transactionInManager {
 			    delimiter = ct.getDelimChar();
 			}
 			
-			int delimCount = dir.checkFileDelimiter(new File(fileNamePath.replace("/HELProductSuite/universalTranslator/",myProps.getProperty("ut.directory.utRootDir"))), delimiter);
+			int delimCount = dir.checkFileDelimiter(new File(fileNamePath), delimiter);
 			if (delimCount < 3) {
 			    statusId = 7;
 			    errorId = 15;
@@ -4130,8 +4127,7 @@ public class transactionInManagerImpl implements transactionInManager {
 		String fileName = new StringBuilder().append(batchDLDetails.getOutputFileName()).toString();
 		fileSystem dir = new fileSystem();
 
-		String filelocation = transportDetails.getfileLocation();
-		filelocation = filelocation.replace("/HELProductSuite/universalTranslator/", "");
+		String filelocation = transportDetails.getfileLocation().trim();
 
 		File targetFile = new File(myProps.getProperty("ut.directory.utRootDir") + filelocation + fileName);
 		Files.copy(new File(sourceFile).toPath(), targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
@@ -4290,7 +4286,7 @@ public class transactionInManagerImpl implements transactionInManager {
 		}
 	    }
 	    
-	    String DMFile = myProps.getProperty("ut.directory.utRootDir") + fileDropDir.replace("/Applications/HELProductSuite/universalTranslator/", "").replace("/HELProductSuite/universalTranslator/", "");
+	    String DMFile = myProps.getProperty("ut.directory.utRootDir") + fileDropDir;
 	    batchInfo.setOriginalFolder(DMFile);
 
 	    //we reject
@@ -4317,8 +4313,8 @@ public class transactionInManagerImpl implements transactionInManager {
 		encodingId = ct.getEncodingId();
 		fileExt = "." + ct.getfileExt();
 		writeToFolder = ct.getfileLocation();
-		fileNamePath = writeToFolder + batchName + fileExt;
-		String archivefileNamePath = writeToFolder +"encoded_" + batchName + fileExt;
+		fileNamePath = myProps.getProperty("ut.directory.utRootDir") + writeToFolder + batchName + fileExt;
+		String archivefileNamePath = myProps.getProperty("ut.directory.utRootDir") + writeToFolder +"encoded_" + batchName + fileExt;
 		maxfileSize = ct.getmaxFileSize();
 
 		batchInfo.setContainsHeaderRow(ct.getContainsHeaderRow());
@@ -4330,13 +4326,9 @@ public class transactionInManagerImpl implements transactionInManager {
 		//copy file
 		writeToFile = fileNamePath;
 		
-		File encodedFile = new File(archivefileNamePath
-			.replace("/Applications/HELProductSuite/universalTranslator/",myProps.getProperty("ut.directory.utRootDir"))
-			.replace("/HELProductSuite/universalTranslator/",myProps.getProperty("ut.directory.utRootDir")));
+		File encodedFile = new File(archivefileNamePath);
 		
-		File movedFile = new File(fileNamePath
-			.replace("/Applications/HELProductSuite/universalTranslator/",myProps.getProperty("ut.directory.utRootDir"))
-			.replace("/HELProductSuite/universalTranslator/",myProps.getProperty("ut.directory.utRootDir")));
+		File movedFile = new File(fileNamePath);
 		
 		FileUtils.moveFile(new File(DMFile+directMessage.getReferralFileName()),movedFile);
 
@@ -4355,14 +4347,12 @@ public class transactionInManagerImpl implements transactionInManager {
 			filemanager.writeFile(decodeFilePath, strDecode);
 			
 			String encodeArchivePath = myProps.getProperty("ut.directory.utRootDir") + "archivesIn/" + batchName + fileExt;
-			Files.copy(new File(writeToFile.replace("/HELProductSuite/universalTranslator/",myProps.getProperty("ut.directory.utRootDir"))).toPath(), new File(encodeArchivePath).toPath(), REPLACE_EXISTING);
+			Files.copy(new File(writeToFile).toPath(), new File(encodeArchivePath).toPath(), REPLACE_EXISTING);
 		    } 
 		    else {
 			String encodeArchivePath = myProps.getProperty("ut.directory.utRootDir") + "archivesIn/archive_" + batchName + fileExt;
-			Files.copy(new File(writeToFile
-				.replace("/Applications/HELProductSuite/universalTranslator/",myProps.getProperty("ut.directory.utRootDir"))
-				.replace("/HELProductSuite/universalTranslator/",myProps.getProperty("ut.directory.utRootDir"))).toPath(), new File(encodeArchivePath).toPath(), REPLACE_EXISTING);
-			Files.copy(encodedFile.toPath(), new File(myProps.getProperty("ut.directory.utRootDir") + "archivesIn/" + batchName + fileExt.replace("/HELProductSuite/universalTranslator/",myProps.getProperty("ut.directory.utRootDir"))).toPath(), REPLACE_EXISTING);
+			Files.copy(new File(writeToFile).toPath(), new File(encodeArchivePath).toPath(), REPLACE_EXISTING);
+			Files.copy(encodedFile.toPath(), new File(myProps.getProperty("ut.directory.utRootDir") + "archivesIn/" + batchName + fileExt).toPath(), REPLACE_EXISTING);
 		    }
 
 		    statusId = 2;
@@ -4380,9 +4370,7 @@ public class transactionInManagerImpl implements transactionInManager {
 			    delimiter = ct.getDelimChar();
 			}
 			
-			int delimCount = dir.checkFileDelimiter(new File(fileNamePath
-				.replace("/Applications/HELProductSuite/universalTranslator/",myProps.getProperty("ut.directory.utRootDir"))
-				.replace("/HELProductSuite/universalTranslator/",myProps.getProperty("ut.directory.utRootDir"))), delimiter);
+			int delimCount = dir.checkFileDelimiter(new File(fileNamePath), delimiter);
 			if (delimCount < 3) {
 			    statusId = 7;
 			    errorId = 15;

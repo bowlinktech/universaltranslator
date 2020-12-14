@@ -51,10 +51,9 @@ public class excelToTxt {
 	Organization orgDetails = organizationmanager.getOrganizationById(batch.getOrgId());
 	
 	String directory = myProps.getProperty("ut.directory.utRootDir") + orgDetails.getcleanURL() + "/loadFiles/";
-
-	/* Get the uploaded xlsx File */
-	fileLocation = fileLocation.replace("/Applications/HELProductSuite/universalTranslator/", "").replace("/home/HELProductSuite/universalTranslator/", "").replace("/HELProductSuite/universalTranslator/", "");
-	directory = myProps.getProperty("ut.directory.utRootDir") + fileLocation;
+	
+	// Get the uploaded xlsx File
+	directory = fileLocation;
 	
 	String excelFile = (excelFileName + ".xlsx");
 	
@@ -63,7 +62,7 @@ public class excelToTxt {
 
 	File newFile = new File(directory + newfileName);
 	File inputFile = new File(directory + excelFile);
-
+	
 	if (newFile.exists()) {
 	    try {
 
