@@ -15,7 +15,7 @@
             <h3 class="panel-title">Generate Crosswalk CSV File</h3>
         </div>
         <div class="modal-body">
-	    <div id="successMsg" style="display:none;"><p class="text-success">The Crosswalk CSV file has successfully downloaded (Check your downloads folder)</p></div>
+	    <div id="successMsg" style="display:none;"><p class="text-success">The Crosswalk Excel file has successfully downloaded (Check your downloads folder)</p></div>
 	    <div id="errorMsg" style="display:none;"><p class="text-danger">No crosswalks were found.</p></div>
             <div class="form-container">
 		<div class="form-group ${status.error ? 'has-error' : '' }" id="cwnameDiv">
@@ -24,7 +24,7 @@
 		    <div class="control-label has-error" id="nameLabelDiv"></div>
 		</div>
 		<div class="form-group">
-		    <input type="button" id="generateCWButton" rel="${configId}" role="button" class="btn btn-primary" value="Generate Crosswalk CSV File"/>
+		    <input type="button" id="generateCWButton" rel="${configId}" role="button" class="btn btn-primary" value="Generate Crosswalk Excel File"/>
 		</div>
             </div>
         </div>
