@@ -119,7 +119,8 @@ require(['./main'], function () {
 
        if(errorFound == 0) {
            $.ajax({
-                url: '/administrator/configurations/crosswalksDownload',
+                //url: '/administrator/configurations/crosswalksDownload',
+                url: '/administrator/configurations/crosswalksExcelFileDownload',
                 data: {
                     'configId':$(this).attr('rel'),
                     'fileName': $('#fileName').val()
@@ -129,7 +130,8 @@ require(['./main'], function () {
                 contentType : 'application/json;charset=UTF-8',
                 success: function(data) {
                     if(data !== '') {
-                        window.location.href = '/administrator/configurations/downloadDTCWFile/'+ data;
+                        //window.location.href = '/administrator/configurations/downloadDTCWFile/'+ data;
+                        window.location.href = '/administrator/configurations/downloadDTCWExcelFile/'+ data;
                         $('#successMsg').show();
                         //$('#dtDownloadModal').modal('toggle');
                     }
