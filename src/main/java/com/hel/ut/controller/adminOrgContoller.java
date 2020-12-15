@@ -307,6 +307,7 @@ public class adminOrgContoller {
         Organization currentOrg = organizationManager.getOrganizationById(organization.getId());
 	
 	boolean updatedName = false;
+	boolean missingDirs = false;
 	
 	//Update the organization
 	String orgCleanURL = organization.getOrgName().replace(" ", "");
@@ -335,13 +336,13 @@ public class adminOrgContoller {
 	String UTDirectory = myProps.getProperty("ut.directory.utRootDir");
 	File directory = new File(UTDirectory.replace("/home/","/") + organization.getcleanURL());
 	if (!directory.exists()) {
-	    updatedName = true;
+	    missingDirs = true;
 	}
 
         organizationManager.updateOrganization(organization);
 	
 	//If updated name, need to check if any configurations are set up for this or
-	if(updatedName) {
+	if(updatedName || missingDirs) {
 	    List<utConfiguration> configurations = configurationmanager.getActiveConfigurationsByOrgId(currentOrg.getId());
 	    
 	    if(configurations != null) {
@@ -353,15 +354,16 @@ public class adminOrgContoller {
 		}
 	    }
 	    
-	    //Need to delete the old directory
-	    File oldDirectory = new File(UTDirectory.replace("/home/","/") + currentOrg.getcleanURL());
-	    if (directory.exists()) {
-		fileSystem filesystem = new fileSystem();
-		filesystem.deleteOrgDirectories(UTDirectory.replace("/home/","/") + currentOrg.getcleanURL());
+	    if(updatedName) {
+		//Need to delete the old directory
+		File oldDirectory = new File(UTDirectory.replace("/home/","/") + currentOrg.getcleanURL());
+		if (directory.exists()) {
+		    fileSystem filesystem = new fileSystem();
+		    filesystem.deleteOrgDirectories(UTDirectory.replace("/home/","/") + currentOrg.getcleanURL());
+		}
 	    }
 	}
 	
-
         //This variable will be used to display the message on the details form
         redirectAttr.addFlashAttribute("savedStatus", "updated");
 
