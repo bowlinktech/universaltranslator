@@ -55,6 +55,7 @@ public class fileSystem {
 
         try {
             File directory = new File(orgDirectory);
+	    
 	    if (!directory.exists()) {
 		directory.mkdir();
 		new File(orgDirectory+ "/crosswalks").mkdirs();

@@ -110,9 +110,8 @@ public class CCDtoTxt {
 	    
 	    Method myMethod = cls.getMethod("CCDtoTxt", new Class[]{File.class, String.class});
 	    
-	    /* Get the uploaded CCD File */
-	    fileLocation = fileLocation.replace("/Applications/HELProductSuite/universalTranslator/", "").replace("/home/HEHELProductSuiteniversalTranslator/", "").replace("/HELCHELProductSuiteversalTranslator/", "");
-	    directory = myProps.getProperty("ut.directory.utRootDir") + fileLocation;
+	    //Get the uploaded CCD File
+	    directory = fileLocation;
 	    
 	    File ccdFile = new File(directory + ccdFileName + ".xml");
 	    

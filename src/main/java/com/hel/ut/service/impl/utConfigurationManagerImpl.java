@@ -1581,55 +1581,67 @@ public class utConfigurationManagerImpl implements utConfigurationManager {
 	
 	String joinedList = configIds.stream().map(String::valueOf).collect(Collectors.joining(","));
 	
-	String sqlStatement = "update configurationtransportdetails set fileLocation = REPLACE(fileLocation,'/HELProductSuite/universalTranslator/"+oldCleanURL+"','/HELProductSuite/universalTranslator/"+newCleanURL+"') "
+	String sqlStatement = "update configurationtransportdetails set fileLocation = REPLACE(fileLocation,'"+oldCleanURL+"','"+newCleanURL+"') "
 	    + "where configId in ("+joinedList+"); "
-	    + "update rel_transportfiledropdetails set directory = REPLACE(directory,'/HELProductSuite/universalTranslator/"+oldCleanURL+"','/HELProductSuite/universalTranslator/"+newCleanURL+"') "
+	    + "update rel_transportfiledropdetails set directory = REPLACE(directory,'"+oldCleanURL+"','"+newCleanURL+"') "
 	    + "where transportId in (select id from configurationtransportdetails where configId in ("+joinedList+"));";
 	
 	messageTypeDAO.executeSQLStatement(sqlStatement);
 	
 	//Need to copy crosswalks, input files and templates from the old folder to the new one
 	File sourceCrosswalkFolder = new File(myProps.getProperty("ut.directory.utRootDir") + oldCleanURL + "/crosswalks");
-	File destinationCrossalkFolder = new File(myProps.getProperty("ut.directory.utRootDir") + newCleanURL + "/crosswalks");
 	
-	if(!sourceCrosswalkFolder.equals(destinationCrossalkFolder)) {
-	    try {
-		FileUtils.copyDirectory(sourceCrosswalkFolder, destinationCrossalkFolder);
-	    } catch (IOException e) {
-		e.printStackTrace();
+	if(sourceCrosswalkFolder.exists()) {
+	    File destinationCrossalkFolder = new File(myProps.getProperty("ut.directory.utRootDir") + newCleanURL + "/crosswalks");
+
+	    if(!sourceCrosswalkFolder.equals(destinationCrossalkFolder)) {
+		try {
+		    FileUtils.copyDirectory(sourceCrosswalkFolder, destinationCrossalkFolder);
+		} catch (IOException e) {
+		    e.printStackTrace();
+		}
 	    }
 	}
 	
 	File sourceTemplateFolder = new File(myProps.getProperty("ut.directory.utRootDir") + oldCleanURL + "/templates");
-	File destinationTemplateFolder = new File(myProps.getProperty("ut.directory.utRootDir") + newCleanURL + "/templates");
 	
-	if(!sourceTemplateFolder.equals(destinationTemplateFolder)) {
-	    try {
-		FileUtils.copyDirectory(sourceTemplateFolder, destinationTemplateFolder);
-	    } catch (IOException e) {
-		e.printStackTrace();
+	if(sourceTemplateFolder.exists()) {
+	    File destinationTemplateFolder = new File(myProps.getProperty("ut.directory.utRootDir") + newCleanURL + "/templates");
+
+	    if(!sourceTemplateFolder.equals(destinationTemplateFolder)) {
+		try {
+		    FileUtils.copyDirectory(sourceTemplateFolder, destinationTemplateFolder);
+		} catch (IOException e) {
+		    e.printStackTrace();
+		}
 	    }
 	}
 	
 	File sourceInputFolder = new File(myProps.getProperty("ut.directory.utRootDir") + oldCleanURL + "/input files");
-	File destinationInputFolder = new File(myProps.getProperty("ut.directory.utRootDir") + newCleanURL + "/input files");
 	
-	if(!sourceInputFolder.equals(destinationInputFolder)) {
-	    try {
-		FileUtils.copyDirectory(sourceInputFolder, destinationInputFolder);
-	    } catch (IOException e) {
-		e.printStackTrace();
+	if(sourceInputFolder.exists()) {
+	    File destinationInputFolder = new File(myProps.getProperty("ut.directory.utRootDir") + newCleanURL + "/input files");
+
+	    if(!sourceInputFolder.equals(destinationInputFolder)) {
+		try {
+		    FileUtils.copyDirectory(sourceInputFolder, destinationInputFolder);
+		} catch (IOException e) {
+		    e.printStackTrace();
+		}
 	    }
 	}
 	
 	File sourceOutputFolder = new File(myProps.getProperty("ut.directory.utRootDir") + oldCleanURL + "/output files");
-	File destinationOutputFolder = new File(myProps.getProperty("ut.directory.utRootDir") + newCleanURL + "/output files");
 	
-	if(!sourceOutputFolder.equals(destinationOutputFolder)) {
-	    try {
-		FileUtils.copyDirectory(sourceOutputFolder, destinationOutputFolder);
-	    } catch (IOException e) {
-		e.printStackTrace();
+	if(sourceOutputFolder.exists()) {
+	    File destinationOutputFolder = new File(myProps.getProperty("ut.directory.utRootDir") + newCleanURL + "/output files");
+	
+	    if(!sourceOutputFolder.equals(destinationOutputFolder)) {
+		try {
+		    FileUtils.copyDirectory(sourceOutputFolder, destinationOutputFolder);
+		} catch (IOException e) {
+		    e.printStackTrace();
+		}
 	    }
 	}
     }

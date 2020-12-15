@@ -282,10 +282,9 @@ public class directManager {
 	    directMessageOut.setToDirectAddress(batchUploadDetails.getSenderEmail());
 	    directMessageOut.setHispId(hispDetails.getId());
 
-	    String filelocation = transportDetails.getfileLocation();
-	    filelocation = filelocation.replace("/HELProductSuite/universalTranslator/", "");
+	    String filelocation = transportDetails.getfileLocation().trim();
 	    
-	    File file = new File(myProps.getProperty("ut.directory.utRootDir") + filelocation + fileName);
+	    File file = new File(myProps.getProperty("ut.directory.utRootDir") + transportDetails.getfileLocation().trim() + fileName);
 	   
 	    String responseMessage = "";
 	    
