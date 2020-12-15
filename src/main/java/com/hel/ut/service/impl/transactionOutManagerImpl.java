@@ -187,8 +187,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
 	InputStream inputStream = null;
 	OutputStream outputStream = null;
 
-	String filelocation = transportDetails.getfileLocation();
-	filelocation = filelocation.replace("/HELProductSuite/universalTranslator/", "");
+	String filelocation = transportDetails.getfileLocation().trim();
 	String directory = myProps.getProperty("ut.directory.utRootDir") + filelocation;
 
 	boolean hl7 = false;
@@ -1926,71 +1925,71 @@ public class transactionOutManagerImpl implements transactionOutManager {
 		}
 
 	    } else {
-			ba = new batchdownloadactivity();
-			ba.setActivity("Writing records to output file:" + myProps.getProperty("ut.directory.massOutputPath") + batchDownload.getUtBatchName() + "." + fileExt);
-			ba.setBatchDownloadId(batchDownload.getId());
-			transactionOutDAO.submitBatchActivityLog(ba);
+		ba = new batchdownloadactivity();
+		ba.setActivity("Writing records to output file:" + myProps.getProperty("ut.directory.massOutputPath") + batchDownload.getUtBatchName() + "." + fileExt);
+		ba.setBatchDownloadId(batchDownload.getId());
+		transactionOutDAO.submitBatchActivityLog(ba);
 
-			boolean isExcel = false;
-			String finalFileExt = "";
-			if("xlsx".equals(fileExt) || "xls".equals(fileExt)) {
-				finalFileExt = fileExt;
-				fileExt = "csv";
-				isExcel = true;
+		boolean isExcel = false;
+		String finalFileExt = "";
+		if("xlsx".equals(fileExt) || "xls".equals(fileExt)) {
+			finalFileExt = fileExt;
+			fileExt = "csv";
+			isExcel = true;
 
-				if(!",".equals(transportDetails.getDelimChar())) {
-					transportDetails.setDelimChar(",");
+			if(!",".equals(transportDetails.getDelimChar())) {
+				transportDetails.setDelimChar(",");
+			}
+		}
+
+		Integer writeOutCome = writeOutputToTextFile(transportDetails, batchDownload.getId(), myProps.getProperty("ut.directory.massOutputMySQLPath") + batchDownload.getUtBatchName() + "." + fileExt, configFields,batchDownload.getBatchUploadId());
+
+		//Need to convert the csv into xlsx file
+		if(isExcel) {
+			XSSFWorkbook workBook = new XSSFWorkbook();
+			XSSFSheet sheet = workBook.createSheet("sheet1");
+
+			String currentLine=null;
+			int RowNum=0;
+			BufferedReader br = new BufferedReader(new FileReader(myProps.getProperty("ut.directory.massOutputPath") + batchDownload.getUtBatchName() + "." + fileExt));
+			while ((currentLine = br.readLine()) != null) {
+				String str[] = currentLine.split(",");
+				XSSFRow currentRow=sheet.createRow(RowNum);
+				for(int i=0;i<str.length;i++){
+					currentRow.createCell(i).setCellValue(str[i]);
 				}
+				RowNum++;
 			}
 
-			Integer writeOutCome = writeOutputToTextFile(transportDetails, batchDownload.getId(), myProps.getProperty("ut.directory.massOutputMySQLPath") + batchDownload.getUtBatchName() + "." + fileExt, configFields,batchDownload.getBatchUploadId());
+			FileOutputStream fileOutputStream =  new FileOutputStream(myProps.getProperty("ut.directory.massOutputPath") + batchDownload.getUtBatchName() + "." + finalFileExt);
+			workBook.write(fileOutputStream);
+			fileOutputStream.close();
 
-			//Need to convert the csv into xlsx file
-			if(isExcel) {
-				XSSFWorkbook workBook = new XSSFWorkbook();
-				XSSFSheet sheet = workBook.createSheet("sheet1");
-
-				String currentLine=null;
-				int RowNum=0;
-				BufferedReader br = new BufferedReader(new FileReader(myProps.getProperty("ut.directory.massOutputPath") + batchDownload.getUtBatchName() + "." + fileExt));
-				while ((currentLine = br.readLine()) != null) {
-					String str[] = currentLine.split(",");
-					XSSFRow currentRow=sheet.createRow(RowNum);
-					for(int i=0;i<str.length;i++){
-						currentRow.createCell(i).setCellValue(str[i]);
-					}
-					RowNum++;
-				}
-
-				FileOutputStream fileOutputStream =  new FileOutputStream(myProps.getProperty("ut.directory.massOutputPath") + batchDownload.getUtBatchName() + "." + finalFileExt);
-				workBook.write(fileOutputStream);
-				fileOutputStream.close();
-
-				//Delete csv file
-				File csvFile = new File(myProps.getProperty("ut.directory.massOutputPath") + batchDownload.getUtBatchName() + "." + fileExt);
-				if(csvFile.exists()) {
-					csvFile.delete();
-				}
-
-				fileExt = finalFileExt;
+			//Delete csv file
+			File csvFile = new File(myProps.getProperty("ut.directory.massOutputPath") + batchDownload.getUtBatchName() + "." + fileExt);
+			if(csvFile.exists()) {
+				csvFile.delete();
 			}
+
+			fileExt = finalFileExt;
+		}
 	    }
 
 	    if (!massOutFile.exists()) {
-			//we induce time because file is not done writing
-			TimeUnit.SECONDS.sleep(30);
+		//we induce time because file is not done writing
+		TimeUnit.SECONDS.sleep(30);
 	    }
 	    //check one more time to be safe
 	    if (!massOutFile.exists()) {
-			//we induce time because file is not done writing
-			TimeUnit.SECONDS.sleep(30);
+		//we induce time because file is not done writing
+		TimeUnit.SECONDS.sleep(30);
 	    }
 	    
 	    if(massOutFile.exists()) {
-			ba = new batchdownloadactivity();
-			ba.setActivity("MassOutFile was created:" + massOutFile.getAbsolutePath());
-			ba.setBatchDownloadId(batchDownload.getId());
-			transactionOutDAO.submitBatchActivityLog(ba);
+		ba = new batchdownloadactivity();
+		ba.setActivity("MassOutFile was created:" + massOutFile.getAbsolutePath());
+		ba.setBatchDownloadId(batchDownload.getId());
+		transactionOutDAO.submitBatchActivityLog(ba);
 	    }
 
 	    //cp file to archiveOut and correct putput folder
@@ -2000,7 +1999,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
 	    //we always encrypt the archive file
 	    String strEncodedFile = filemanager.encodeFileToBase64Binary(massOutFile);
 	    if (archiveFile.exists()) {
-			archiveFile.delete();
+		archiveFile.delete();
 	    }
 	    //write to archive folder
 	    filemanager.writeFile(archiveFile.getAbsolutePath(), strEncodedFile);
@@ -2015,147 +2014,147 @@ public class transactionOutManagerImpl implements transactionOutManager {
 
 	    // if we don't need to encrypt file for users to download
 	    if (!encryptMessage) {
-			Files.copy(massOutFile.toPath(), generatedFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+		Files.copy(massOutFile.toPath(), generatedFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
 	    } else { //we copy the encrypted file over
-			Files.copy(archiveFile.toPath(), generatedFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+		Files.copy(archiveFile.toPath(), generatedFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
 	    }
 
 	    //If the transport method File Drop (13) and associated to a eReferral Registry and Configuration
 	    if(transportDetails.gettransportMethodId() == 13 && transportDetails.getHelRegistryConfigId() > 0 && !"".equals(transportDetails.getHelSchemaName()) && transportDetails.getHelRegistryId() > 0) {
-			inserteReferralMessage = false;
-		
-			//Need to get the health-e-link registry details
-			Organization utOrgDetails = organizationManager.getOrganizationById(batchDownload.getOrgId());
-		
-			if(utOrgDetails.getHelRegistryId() > 0 && !utOrgDetails.getHelRegistrySchemaName().equals("")) {
-				helRegistry registryDetails = helregistrymanager.getRegistryDetails("registries",utOrgDetails.getHelRegistryId());
+		inserteReferralMessage = false;
 
-				if(!registryDetails.getRegistryName().equals("")) {
-					String registryFolderName = registryDetails.getRegistryName().toLowerCase().replaceAll(" ","-");
+		//Need to get the health-e-link registry details
+		Organization utOrgDetails = organizationManager.getOrganizationById(batchDownload.getOrgId());
 
-					//Check to see if a submitted message entry was made, if not we need to create one.
-					submittedMessage existingRegistrySubmittedMessage = submittedmessagemanager.getSubmittedMessageBySQL(registryDetails.getDbschemaname(),batchUploadDetails.getOriginalFileName());
+		if(utOrgDetails.getHelRegistryId() > 0 && !utOrgDetails.getHelRegistrySchemaName().equals("")) {
+		    helRegistry registryDetails = helregistrymanager.getRegistryDetails("registries",utOrgDetails.getHelRegistryId());
 
-					boolean createSubmittedMessage = false;
+		    if(!registryDetails.getRegistryName().equals("")) {
+			String registryFolderName = registryDetails.getRegistryName().toLowerCase().replaceAll(" ","-");
 
-					if(existingRegistrySubmittedMessage != null){
-						if(existingRegistrySubmittedMessage.getId() > 0) {
-							//Check to see if the target configuration is just a downloadable file update
-							if(transportDetails.isErgFileDownload()) {
-								submittedmessagemanager.updateSubmittedMessageDownloadableFileName(registryDetails.getDbschemaname(),batchDownload.getBatchUploadId(),batchDownload.getOutputFileName());
+			//Check to see if a submitted message entry was made, if not we need to create one.
+			submittedMessage existingRegistrySubmittedMessage = submittedmessagemanager.getSubmittedMessageBySQL(registryDetails.getDbschemaname(),batchUploadDetails.getOriginalFileName());
 
-								ba = new batchdownloadactivity();
-								ba.setActivity("Updated eReferral uploaded file entry for messageId:" + existingRegistrySubmittedMessage.getId());
-								ba.setBatchDownloadId(batchDownload.getId());
-								transactionOutDAO.submitBatchActivityLog(ba);
-							}
-							else {
-								//Need to update the Registry submitted message entry to capture the created file name
-								submittedmessagemanager.updateSubmittedMessage(registryDetails.getDbschemaname(),batchDownload.getBatchUploadId(),batchDownload.getOutputFileName(),utOrgDetails.getHelRegistryOrgId());
+			boolean createSubmittedMessage = false;
 
-								ba = new batchdownloadactivity();
-								ba.setActivity("Updated eReferral online form entry for messageId:" + existingRegistrySubmittedMessage.getId());
-								ba.setBatchDownloadId(batchDownload.getId());
-								transactionOutDAO.submitBatchActivityLog(ba);
-							}
-						}
-						else {
-							createSubmittedMessage = true;
-						}
-					}
-					else {
-						createSubmittedMessage = true;
-					}
+			if(existingRegistrySubmittedMessage != null){
+				if(existingRegistrySubmittedMessage.getId() > 0) {
+				    //Check to see if the target configuration is just a downloadable file update
+				    if(transportDetails.isErgFileDownload()) {
+					submittedmessagemanager.updateSubmittedMessageDownloadableFileName(registryDetails.getDbschemaname(),batchDownload.getBatchUploadId(),batchDownload.getOutputFileName());
 
-					if(createSubmittedMessage) {
+					ba = new batchdownloadactivity();
+					ba.setActivity("Updated eReferral uploaded file entry for messageId:" + existingRegistrySubmittedMessage.getId());
+					ba.setBatchDownloadId(batchDownload.getId());
+					transactionOutDAO.submitBatchActivityLog(ba);
+				    }
+				    else {
+					//Need to update the Registry submitted message entry to capture the created file name
+					submittedmessagemanager.updateSubmittedMessage(registryDetails.getDbschemaname(),batchDownload.getBatchUploadId(),batchDownload.getOutputFileName(),utOrgDetails.getHelRegistryOrgId());
 
-						Integer sendingOrdId = 0;
-
-						//Get the registery organization Id
-						Organization organizationDetails = organizationManager.getOrganizationById(batchUploadDetails.getOrgId());
-
-						sendingOrdId = organizationDetails.getHelRegistryOrgId();
-
-						configurationMessageSpecs sourceConfigMessageSpecs = configurationManager.getMessageSpecs(batchUploadDetails.getConfigId());
-
-						if(sourceConfigMessageSpecs != null) {
-							if(sourceConfigMessageSpecs.getSourceSubOrgCol() > 0) {
-								//Pull the first record for the batch
-								String recordVal = transactionInDAO.getFieldValue("transactiontranslatedin_"+batchUploadDetails.getId(),"F"+sourceConfigMessageSpecs.getSourceSubOrgCol(), "batchUploadId", batchUploadDetails.getId());
-
-								try {
-									if(Integer.parseInt(recordVal.trim().toLowerCase()) > 0) {
-									sendingOrdId = Integer.parseInt(recordVal.trim().toLowerCase());
-									}
-								}
-								catch (Exception ex) {}
-							}
-						}
-
-						DateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmssS");
-						Date date = new Date();
-
-						SecureRandom random = new SecureRandom();
-						int num = random.nextInt(100000);
-						String formattedRandom = String.format("%05d", num);
-
-						String messageName = new StringBuilder().append(transportDetails.getHelRegistryConfigId()).append(formattedRandom).append(dateFormat.format(date)).toString();
-
-						submittedMessage newSubmittedMessage = new submittedMessage();
-						newSubmittedMessage.setUtBatchUploadId(batchUploadDetails.getId());
-						newSubmittedMessage.setRegistryConfigId(transportDetails.getHelRegistryConfigId());
-						newSubmittedMessage.setUploadedFileName(batchUploadDetails.getOriginalFileName());
-						newSubmittedMessage.setAssignedFileName(batchUploadDetails.getUtBatchName());
-						newSubmittedMessage.setInFileExt(FilenameUtils.getExtension(batchUploadDetails.getOriginalFileName()));
-						newSubmittedMessage.setStatusId(23);
-						newSubmittedMessage.setTransportId(8);
-						newSubmittedMessage.setSystemUserId(0);
-						newSubmittedMessage.setTotalRows(batchUploadDetails.getTotalRecordCount());
-						newSubmittedMessage.setSourceOrganizationId(sendingOrdId);
-						newSubmittedMessage.setTargetOrganizationId(utOrgDetails.getHelRegistryOrgId());
-						newSubmittedMessage.setReceivedFileName(batchDownload.getOutputFileName());
-						newSubmittedMessage.setAssignedMessageNumber(messageName);
-
-						submittedmessagemanager.submitSubmittedMessage(registryDetails.getDbschemaname(),newSubmittedMessage);
-
-						ba = new batchdownloadactivity();
-						ba.setActivity("Created new eReferral message for batch upload batchId:"+batchUploadDetails.getId());
-						ba.setBatchDownloadId(batchDownload.getId());
-						transactionOutDAO.submitBatchActivityLog(ba);
-					}
-
-					//Check to see if there is file drop details
-					//File Drop directory
-					List<configurationFileDropFields> fileDropFields = configurationTransportManager.getTransFileDropDetails(transportDetails.getId());
-
-					String fileDropDir =  registryFolderName + "/loadFiles/";
-
-					for(configurationFileDropFields dropField : fileDropFields){
-						if(dropField.getMethod() == 2) {
-							fileDropDir = dropField.getDirectory();
-						}
-					}
-
-					File targetFile = new File(myProps.getProperty("registry.directory.path") + fileDropDir.replace("/HELProductSuite/registries/", "") + batchDownload.getOutputFileName());
-
-					if(transportDetails.isErgFileDownload()) {
-						Files.copy(massOutFile.toPath(), targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-
-						ba = new batchdownloadactivity();
-						ba.setActivity("Moved the massOutFile file: " + massOutFile.getAbsolutePath() + " to the eReferral directory: "+ targetFile.getAbsolutePath());
-						ba.setBatchDownloadId(batchDownload.getId());
-						transactionOutDAO.submitBatchActivityLog(ba);
-					}
-					else {
-						Files.copy(archiveFile.toPath(), targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-
-						ba = new batchdownloadactivity();
-						ba.setActivity("Moved the archive file: " + archiveFile.getAbsolutePath() + " to the eReferral directory: "+ targetFile.getAbsolutePath());
-						ba.setBatchDownloadId(batchDownload.getId());
-						transactionOutDAO.submitBatchActivityLog(ba);
-					}
+					ba = new batchdownloadactivity();
+					ba.setActivity("Updated eReferral online form entry for messageId:" + existingRegistrySubmittedMessage.getId());
+					ba.setBatchDownloadId(batchDownload.getId());
+					transactionOutDAO.submitBatchActivityLog(ba);
+				    }
+				}
+				else {
+				    createSubmittedMessage = true;
 				}
 			}
+			else {
+			    createSubmittedMessage = true;
+			}
+
+			if(createSubmittedMessage) {
+
+			    Integer sendingOrdId = 0;
+
+			    //Get the registery organization Id
+			    Organization organizationDetails = organizationManager.getOrganizationById(batchUploadDetails.getOrgId());
+
+			    sendingOrdId = organizationDetails.getHelRegistryOrgId();
+
+			    configurationMessageSpecs sourceConfigMessageSpecs = configurationManager.getMessageSpecs(batchUploadDetails.getConfigId());
+
+			    if(sourceConfigMessageSpecs != null) {
+				if(sourceConfigMessageSpecs.getSourceSubOrgCol() > 0) {
+				    //Pull the first record for the batch
+				    String recordVal = transactionInDAO.getFieldValue("transactiontranslatedin_"+batchUploadDetails.getId(),"F"+sourceConfigMessageSpecs.getSourceSubOrgCol(), "batchUploadId", batchUploadDetails.getId());
+
+				    try {
+					if(Integer.parseInt(recordVal.trim().toLowerCase()) > 0) {
+					    sendingOrdId = Integer.parseInt(recordVal.trim().toLowerCase());
+					}
+				    }
+				    catch (Exception ex) {}
+				}
+			    }
+
+			    DateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmssS");
+			    Date date = new Date();
+
+			    SecureRandom random = new SecureRandom();
+			    int num = random.nextInt(100000);
+			    String formattedRandom = String.format("%05d", num);
+
+			    String messageName = new StringBuilder().append(transportDetails.getHelRegistryConfigId()).append(formattedRandom).append(dateFormat.format(date)).toString();
+
+			    submittedMessage newSubmittedMessage = new submittedMessage();
+			    newSubmittedMessage.setUtBatchUploadId(batchUploadDetails.getId());
+			    newSubmittedMessage.setRegistryConfigId(transportDetails.getHelRegistryConfigId());
+			    newSubmittedMessage.setUploadedFileName(batchUploadDetails.getOriginalFileName());
+			    newSubmittedMessage.setAssignedFileName(batchUploadDetails.getUtBatchName());
+			    newSubmittedMessage.setInFileExt(FilenameUtils.getExtension(batchUploadDetails.getOriginalFileName()));
+			    newSubmittedMessage.setStatusId(23);
+			    newSubmittedMessage.setTransportId(8);
+			    newSubmittedMessage.setSystemUserId(0);
+			    newSubmittedMessage.setTotalRows(batchUploadDetails.getTotalRecordCount());
+			    newSubmittedMessage.setSourceOrganizationId(sendingOrdId);
+			    newSubmittedMessage.setTargetOrganizationId(utOrgDetails.getHelRegistryOrgId());
+			    newSubmittedMessage.setReceivedFileName(batchDownload.getOutputFileName());
+			    newSubmittedMessage.setAssignedMessageNumber(messageName);
+
+			    submittedmessagemanager.submitSubmittedMessage(registryDetails.getDbschemaname(),newSubmittedMessage);
+
+			    ba = new batchdownloadactivity();
+			    ba.setActivity("Created new eReferral message for batch upload batchId:"+batchUploadDetails.getId());
+			    ba.setBatchDownloadId(batchDownload.getId());
+			    transactionOutDAO.submitBatchActivityLog(ba);
+			}
+
+			//Check to see if there is file drop details
+			//File Drop directory
+			List<configurationFileDropFields> fileDropFields = configurationTransportManager.getTransFileDropDetails(transportDetails.getId());
+
+			String fileDropDir =  registryFolderName + "/loadFiles/";
+
+			for(configurationFileDropFields dropField : fileDropFields){
+			    if(dropField.getMethod() == 2) {
+				fileDropDir = dropField.getDirectory();
+			    }
+			}
+
+			File targetFile = new File(myProps.getProperty("registry.directory.path") + fileDropDir + batchDownload.getOutputFileName());
+
+			if(transportDetails.isErgFileDownload()) {
+			    Files.copy(massOutFile.toPath(), targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+
+			    ba = new batchdownloadactivity();
+			    ba.setActivity("Moved the massOutFile file: " + massOutFile.getAbsolutePath() + " to the eReferral directory: "+ targetFile.getAbsolutePath());
+			    ba.setBatchDownloadId(batchDownload.getId());
+			    transactionOutDAO.submitBatchActivityLog(ba);
+			}
+			else {
+			    Files.copy(archiveFile.toPath(), targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+
+			    ba = new batchdownloadactivity();
+			    ba.setActivity("Moved the archive file: " + archiveFile.getAbsolutePath() + " to the eReferral directory: "+ targetFile.getAbsolutePath());
+			    ba.setBatchDownloadId(batchDownload.getId());
+			    transactionOutDAO.submitBatchActivityLog(ba);
+			}
+		    }
+		}
 	    }
 	    
 	    //File Drop (Not to a eReferral Registry)
@@ -2188,26 +2187,26 @@ public class transactionOutManagerImpl implements transactionOutManager {
 		    File targetFile = new File(targetDirectory + batchDownload.getOutputFileName());
 
 		    try {
-				Files.copy(archiveFile.toPath(), targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+			Files.copy(archiveFile.toPath(), targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
 
-				//Check to see if the target config needs the target file decoded (archivefile is always Base64 encoded)
-				if(transportDetails.getEncodingId() == 1) {
-					File generatedTargetFile = new File(targetFile.getAbsolutePath());
-					String strDecode = filemanager.decodeFileToBase64Binary(generatedTargetFile);
-					String decodeFilePath = targetFile.getAbsolutePath();
-					filemanager.writeFile(decodeFilePath, strDecode);
-				}
+			//Check to see if the target config needs the target file decoded (archivefile is always Base64 encoded)
+			if(transportDetails.getEncodingId() == 1) {
+				File generatedTargetFile = new File(targetFile.getAbsolutePath());
+				String strDecode = filemanager.decodeFileToBase64Binary(generatedTargetFile);
+				String decodeFilePath = targetFile.getAbsolutePath();
+				filemanager.writeFile(decodeFilePath, strDecode);
+			}
 
-				ba = new batchdownloadactivity();
-				ba.setActivity("Moved the archive file: " + archiveFile.getAbsolutePath() + " to the config drop directory: "+ targetFile.getAbsolutePath());
-				ba.setBatchDownloadId(batchDownload.getId());
-				transactionOutDAO.submitBatchActivityLog(ba);
+			ba = new batchdownloadactivity();
+			ba.setActivity("Moved the archive file: " + archiveFile.getAbsolutePath() + " to the config drop directory: "+ targetFile.getAbsolutePath());
+			ba.setBatchDownloadId(batchDownload.getId());
+			transactionOutDAO.submitBatchActivityLog(ba);
 		    }
 		    catch (Exception ex) {
-				ba = new batchdownloadactivity();
-				ba.setActivity("Failed to move the archive file: " + archiveFile.getAbsolutePath() + ". Drop Directory: "+ targetFile.getAbsolutePath() + " does not exist.");
-				ba.setBatchDownloadId(batchDownload.getId());
-				transactionOutDAO.submitBatchActivityLog(ba);
+			ba = new batchdownloadactivity();
+			ba.setActivity("Failed to move the archive file: " + archiveFile.getAbsolutePath() + ". Drop Directory: "+ targetFile.getAbsolutePath() + " does not exist.");
+			ba.setBatchDownloadId(batchDownload.getId());
+			transactionOutDAO.submitBatchActivityLog(ba);
 		    }
 		    
 		}
