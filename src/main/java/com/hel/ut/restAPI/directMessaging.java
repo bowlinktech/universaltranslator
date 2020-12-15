@@ -208,7 +208,7 @@ public class directMessaging {
 							    }
 							}
 							
-							FileOutputStream fos = new FileOutputStream(utRootDir + fileDropDir.replace("/Applications/HELProductSuite/universalTranslator/", "").replace("/HELProductSuite/universalTranslator/", "") + CCDATitle);
+							FileOutputStream fos = new FileOutputStream(utRootDir + fileDropDir + CCDATitle);
 							
 							//Check if content is base64 encoded
 							if(Base64.isBase64(CCDAContent.replace("\n", ""))) {

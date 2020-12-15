@@ -125,7 +125,7 @@ public class adminConfigController {
     
     @Value("${siteTimeZone}")
     private String siteTimeZone; 
-
+    
     @Autowired
     private utConfigurationManager utconfigurationmanager;
 
@@ -510,7 +510,7 @@ public class adminConfigController {
 		    String fileLocationConfigName = "";
 		    try {
 			for(configurationFileDropFields fileDropField : fileDropFields) {
-			    if(fileDropField.getDirectory().contains("/HELProductSuite/universalTranslator/")) {
+			    if(fileDropField.getDirectory().contains(orgDetails.getcleanURL() + "/input files/")) {
 				fileLocationConfigName = fileDropField.getDirectory().substring(fileDropField.getDirectory().lastIndexOf("/input files/"), fileDropField.getDirectory().length()-1);
 				fileLocationConfigName = fileLocationConfigName.replace("/input files/","");
 				
@@ -632,15 +632,18 @@ public class adminConfigController {
             transportDetails = new configurationTransport();
 
             if (configurationDetails.getType() == 1) {
-                transportDetails.setfileLocation("/HELProductSuite/universalTranslator/" + orgDetails.getcleanURL() + "/input files/");
+                transportDetails.setfileLocation(orgDetails.getcleanURL() + "/input files/");
             } else {
-                transportDetails.setfileLocation("/HELProductSuite/universalTranslator/" + orgDetails.getcleanURL() + "/output files/");
+                transportDetails.setfileLocation(orgDetails.getcleanURL() + "/output files/");
             }
 
             List<Integer> assocMessageTypes = new ArrayList<Integer>();
             assocMessageTypes.add(configurationDetails.getId());
             transportDetails.setmessageTypes(assocMessageTypes);
         }
+	else {
+	    transportDetails.setfileLocation(transportDetails.getfileLocation().replace("/HELProductSuite/universalTranslator/", ""));
+	}
 	
 	transportDetails.setHelRegistryId(orgDetails.getHelRegistryId());
 	transportDetails.setHelSchemaName(orgDetails.getHelRegistrySchemaName());
@@ -684,11 +687,10 @@ public class adminConfigController {
 		 pushRFields.setDirectory("/bowlink/");
 	    }
 	    else if(configurationDetails.getMessageTypeId() == 1) { 
-		 pushRFields.setDirectory("/HELProductSuite/universalTranslator/" + orgDetails.getcleanURL() + "/input files/"+configurationDetails.getconfigName().toLowerCase().replace(" ", "")+"/");
+		 pushRFields.setDirectory(orgDetails.getcleanURL() + "/input files/"+configurationDetails.getconfigName().toLowerCase().replace(" ", "")+"/");
 	    }
 	    else {
-		String directory = myProps.getProperty("ut.directory.utRootDir");
-		pushRFields.setDirectory(directory.replace("/home/","/") + orgDetails.getcleanURL() + "/input files/"+configurationDetails.getconfigName().toLowerCase().replace(" ", "")+"/");
+		pushRFields.setDirectory(orgDetails.getcleanURL() + "/input files/"+configurationDetails.getconfigName().toLowerCase().replace(" ", "")+"/");
 	    }
 
 	    configurationFileDropFields getRFields = new configurationFileDropFields();
@@ -697,7 +699,7 @@ public class adminConfigController {
 		getRFields.setDirectory("/bowlink/");
 	    }
 	    else if(configurationDetails.getMessageTypeId() == 1) { 
-		getRFields.setDirectory("/HELProductSuite/universalTranslator/" + orgDetails.getcleanURL() + "/output files/"+configurationDetails.getconfigName().toLowerCase().replace(" ", "")+"/");
+		getRFields.setDirectory(orgDetails.getcleanURL() + "/output files/"+configurationDetails.getconfigName().toLowerCase().replace(" ", "")+"/");
 	    }
 	    else {
 		getRFields.setDirectory("/");
@@ -713,7 +715,10 @@ public class adminConfigController {
 	    String fileLocationConfigName = "";
 	    try {
 		for(configurationFileDropFields fileDropField : fileDropFields) {
-		    if(fileDropField.getDirectory().contains("/HELProductSuite/universalTranslator/")) {
+		    
+		    fileDropField.setDirectory(fileDropField.getDirectory().replace("/HELProductSuite/universalTranslator/", ""));
+		    
+		    if(fileDropField.getDirectory().contains(orgDetails.getcleanURL()+"/input files/")) {
 			fileLocationConfigName = fileDropField.getDirectory().substring(fileDropField.getDirectory().lastIndexOf("/input files/"), fileDropField.getDirectory().length()-1);
 			fileLocationConfigName = fileLocationConfigName.replace("/input files/","");
 			if(!"".equals(fileLocationConfigName)) {
@@ -727,7 +732,7 @@ public class adminConfigController {
 				dir.deleteDirectory(directory.replace("/home/","/") + orgDetails.getcleanURL() + "/input files/"+fileLocationConfigName);
 				
 				//Update file drop location
-				fileDropField.setDirectory(directory.replace("/home/","/") + orgDetails.getcleanURL() + "/input files/"+configurationDetails.getconfigName().toLowerCase().replace(" ", "")+"/");
+				fileDropField.setDirectory(orgDetails.getcleanURL() + "/input files/"+configurationDetails.getconfigName().toLowerCase().replace(" ", "")+"/");
 				utconfigurationTransportManager.saveTransportFileDrop(fileDropField);
 			    }
 			}
@@ -896,7 +901,7 @@ public class adminConfigController {
 	    
             for (configurationFTPFields ftpFields : transportDetails.getFTPFields()) {
 		if(!"".equals(ftpFields.getip())) {
-		    dir.creatFTPDirectory(directory+ftpFields.getdirectory().replace("/HELProductSuite/universalTranslator/",""));
+		    dir.creatFTPDirectory(directory+ftpFields.getdirectory());
 		
 		    ftpFields.settransportId(transportId);
 		    utconfigurationTransportManager.saveTransportFTP(configurationDetails.getorgId(), ftpFields);
@@ -911,9 +916,9 @@ public class adminConfigController {
 	    
 	    String directory = myProps.getProperty("ut.directory.utRootDir");
 	    
-	     for (configurationFileDropFields fileDropFields : transportDetails.getFileDropFields()) {
+	    for (configurationFileDropFields fileDropFields : transportDetails.getFileDropFields()) {
 		
-		dir.createFileDroppedDirectory(directory+fileDropFields.getDirectory().replace("/HELProductSuite/universalTranslator/",""));
+	       dir.createFileDroppedDirectory(directory+fileDropFields.getDirectory());
 		
                fileDropFields.setTransportId(transportId);
                utconfigurationTransportManager.saveTransportFileDrop(fileDropFields);
@@ -3848,7 +3853,7 @@ public class adminConfigController {
 		    inputStream = file.getInputStream();
 		    File newFile = null;
 		    
-		    newFile = new File(myProps.getProperty("ut.directory.utRootDir") + fileDropLocation.replace("/Applications/HELProductSuite/universalTranslator/", "").replace("/HELProductSuite/universalTranslator/", "") + fileName);
+		    newFile = new File(myProps.getProperty("ut.directory.utRootDir") + fileDropLocation + fileName);
 		    newFile.createNewFile();
 
 		    outputStream = new FileOutputStream(newFile);

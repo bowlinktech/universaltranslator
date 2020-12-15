@@ -46,9 +46,8 @@ public class xlsToTxt {
 
 	String directory = myProps.getProperty("ut.directory.utRootDir") + orgDetails.getcleanURL() + "/loadFiles/";
 
-    	/* Get the uploaded xls File */
-    	fileLocation = fileLocation.replace("/Applications/HELProductSuite/universalTranslator/", "").replace("/home/HELProductSuite/universalTranslator/", "").replace("/HELProductSuite/universalTranslator/", "");
-    	directory = myProps.getProperty("ut.directory.utRootDir") + fileLocation;
+    	// Get the uploaded xls File
+    	directory = fileLocation;
 	
     	String excelFile = (excelFileName + ".xls");
     	
