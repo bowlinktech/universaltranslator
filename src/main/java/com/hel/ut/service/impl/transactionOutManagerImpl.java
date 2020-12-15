@@ -2078,17 +2078,17 @@ public class transactionOutManagerImpl implements transactionOutManager {
 			    configurationMessageSpecs sourceConfigMessageSpecs = configurationManager.getMessageSpecs(batchUploadDetails.getConfigId());
 
 			    if(sourceConfigMessageSpecs != null) {
-				    if(sourceConfigMessageSpecs.getSourceSubOrgCol() > 0) {
-					    //Pull the first record for the batch
-					    String recordVal = transactionInDAO.getFieldValue("transactiontranslatedin_"+batchUploadDetails.getId(),"F"+sourceConfigMessageSpecs.getSourceSubOrgCol(), "batchUploadId", batchUploadDetails.getId());
+				if(sourceConfigMessageSpecs.getSourceSubOrgCol() > 0) {
+				    //Pull the first record for the batch
+				    String recordVal = transactionInDAO.getFieldValue("transactiontranslatedin_"+batchUploadDetails.getId(),"F"+sourceConfigMessageSpecs.getSourceSubOrgCol(), "batchUploadId", batchUploadDetails.getId());
 
-					    try {
-						    if(Integer.parseInt(recordVal.trim().toLowerCase()) > 0) {
-						    sendingOrdId = Integer.parseInt(recordVal.trim().toLowerCase());
-						    }
-					    }
-					    catch (Exception ex) {}
+				    try {
+					if(Integer.parseInt(recordVal.trim().toLowerCase()) > 0) {
+					    sendingOrdId = Integer.parseInt(recordVal.trim().toLowerCase());
+					}
 				    }
+				    catch (Exception ex) {}
+				}
 			    }
 
 			    DateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmssS");
@@ -2135,7 +2135,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
 			    }
 			}
 
-			File targetFile = new File(myProps.getProperty("registry.directory.path") + batchDownload.getOutputFileName());
+			File targetFile = new File(myProps.getProperty("registry.directory.path") + fileDropDir + batchDownload.getOutputFileName());
 
 			if(transportDetails.isErgFileDownload()) {
 			    Files.copy(massOutFile.toPath(), targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
