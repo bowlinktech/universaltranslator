@@ -2135,8 +2135,15 @@ public class transactionOutManagerImpl implements transactionOutManager {
 			    }
 			}
 
-			File targetFile = new File(myProps.getProperty("registry.directory.path") + fileDropDir + batchDownload.getOutputFileName());
-
+			File targetFile;
+			
+			if(fileDropDir.contains(myProps.getProperty("registry.directory.path"))) {
+			    targetFile = new File(fileDropDir + batchDownload.getOutputFileName());
+			}
+			else {
+			    targetFile = new File(myProps.getProperty("registry.directory.path") + fileDropDir + batchDownload.getOutputFileName());
+			}
+			
 			if(transportDetails.isErgFileDownload()) {
 			    Files.copy(massOutFile.toPath(), targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
 
