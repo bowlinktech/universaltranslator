@@ -642,7 +642,7 @@ public class adminConfigController {
             transportDetails.setmessageTypes(assocMessageTypes);
         }
 	else {
-	    transportDetails.setfileLocation(transportDetails.getfileLocation().replace("/HELProductSuite/universalTranslator/", ""));
+	    transportDetails.setfileLocation(transportDetails.getfileLocation());
 	}
 	
 	transportDetails.setHelRegistryId(orgDetails.getHelRegistryId());
@@ -715,8 +715,6 @@ public class adminConfigController {
 	    String fileLocationConfigName = "";
 	    try {
 		for(configurationFileDropFields fileDropField : fileDropFields) {
-		    
-		    fileDropField.setDirectory(fileDropField.getDirectory().replace("/HELProductSuite/universalTranslator/", ""));
 		    
 		    if(fileDropField.getDirectory().contains(orgDetails.getcleanURL()+"/input files/")) {
 			fileLocationConfigName = fileDropField.getDirectory().substring(fileDropField.getDirectory().lastIndexOf("/input files/"), fileDropField.getDirectory().length()-1);
