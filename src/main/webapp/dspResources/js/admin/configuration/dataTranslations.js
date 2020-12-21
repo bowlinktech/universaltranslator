@@ -118,6 +118,13 @@ require(['./main'], function () {
        }
 
        if(errorFound == 0) {
+           
+           $('body').overlay({
+                glyphicon : 'floppy-disk',
+                message : 'Generating Excel File!'
+            });
+             $('.overlay').css('display','block');
+           
            $.ajax({
                 //url: '/administrator/configurations/crosswalksDownload',
                 url: '/administrator/configurations/crosswalksExcelFileDownload',
@@ -133,7 +140,7 @@ require(['./main'], function () {
                         //window.location.href = '/administrator/configurations/downloadDTCWFile/'+ data;
                         window.location.href = '/administrator/configurations/downloadDTCWExcelFile/'+ data;
                         $('#successMsg').show();
-                        //$('#dtDownloadModal').modal('toggle');
+                        $('.overlay').css('display','none');
                     }
                     else {
                         $('#errorMsg').show();
