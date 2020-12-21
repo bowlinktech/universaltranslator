@@ -487,6 +487,7 @@ public class adminConfigController {
         List<utUser> users = userManager.getUsersByOrganization(configurationDetails.getorgId());
 	
 	boolean configNameChanged = false;
+	boolean organizationChanged = false;
 	
 	utConfiguration currentConfigDetails = utconfigurationmanager.getConfigurationById(configurationDetails.getId());
 	
@@ -494,10 +495,14 @@ public class adminConfigController {
 	    configNameChanged = true;
 	}
 	
+	if(currentConfigDetails.getorgId() != configurationDetails.getorgId()) {
+	    organizationChanged = true;
+	}
+	
         //submit the updates
 	utconfigurationmanager.updateConfiguration(configurationDetails);
 	
-	if(configNameChanged) {
+	if(configNameChanged || organizationChanged) {
 	    configurationTransport transportDetails = utconfigurationTransportManager.getTransportDetails(configurationDetails.getId());
 	    
 	    if(transportDetails != null) {
@@ -506,26 +511,31 @@ public class adminConfigController {
 		
 		Organization orgDetails = organizationmanager.getOrganizationById(configurationDetails.getorgId());
 		
+		if(organizationChanged) {
+		    transportDetails.setfileLocation(orgDetails.getcleanURL() + "/input files/");
+		    utconfigurationTransportManager.updateTransportDetails(configurationDetails, transportDetails);
+		}
+		
 		if(!fileDropFields.isEmpty()) {
 		    String fileLocationConfigName = "";
 		    try {
 			for(configurationFileDropFields fileDropField : fileDropFields) {
-			    if(fileDropField.getDirectory().contains(orgDetails.getcleanURL() + "/input files/")) {
+			    if(fileDropField.getDirectory().contains(orgDetails.getcleanURL() + "/input files/") || organizationChanged) {
 				fileLocationConfigName = fileDropField.getDirectory().substring(fileDropField.getDirectory().lastIndexOf("/input files/"), fileDropField.getDirectory().length()-1);
 				fileLocationConfigName = fileLocationConfigName.replace("/input files/","");
 				
 				if(!"".equals(fileLocationConfigName)) {
-				    if(!fileLocationConfigName.equals(configurationDetails.getconfigName().toLowerCase().replace(" ", ""))) {
+				    if(!fileLocationConfigName.equals(configurationDetails.getconfigName().toLowerCase().replace(" ", "")) || organizationChanged) {
 					//Create new directory
 					String directory = myProps.getProperty("ut.directory.utRootDir");
 					fileSystem dir = new fileSystem();
 					dir.createFileDroppedDirectory(directory.replace("/home/","/") + orgDetails.getcleanURL() + "/input files/"+configurationDetails.getconfigName().toLowerCase().replace(" ", "")+"/");
 					
 					//Remove old directory
-					dir.deleteDirectory(directory.replace("/home/","/") + orgDetails.getcleanURL() + "/input files/"+fileLocationConfigName);
+					dir.deleteDirectory(directory.replace("/home/","/") + fileDropField.getDirectory().trim());
 
 					//Update file drop location
-					fileDropField.setDirectory(directory.replace("/home/","/") + orgDetails.getcleanURL() + "/input files/"+configurationDetails.getconfigName().toLowerCase().replace(" ", "")+"/");
+					fileDropField.setDirectory(orgDetails.getcleanURL() + "/input files/"+configurationDetails.getconfigName().toLowerCase().replace(" ", "")+"/");
 					utconfigurationTransportManager.saveTransportFileDrop(fileDropField);
 				    }
 				}
@@ -2909,7 +2919,7 @@ public class adminConfigController {
 	newConfig.setType(configDetails.getType());
 	newConfig.setMessageTypeId(configDetails.getMessageTypeId());
 	newConfig.setstepsCompleted(6);
-	newConfig.setconfigName(configDetails.getconfigName() + " (COPY)");
+	newConfig.setconfigName(configDetails.getconfigName() + " - COPY");
 	newConfig.setThreshold(configDetails.getThreshold());
 	
 	//Save new Configuration
