@@ -157,6 +157,12 @@ public class messageTypeManagerImpl implements messageTypeManager {
 
 	if (crosswalkDetails.getFileDelimiter() > 0) {
 	    delimChar = messageTypeDAO.getDelimiterChar(crosswalkDetails.getFileDelimiter());
+	    String delimiter = messageTypeDAO.getDelimiterById(crosswalkDetails.getFileDelimiter());
+	    if(!"".equals(delimiter)) {
+		if("tab".equals(delimiter)) {
+		    delimChar = "\t";
+		}
+	    }
 	} 
 	
         //Check to make sure the file contains the selected delimiter
@@ -201,7 +207,7 @@ public class messageTypeManagerImpl implements messageTypeManager {
 	     directory = myProps.getProperty("ut.directory.utRootDir") + cleanURL + "/crosswalks/";
         } else {
             //Set the directory to save the uploaded message type template to
-	    directory = myProps.getProperty("ut.directory.utRootDir") + "libraryFiles/";
+	    directory = myProps.getProperty("ut.directory.utRootDir") + "libraryFiles/crosswalks/";
         }
 
         File newFile = null;
@@ -233,6 +239,12 @@ public class messageTypeManagerImpl implements messageTypeManager {
 
 	if (crosswalkDetails.getFileDelimiter() > 0) {
 	    delimChar = messageTypeDAO.getDelimiterChar(crosswalkDetails.getFileDelimiter());
+	    String delimiter = messageTypeDAO.getDelimiterById(crosswalkDetails.getFileDelimiter());
+	    if(!"".equals(delimiter)) {
+		if("tab".equals(delimiter)) {
+		    delimChar = "\t";
+		}
+	    }
 	} 
 	
         //Check to make sure the file contains the selected delimiter
@@ -269,6 +281,8 @@ public class messageTypeManagerImpl implements messageTypeManager {
      * @param id id: value of the latest added crosswalk
      * @param fileName	fileName: file name of the uploaded text file.
      * @param delim	delim: the delimiter used in the file
+     * @param cleanURL
+     * @throws java.lang.Exception
      *
      */
     public void loadCrosswalkContents(int id, String fileName, String delim, String cleanURL) throws Exception {
@@ -277,7 +291,7 @@ public class messageTypeManagerImpl implements messageTypeManager {
 	String directory;
 
         if (cleanURL == null) {
-	    directory = myProps.getProperty("ut.directory.utRootDir") + "libraryFiles/";
+	    directory = myProps.getProperty("ut.directory.utRootDir") + "libraryFiles/crosswalks/";
         } else {
 	    directory = myProps.getProperty("ut.directory.utRootDir") + cleanURL + "/crosswalks/";
         }

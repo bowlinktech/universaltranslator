@@ -60,4 +60,6 @@ public interface messageTypeDAO {
     List getCrosswalksWithDataByFileName(Integer orgId, String fileName);
     
     List getConfigCrosswalksWithData(Integer orgId, Integer configId);
+    
+    String getDelimiterById(int id);
 }
