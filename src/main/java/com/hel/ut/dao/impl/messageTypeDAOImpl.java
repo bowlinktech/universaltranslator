@@ -356,11 +356,10 @@ public class messageTypeDAOImpl implements messageTypeDAO {
 	
 	if(sqlStmt != null) {
 	    if(!"".equals(sqlStmt)) {
-		 //Need to insert all the fields into the crosswalk data Fields table
-                Query query = sessionFactory.getCurrentSession().createSQLQuery(sqlStmt);
-
-                query.executeUpdate();
-
+		
+		//Need to insert all the fields into the crosswalk data Fields table
+		Query query = sessionFactory.getCurrentSession().createSQLQuery(sqlStmt);
+		query.executeUpdate();
 	    }
 	}
     }
@@ -452,5 +451,22 @@ public class messageTypeDAOImpl implements messageTypeDAO {
 	query.setParameter("configId", configId);
 
         return query.list();
+    }
+    
+    /**
+     * The 'getDelimiterById' will return the actual character of the delimiter for the id passed into the function
+     *
+     * @param id	The id will hold the delimiter ID to retrieve its associated character
+     *
+     * @returns string
+     */
+    @Transactional(readOnly = true)
+    public String getDelimiterById(int id) {
+        Query query = sessionFactory.getCurrentSession().createSQLQuery("SELECT delimiter FROM ref_delimiters where id = :id");
+        query.setParameter("id", id);
+
+        String delimChar = (String) query.uniqueResult();
+
+        return delimChar;
     }
 }
