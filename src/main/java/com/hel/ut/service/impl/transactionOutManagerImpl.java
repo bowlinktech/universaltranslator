@@ -1241,6 +1241,10 @@ public class transactionOutManagerImpl implements transactionOutManager {
 		    }
 		    
 		    if(errorCount > 0) {
+			//Clear the value when we run into a validation error
+			transactionInManager.insertValidationDroppedValues(batchDownloadId, cff, true);
+			transactionInManager.executePassClearLogicForValidationError(batchDownloadId, cff, true);
+			
 			totalValidationErrors = totalValidationErrors + errorCount;
 			
 			//log batch activity

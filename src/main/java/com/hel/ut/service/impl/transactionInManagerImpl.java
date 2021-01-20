@@ -432,51 +432,60 @@ public class transactionInManagerImpl implements transactionInManager {
 		    
 		    validationTypeId = cff.getValidationType();
 		    
-		    switch (cff.getValidationType()) {
-			// no validation
-			case 1:
-			    break;
-			//email calling SQL to validation and insert - one statement
-			case 2:
-			    validation = "Email";
-			    errorCount = genericValidation(cff, validationTypeId, batchUploadId, "");
-			    break;
-			//phone  calling SP to validation and insert - one statement 
-			case 3:
-			    validation = "Phone Number";
-			    errorCount = genericValidation(cff, validationTypeId, batchUploadId, "");
-			    break;
-			// need to loop through each record / each field
-			case 4:
-			    validation = "Date";
-			    errorCount = genericValidation(cff, validationTypeId, batchUploadId, "");
-			    break;
-			//numeric   calling SQL to validation and insert - one statement      
-			case 5:
-			    validation = "Numeric";
-			    errorCount = genericValidation(cff, validationTypeId, batchUploadId, "");
-			    break;
-			//url - need to rethink as regExp is not validating correctly
-			case 6:
-			    validation = "URL";
-			    errorCount = genericValidation(cff, validationTypeId, batchUploadId, "");
-			    break;
-			//anything new we hope to only have to modify sp
-			default:
-			    validation = "";
-			    //errorCount = genericValidation(cff, validationTypeId, batchUploadId, "");
-			    break;
+		    try {
+			switch (cff.getValidationType()) {
+			    // no validation
+			    case 1:
+				break;
+			    //email calling SQL to validation and insert - one statement
+			    case 2:
+				validation = "Email";
+				errorCount = genericValidation(cff, validationTypeId, batchUploadId, "");
+				break;
+			    //phone  calling SP to validation and insert - one statement 
+			    case 3:
+				validation = "Phone Number";
+				errorCount = genericValidation(cff, validationTypeId, batchUploadId, "");
+				break;
+			    // need to loop through each record / each field
+			    case 4:
+				validation = "Date";
+				errorCount = genericValidation(cff, validationTypeId, batchUploadId, "");
+				break;
+			    //numeric   calling SQL to validation and insert - one statement      
+			    case 5:
+				validation = "Numeric";
+				errorCount = genericValidation(cff, validationTypeId, batchUploadId, "");
+				break;
+			    //url - need to rethink as regExp is not validating correctly
+			    case 6:
+				validation = "URL";
+				errorCount = genericValidation(cff, validationTypeId, batchUploadId, "");
+				break;
+			    //anything new we hope to only have to modify sp
+			    default:
+				validation = "";
+				//errorCount = genericValidation(cff, validationTypeId, batchUploadId, "");
+				break;
+			}
+
+			if(errorCount > 0) {
+			    //Clear the value when we run into a validation error
+			    insertValidationDroppedValues(batchUploadId, cff, false);
+			    executePassClearLogicForValidationError(batchUploadId, cff, false);
+
+			    totalValidationErrors = totalValidationErrors + errorCount;
+
+			    //log batch activity
+			    batchuploadactivity ba = new batchuploadactivity();
+			    ba.setActivity("Validation Error. Validation Type:" + validation + " for configId:" + configId + " Field No: " + cff.getFieldNo());
+			    ba.setBatchUploadId(batchUploadId);
+			    transactionInDAO.submitBatchActivityLog(ba);
+			}
 		    }
-		    
-		    if(errorCount > 0) {
-			totalValidationErrors = totalValidationErrors + errorCount;
-			
-			//log batch activity
-			batchuploadactivity ba = new batchuploadactivity();
-			ba.setActivity("Validation Error. Validation Type:" + validation + " for configId:" + configId + " Field No: " + cff.getFieldNo());
-			ba.setBatchUploadId(batchUploadId);
-			transactionInDAO.submitBatchActivityLog(ba);
-		    }
+		    catch (Exception ex) {
+			ex.printStackTrace();
+		    } 
 		}
 	    }
 	}
@@ -4664,5 +4673,15 @@ public class transactionInManagerImpl implements transactionInManager {
     @Override
     public void insertMacroDroppedValues(Integer batchId, configurationDataTranslations cdt, boolean foroutboundProcessing) throws Exception {
 	transactionInDAO.insertMacroDroppedValues(batchId, cdt, foroutboundProcessing);
+    }
+    
+    @Override
+    public void executePassClearLogicForValidationError(Integer batchId, configurationFormFields cff, boolean foroutboundProcessing) throws Exception {
+	transactionInDAO.executePassClearLogicForValidationError(batchId, cff, foroutboundProcessing);
+    }
+    
+    @Override
+    public void insertValidationDroppedValues(Integer batchId, configurationFormFields cff, boolean foroutboundProcessing) throws Exception {
+	transactionInDAO.insertValidationDroppedValues(batchId, cff, foroutboundProcessing);
     }
 }
