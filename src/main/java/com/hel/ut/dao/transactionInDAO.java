@@ -311,4 +311,8 @@ public interface transactionInDAO {
     void executePassClearLogic(Integer batchId, configurationDataTranslations cdt, boolean foroutboundProcessing) throws Exception;
     
     void insertMacroDroppedValues(Integer batchId, configurationDataTranslations cdt, boolean foroutboundProcessing) throws Exception;
+    
+    void executePassClearLogicForValidationError(Integer batchId, configurationFormFields cff, boolean foroutboundProcessing) throws Exception;
+    
+    void insertValidationDroppedValues(Integer batchId, configurationFormFields cdt, boolean foroutboundProcessing) throws Exception;
 }
