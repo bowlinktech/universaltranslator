@@ -3811,7 +3811,8 @@ public class transactionInDAOImpl implements transactionInDAO {
 	    fieldName = "transactionOutRecordsId";
 	} 
 	
-	sql = "update " + translatedTable + " set F"+cff.getFieldNo()+" = '' where " + fieldName + " in (select " + fieldName + " from " + errorsTable + " where errorId = 2)";
+	sql = "update " + translatedTable + " set F"+cff.getFieldNo()+" = '' where " + fieldName 
+	    + " in (select " + fieldName + " from " + errorsTable + " where errorId = 2 and fieldNo = " + cff.getFieldNo() + ")";
 
 	Query updateData = sessionFactory.getCurrentSession().createSQLQuery(sql);
 	updateData.executeUpdate();
@@ -3837,7 +3838,8 @@ public class transactionInDAOImpl implements transactionInDAO {
 	
 	sql = "insert into " + droppedTableName + " ("+batchIdType+"," + transactionRecordCol + ",fieldNo,configId,fieldName,fieldValue) ";
 	sql += "select " + batchId + "," + transactionRecordCol + "," + cff.getFieldNo() + "," + cff.getconfigId() + ", '" + cff.getFieldDesc().trim() + "', F"+cff.getFieldNo();
-	sql += " from " + translatedTable + " where " + transactionRecordCol + " in (select " + transactionRecordCol + " from " + errorsTable + " where errorId = 2)";
+	sql += " from " + translatedTable + " where " + transactionRecordCol 
+	    + " in (select " + transactionRecordCol + " from " + errorsTable + " where errorId = 2 and fieldNo = " + cff.getFieldNo() + ")";
 	
 	Query updateData = sessionFactory.getCurrentSession().createSQLQuery(sql);
 	updateData.executeUpdate();
