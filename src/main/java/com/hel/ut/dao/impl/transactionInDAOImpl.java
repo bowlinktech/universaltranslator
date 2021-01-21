@@ -3795,4 +3795,53 @@ public class transactionInDAOImpl implements transactionInDAO {
 	Query updateData = sessionFactory.getCurrentSession().createSQLQuery(sql);
 	updateData.executeUpdate();
     }
+    
+    @Override
+    @Transactional(readOnly = false)
+    public void executePassClearLogicForValidationError(Integer batchId, configurationFormFields cff, boolean foroutboundProcessing) throws Exception {
+	String sql;
+	
+	String translatedTable = "transactiontranslatedin_"+batchId;
+	String errorsTable = "transactioninerrors_"+batchId;
+	String fieldName = "transactionInRecordsId";
+	
+	if (foroutboundProcessing) {
+	    translatedTable = "transactiontranslatedout_"+batchId;
+	    errorsTable = "transactionouterrors_"+batchId;
+	    fieldName = "transactionOutRecordsId";
+	} 
+	
+	sql = "update " + translatedTable + " set F"+cff.getFieldNo()+" = '' where " + fieldName 
+	    + " in (select " + fieldName + " from " + errorsTable + " where errorId = 2 and fieldNo = " + cff.getFieldNo() + ")";
+
+	Query updateData = sessionFactory.getCurrentSession().createSQLQuery(sql);
+	updateData.executeUpdate();
+    }
+    
+    @Override
+    @Transactional(readOnly = false)
+    public void insertValidationDroppedValues(Integer batchId, configurationFormFields cff, boolean foroutboundProcessing) throws Exception {
+	String sql;
+	String droppedTableName = "batchuploaddroppedvalues";
+	String translatedTable = "transactiontranslatedin_"+batchId;
+	String batchIdType = "batchUploadId";
+	String transactionRecordCol = "transactionInRecordsId";
+	String errorsTable = "transactioninerrors_"+batchId;
+	
+	if (foroutboundProcessing) {
+	    droppedTableName = "batchdownloaddroppedvalues";
+	    translatedTable = "transactiontranslatedout_"+batchId;
+	    batchIdType = "batchDownloadId";
+	    transactionRecordCol = "transactionOutRecordsId";
+	    errorsTable = "transactionouterrors_"+batchId;
+	} 
+	
+	sql = "insert into " + droppedTableName + " ("+batchIdType+"," + transactionRecordCol + ",fieldNo,configId,fieldName,fieldValue) ";
+	sql += "select " + batchId + "," + transactionRecordCol + "," + cff.getFieldNo() + "," + cff.getconfigId() + ", '" + cff.getFieldDesc().trim() + "', F"+cff.getFieldNo();
+	sql += " from " + translatedTable + " where " + transactionRecordCol 
+	    + " in (select " + transactionRecordCol + " from " + errorsTable + " where errorId = 2 and fieldNo = " + cff.getFieldNo() + ")";
+	
+	Query updateData = sessionFactory.getCurrentSession().createSQLQuery(sql);
+	updateData.executeUpdate();
+    }
 }
