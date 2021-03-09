@@ -508,4 +508,24 @@ public class adminOrgContoller {
 	return orgDetails;
     }
     
+    /**
+     * The '/getAgenciesForReport' GET request will return a list of Health-e-Link registries based on the
+     * passed in registry type
+     *
+     * @param registryType
+     * @return The function will return a list of active health-e-link registries.
+     * @throws java.lang.Exception
+     */
+    @RequestMapping(value = {"/getAgenciesForReport"}, method = RequestMethod.GET)
+    public @ResponseBody ModelAndView getAgenciesForReport(@RequestParam(value = "registryType", required = true) Integer registryType) throws Exception {
+	
+	ModelAndView mav = new ModelAndView();
+        mav.setViewName("/administrator/processing-activities/reportBuilder/agencyList");
+	
+	List<Organization> agencies = organizationManager.getAgenciesForReport(registryType);
+	
+	mav.addObject("agencies",agencies);
+	
+        return mav;
+    }
 }

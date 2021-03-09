@@ -455,6 +455,17 @@
         <put-attribute name="jscript" value="/dspResources/js/admin/processing-activities/activityReport.js" />
     </definition>
     
+    <definition name="/administrator/processing-activity/generateReport" extends="base.definition.admin">
+        <put-attribute name="page-id" value="processing-activityReport" />
+        <put-attribute name="page-section" value="section-processing" />
+        <put-attribute name="title" value="Administrator - Processing Activities" />
+        <put-attribute name="header" value="/WEB-INF/jsp/common/adminHeader.jsp?sect=activity" />
+        <put-attribute name="actions" value="/WEB-INF/jsp/administrator/processing-activities/actionBar.jsp?page=generateReport" />
+        <put-attribute name="menu" value="/WEB-INF/jsp/administrator/processing-activities/menu.jsp?page=report" />
+        <put-attribute name="body" value="/WEB-INF/jsp/administrator/processing-activities/reportBuilder/generateReport.jsp" />
+        <put-attribute name="jscript" value="/dspResources/js/admin/processing-activities/generateReport.js" />
+    </definition>
+    
     <!--  this lists all news articles -->    
     <definition name="/administrator/sysadmin/news" extends="base.definition.admin">
         <put-attribute name="page-id" value="sysadmin-news" />
