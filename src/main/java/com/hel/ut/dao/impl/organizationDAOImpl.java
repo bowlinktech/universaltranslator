@@ -438,4 +438,19 @@ public class organizationDAOImpl implements organizationDAO {
         return q1.list();
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public List<Organization> getAgenciesForReport(Integer registryType) throws Exception {
+	
+	String sqlQuery = "select distinct a.id, a.orgName from organizations a inner join configurations b on b.orgId = a.id ";
+	sqlQuery += "where b.messageTypeId = :registryType and b.status = 1 order by a.orgName asc";
+	
+	Query q1 = sessionFactory.getCurrentSession().createSQLQuery(sqlQuery);
+        q1.setParameter("registryType", registryType);
+	
+        q1.setResultTransformer(Transformers.aliasToBean(Organization.class));
+
+	return q1.list();
+	
+    }
 }

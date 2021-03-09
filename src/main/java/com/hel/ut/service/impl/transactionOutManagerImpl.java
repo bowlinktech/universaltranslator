@@ -1631,11 +1631,16 @@ public class transactionOutManagerImpl implements transactionOutManager {
 	
 	else {
 	    
+	    transactionInManager.populateDroppedValues(batchDownload.getId(), batchDownload.getConfigId(), true);
+	    
+	    ba = new batchdownloadactivity();
+	    ba.setActivity("Populate outbound dropped values (If any) for batchId:"+batchDownload.getId());
+	    ba.setBatchDownloadId(batchDownload.getId());
+	    transactionOutDAO.submitBatchActivityLog(ba);
+	    
 	    if(totalErrorCount > 0) {
 		populateOutboundAuditReport(batchDownload.getConfigId(),batchDownload.getId(), batchDownload.getBatchUploadId(),batchUploadDetails.getConfigId());
 		
-		transactionInManager.populateDroppedValues(batchDownload.getId(), batchDownload.getConfigId(), true);
-	    
 		ba = new batchdownloadactivity();
 		ba.setActivity("Populate outbound Audit Report for batchId:"+batchDownload.getId());
 		ba.setBatchDownloadId(batchDownload.getId());
