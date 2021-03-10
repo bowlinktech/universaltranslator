@@ -31,6 +31,8 @@ import com.hel.ut.model.custom.ConfigForInsert;
 import com.hel.ut.model.custom.IdAndFieldValue;
 import com.hel.ut.model.custom.batchErrorSummary;
 import com.hel.ut.model.directmessagesin;
+import com.hel.ut.model.generatedActivityReportAgencies;
+import com.hel.ut.model.generatedActivityReports;
 import com.hel.ut.model.referralActivityExports;
 
 import java.math.BigInteger;
@@ -315,4 +317,22 @@ public interface transactionInDAO {
     void executePassClearLogicForValidationError(Integer batchId, configurationFormFields cff, boolean foroutboundProcessing) throws Exception;
     
     void insertValidationDroppedValues(Integer batchId, configurationFormFields cdt, boolean foroutboundProcessing) throws Exception;
+    
+    Integer saveActivityReport(generatedActivityReports activityReport) throws Exception;
+    
+    void saveActivityReportAgency(generatedActivityReportAgencies activityReportAgency) throws Exception;
+    
+    List<generatedActivityReports> getSavedActivityReports() throws Exception;
+    
+    generatedActivityReports getSavedActivityReportById(Integer activityReportId) throws Exception;
+    
+    List<generatedActivityReportAgencies> getSavedActivityReportAgencies(Integer activityReportId) throws Exception;
+    
+    List<batchUploads> getActivityReportBatches(String agencyIdList,String fromDate, String endDate) throws Exception;
+    
+    void updateActivityReport(generatedActivityReports activityReport) throws Exception;
+    
+    void deleteActivityReportAgencies(Integer activityReportId) throws Exception;
+    
+    void deleteActivityReport(Integer activityReportId) throws Exception;
 }

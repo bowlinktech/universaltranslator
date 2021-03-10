@@ -3449,7 +3449,6 @@ public class transactionInDAOImpl implements transactionInDAO {
 	List<batchUploads> batchUploadMessages = query.list();
 	
         return batchUploadMessages;
-
     }
     
     /**
@@ -3579,7 +3578,7 @@ public class transactionInDAOImpl implements transactionInDAO {
 		    + "and a.transactionOutRecordsId in (select id from transactionoutrecords_"+batchId+ " "
 		    + "where configId = :configId and F"+cdt.getFieldNo()+" is not null and length(F"+cdt.getFieldNo()+") > 0 and (statusId is null or statusId not in (:transRELId)));";
 	    } 
-
+	   
 	    Query updateData = sessionFactory.getCurrentSession().createSQLQuery(sql)
 		.setParameter("configId", configId)
 		.setParameterList("transRELId", transRELId);
@@ -3843,5 +3842,110 @@ public class transactionInDAOImpl implements transactionInDAO {
 	
 	Query updateData = sessionFactory.getCurrentSession().createSQLQuery(sql);
 	updateData.executeUpdate();
+    }
+    
+     /* The 'saveActivityReport' function will submit the new activity report.
+     *
+     * @param activityReport The object that will hold the new new activity report info
+     *
+     * @table generatedactivityreports
+     *
+     * @return This function returns the reportId for the newly inserted activity report
+     */
+    @Override
+    @Transactional(readOnly = false)
+    public Integer saveActivityReport(generatedActivityReports activityReport) throws Exception {
+
+	Integer reportId = (Integer) sessionFactory.getCurrentSession().save(activityReport);
+	return reportId;
+    }
+    
+    @Override
+    @Transactional(readOnly = false)
+    public void saveActivityReportAgency(generatedActivityReportAgencies activityReportAgency) throws Exception {
+	sessionFactory.getCurrentSession().save(activityReportAgency);
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public List<generatedActivityReports> getSavedActivityReports() throws Exception {
+	Query query = sessionFactory.getCurrentSession().createQuery("from generatedActivityReports order by dateCreated desc");
+
+	return query.list();
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public generatedActivityReports getSavedActivityReportById(Integer activityReportId) throws Exception {
+	Query query = sessionFactory.getCurrentSession().createQuery("from generatedActivityReports where id = :activityReportId");
+	query.setParameter("activityReportId", activityReportId);
+
+	return (generatedActivityReports) query.uniqueResult();
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public List<generatedActivityReportAgencies> getSavedActivityReportAgencies(Integer activityReportId) throws Exception {
+	
+	String sqlStatement = "select a.*, b.orgName from generatedActivityReportAgencies a inner join "
+	    + "organizations b on b.id = a.orgId where a.reportId = " + activityReportId
+	    + " order by b.orgName asc";
+	
+	Query query = sessionFactory.getCurrentSession().createSQLQuery(sqlStatement)
+	.addScalar("id", StandardBasicTypes.INTEGER)
+	.addScalar("orgId", StandardBasicTypes.INTEGER)
+	.addScalar("reportId", StandardBasicTypes.INTEGER)
+	.addScalar("orgName", StandardBasicTypes.STRING)
+	.setResultTransformer(Transformers.aliasToBean(generatedActivityReportAgencies.class));
+
+	return query.list();
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public List<batchUploads> getActivityReportBatches(String agencyIdList,String fromDate, String endDate) throws Exception {
+	String sql = "select iFNULL(b.id,0) as id, b.utBatchName, b.originalFileName, iFNULL(b.statusId,0) as statusId, b.dateSubmitted, iFNULL(b.totalRecordCount,0) as totalRecordCount, iFNULL(b.errorRecordCount,0) as errorRecordCount, a.orgName ";
+	sql += "from organizations a left outer join ";
+	sql += "batchuploads b on b.orgId = a.id and b.dateSubmitted between '"+fromDate+" 00:00:00' and '"+endDate+" 11:59:59'";
+	sql += "where a.id in ("+agencyIdList+") ";
+	sql += "order by a.orgName, b.dateSubmitted asc";
+	
+	Query query = sessionFactory.getCurrentSession().createSQLQuery(sql)
+	.addScalar("id", StandardBasicTypes.INTEGER)
+	.addScalar("utBatchName", StandardBasicTypes.STRING)
+	.addScalar("originalFileName", StandardBasicTypes.STRING)
+	.addScalar("statusId", StandardBasicTypes.INTEGER)
+	.addScalar("originalFileName", StandardBasicTypes.STRING)
+	.addScalar("totalRecordCount", StandardBasicTypes.INTEGER)
+	.addScalar("errorRecordCount", StandardBasicTypes.INTEGER)
+	.addScalar("orgName", StandardBasicTypes.STRING)
+	.addScalar("dateSubmitted", StandardBasicTypes.TIMESTAMP)
+	.setResultTransformer(Transformers.aliasToBean(batchUploads.class));
+	
+	return query.list();
+    }
+    
+    @Override
+    @Transactional(readOnly = false)
+    public void updateActivityReport(generatedActivityReports activityReport) throws Exception {
+	sessionFactory.getCurrentSession().update(activityReport);
+    }
+    
+    @Override
+    @Transactional(readOnly = false)
+    public void deleteActivityReportAgencies(Integer activityReportId) throws Exception {
+	Query deleteActivityReportAgencies = sessionFactory.getCurrentSession().createQuery("delete from generatedActivityReportAgencies where reportId = :activityReportId");
+	deleteActivityReportAgencies.setParameter("activityReportId", activityReportId);
+
+	deleteActivityReportAgencies.executeUpdate();
+    }
+    
+    @Override
+    @Transactional(readOnly = false)
+    public void deleteActivityReport(Integer activityReportId) throws Exception {
+	Query deleteActivityReport = sessionFactory.getCurrentSession().createQuery("delete from generatedActivityReports where id = :id");
+	deleteActivityReport.setParameter("id", activityReportId);
+
+	deleteActivityReport.executeUpdate();
     }
 }
