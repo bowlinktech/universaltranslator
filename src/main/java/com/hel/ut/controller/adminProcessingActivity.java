@@ -33,6 +33,8 @@ import com.hel.ut.model.custom.searchParameters;
 import com.hel.ut.model.directmessagesin;
 import com.hel.ut.model.directmessagesout;
 import com.hel.ut.model.fieldSelectOptions;
+import com.hel.ut.model.generatedActivityReportAgencies;
+import com.hel.ut.model.generatedActivityReports;
 import com.hel.ut.model.lutables.lu_ProcessStatus;
 import com.hel.ut.model.mailMessage;
 import com.hel.ut.model.referralActivityExports;
@@ -105,6 +107,8 @@ import java.io.PrintWriter;
 import java.text.ParseException;
 import java.util.Iterator;
 import java.util.Properties;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import javax.annotation.Resource;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -5382,7 +5386,7 @@ public class adminProcessingActivity {
 	//we get image location here 
 	FileInputStream fis = new FileInputStream(auditReportDetailFile);
 	worker.parseXHtml(pdfWriter, document, fis);
-;
+
 	fis.close();
 	document.close();
 	pdfWriter.close();
@@ -5415,5 +5419,309 @@ public class adminProcessingActivity {
 	 // close stream and return to view
 	response.flushBuffer();
     } 
+    
+    /**
+     *
+     * @param session
+     * @return 
+     * @throws java.lang.Exception 
+     */
+    @RequestMapping(value = "/generateReport", method = RequestMethod.GET)
+    public ModelAndView generateReport(HttpSession session) throws Exception {
+	
+	//Get the page refresh Rate
+	Integer pageRefreshRate = 15000;
+	
+	if(null != session.getAttribute("pageRefreshRate")) {
+	    pageRefreshRate = (Integer) session.getAttribute("pageRefreshRate");
+	}
+        
+        int year = 114;
+        int month = 0;
+        int day = 1;
+        Date originalDate = new Date(year, month, day);
+
+        Date fromDate = getMonthDate("LAST30");
+        Date toDate = getMonthDate("END-TODAY");
+
+        ModelAndView mav = new ModelAndView();
+        mav.setViewName("/administrator/processing-activity/generateReport");
+	mav.addObject("pageRefreshRate",pageRefreshRate);
+
+        mav.addObject("fromDate", fromDate);
+        mav.addObject("toDate", toDate);
+        mav.addObject("originalDate", originalDate);
+
+	//Get a list of saved reports
+	List<generatedActivityReports> activityReports = transactionInManager.getSavedActivityReports();
+	mav.addObject("activityReports", activityReports);
+
+        return mav;
+    }
+    
+    /**
+     *
+     * @param session
+     * @param reportType
+     * @param registryType
+     * @param agencies
+     * @param fromDate
+     * @param toDate
+     * @return 
+     * @throws java.lang.Exception 
+     */
+    @RequestMapping(value = "/generateReport", method = RequestMethod.POST)
+    @ResponseBody
+    public String generateTheReport(HttpSession session, @RequestParam Integer reportType, @RequestParam Integer registryType, @RequestParam List<String> agencies,
+	@RequestParam Date fromDate, @RequestParam Date toDate) throws Exception {
+        
+	SimpleDateFormat mysqlDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+	
+	utUser userInfo = (utUser) session.getAttribute("userDetails");
+	
+	if(!agencies.isEmpty()) {
+	    
+	    generatedActivityReports activityReport = new generatedActivityReports();
+	    activityReport.setUserId(userInfo.getId());
+	    activityReport.setReportType(reportType);
+	    activityReport.setRegistryType(registryType);
+	    activityReport.setDateRange(mysqlDateFormat.format(fromDate) + " to " + mysqlDateFormat.format(toDate));
+	    activityReport.setStatus(1);
+	    
+	    DateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
+	    Date date = new Date();
+	    
+	    String ext = ".pdf";
+	    if(reportType == 2) {
+		ext = ".xlsx";
+	    }
+	    
+	    String filename = "activityReport-"+dateFormat.format(date)+ext;
+	    activityReport.setFileName(filename);
+
+	    Integer activityReportId = transactionInManager.saveActivityReport(activityReport);
+
+	    for(String agency : agencies) {
+		Integer agencyId = Integer.parseInt(agency);
+		
+		generatedActivityReportAgencies activityReportAgency = new generatedActivityReportAgencies();
+		activityReportAgency.setOrgId(agencyId);
+		activityReportAgency.setReportId(activityReportId);
+		
+		transactionInManager.saveActivityReportAgency(activityReportAgency);
+	    }
+	    
+	    //Run the report
+	    ExecutorService executor = Executors.newCachedThreadPool();
+	    executor.execute(new Runnable() {
+		@Override
+		public void run() {
+		    try {
+			generateActivityReport(activityReportId);
+		    } catch (Exception ex) {
+			Logger.getLogger(adminProcessingActivity.class.getName()).log(Level.SEVERE, null, ex);
+		    }
+		}
+	    });
+	}
+	
+        return "1";
+    }
+    
+    /**
+     * 
+     * @param activityReportId
+     * @throws Exception 
+     */
+    @RequestMapping(value = "/reRunActivityReport", method = RequestMethod.POST)
+    @ResponseBody
+    private String reRunActivityReport(@RequestParam Integer activityReportId) throws Exception {
+	
+	generatedActivityReports activityReport = transactionInManager.getSavedActivityReportById(activityReportId);
+	
+	//Delete existing file
+	File activityReportFile = new File(myProps.getProperty("ut.directory.utRootDir")+"/activityReports/"+activityReport.getFileName().trim());
+		
+	if(!activityReportFile.exists()) {
+	    activityReportFile.delete();
+	}
+	
+	activityReport.setStatus(1);
+	transactionInManager.updateActivityReport(activityReport);
+	
+	//Run the report
+	ExecutorService executor = Executors.newCachedThreadPool();
+	executor.execute(new Runnable() {
+	    @Override
+	    public void run() {
+		try {
+		    generateActivityReport(activityReportId);
+		} catch (Exception ex) {
+		    Logger.getLogger(adminProcessingActivity.class.getName()).log(Level.SEVERE, null, ex);
+		}
+	    }
+	});
+	
+	return activityReport.getFileName();
+    }
+    
+    /**
+     *
+     * @param advAdHocRequestId
+     * @throws exception
+     */
+    private void generateActivityReport(Integer activityReportId) throws Exception {
+	
+	generatedActivityReports activityReport = transactionInManager.getSavedActivityReportById(activityReportId);
+
+	if (activityReport != null) {
+
+	    //Get a list of agencies for the selected report
+	    List<generatedActivityReportAgencies> agencies = transactionInManager.getSavedActivityReportAgencies(activityReportId);
+	    
+	    //Get all activity based on the activity report details and list of agencies.
+	    List<Integer> agencyIds = new ArrayList<>();
+	    for(generatedActivityReportAgencies agency : agencies) {
+		agencyIds.add(agency.getOrgId());
+	    }
+	    String agencyIdList = org.apache.commons.lang.StringUtils.join(agencyIds, ",");
+	    
+	    //Get all submitted batches for the activity report
+	    String fromDate = activityReport.getDateRange().split(" to ")[0];
+	    String endDate = activityReport.getDateRange().split(" to ")[1];
+	    List<batchUploads> activityReportBatches = transactionInManager.getActivityReportBatches(agencyIdList,fromDate,endDate);
+	    
+	    if(!activityReportBatches.isEmpty()) {
+		
+		//Create the file.
+		File activityReportDir = new File(myProps.getProperty("ut.directory.utRootDir")+"/activityReports");
+		
+		if(!activityReportDir.exists()) {
+		    activityReportDir.mkdir();
+		}
+		
+		boolean reportSuccess = false;
+		
+		switch (activityReport.getReportType()) {
+		    case 1:
+			reportSuccess = transactionInManager.generatePDFActivityReport(activityReport, activityReportBatches);
+			break;
+		    case 2:
+			reportSuccess = transactionInManager.generateExcelActivityReport(activityReport, activityReportBatches);
+			break;
+		    default:
+			break;
+		}
+		
+		if(reportSuccess) {
+		    //make sure the file is there
+		    File f = new File(myProps.getProperty("ut.directory.utRootDir")+"/activityReports/"+activityReport.getFileName().trim());
+		    
+		    if (!f.exists()) {
+			activityReport.setStatus(3);
+		    }
+		    else if (f.length() < 1) {
+			activityReport.setStatus(3);
+		    }
+		    else {
+			activityReport.setStatus(2);
+		    }
+		    transactionInManager.updateActivityReport(activityReport);
+		}
+	    }
+	}
+
+    }
+    
+    @RequestMapping(value = "/printActivityReportToPDF/{file}", method = RequestMethod.GET)
+    public void printActivityReportToPDF(@PathVariable("file") String file,HttpServletResponse response) throws Exception {
+	
+	File activityReportPrintFile = new File (myProps.getProperty("ut.directory.utRootDir")+"/activityReports/" + file + ".pdf");
+	InputStream is = new FileInputStream(activityReportPrintFile);
+
+	response.setHeader("Content-Disposition", "attachment; filename=\"" + file + ".pdf\"");
+	FileCopyUtils.copy(is, response.getOutputStream());
+
+	// close stream and return to view
+	response.flushBuffer();
+    } 
+    
+    @RequestMapping(value = "/printActivityReportToExcel/{file}", method = RequestMethod.GET)
+    public void printActivityReportToExcel(@PathVariable("file") String file,HttpServletResponse response) throws Exception {
+	
+	File activityReportPrintFile = new File (myProps.getProperty("ut.directory.utRootDir")+"/activityReports/" + file + ".xlsx");
+	InputStream is = new FileInputStream(activityReportPrintFile);
+
+	response.setHeader("Content-Disposition", "attachment; filename=\"" + file + ".xlsx\"");
+	FileCopyUtils.copy(is, response.getOutputStream());
+
+	// close stream and return to view
+	response.flushBuffer();
+    } 
+    
+    /**
+     * The '/setPageRefreshRate.do' POST request will set the page refresh rate and store it in the 
+     * users session.
+     *
+     * @param session
+     * @param refreshRate
+     * @return
+     * @throws Exception
+     */
+    @RequestMapping(value = "/setPageRefreshRate.do", method = RequestMethod.POST)
+    public @ResponseBody
+    String setPageRefreshRate(@RequestParam Integer refreshRate,HttpSession session) throws Exception {
+
+	session.setAttribute("pageRefreshRate", refreshRate);
+	return "1";
+    }
+    
+    /**
+     * The '/deleteActivityReport' POST request will remove the saved activity report. 
+     *
+     * @param session
+     * @param activityReportId
+     * @return
+     * @throws Exception
+     */
+    @RequestMapping(value = "/deleteActivityReport", method = RequestMethod.POST)
+    public @ResponseBody
+    String deleteActivityReport(@RequestParam Integer activityReportId,HttpSession session) throws Exception {
+
+	generatedActivityReports activityReport = transactionInManager.getSavedActivityReportById(activityReportId);
+	
+	//Delete the file
+	File activityReportFile = new File (myProps.getProperty("ut.directory.utRootDir")+"/activityReports/" + activityReport.getFileName().trim());
+	
+	if(activityReportFile.exists()) {
+	    activityReportFile.delete();
+	}
+	
+	transactionInManager.deleteActivityReport(activityReportId);
+	
+	return "1";
+    }
+    
+    /**
+     * The '/displayActivityReportAgencies' GET will return the page that lists all the selected agencies
+     * for the passed in report Id.
+     *
+     * @param session
+     * @param activityReportId
+     * @return
+     * @throws Exception
+     */
+    @RequestMapping(value = "/displayActivityReportAgencies", method = RequestMethod.GET)
+    public @ResponseBody
+    ModelAndView displayActivityReportAgencies(@RequestParam Integer activityReportId,HttpSession session) throws Exception {
+
+	List<generatedActivityReportAgencies> reportAgencies = transactionInManager.getSavedActivityReportAgencies(activityReportId);
+	
+	ModelAndView mav = new ModelAndView();
+        mav.setViewName("/administrator/processing-activities/reportBuilder/selectedAgencyList");
+	mav.addObject("agencies",reportAgencies);
+	
+	return mav;
+    }
     
 }
