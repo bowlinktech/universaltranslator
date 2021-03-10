@@ -25,7 +25,15 @@ require(['./main'], function () {
                 "sPaginationType": "bootstrap",
                 "bLengthChange": false,
                 "bInfo": false,
-                "bFilter":false
+                "bFilter":false,
+                "columns": [
+                    { "width": "15%" },
+                    { "width": "10%" },
+                    { "width": "20%" },
+                    { "width": "25%" },
+                    { "width": "25%" }, 
+                    { "width": "5%" }
+                 ]
             });
         }
         catch(err) {}    

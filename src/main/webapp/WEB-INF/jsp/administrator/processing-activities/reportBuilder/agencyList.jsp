@@ -11,7 +11,7 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
 
 <div class="row">
-    <div class="col-md-12">
+    <div class="col-md-12" style="overflow-y: auto; height: 400px; overflow-x: hidden;">
         <c:choose>
             <c:when test="${not empty agencies}">
                 <table class="table table-bordered table-striped table-hover table-default" id="dataTable">

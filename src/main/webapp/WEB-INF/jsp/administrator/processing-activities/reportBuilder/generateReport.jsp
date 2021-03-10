@@ -48,10 +48,7 @@
                                 <label for="registryType">Registry Type *</label>
                                 <div>
                                     <label class="radio-inline">
-                                        <input type="radio" name="registryType" id="registryType" value="1" class="type" checked /> eReferral (CeC)
-                                    </label>
-                                    <label class="radio-inline">
-                                        <input type="radio" name="registryType" id="registryType" value="2" class="type" /> Family Planning
+                                        <input type="radio" name="registryType" id="registryType" value="2" class="type" checked /> Family Planning
                                     </label>
                                 </div>
                             </div> 
@@ -130,7 +127,7 @@
                                         <tr>
                                             <th>Status</th>
                                             <th>Report Type</th>
-                                            <th>Registry Type</th>
+                                            <th>Agencies</th>
                                             <th>Date Range</th>
                                             <th>Date Created</th>
                                             <th></th>
@@ -153,11 +150,6 @@
                                                     </c:choose>
                                                 </td>
                                                 <td>
-                                                    <c:choose>
-                                                        <c:when test="${activityReport.registryType == 1}">CeC</c:when>
-                                                        <c:when test="${activityReport.registryType == 2}">Family Planning</c:when>
-                                                    </c:choose>
-                                                    <br />
                                                     <a href="#reportAgencyModal" rel="${activityReport.id}" data-toggle="modal" class="btn btn-primary btn-xs btn-action showAgencies" title="Selected Agencies">Selected Agencies</a>
                                                 </td>
                                                 <td>${activityReport.dateRange}</td>
