@@ -56,8 +56,8 @@ require(['./main'], function () {
 
     $('#transportMethod').change(function () {
         var methodId = $(this).val();
-
-        if(helRegistryId > 0 && helSchemaName !== "") {
+        
+        if(messageTypeId == 1 && helRegistryId > 0 && helSchemaName !== "") {
             populateHELRegistryConfigs(helRegistryId,helSchemaName);
 
             //If method == 10 (Coming from a HEL Registry online form preset the values

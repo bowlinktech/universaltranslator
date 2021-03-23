@@ -367,7 +367,7 @@ public interface transactionInManager {
     
     List<generatedActivityReportAgencies> getSavedActivityReportAgencies(Integer activityReportId) throws Exception;
     
-    List<batchUploads> getActivityReportBatches(String agencyIdList,String fromDate, String endDate) throws Exception;
+    List<batchUploads> getActivityReportBatches(String agencyIdList,String fromDate, String endDate, Integer registryType) throws Exception;
     
     boolean generatePDFActivityReport(generatedActivityReports activityReport, List<batchUploads> activityReportBatches) throws Exception;
     
