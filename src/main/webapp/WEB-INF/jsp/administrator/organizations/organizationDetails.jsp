@@ -1,6 +1,7 @@
 <%@ taglib prefix="form" uri="http://www.springframework.org/tags/form" %>
 <%@ taglib prefix="spring" uri="http://www.springframework.org/tags" %> 
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib uri = "http://java.sun.com/jsp/jstl/functions" prefix = "fn" %>
 
 <div class="main clearfix" role="main">
 
@@ -83,7 +84,7 @@
 			<div id="HELRegistryDetails" style="${organization.helRegistryId > 0 ? 'display:block':'display:none'}">
 			    <div id="helRegistryDiv" class="form-group ${status.error ? 'has-error' : '' }">
 				<label class="control-label" for="helRegistry">Select the Health-e-Link Registry</label>
-				<select id="helRegistry" rel="${organization.helRegistryId}-${organization.helRegistrySchemaName}" class="form-control half">
+				<select id="helRegistry" rel="${organization.helRegistryId}-${organization.helRegistrySchemaName}${fn:contains(organization.helRegistrySchemaName,'fp') ? '-2' : '-1'}" class="form-control half">
 				    <option value="0">- Select -</option>
 				</select>
 				<span id="helRegistryMsg" class="control-label"></span>

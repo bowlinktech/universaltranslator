@@ -2029,7 +2029,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
 	    }
 
 	    //If the transport method File Drop (13) and associated to a eReferral Registry and Configuration
-	    if(transportDetails.gettransportMethodId() == 13 && transportDetails.getHelRegistryConfigId() > 0 && !"".equals(transportDetails.getHelSchemaName()) && transportDetails.getHelRegistryId() > 0) {
+	    if(transportDetails.gettransportMethodId() == 13 && transportDetails.getHelRegistryConfigId() > 0 && configDetails.getMessageTypeId() == 1 && !"".equals(transportDetails.getHelSchemaName()) && transportDetails.getHelRegistryId() > 0) {
 		inserteReferralMessage = false;
 
 		//Need to get the health-e-link registry details

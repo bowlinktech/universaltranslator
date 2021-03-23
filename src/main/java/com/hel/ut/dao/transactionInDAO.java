@@ -328,7 +328,7 @@ public interface transactionInDAO {
     
     List<generatedActivityReportAgencies> getSavedActivityReportAgencies(Integer activityReportId) throws Exception;
     
-    List<batchUploads> getActivityReportBatches(String agencyIdList,String fromDate, String endDate) throws Exception;
+    List<batchUploads> getActivityReportBatches(String agencyIdList,String fromDate, String endDate, Integer registryType) throws Exception;
     
     void updateActivityReport(generatedActivityReports activityReport) throws Exception;
     

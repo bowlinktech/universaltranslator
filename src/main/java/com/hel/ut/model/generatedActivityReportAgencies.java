@@ -14,7 +14,7 @@ import javax.persistence.Transient;
 public class generatedActivityReportAgencies {
     
     @Transient
-    private String orgName;
+    private String orgName, helRegistrySchemaName;
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -57,6 +57,14 @@ public class generatedActivityReportAgencies {
 
     public void setOrgName(String orgName) {
 	this.orgName = orgName;
+    }
+
+    public String getHelRegistrySchemaName() {
+	return helRegistrySchemaName;
+    }
+
+    public void setHelRegistrySchemaName(String helRegistrySchemaName) {
+	this.helRegistrySchemaName = helRegistrySchemaName;
     }
     
 }
