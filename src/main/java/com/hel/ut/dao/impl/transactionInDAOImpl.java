@@ -3936,7 +3936,7 @@ public class transactionInDAOImpl implements transactionInDAO {
 				sql += "(select iFNULL(b.id,0) as id, b.utBatchName, ifnull(msg.assignedFileName,b.originalFileName) as originalFileName, iFNULL(b.statusId,0) as statusId, b.dateSubmitted, iFNULL(b.totalRecordCount,0) as totalRecordCount, iFNULL(b.errorRecordCount,0) as errorRecordCount, a.orgName,";
 				sql += "0 as fpTotalErrors, '' as acceptedVisits ";
 				sql += "from organizations a left outer join ";
-				sql += "batchuploads b on b.orgId = a.id and b.dateSubmitted between '"+fromDate+" 00:00:00' and '"+endDate+" 11:59:59' ";
+				sql += "batchuploads b on b.orgId = a.id and b.dateSubmitted between '"+fromDate+" 00:00:00' and '"+endDate+" 23:59:59' ";
 				sql += "left outer join "+dbschema+".registry_submitted_messages msg on msg.utBatchUploadId = b.id ";
 				sql += "where a.id = "+agencyId+" ";
 				sql += "order by a.orgName, b.dateSubmitted asc) ";
@@ -3945,7 +3945,7 @@ public class transactionInDAOImpl implements transactionInDAO {
 				sql += "(select iFNULL(b.id,0) as id, b.utBatchName, b.originalFileName, iFNULL(b.statusId,0) as statusId, b.dateSubmitted, iFNULL(b.totalRecordCount,0) as totalRecordCount, iFNULL(b.errorRecordCount,0) as errorRecordCount, a.orgName,";
 				sql += "0 as fpTotalErrors, '' as acceptedVisits ";
 				sql += "from organizations a left outer join ";
-				sql += "batchuploads b on b.orgId = a.id and b.dateSubmitted between '"+fromDate+" 00:00:00' and '"+endDate+" 11:59:59' ";
+				sql += "batchuploads b on b.orgId = a.id and b.dateSubmitted between '"+fromDate+" 00:00:00' and '"+endDate+" 23:59:59' ";
 				sql += "where a.id = "+agencyId+" ";
 				sql += "order by a.orgName, b.dateSubmitted asc) ";
 			    }
@@ -3954,7 +3954,7 @@ public class transactionInDAOImpl implements transactionInDAO {
 			    sql += "(select iFNULL(b.id,0) as id, b.utBatchName, b.originalFileName, iFNULL(b.statusId,0) as statusId, b.dateSubmitted, iFNULL(b.totalRecordCount,0) as totalRecordCount, iFNULL(b.errorRecordCount,0) as errorRecordCount, a.orgName,";
 			    sql += "0 as fpTotalErrors, '' as acceptedVisits ";
 			    sql += "from organizations a left outer join ";
-			    sql += "batchuploads b on b.orgId = a.id and b.dateSubmitted between '"+fromDate+" 00:00:00' and '"+endDate+" 11:59:59' ";
+			    sql += "batchuploads b on b.orgId = a.id and b.dateSubmitted between '"+fromDate+" 00:00:00' and '"+endDate+" 23:59:59' ";
 			    sql += "where a.id = "+agencyId+" ";
 			    sql += "order by a.orgName, b.dateSubmitted asc) ";
 			}
@@ -3984,14 +3984,14 @@ public class transactionInDAOImpl implements transactionInDAO {
 			if(dbschema != null) {
 			    if(!"".equals(dbschema)) {
 				sql += "select id,utbatchname,originalFileName,statusId,dateSubmitted,totalRecordCount,errorRecordCount,orgname,IFNULL(totalInError,0) as fpTotalErrors,";
-				sql += "ifnull(group_concat(yearAndMonth,'-', visits),'N/A') as acceptedVisits from (";
+				sql += "ifnull(group_concat(yearAndMonth,' - ', visits),'N/A') as acceptedVisits from (";
 				sql += "select t1.* , count(yearAndMonth) visits, yearAndMonth from (";
 				sql += "select * from (";
 				sql += "select * from (select t1.*, o.orgname from organizations o right join (select ifnull(b.id,0) as id, utbatchname,";
 				sql += "originalFileName, ifnull(b.statusId, 0) as statusId,";
 				sql += "b.dateSubmitted, orgId,";
 				sql += "ifnull(b.totalRecordCount, 0) totalRecordCount, ifnull(b.errorRecordCount, 0) errorRecordCount from batchuploads b ";
-				sql += "where b.dateSubmitted between '"+fromDate+" 00:00:00' and '"+endDate+" 11:59:59' and orgId = "+agencyId+") t1 ";
+				sql += "where b.dateSubmitted between '"+fromDate+" 00:00:00' and '"+endDate+" 23:59:59' and orgId = "+agencyId+") t1 ";
 				sql += "on t1.orgId = o.id) t1 left join (select id as programUploadId, helBatchUploadId, totalInError from "+dbschema+".programUploads) pu on ";
 				sql += "pu.helBatchUploadId = t1.id) t1 left join (select engagementId, programUploadId as puId from "+dbschema+".programuploadrecords where statusId = 55 and engagementId is not null) pur ";
 				sql += "on pur.puId = t1.programUploadId) t1 left join ";
@@ -4002,7 +4002,7 @@ public class transactionInDAOImpl implements transactionInDAO {
 				sql += "(select iFNULL(b.id,0) as id, b.utBatchName, b.originalFileName, iFNULL(b.statusId,0) as statusId, b.dateSubmitted, iFNULL(b.totalRecordCount,0) as totalRecordCount, iFNULL(b.errorRecordCount,0) as errorRecordCount, a.orgName,";
 				sql += "0 as fpTotalErrors, '' as acceptedVisits ";
 				sql += "from organizations a left outer join ";
-				sql += "batchuploads b on b.orgId = a.id and b.dateSubmitted between '"+fromDate+" 00:00:00' and '"+endDate+" 11:59:59' ";
+				sql += "batchuploads b on b.orgId = a.id and b.dateSubmitted between '"+fromDate+" 00:00:00' and '"+endDate+" 23:59:59' ";
 				sql += "where a.id = "+agencyId+" ";
 				sql += "order by a.orgName, b.dateSubmitted asc) ";
 			    }
@@ -4011,7 +4011,7 @@ public class transactionInDAOImpl implements transactionInDAO {
 			    sql = "(select iFNULL(b.id,0) as id, b.utBatchName, b.originalFileName, iFNULL(b.statusId,0) as statusId, b.dateSubmitted, iFNULL(b.totalRecordCount,0) as totalRecordCount, iFNULL(b.errorRecordCount,0) as errorRecordCount, a.orgName,";
 			    sql += "0 as fpTotalErrors, '' as acceptedVisits ";
 			    sql += "from organizations a left outer join ";
-			    sql += "batchuploads b on b.orgId = a.id and b.dateSubmitted between '"+fromDate+" 00:00:00' and '"+endDate+" 11:59:59' ";
+			    sql += "batchuploads b on b.orgId = a.id and b.dateSubmitted between '"+fromDate+" 00:00:00' and '"+endDate+" 23:59:59' ";
 			    sql += "where a.id = "+agencyId+" ";
 			    sql += "order by a.orgName, b.dateSubmitted asc) ";
 			}
