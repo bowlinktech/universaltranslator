@@ -23,8 +23,8 @@ require(['./main'], function () {
     });
 
     var helRegistry = $('#helRegistry').attr('rel');
-
-    if(helRegistry != 0 && helRegistry !== "0-") {
+    
+    if(typeof helRegistry !== "undefined" && helRegistry != 0 && helRegistry !== "0-") {
         populateHELRegistryOrgs(helRegistry);
     }
 
@@ -126,7 +126,7 @@ require(['./main'], function () {
         if (hasErrors == 0) {
             var selRegistry = $('#helRegistry').val();
 
-            if(selRegistry != 0) {
+            if(typeof selRegistry !== "undefined" && selRegistry != 0) {
 
                 var selRegistrySchemaName = selRegistry.split("-")[1];
 
