@@ -39,14 +39,19 @@ require(['./main'], function () {
 
         var selRegistryOrg = $(this).val();
         var selRegistrySchemaName = $(this).attr('schema');
-
+        
+        var selRegistry = $('#helRegistry').val();
+        var selRegistryType = selRegistry.split("-")[2];
+        
+        var currRegistryOrg = $(this).attr('rel');
+        
         if(selRegistryOrg != 0) {
-
             $.ajax({
                 url: 'getHELRegistryOrganizationDetails?tenantId='+selRegistrySchemaName,
                 type: "GET",
                 data: {
-                    'selRegistryOrgId': selRegistryOrg
+                    'selRegistryOrgId': selRegistryOrg,
+                    'registryType':selRegistryType
                 },
                 dataType: 'json',
                 success: function (data) {
@@ -56,7 +61,7 @@ require(['./main'], function () {
 
                     //set the org name
                     $('#orgName').val(data[0].name);
-
+                    
                     var strippedorgName = data[0].name.replace(/ +/g, '');
                     $('#cleanURL').val(strippedorgName);
 
@@ -82,9 +87,16 @@ require(['./main'], function () {
                     $('#infoURL').val(data[0].website);
 
                     //set the org pirmary contact email
-                    $('#infoURL').val(data[0].primaryContactEmail);
-
-
+                    $('#primaryContactName').val(data[0].primaryContactName);
+                    
+                    //set the org pirmary contact email
+                    $('#primaryContactEmail').val(data[0].primaryContactEmail);
+                    
+                    //set the org pirmary contact email
+                    $('#primaryTechContactName').val(data[0].technicalContactName);
+                    
+                    //set the org pirmary contact email
+                    $('#primaryTechContactEmail').val(data[0].technicalContactEmail);
                 }
             });
         }
@@ -178,10 +190,10 @@ function populateHELRegistries(isHELRegistry) {
 
 		 $.each(data, function(index) {
 		    if(data[index].id == selRegistryId) {
-			helRegistrySelect.append($('<option selected></option>').val(data[index].id+'-'+data[index].dbschemaname).html(data[index].registryName));
+			helRegistrySelect.append($('<option selected></option>').val(data[index].id+'-'+data[index].dbschemaname+'-'+data[index].registryType).html(data[index].registryName));
 		    }
 		    else {
-			helRegistrySelect.append($('<option></option>').val(data[index].id+'-'+data[index].dbschemaname).html(data[index].registryName));
+			helRegistrySelect.append($('<option></option>').val(data[index].id+'-'+data[index].dbschemaname+'-'+data[index].registryType).html(data[index].registryName));
 		    }
 		 });
 	     }
@@ -203,12 +215,26 @@ function populateHELRegistryOrgs(selRegistry) {
     if(selRegistry != 0) {
 		
 	var selRegistrySchemaName = selRegistry.split("-")[1];
-
-	if(selRegistrySchemaName !== "") {
+        var selRegistryId = selRegistry.split("-")[0];
+        var selRegistryType = selRegistry.split("-")[2];
+        
+	if(selRegistryId != 0 && selRegistrySchemaName !== "") {
+            
+            $('#helRegistryOrgId').empty();
+            
+            var tierLevel = 3;
+            
+            if(selRegistryType == 2) {
+                tierLevel = 2;
+            }
+            
 	    $.ajax({
 		url: 'getHELRegistryOrganizations?tenantId='+selRegistrySchemaName,
 		type: "GET",
-		data: {},
+		data: {
+                    'registryType': selRegistryType,
+                    'tierLevel': tierLevel
+                },
 		dataType: 'json',
 		success: function (data) {
 		    $('#orgDetails').show();
@@ -220,26 +246,67 @@ function populateHELRegistryOrgs(selRegistry) {
 		    var selRegistryOrgId = helRegistryOrgSelect.attr('rel');
 		    
 		    if(data.length > 0) {
-			 $.each(data, function(index) {
+                        
+                        helRegistryOrgSelect.append($('<option></option>').val(0).html('N/A'));
+                        
+                        if(selRegistryType == 2) {
+                            $('<optgroup/>').attr('label', 'Tier 2 - Subrecipients').appendTo(helRegistryOrgSelect);
+                        }
+                        
+			$.each(data, function(index) {
 			     if(data[index].id == selRegistryOrgId) {
-				 helRegistryOrgSelect.append($('<option selected></option>').val(data[index].id).html(data[index].name));
+				 helRegistryOrgSelect.append($('<option selected></option>').val(data[index].id).html(data[index].name + ' (Display Id: ' + data[index].displayId + ')'));
 			     }
 			     else {
-				 helRegistryOrgSelect.append($('<option></option>').val(data[index].id).html(data[index].name));
+				 helRegistryOrgSelect.append($('<option></option>').val(data[index].id).html(data[index].name + ' (Display Id: ' + data[index].displayId + ')'));
 			     }
-			 });
+			});
 		    }
+                    else {
+                        helRegistryOrgSelect.empty();
+                    }
+                    
+                    //Also get tier 3 for family planning registries
+                    if(selRegistryType == 2) {
+                        $.ajax({
+                            url: 'getHELRegistryOrganizations?tenantId='+selRegistrySchemaName,
+                            type: "GET",
+                            data: {
+                                'registryType': selRegistryType,
+                                'tierLevel': 3
+                            },
+                            dataType: 'json',
+                            success: function (data) {
+                                if(data.length > 0) {
+
+                                    if(selRegistryType == 2) {
+                                        $('<optgroup/>').attr('label', 'Tier 3 - Sites').appendTo(helRegistryOrgSelect);
+                                    }
+
+                                    $.each(data, function(index) {
+                                         if(data[index].id == selRegistryOrgId) {
+                                             helRegistryOrgSelect.append($('<option selected></option>').val(data[index].id).html(data[index].name + ' (Display Id: ' + data[index].displayId + ')'));
+                                         }
+                                         else {
+                                             helRegistryOrgSelect.append($('<option></option>').val(data[index].id).html(data[index].name + ' (Display Id: ' + data[index].displayId + ')'));
+                                         }
+                                    });
+                                }
+                            }
+                        });
+                    }
 		}
 	    });
+            
 	}
 	else {
-	    $('#orgDetails').hide();
+	    //$('#orgDetails').hide();
 	    $('#HELRegistryOrgsDiv').hide();
 	    $('#helRegistryOrgId').find('option').remove().end().append('<option value="">- Select -</option>').val('');
 	}
     }
     else {
-	$('#orgDetails').hide();
+	//$('#orgDetails').hide();
 	$('#HELRegistryOrgsDiv').hide();
 	$('#helRegistryOrgId').find('option').remove().end().append('<option value="">- Select -</option>').val('');
     }

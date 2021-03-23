@@ -5580,16 +5580,16 @@ public class adminProcessingActivity {
 	    List<generatedActivityReportAgencies> agencies = transactionInManager.getSavedActivityReportAgencies(activityReportId);
 	    
 	    //Get all activity based on the activity report details and list of agencies.
-	    List<Integer> agencyIds = new ArrayList<>();
+	    List<String> agencyIds = new ArrayList<>();
 	    for(generatedActivityReportAgencies agency : agencies) {
-		agencyIds.add(agency.getOrgId());
+		agencyIds.add(agency.getOrgId()+"-"+agency.getHelRegistrySchemaName());
 	    }
 	    String agencyIdList = org.apache.commons.lang.StringUtils.join(agencyIds, ",");
 	    
 	    //Get all submitted batches for the activity report
 	    String fromDate = activityReport.getDateRange().split(" to ")[0];
 	    String endDate = activityReport.getDateRange().split(" to ")[1];
-	    List<batchUploads> activityReportBatches = transactionInManager.getActivityReportBatches(agencyIdList,fromDate,endDate);
+	    List<batchUploads> activityReportBatches = transactionInManager.getActivityReportBatches(agencyIdList,fromDate,endDate, activityReport.getRegistryType());
 	    
 	    if(!activityReportBatches.isEmpty()) {
 		

@@ -116,6 +116,7 @@ import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.text.DecimalFormat;
 import java.util.Vector;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -4735,8 +4736,8 @@ public class transactionInManagerImpl implements transactionInManager {
     }
     
     @Override
-    public List<batchUploads> getActivityReportBatches(String agencyIdList,String fromDate, String endDate) throws Exception {
-	return transactionInDAO.getActivityReportBatches(agencyIdList, fromDate, endDate);
+    public List<batchUploads> getActivityReportBatches(String agencyIdList,String fromDate, String endDate, Integer registryType) throws Exception {
+	return transactionInDAO.getActivityReportBatches(agencyIdList, fromDate, endDate, registryType);
     }
     
     @Override
@@ -4784,37 +4785,65 @@ public class transactionInManagerImpl implements transactionInManager {
 		reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 16px;'><strong>").append(batch.getOrgName()).append("</strong></span><br />");
 		reportBody.append("</div>");
 		if(batch.getUtBatchName() == null) {
-		    reportBody.append("<div style='padding-top:10px;'><table border='1' cellpadding='3' cellspacing='1' width='100%'>");
+		    reportBody.append("<div style='padding-top:10px;'><table border='1' cellpadding='5' cellspacing='1' width='100%'>");
 		}
 		else {
 		    reportBody.append("<div style='padding-top:10px;'><table border='1' cellpadding='1' cellspacing='1' width='100%'>");
 		}
 		reportBody.append("<thead><tr>")
 		.append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Batch Name</th>")	
-		.append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Submitted File Name</th>")	
-		.append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Date Submitted</th>")
-		.append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Batch Status</th>")
-		.append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Total Records</th>")
-		.append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Total Errors</th>")
-		.append("</tr></thead><tbody>");
+		//.append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Submitted File Name</th>")	
+		.append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px; text-align:center'>Date Submitted</th>")
+		.append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px; text-align:center'>Batch Status</th>")
+		.append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px; text-align:center'>Total Records</th>")
+		.append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px; text-align:center'>Total UT Errors</th>");
+		if(activityReport.getRegistryType() == 2) {
+		    reportBody.append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px; text-align:center'>Total FP Rejections</th>");
+		    reportBody.append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px; text-align:center'>% FP Rejected</th>");
+		    reportBody.append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px; text-align:center'>Accepted Visit CYM</th>");
+		}	
+		reportBody.append("</tr></thead><tbody>");
 		currOrgName = batch.getOrgName().toLowerCase().trim();
 	    }
 	    
 	    if(batch.getUtBatchName() == null) {
-		reportBody.append("<tr><td colspan='6' style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>").append("There were no submissions for this agency for the selected time frame.").append("</td></tr>");
+		if(activityReport.getRegistryType() == 2) {
+		    reportBody.append("<tr><td colspan='8' style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>").append("There were no submissions for this agency for the selected time frame.").append("</td></tr>");
+		}
+		else {
+		    reportBody.append("<tr><td colspan='5' style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>").append("There were no submissions for this agency for the selected time frame.").append("</td></tr>");
+		}
 	    }
 	    else {
-		reportBody.append("<tr><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>")
-		.append(batch.getUtBatchName())
-		.append("</td><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>")
-		.append(batch.getOriginalFileName())	    
-		.append("</td><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>")
+		double percentRej = 0;
+		if(activityReport.getRegistryType() == 2) {
+		    if(batch.getFpTotalErrors() > 0) {
+			 percentRej =  ((double) batch.getFpTotalErrors()/(double) batch.getTotalRecordCount()) * 100;
+		    }
+		}
+		if(percentRej > 2.5) {
+		    reportBody.append("<tr style='background-color:#FFCCCB;'><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px; width:20%; height:25px'>");
+		}
+		else {
+		    reportBody.append("<tr><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px; width:20%; height:25px'>");
+		}
+		
+		if(batch.getOriginalFileName().contains(".")) {
+		    reportBody.append(batch.getOriginalFileName().substring(0, batch.getOriginalFileName().lastIndexOf('.')));
+		}
+		else {
+		    reportBody.append(batch.getOriginalFileName());
+		}
+		
+		//.append("</td><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>")
+		//.append(batch.getOriginalFileName())	    
+		reportBody.append("</td><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px; text-align:center'>")
 		.append(dateFormat.format(batch.getDateSubmitted()))	   
-		.append("</td><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>");
+		.append("</td><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px; text-align:center'>");
 
 		for(lu_ProcessStatus pStatus : processStatus) {
 		    if(batch.getStatusId() == pStatus.getId()) {
-			reportBody.append(pStatus.getEndUserDisplayText());
+			reportBody.append(pStatus.getEndUserDisplayCode());
 			break;
 		    }
 		}
@@ -4822,8 +4851,46 @@ public class transactionInManagerImpl implements transactionInManager {
 		reportBody.append("</td><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px; text-align: center;'>")	 
 		.append(batch.getTotalRecordCount())    
 		.append("</td><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px; text-align: center;'>")	 
-		.append(batch.getErrorRecordCount())
-		.append("</td></tr>");
+		.append(batch.getErrorRecordCount());
+		
+		if(activityReport.getRegistryType() == 2) {
+		   if(batch.getFpTotalErrors() > 0) {
+			DecimalFormat df = new DecimalFormat("#.##");
+			reportBody.append("</td><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px; text-align: center;'>")
+			.append(batch.getFpTotalErrors()) 
+			.append("</td><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px; text-align: center;'>")
+			.append(df.format(percentRej)).append("%")
+			.append("</td><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px; text-align: center;'>");
+			if(batch.getAcceptedVisits().contains(",")) {
+			    String[] acceptedVisit = batch.getAcceptedVisits().split(",");
+			    for (int i=0; i < acceptedVisit.length; i++) {
+				if(i>0) {reportBody.append("<br />");}
+				reportBody.append(acceptedVisit[i]);
+			    }
+			}
+			else {
+			    reportBody.append(batch.getAcceptedVisits());
+			}
+		   }
+		   else {
+			reportBody.append("</td><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px; text-align: center;'>")
+			.append(batch.getFpTotalErrors()) 
+			.append("</td><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px; text-align: center;'>")
+			.append(0).append("%")
+			.append("</td><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px; text-align: center;'>");
+			if(batch.getAcceptedVisits().contains(",")) {
+			    String[] acceptedVisit = batch.getAcceptedVisits().split(",");
+			    for (int i=0; i < acceptedVisit.length; i++) {
+				if(i>0) {reportBody.append("<br />");}
+				reportBody.append(acceptedVisit[i]);
+			    }
+			}
+			else {
+			    reportBody.append(batch.getAcceptedVisits());
+			}
+		   }
+		}
+		reportBody.append("</td></tr>");
 	    }
 	}
 	reportBody.append("</tbody></table></div>");
