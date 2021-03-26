@@ -120,6 +120,7 @@ import java.text.DecimalFormat;
 import java.util.Vector;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.pdfbox.util.Hex;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.FillPatternType;
 import org.apache.poi.ss.usermodel.HorizontalAlignment;
@@ -129,6 +130,8 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFCell;
+import org.apache.poi.xssf.usermodel.XSSFCellStyle;
+import org.apache.poi.xssf.usermodel.XSSFColor;
 import org.apache.poi.xssf.usermodel.XSSFCreationHelper;
 import org.apache.poi.xssf.usermodel.XSSFFont;
 import org.apache.poi.xssf.usermodel.XSSFRow;
@@ -4747,6 +4750,7 @@ public class transactionInManagerImpl implements transactionInManager {
 	
 	DateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy");
 	DateFormat dateFormatWTime = new SimpleDateFormat("MM/dd/yyyy hh:mm a");
+	DateFormat shortDateFormat = new SimpleDateFormat("M/dd/yyyy");
 	
 	Document document = new Document(PageSize.A4);
 	
@@ -4791,7 +4795,7 @@ public class transactionInManagerImpl implements transactionInManager {
 		    reportBody.append("<div style='padding-top:10px;'><table border='1' cellpadding='1' cellspacing='1' width='100%'>");
 		}
 		reportBody.append("<thead><tr>")
-		.append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Batch Name</th>")	
+		.append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px; width:23%;'>Batch Name</th>")	
 		//.append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Submitted File Name</th>")	
 		.append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px; text-align:center'>Date Submitted</th>")
 		.append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px; text-align:center'>Batch Status</th>")
@@ -4800,7 +4804,7 @@ public class transactionInManagerImpl implements transactionInManager {
 		if(activityReport.getRegistryType() == 2) {
 		    reportBody.append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px; text-align:center'>Total FP Rejections</th>");
 		    reportBody.append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px; text-align:center'>% FP Rejected</th>");
-		    reportBody.append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px; text-align:center'>Accepted Visit CYM</th>");
+		    reportBody.append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px; text-align:center; width:18%;'>Accepted Visit CYM</th>");
 		}	
 		reportBody.append("</tr></thead><tbody>");
 		currOrgName = batch.getOrgName().toLowerCase().trim();
@@ -4822,10 +4826,10 @@ public class transactionInManagerImpl implements transactionInManager {
 		    }
 		}
 		if(percentRej > 2.5) {
-		    reportBody.append("<tr style='background-color:#FFCCCB;'><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px; width:20%; height:25px'>");
+		    reportBody.append("<tr style='background-color:#FFCCCB;'><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px; height:25px'>");
 		}
 		else {
-		    reportBody.append("<tr><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px; width:20%; height:25px'>");
+		    reportBody.append("<tr><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px; height:25px'>");
 		}
 		
 		if(batch.getOriginalFileName().contains(".")) {
@@ -4955,6 +4959,7 @@ public class transactionInManagerImpl implements transactionInManager {
 	CellStyle boldLeftFont;
 	CellStyle normalCenterFont;
 	CellStyle dateStyle;
+	
 	XSSFCreationHelper createHelper;
 	Map <String, CellStyle> cellStyleMap;
 	boldFont = wb.createFont();
@@ -4999,6 +5004,15 @@ public class transactionInManagerImpl implements transactionInManager {
 	rowHeaderstyle.setAlignment(HorizontalAlignment.LEFT);
 	rowHeaderstyle.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex());
 	rowHeaderstyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+	
+	String rgbS = "FFCCCB";
+	byte[] rgbB = Hex.decodeHex(rgbS); // get byte array from hex string
+	XSSFColor color = new XSSFColor(rgbB, null); //IndexedColorMap has no usage until now. So it can be set null.
+
+	XSSFCellStyle fillStyle = (XSSFCellStyle) wb.createCellStyle();
+	fillStyle = wb.createCellStyle();
+	fillStyle.setFillForegroundColor(color);
+	fillStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
 
 	Integer rowNum = 0;
 	Integer cellNum = 0;
@@ -5069,9 +5083,6 @@ public class transactionInManagerImpl implements transactionInManager {
 		    cell.setCellValue("Batch Name");
 		    cellNum++;
 		    cell = row.createCell(cellNum);
-		    cell.setCellValue("Submitted File Name");
-		    cellNum++;
-		    cell = row.createCell(cellNum);
 		    cell.setCellValue("Date Submitted");
 		    cellNum++;
 		    cell = row.createCell(cellNum);
@@ -5081,7 +5092,18 @@ public class transactionInManagerImpl implements transactionInManager {
 		    cell.setCellValue("Total Records");
 		    cellNum++;
 		    cell = row.createCell(cellNum);
-		    cell.setCellValue("Total Errors");
+		    cell.setCellValue("Total UT Errors");
+		    if(activityReport.getRegistryType() == 2) {
+			cellNum++;
+			cell = row.createCell(cellNum);
+			cell.setCellValue("Total FP Rejections");
+			cellNum++;
+			cell = row.createCell(cellNum);
+			cell.setCellValue("% FP Rejected");
+			cellNum++;
+			cell = row.createCell(cellNum);
+			cell.setCellValue("Accepted Visit CYM");
+		    }
 		}
 	
 		currOrgName = batch.getOrgName().toLowerCase().trim();
@@ -5096,34 +5118,102 @@ public class transactionInManagerImpl implements transactionInManager {
 		sheet.addMergedRegion(new CellRangeAddress(rowNum, rowNum, 0, 5));
 	    }
 	    else {
+		double percentRej = 0;
+		if(activityReport.getRegistryType() == 2) {
+		    if(batch.getFpTotalErrors() > 0) {
+			 percentRej =  ((double) batch.getFpTotalErrors()/(double) batch.getTotalRecordCount()) * 100;
+		    }
+		}
+		
 		cell = row.createCell(cellNum);
-		cell.setCellValue(batch.getUtBatchName());
+		if(batch.getOriginalFileName().contains(".")) {
+		    cell.setCellValue(batch.getOriginalFileName().substring(0, batch.getOriginalFileName().lastIndexOf('.')));
+		}
+		else {
+		    cell.setCellValue(batch.getOriginalFileName());
+		}
 		sheet.autoSizeColumn(cellNum);
-		cellNum++;
-		cell = row.createCell(cellNum);
-		cell.setCellValue(batch.getOriginalFileName());
-		sheet.autoSizeColumn(cellNum);
+		
+		if(percentRej > 2.5) {
+		    row.getCell(cellNum).setCellStyle(fillStyle);
+		}
+		
 		cellNum++;
 		cell = row.createCell(cellNum);
 		cell.setCellValue(batch.getDateSubmitted());
 		cell.setCellStyle(cellStyleMap.get("dateStyle"));
 		sheet.autoSizeColumn(cellNum);
-		cellNum++;
 		
+		if(percentRej > 2.5) {
+		    row.getCell(cellNum).setCellStyle(fillStyle);
+		}
+		
+		cellNum++;
 		for(lu_ProcessStatus pStatus : processStatus) {
 		    if(batch.getStatusId() == pStatus.getId()) {
 			cell = row.createCell(cellNum);
-			cell.setCellValue(pStatus.getEndUserDisplayText());
+			cell.setCellValue(pStatus.getEndUserDisplayCode());
 			sheet.autoSizeColumn(cellNum);
 			break;
 		    }
 		}
+		
+		if(percentRej > 2.5) {
+		    row.getCell(cellNum).setCellStyle(fillStyle);
+		}
+		
 		cellNum++;
 		cell = row.createCell(cellNum);
 		cell.setCellValue(batch.getTotalRecordCount());
+		sheet.autoSizeColumn(cellNum);
+		
+		if(percentRej > 2.5) {
+		    row.getCell(cellNum).setCellStyle(fillStyle);
+		}
+		
 		cellNum++;
 		cell = row.createCell(cellNum);
 		cell.setCellValue(batch.getErrorRecordCount());
+		sheet.autoSizeColumn(cellNum);
+		
+		if(percentRej > 2.5) {
+		    row.getCell(cellNum).setCellStyle(fillStyle);
+		}
+		
+		if(activityReport.getRegistryType() == 2) {
+		    cellNum++;
+		    cell = row.createCell(cellNum);
+		    cell.setCellValue(batch.getFpTotalErrors());
+		    sheet.autoSizeColumn(cellNum);
+		    
+		    if(percentRej > 2.5) {
+			row.getCell(cellNum).setCellStyle(fillStyle);
+		    }
+		    
+		    cellNum++;
+		    cell = row.createCell(cellNum);
+		    if(batch.getFpTotalErrors() > 0) {
+			DecimalFormat df = new DecimalFormat("#.##");
+			cell.setCellValue(df.format(percentRej)+"%");
+		    }
+		    else {
+			cell.setCellValue("0%");
+		    }
+		    sheet.autoSizeColumn(cellNum);
+		    
+		    if(percentRej > 2.5) {
+			row.getCell(cellNum).setCellStyle(fillStyle);
+		    }
+		    
+		    cellNum++;
+		    cell = row.createCell(cellNum);
+		    cell.setCellValue(batch.getAcceptedVisits());
+		    sheet.autoSizeColumn(cellNum);
+		    
+		    if(percentRej > 2.5) {
+			row.getCell(cellNum).setCellStyle(fillStyle);
+		    }
+		}
 	    }
 	}
 	
