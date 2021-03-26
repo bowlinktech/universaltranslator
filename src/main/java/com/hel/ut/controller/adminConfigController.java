@@ -4115,7 +4115,12 @@ public class adminConfigController {
 		    currentRow = sheet.createRow(rowNum);
 		    cellNum = 0;
 		    for(configurationFormFields field : fields) {
-			currentRow.createCell(cellNum).setCellValue(field.getSampleData());
+			if(!field.getDefaultValue().equals("")) {
+			    currentRow.createCell(cellNum).setCellValue(field.getDefaultValue());
+			}
+			else {
+			    currentRow.createCell(cellNum).setCellValue(field.getSampleData());
+			}
 			cellNum++;
 		    }
 		    rowNum++;
