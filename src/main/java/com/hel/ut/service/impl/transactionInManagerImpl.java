@@ -4795,7 +4795,7 @@ public class transactionInManagerImpl implements transactionInManager {
 		    reportBody.append("<div style='padding-top:10px;'><table border='1' cellpadding='1' cellspacing='1' width='100%'>");
 		}
 		reportBody.append("<thead><tr>")
-		.append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px; width:23%;'>Batch Name</th>")	
+		.append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px; width:25%;'>Batch Name</th>")	
 		//.append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Submitted File Name</th>")	
 		.append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px; text-align:center'>Date Submitted</th>")
 		.append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px; text-align:center'>Batch Status</th>")
@@ -4804,7 +4804,7 @@ public class transactionInManagerImpl implements transactionInManager {
 		if(activityReport.getRegistryType() == 2) {
 		    reportBody.append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px; text-align:center'>Total FP Rejections</th>");
 		    reportBody.append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px; text-align:center'>% FP Rejected</th>");
-		    reportBody.append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px; text-align:center; width:18%;'>Accepted Visit CYM</th>");
+		    reportBody.append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px; text-align:center; width:16%;'>Accepted Visit CYM</th>");
 		}	
 		reportBody.append("</tr></thead><tbody>");
 		currOrgName = batch.getOrgName().toLowerCase().trim();
@@ -4842,7 +4842,7 @@ public class transactionInManagerImpl implements transactionInManager {
 		//.append("</td><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>")
 		//.append(batch.getOriginalFileName())	    
 		reportBody.append("</td><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px; text-align:center'>")
-		.append(dateFormat.format(batch.getDateSubmitted()))	   
+		.append(shortDateFormat.format(batch.getDateSubmitted()))	   
 		.append("</td><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px; text-align:center'>");
 
 		for(lu_ProcessStatus pStatus : processStatus) {
