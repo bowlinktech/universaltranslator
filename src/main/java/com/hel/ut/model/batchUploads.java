@@ -27,13 +27,13 @@ public class batchUploads {
 
     @Transient
     private Integer totalTransactions = 0,transTotalNotFinal = 10, totalOpen = 0, totalClosed = 0, threshold = 100, watchListEntryId = 0, 
-	    inboundBatchConfigurationType = 1, totalMessages = 0, totalErrorRows = 0;
+	    inboundBatchConfigurationType = 1, totalMessages = 0, totalErrorRows = 0, fpTotalErrors = 0;
 
     @Transient
     private String statusValue, usersName, endUserDisplayText = "",
 	    tgtorgName, orgName, transportMethod, configName, uploadType = "",
 	    referringBatch = "", dashboardRowColor = "table-secondary", 
-	    entryMessage = "", relatedBatchDownloadIds, dmConfigKeyWord;
+	    entryMessage = "", relatedBatchDownloadIds, dmConfigKeyWord, acceptedVisits = "";
 
     @Transient
     private boolean watchListCompleted = false;
@@ -493,4 +493,19 @@ public class batchUploads {
 	this.relatedBatchDownloads = relatedBatchDownloads;
     }
 
+    public Integer getFpTotalErrors() {
+	return fpTotalErrors;
+    }
+
+    public void setFpTotalErrors(Integer fpTotalErrors) {
+	this.fpTotalErrors = fpTotalErrors;
+    }
+
+    public String getAcceptedVisits() {
+	return acceptedVisits;
+    }
+
+    public void setAcceptedVisits(String acceptedVisits) {
+	this.acceptedVisits = acceptedVisits;
+    }
 }

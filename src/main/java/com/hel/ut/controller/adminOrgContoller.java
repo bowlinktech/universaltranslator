@@ -33,7 +33,10 @@ import com.registryKit.registry.tiers.tierOrganizationDetails;
 import com.registryKit.registry.tiers.tiers;
 import com.hel.ut.service.utConfigurationManager;
 import com.hel.ut.service.utConfigurationTransportManager;
+import com.registryKit.registry.tiers.programOrgHierarchy;
+import com.registryKit.registry.tiers.programOrgHierarchyDetails;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Properties;
 import java.util.stream.Collectors;
 import javax.annotation.Resource;
@@ -467,45 +470,150 @@ public class adminOrgContoller {
      * last set up tier.
      *
      *
+     * @param registryType
+     * @param tierLevel
      * @return The function will return a list of organizations
      * @throws java.lang.Exception
      */
     @SuppressWarnings("rawtypes")
     @RequestMapping(value = {"/{cleanURL}/getHELRegistryOrganizations", "/getHELRegistryOrganizations"}, method = RequestMethod.GET)
-    public @ResponseBody List<tierOrganizationDetails> getHELRegistryOrganizations() throws Exception {
+    public @ResponseBody List<tierOrganizationDetails> getHELRegistryOrganizations(@RequestParam(value = "registryType", required = false) Integer registryType,
+	    @RequestParam(value = "tierLevel", required = false) Integer tierLevel) throws Exception {
 	
-	tiers lastRegistryTier = tiermanager.getLastTier();
+	if(registryType == null) {
+	    registryType = 1;
+	}
 	
-	if(lastRegistryTier != null) {
-	    List<tierOrganizationDetails> tierOrganizations = tiermanager.getTierEntries(lastRegistryTier.getId());
-	    
-	    if(tierOrganizations != null) {
-		return tierOrganizations;
+	if(registryType == 1) {
+	
+	    tiers lastRegistryTier = tiermanager.getLastTier();
+
+	    if(lastRegistryTier != null) {
+		List<tierOrganizationDetails> tierOrganizations = tiermanager.getTierEntries(lastRegistryTier.getId());
+
+		if(tierOrganizations != null) {
+		    return tierOrganizations;
+		}
+		else {
+		    return null;
+		}
 	    }
 	    else {
 		return null;
 	    }
 	}
 	else {
-	    return null;
+	    
+	    //Get FP Tier orgs bt passed in Tier level (2 or 3)
+	    programOrgHierarchy tierLevelOrgs = tiermanager.getsFPRegistryTierBydspPos(tierLevel);
+	    
+	    List<tierOrganizationDetails> tierOrgs = new ArrayList<>();
+	    
+	    if(tierLevelOrgs != null) {
+		List<programOrgHierarchyDetails> fpOrgs = tiermanager.getFPRegistryTierEntries(tierLevelOrgs.getId());
+		
+		if(fpOrgs != null) {
+		    
+		    for(programOrgHierarchyDetails org : fpOrgs) {
+			tierOrganizationDetails tierOrganization  = new tierOrganizationDetails();
+			
+			tierOrganization.setId(org.getId());
+			tierOrganization.setName(org.getName());
+			tierOrganization.setAddress(org.getAddress());
+			tierOrganization.setAddress2(org.getAddress2());
+			tierOrganization.setAltDisplayId(org.getAltDisplayId());
+			tierOrganization.setCity(org.getCity());
+			tierOrganization.setCounty(org.getCounty());
+			tierOrganization.setDisplayId(org.getDisplayId());
+			tierOrganization.setEmail(org.getEmail());
+			tierOrganization.setZipCode(org.getZipCode());
+			tierOrganization.setPhoneNumber(org.getPhoneNumber());
+			tierOrganization.setPrimaryContactName(org.getPrimaryContactName());
+			tierOrganization.setPrimaryContactEmail(org.getPrimaryContactEmail());
+			tierOrganization.setPrimaryContactPhone(org.getPrimaryContactPhone());
+			tierOrganization.setTechnicalContactName(org.getTechnicalContactName());
+			tierOrganization.setTechnicalContactPhoneNumber(org.getTechnicalContactPhoneNumber());
+			tierOrganization.setTechnicalContactEmail(org.getTechnicalContactEmail());
+			
+			tierOrgs.add(tierOrganization);
+		    }
+		}
+	    }
+	    
+	    if(!tierOrgs.isEmpty()) {
+		return tierOrgs;
+	    }
+	    else {
+		return null;
+	    }
 	}
     }
-    
     
     /**
      * The '/getHELRegistryOrganizationDetails' GET request will return the details of the selected registry
      * organization.
      *
      * @param selRegistryOrgId
+     * @param registryType
      * @return The function will return the details of the selected organization
      * @throws java.lang.Exception
      */
     @SuppressWarnings("rawtypes")
     @RequestMapping(value = {"/{cleanURL}/getHELRegistryOrganizationDetails", "/getHELRegistryOrganizationDetails"}, method = RequestMethod.GET)
-    public @ResponseBody tierOrganizationDetails getHELRegistryOrganizationDetails(@RequestParam(value = "selRegistryOrgId", required = true) Integer selRegistryOrgId) throws Exception {
+    public @ResponseBody tierOrganizationDetails getHELRegistryOrganizationDetails(
+	    @RequestParam(value = "selRegistryOrgId", required = true) Integer selRegistryOrgId,
+	    @RequestParam(value = "registryType", required = false) Integer registryType) throws Exception {
 	
-	tierOrganizationDetails orgDetails = tiermanager.getTierEntryById(selRegistryOrgId);
+	if(registryType == null) {
+	    registryType = 1;
+	}
+	
+	tierOrganizationDetails orgDetails;
+	
+	if(registryType == 1) {
+	    orgDetails = tiermanager.getTierEntryById(selRegistryOrgId);
+	}
+	else {
+	    programOrgHierarchyDetails fpOrgDetails = tiermanager.getFPRegistryTierEntryById(selRegistryOrgId);
+	    
+	    orgDetails = new tierOrganizationDetails();
+	    orgDetails.setId(fpOrgDetails.getId());
+	    orgDetails.setName(fpOrgDetails.getName());
+	    orgDetails.setAddress(fpOrgDetails.getAddress());
+	    orgDetails.setAddress2(fpOrgDetails.getAddress2());
+	    orgDetails.setCity(fpOrgDetails.getCity());
+	    orgDetails.setState(fpOrgDetails.getState());
+	    orgDetails.setZipCode(fpOrgDetails.getZipCode());
+	    orgDetails.setPhoneNumber(fpOrgDetails.getPhoneNumber());
+	    orgDetails.setPrimaryContactName(fpOrgDetails.getPrimaryContactName());
+	    orgDetails.setPrimaryContactEmail(fpOrgDetails.getPrimaryContactEmail());
+	    orgDetails.setPrimaryContactPhone(fpOrgDetails.getPrimaryContactPhone());
+	    orgDetails.setTechnicalContactEmail(fpOrgDetails.getTechnicalContactEmail());
+	    orgDetails.setTechnicalContactName(fpOrgDetails.getTechnicalContactName());
+	    orgDetails.setTechnicalContactPhoneNumber(fpOrgDetails.getTechnicalContactPhoneNumber());
+	}
+	
 	return orgDetails;
     }
     
+    /**
+     * The '/getAgenciesForReport' GET request will return a list of Health-e-Link registries based on the
+     * passed in registry type
+     *
+     * @param registryType
+     * @return The function will return a list of active health-e-link registries.
+     * @throws java.lang.Exception
+     */
+    @RequestMapping(value = {"/getAgenciesForReport"}, method = RequestMethod.GET)
+    public @ResponseBody ModelAndView getAgenciesForReport(@RequestParam(value = "registryType", required = true) Integer registryType) throws Exception {
+	
+	ModelAndView mav = new ModelAndView();
+        mav.setViewName("/administrator/processing-activities/reportBuilder/agencyList");
+	
+	List<Organization> agencies = organizationManager.getAgenciesForReport(registryType);
+	
+	mav.addObject("agencies",agencies);
+	
+        return mav;
+    }
 }

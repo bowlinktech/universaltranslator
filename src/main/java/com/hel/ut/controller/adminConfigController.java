@@ -623,14 +623,17 @@ public class adminConfigController {
 	
 	String helRegistryFolderName = "";
 	
-	if(orgDetails.getHelRegistryOrgId() > 0 || (orgDetails.getHelRegistryOrgId() == 0 && orgDetails.getHelRegistryId() > 0)) {
-	    List<helRegistry> helRegistries = helregistrymanager.getAllActiveRegistries();
-	    
-	    if(!helRegistries.isEmpty()) {
-		for(helRegistry registry : helRegistries) {
-		    if(registry.getId() == orgDetails.getHelRegistryId()) {
-			helRegistryFolderName = registry.getRegistryName().replace(" ", "-").toLowerCase();
-			mav.addObject("helRegistryFolderName", helRegistryFolderName);
+	//This is for eReferral configurations only
+	if(configurationDetails.getMessageTypeId() == 1) {
+	    if(orgDetails.getHelRegistryOrgId() > 0 || (orgDetails.getHelRegistryOrgId() == 0 && orgDetails.getHelRegistryId() > 0)) {
+		List<helRegistry> helRegistries = helregistrymanager.getAllActiveRegistries();
+
+		if(!helRegistries.isEmpty()) {
+		    for(helRegistry registry : helRegistries) {
+			if(registry.getId() == orgDetails.getHelRegistryId()) {
+			    helRegistryFolderName = registry.getRegistryName().replace(" ", "-").toLowerCase();
+			    mav.addObject("helRegistryFolderName", helRegistryFolderName);
+			}
 		    }
 		}
 	    }
@@ -978,7 +981,7 @@ public class adminConfigController {
 	//If transport method == 10 (From HEL Registry online form) we can prepoulate the fields from
 	//the selected configuration. No need to have a custom template uploaded. The file submitted 
 	//to UT with this transport method will always have the same fields set up.
-	if(((transportDetails.gettransportMethodId() == 13 && configurationDetails.getType() == 2 && transportDetails.getHelRegistryId() > 0) || transportDetails.gettransportMethodId() == 10)) {
+	if(((transportDetails.gettransportMethodId() == 13 && configurationDetails.getType() == 2 && configurationDetails.getMessageTypeId() == 1 && transportDetails.getHelRegistryId() > 0) || transportDetails.gettransportMethodId() == 10)) {
 	    
 	    List<configurationFormFields> existingFormFields = utconfigurationTransportManager.getConfigurationFieldsToCopy(transportDetails.getconfigId());
 	    
@@ -4112,7 +4115,12 @@ public class adminConfigController {
 		    currentRow = sheet.createRow(rowNum);
 		    cellNum = 0;
 		    for(configurationFormFields field : fields) {
-			currentRow.createCell(cellNum).setCellValue(field.getSampleData());
+			if(!field.getDefaultValue().equals("")) {
+			    currentRow.createCell(cellNum).setCellValue(field.getDefaultValue());
+			}
+			else {
+			    currentRow.createCell(cellNum).setCellValue(field.getSampleData());
+			}
 			cellNum++;
 		    }
 		    rowNum++;

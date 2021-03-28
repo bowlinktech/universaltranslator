@@ -36,5 +36,6 @@ public interface organizationDAO {
     List<Organization> getAssociatedOrgs(int orgId);
     
     List<Organization> getOrganizationsPaged(Integer displayStart, Integer displayRecords, String searchTerm, String sortColumnName, String sortDirection) throws Exception;
-
+    
+    List<Organization> getAgenciesForReport(Integer registryType) throws Exception;
 }

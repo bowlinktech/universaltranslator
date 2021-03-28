@@ -40,6 +40,9 @@ import com.hel.ut.model.custom.ConfigForInsert;
 import com.hel.ut.model.custom.IdAndFieldValue;
 import com.hel.ut.model.custom.batchErrorSummary;
 import com.hel.ut.model.directmessagesin;
+import com.hel.ut.model.generatedActivityReportAgencies;
+import com.hel.ut.model.generatedActivityReports;
+import com.hel.ut.model.lutables.lu_ProcessStatus;
 import com.hel.ut.model.referralActivityExports;
 import com.hel.ut.model.systemSummary;
 import com.hel.ut.reference.fileSystem;
@@ -93,6 +96,10 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 import com.hel.ut.service.utConfigurationManager;
 import com.hel.ut.service.utConfigurationTransportManager;
+import com.itextpdf.text.Document;
+import com.itextpdf.text.PageSize;
+import com.itextpdf.text.pdf.PdfWriter;
+import com.itextpdf.tool.xml.XMLWorkerHelper;
 import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.ChannelSftp.LsEntry;
@@ -104,11 +111,32 @@ import com.registryKit.registry.fileUploads.fileUploadManager;
 import com.registryKit.registry.fileUploads.uploadedFile;
 import com.registryKit.registry.submittedMessages.submittedMessage;
 import com.registryKit.registry.submittedMessages.submittedMessageManager;
+import java.io.BufferedWriter;
+import java.io.FileInputStream;
+import java.io.FileWriter;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.text.DecimalFormat;
 import java.util.Vector;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.pdfbox.util.Hex;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.FillPatternType;
+import org.apache.poi.ss.usermodel.HorizontalAlignment;
+import org.apache.poi.ss.usermodel.IndexedColors;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.xssf.usermodel.XSSFCell;
+import org.apache.poi.xssf.usermodel.XSSFCellStyle;
+import org.apache.poi.xssf.usermodel.XSSFColor;
+import org.apache.poi.xssf.usermodel.XSSFCreationHelper;
+import org.apache.poi.xssf.usermodel.XSSFFont;
+import org.apache.poi.xssf.usermodel.XSSFRow;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 /**
@@ -4683,5 +4711,528 @@ public class transactionInManagerImpl implements transactionInManager {
     @Override
     public void insertValidationDroppedValues(Integer batchId, configurationFormFields cff, boolean foroutboundProcessing) throws Exception {
 	transactionInDAO.insertValidationDroppedValues(batchId, cff, foroutboundProcessing);
+    }
+    
+    @Override
+    public Integer saveActivityReport(generatedActivityReports activityReport) throws Exception {
+	return transactionInDAO.saveActivityReport(activityReport);
+    }
+    
+    @Override
+    public void saveActivityReportAgency(generatedActivityReportAgencies activityReportAgency) throws Exception {
+	transactionInDAO.saveActivityReportAgency(activityReportAgency);
+    }
+    
+    @Override
+    public List<generatedActivityReports> getSavedActivityReports() throws Exception {
+	return transactionInDAO.getSavedActivityReports();
+    }
+    
+    @Override
+    public generatedActivityReports getSavedActivityReportById(Integer activityReportId) throws Exception {
+	return transactionInDAO.getSavedActivityReportById(activityReportId);
+    }
+    
+    @Override
+    public List<generatedActivityReportAgencies> getSavedActivityReportAgencies(Integer activityReportId) throws Exception {
+	return transactionInDAO.getSavedActivityReportAgencies(activityReportId);
+    }
+    
+    @Override
+    public List<batchUploads> getActivityReportBatches(String agencyIdList,String fromDate, String endDate, Integer registryType) throws Exception {
+	return transactionInDAO.getActivityReportBatches(agencyIdList, fromDate, endDate, registryType);
+    }
+    
+    @Override
+    public boolean generatePDFActivityReport(generatedActivityReports activityReport, List<batchUploads> activityReportBatches) throws Exception {
+	
+	boolean reportSuccess = false;
+	
+	DateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy");
+	DateFormat dateFormatWTime = new SimpleDateFormat("MM/dd/yyyy hh:mm a");
+	DateFormat shortDateFormat = new SimpleDateFormat("M/dd/yyyy");
+	
+	Document document = new Document(PageSize.A4);
+	
+	StringBuffer reportBody = new StringBuffer();
+
+	String activityReportTempFile = myProps.getProperty("ut.directory.utRootDir") + "/activityReports/" + activityReport.getFileName().trim().replace("pdf", "txt");
+	PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(activityReportTempFile, true)));
+	
+	List<lu_ProcessStatus> processStatus = sysAdminManager.getAllProcessStatus();
+
+	out.println("<html><body>");
+
+	String registryType = "Family Planning";
+	if(activityReport.getRegistryType() == 1) {
+	    registryType = "eReferral (CeC)";
+	}
+
+	reportBody.append("<div style='padding-top:10px;'>");
+	reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 16px;'><strong>Registry Type: </strong>").append(registryType).append("</span><br />");
+	reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 16px;'><strong>Selected Date Range: </strong>").append(activityReport.getDateRange()).append("</span><br />");
+	reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 16px;'><strong>Report Created On: </strong>").append(dateFormatWTime.format(activityReport.getDateCreated())).append("</span><br />");
+	reportBody.append("</div>");
+
+	reportBody.append("<div style='padding-top:10px;'>");
+	reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 16px;'><strong>Inbound Batches</strong></span><br />");
+	reportBody.append("</div>");
+
+	String currOrgName = "";
+	for(batchUploads batch : activityReportBatches) {
+
+	    if("".equals(currOrgName) || !currOrgName.equals(batch.getOrgName().toLowerCase().trim())) {
+		if(!"".equals(currOrgName)){
+		    reportBody.append("</tbody></table></div><br />");
+		};
+		reportBody.append("<div style='padding-top:10px;'>");
+		reportBody.append("<span style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 16px;'><strong>").append(batch.getOrgName()).append("</strong></span><br />");
+		reportBody.append("</div>");
+		if(batch.getUtBatchName() == null) {
+		    reportBody.append("<div style='padding-top:10px;'><table border='1' cellpadding='5' cellspacing='1' width='100%'>");
+		}
+		else {
+		    reportBody.append("<div style='padding-top:10px;'><table border='1' cellpadding='1' cellspacing='1' width='100%'>");
+		}
+		reportBody.append("<thead><tr>")
+		.append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px; width:25%;'>Batch Name</th>")	
+		//.append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>Submitted File Name</th>")	
+		.append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px; text-align:center'>Date Submitted</th>")
+		.append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px; text-align:center'>Batch Status</th>")
+		.append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px; text-align:center'>Total Records</th>")
+		.append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px; text-align:center'>Total UT Errors</th>");
+		if(activityReport.getRegistryType() == 2) {
+		    reportBody.append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px; text-align:center'>Total FP Rejections</th>");
+		    reportBody.append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px; text-align:center'>% FP Rejected</th>");
+		    reportBody.append("<th style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px; text-align:center; width:16%;'>Accepted Visit CYM</th>");
+		}	
+		reportBody.append("</tr></thead><tbody>");
+		currOrgName = batch.getOrgName().toLowerCase().trim();
+	    }
+	    
+	    if(batch.getUtBatchName() == null) {
+		if(activityReport.getRegistryType() == 2) {
+		    reportBody.append("<tr><td colspan='8' style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>").append("There were no submissions for this agency for the selected time frame.").append("</td></tr>");
+		}
+		else {
+		    reportBody.append("<tr><td colspan='5' style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>").append("There were no submissions for this agency for the selected time frame.").append("</td></tr>");
+		}
+	    }
+	    else {
+		double percentRej = 0;
+		if(activityReport.getRegistryType() == 2) {
+		    if(batch.getFpTotalErrors() > 0) {
+			 percentRej =  ((double) batch.getFpTotalErrors()/(double) batch.getTotalRecordCount()) * 100;
+		    }
+		}
+		if(percentRej > 2.5) {
+		    reportBody.append("<tr style='background-color:#FFCCCB;'><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px; height:25px'>");
+		}
+		else {
+		    reportBody.append("<tr><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px; height:25px'>");
+		}
+		
+		if(batch.getOriginalFileName().contains(".")) {
+		    reportBody.append(batch.getOriginalFileName().substring(0, batch.getOriginalFileName().lastIndexOf('.')));
+		}
+		else {
+		    reportBody.append(batch.getOriginalFileName());
+		}
+		
+		//.append("</td><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>")
+		//.append(batch.getOriginalFileName())	    
+		reportBody.append("</td><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px; text-align:center'>")
+		.append(shortDateFormat.format(batch.getDateSubmitted()))	   
+		.append("</td><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px; text-align:center'>");
+
+		for(lu_ProcessStatus pStatus : processStatus) {
+		    if(batch.getStatusId() == pStatus.getId()) {
+			reportBody.append(pStatus.getEndUserDisplayCode());
+			break;
+		    }
+		}
+
+		reportBody.append("</td><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px; text-align: center;'>")	 
+		.append(batch.getTotalRecordCount())    
+		.append("</td><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px; text-align: center;'>")	 
+		.append(batch.getErrorRecordCount());
+		
+		if(activityReport.getRegistryType() == 2) {
+		   if(batch.getFpTotalErrors() > 0) {
+			DecimalFormat df = new DecimalFormat("#.##");
+			reportBody.append("</td><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px; text-align: center;'>")
+			.append(batch.getFpTotalErrors()) 
+			.append("</td><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px; text-align: center;'>")
+			.append(df.format(percentRej)).append("%")
+			.append("</td><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px; text-align: center;'>");
+			if(batch.getAcceptedVisits().contains(",")) {
+			    String[] acceptedVisit = batch.getAcceptedVisits().split(",");
+			    for (int i=0; i < acceptedVisit.length; i++) {
+				if(i>0) {reportBody.append("<br />");}
+				reportBody.append(acceptedVisit[i]);
+			    }
+			}
+			else {
+			    reportBody.append(batch.getAcceptedVisits());
+			}
+		   }
+		   else {
+			reportBody.append("</td><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px; text-align: center;'>")
+			.append(batch.getFpTotalErrors()) 
+			.append("</td><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px; text-align: center;'>")
+			.append(0).append("%")
+			.append("</td><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px; text-align: center;'>");
+			if(batch.getAcceptedVisits().contains(",")) {
+			    String[] acceptedVisit = batch.getAcceptedVisits().split(",");
+			    for (int i=0; i < acceptedVisit.length; i++) {
+				if(i>0) {reportBody.append("<br />");}
+				reportBody.append(acceptedVisit[i]);
+			    }
+			}
+			else {
+			    reportBody.append(batch.getAcceptedVisits());
+			}
+		   }
+		}
+		reportBody.append("</td></tr>");
+	    }
+	}
+	reportBody.append("</tbody></table></div>");
+
+	out.println(reportBody.toString());
+
+	out.println("</body></html>");
+
+	out.close();
+
+	PdfWriter pdfWriter = PdfWriter.getInstance(document, new FileOutputStream(myProps.getProperty("ut.directory.utRootDir") + "/activityReports/" + activityReport.getFileName().trim()));
+
+	document.open();
+
+	XMLWorkerHelper worker = XMLWorkerHelper.getInstance();
+
+	FileInputStream fis = new FileInputStream(activityReportTempFile);
+	worker.parseXHtml(pdfWriter, document, fis);
+
+	fis.close();
+	document.close();
+	pdfWriter.close();
+	
+	File activityReportFile = new File(activityReportTempFile);
+	activityReportFile.delete();
+	
+	reportSuccess = true;
+	return reportSuccess;
+    }
+    
+    @Override
+    public boolean generateExcelActivityReport(generatedActivityReports activityReport, List<batchUploads> activityReportBatches) throws Exception {
+	
+	boolean reportSuccess = false;
+	
+	DateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy");
+	DateFormat dateFormatWTime = new SimpleDateFormat("MM/dd/yyyy hh:mm a");
+	
+	File file = new File(myProps.getProperty("ut.directory.utRootDir") + "/activityReports/" + activityReport.getFileName().trim());
+	file.createNewFile();
+
+	FileInputStream fileInput = null;
+	fileInput = new FileInputStream(file);
+
+	FileWriter fw = null;
+
+	try {
+	    fw = new FileWriter(file, true);
+	} catch (IOException ex) {
+
+	}
+	
+	StringBuffer reportBody = new StringBuffer();
+
+	List<lu_ProcessStatus> processStatus = sysAdminManager.getAllProcessStatus();
+
+	XSSFWorkbook wb = new XSSFWorkbook();
+	XSSFSheet sheet = wb.createSheet("sheet1");
+	XSSFFont boldFont;
+	CellStyle boldCenterFont;
+	CellStyle normalLeftFont;
+	CellStyle boldLeftFont;
+	CellStyle normalCenterFont;
+	CellStyle dateStyle;
+	
+	XSSFCreationHelper createHelper;
+	Map <String, CellStyle> cellStyleMap;
+	boldFont = wb.createFont();
+	boldFont.setBold(true);
+	
+	XSSFFont normalFont = wb.createFont();
+	normalFont.setBold(false);
+	
+	boldCenterFont = wb.createCellStyle();
+	boldCenterFont.setFont(boldFont);
+	boldCenterFont.setAlignment(HorizontalAlignment.CENTER);
+	boldCenterFont.setWrapText(true);
+	
+	normalLeftFont = wb.createCellStyle();
+	normalLeftFont.setFont(normalFont);
+	normalLeftFont.setAlignment(HorizontalAlignment.LEFT);
+	normalLeftFont.setWrapText(true);
+
+	boldLeftFont = wb.createCellStyle();
+	boldLeftFont.setFont(boldFont);
+	boldLeftFont.setAlignment(HorizontalAlignment.LEFT);
+	boldLeftFont.setWrapText(true);
+
+	normalCenterFont = wb.createCellStyle();
+	normalCenterFont.setFont(normalFont);
+	normalCenterFont.setAlignment(HorizontalAlignment.CENTER);
+	normalCenterFont.setWrapText(true);
+	
+	dateStyle = wb.createCellStyle();
+	createHelper = wb.getCreationHelper();
+	dateStyle.setDataFormat(createHelper.createDataFormat().getFormat("mm/dd/yyyy"));
+	
+	cellStyleMap = new HashMap<String, CellStyle>();
+	cellStyleMap.put("boldCenterFont", boldCenterFont);
+	cellStyleMap.put("normalLeftFont", normalLeftFont);
+	cellStyleMap.put("boldLeftFont", boldLeftFont);
+	cellStyleMap.put("normalCenterFont", normalCenterFont);
+	cellStyleMap.put("dateStyle", dateStyle);
+
+	CellStyle rowHeaderstyle = wb.createCellStyle();
+	rowHeaderstyle.setFont(boldFont);
+	rowHeaderstyle.setAlignment(HorizontalAlignment.LEFT);
+	rowHeaderstyle.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex());
+	rowHeaderstyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+	
+	String rgbS = "FFCCCB";
+	byte[] rgbB = Hex.decodeHex(rgbS); // get byte array from hex string
+	XSSFColor color = new XSSFColor(rgbB, null); //IndexedColorMap has no usage until now. So it can be set null.
+
+	XSSFCellStyle fillStyle = (XSSFCellStyle) wb.createCellStyle();
+	fillStyle = wb.createCellStyle();
+	fillStyle.setFillForegroundColor(color);
+	fillStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+
+	Integer rowNum = 0;
+	Integer cellNum = 0;
+	
+	XSSFRow row;
+	XSSFCell cell;
+
+	String registryType = "Family Planning";
+	if(activityReport.getRegistryType() == 1) {
+	    registryType = "eReferral (CeC)";
+	}
+	
+	row = sheet.createRow(rowNum);
+	cell = row.createCell(cellNum);
+	cell.setCellValue("Registry Type: " + registryType);
+	cell.setCellStyle(cellStyleMap.get("boldLeftFont"));
+	sheet.addMergedRegion(new CellRangeAddress(rowNum, rowNum, 0, 5));
+	cellNum++;
+	
+	rowNum++;
+	cellNum = 0;
+	row = sheet.createRow(rowNum);
+	cell = row.createCell(cellNum);
+	cell.setCellValue("Selected Date Range: " + activityReport.getDateRange());
+	cell.setCellStyle(cellStyleMap.get("boldLeftFont"));
+	sheet.addMergedRegion(new CellRangeAddress(rowNum, rowNum, 0, 5));
+	cellNum++;
+	
+	rowNum++;
+	cellNum = 0;
+	row = sheet.createRow(rowNum);
+	cell = row.createCell(cellNum);
+	cell.setCellValue("Report Created On: " + dateFormatWTime.format(activityReport.getDateCreated()));
+	cell.setCellStyle(cellStyleMap.get("boldLeftFont"));
+	sheet.addMergedRegion(new CellRangeAddress(rowNum, rowNum, 0, 5));
+	cellNum++;
+	
+	rowNum++;
+	rowNum++;
+	cellNum = 0;
+	row = sheet.createRow(rowNum);
+	cell = row.createCell(cellNum);
+	cell.setCellValue("Inbound Batches");
+	cell.setCellStyle(cellStyleMap.get("boldLeftFont"));
+	sheet.addMergedRegion(new CellRangeAddress(rowNum, rowNum, 0, 5));
+	rowNum++;
+
+	String currOrgName = "";
+	for(batchUploads batch : activityReportBatches) {
+	    rowNum++;
+
+	    if("".equals(currOrgName) || !currOrgName.equals(batch.getOrgName().toLowerCase().trim())) {
+		if(!"".equals(currOrgName)){
+		    rowNum++;
+		};
+		cellNum = 0;
+		row = sheet.createRow(rowNum);
+		cell = row.createCell(cellNum);
+		cell.setCellValue(batch.getOrgName());
+		cell.setCellStyle(cellStyleMap.get("boldLeftFont"));
+		sheet.addMergedRegion(new CellRangeAddress(rowNum, rowNum, 0, 5));
+		
+		if(batch.getUtBatchName() != null) {
+		    rowNum++;
+		    cellNum = 0;
+		    row = sheet.createRow(rowNum);
+		    cell = row.createCell(cellNum);
+		    cell.setCellValue("Batch Name");
+		    cellNum++;
+		    cell = row.createCell(cellNum);
+		    cell.setCellValue("Date Submitted");
+		    cellNum++;
+		    cell = row.createCell(cellNum);
+		    cell.setCellValue("Batch Status");
+		    cellNum++;
+		    cell = row.createCell(cellNum);
+		    cell.setCellValue("Total Records");
+		    cellNum++;
+		    cell = row.createCell(cellNum);
+		    cell.setCellValue("Total UT Errors");
+		    if(activityReport.getRegistryType() == 2) {
+			cellNum++;
+			cell = row.createCell(cellNum);
+			cell.setCellValue("Total FP Rejections");
+			cellNum++;
+			cell = row.createCell(cellNum);
+			cell.setCellValue("% FP Rejected");
+			cellNum++;
+			cell = row.createCell(cellNum);
+			cell.setCellValue("Accepted Visit CYM");
+		    }
+		}
+	
+		currOrgName = batch.getOrgName().toLowerCase().trim();
+		rowNum++;
+	    }
+	    cellNum = 0;
+	    row = sheet.createRow(rowNum);
+	    cell = row.createCell(cellNum);
+	    if(batch.getUtBatchName() == null) {
+		cell.setCellValue("There were no submissions for this agency for the selected time frame.");
+		cell.setCellStyle(cellStyleMap.get("boldLeftFont"));
+		sheet.addMergedRegion(new CellRangeAddress(rowNum, rowNum, 0, 5));
+	    }
+	    else {
+		double percentRej = 0;
+		if(activityReport.getRegistryType() == 2) {
+		    if(batch.getFpTotalErrors() > 0) {
+			 percentRej =  ((double) batch.getFpTotalErrors()/(double) batch.getTotalRecordCount()) * 100;
+		    }
+		}
+		
+		cell = row.createCell(cellNum);
+		if(batch.getOriginalFileName().contains(".")) {
+		    cell.setCellValue(batch.getOriginalFileName().substring(0, batch.getOriginalFileName().lastIndexOf('.')));
+		}
+		else {
+		    cell.setCellValue(batch.getOriginalFileName());
+		}
+		sheet.autoSizeColumn(cellNum);
+		
+		if(percentRej > 2.5) {
+		    row.getCell(cellNum).setCellStyle(fillStyle);
+		}
+		
+		cellNum++;
+		cell = row.createCell(cellNum);
+		cell.setCellValue(batch.getDateSubmitted());
+		cell.setCellStyle(cellStyleMap.get("dateStyle"));
+		sheet.autoSizeColumn(cellNum);
+		
+		if(percentRej > 2.5) {
+		    row.getCell(cellNum).setCellStyle(fillStyle);
+		}
+		
+		cellNum++;
+		for(lu_ProcessStatus pStatus : processStatus) {
+		    if(batch.getStatusId() == pStatus.getId()) {
+			cell = row.createCell(cellNum);
+			cell.setCellValue(pStatus.getEndUserDisplayCode());
+			sheet.autoSizeColumn(cellNum);
+			break;
+		    }
+		}
+		
+		if(percentRej > 2.5) {
+		    row.getCell(cellNum).setCellStyle(fillStyle);
+		}
+		
+		cellNum++;
+		cell = row.createCell(cellNum);
+		cell.setCellValue(batch.getTotalRecordCount());
+		sheet.autoSizeColumn(cellNum);
+		
+		if(percentRej > 2.5) {
+		    row.getCell(cellNum).setCellStyle(fillStyle);
+		}
+		
+		cellNum++;
+		cell = row.createCell(cellNum);
+		cell.setCellValue(batch.getErrorRecordCount());
+		sheet.autoSizeColumn(cellNum);
+		
+		if(percentRej > 2.5) {
+		    row.getCell(cellNum).setCellStyle(fillStyle);
+		}
+		
+		if(activityReport.getRegistryType() == 2) {
+		    cellNum++;
+		    cell = row.createCell(cellNum);
+		    cell.setCellValue(batch.getFpTotalErrors());
+		    sheet.autoSizeColumn(cellNum);
+		    
+		    if(percentRej > 2.5) {
+			row.getCell(cellNum).setCellStyle(fillStyle);
+		    }
+		    
+		    cellNum++;
+		    cell = row.createCell(cellNum);
+		    if(batch.getFpTotalErrors() > 0) {
+			DecimalFormat df = new DecimalFormat("#.##");
+			cell.setCellValue(df.format(percentRej)+"%");
+		    }
+		    else {
+			cell.setCellValue("0%");
+		    }
+		    sheet.autoSizeColumn(cellNum);
+		    
+		    if(percentRej > 2.5) {
+			row.getCell(cellNum).setCellStyle(fillStyle);
+		    }
+		    
+		    cellNum++;
+		    cell = row.createCell(cellNum);
+		    cell.setCellValue(batch.getAcceptedVisits());
+		    sheet.autoSizeColumn(cellNum);
+		    
+		    if(percentRej > 2.5) {
+			row.getCell(cellNum).setCellStyle(fillStyle);
+		    }
+		}
+	    }
+	}
+	
+	try (OutputStream stream = new FileOutputStream(file)) {
+	    wb.write(stream);
+	}
+	
+	reportSuccess = true;
+	return reportSuccess;
+    }
+    
+    @Override
+    public void updateActivityReport(generatedActivityReports activityReport) throws Exception {
+	transactionInDAO.updateActivityReport(activityReport);
+    }
+    
+    @Override
+    public void deleteActivityReport(Integer activityReportId) throws Exception {
+	transactionInDAO.deleteActivityReportAgencies(activityReportId);
+	transactionInDAO.deleteActivityReport(activityReportId);
     }
 }

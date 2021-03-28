@@ -58,11 +58,20 @@
 		   <c:when test="${param['page'] == 'directmessagesout'}">
                         <a href="javascript:void(0);" title="Direct Messages Out" class="unstyled-link">Direct Messages Out</a>
                     </c:when>
+                    <c:when test="${param['page'] == 'generateReport'}">
+                        <a href="javascript:void(0);" title="Generate Activity Report" class="unstyled-link">Generate Activity Report</a>
+                    </c:when>
                 </c:choose>
             </h1>
         </div>
         <ul class="nav navbar-nav navbar-right navbar-actions" role="menu">
             <c:choose>
+                <c:when test="${param['page'] == 'report'}">
+                    <li role="menuitem"><a href="/administrator/processing-activity/generateReport" class="" title="Generate Activity Report" role="button"><span class="glyphicon glyphicon-list-alt icon-stacked"></span> Generate Report</a></li>
+                </c:when>
+                <c:when test="${param['page'] == 'generateReport'}">
+                    <li role="menuitem"><a href="/administrator/processing-activity/activityReport" class="" title="Back to Activity Report" role="button"><span class="glyphicon glyphicon-backward icon-stacked"></span> Back</a></li>
+                </c:when>
                 <c:when test="${param['page'] == 'edit'}">
                     <li role="menuitem"><a href="javascript:void(0);" id="saveCloseDetails" class="submitMessage" title="Save &amp; Close" role="button"><span class="glyphicon glyphicon-floppy-disk icon-stacked"></span> Save &amp; Close</a></li>
                 </c:when>

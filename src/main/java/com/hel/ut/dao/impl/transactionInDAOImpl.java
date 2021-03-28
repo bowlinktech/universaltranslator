@@ -3449,7 +3449,6 @@ public class transactionInDAOImpl implements transactionInDAO {
 	List<batchUploads> batchUploadMessages = query.list();
 	
         return batchUploadMessages;
-
     }
     
     /**
@@ -3579,7 +3578,7 @@ public class transactionInDAOImpl implements transactionInDAO {
 		    + "and a.transactionOutRecordsId in (select id from transactionoutrecords_"+batchId+ " "
 		    + "where configId = :configId and F"+cdt.getFieldNo()+" is not null and length(F"+cdt.getFieldNo()+") > 0 and (statusId is null or statusId not in (:transRELId)));";
 	    } 
-
+	   
 	    Query updateData = sessionFactory.getCurrentSession().createSQLQuery(sql)
 		.setParameter("configId", configId)
 		.setParameterList("transRELId", transRELId);
@@ -3843,5 +3842,222 @@ public class transactionInDAOImpl implements transactionInDAO {
 	
 	Query updateData = sessionFactory.getCurrentSession().createSQLQuery(sql);
 	updateData.executeUpdate();
+    }
+    
+     /* The 'saveActivityReport' function will submit the new activity report.
+     *
+     * @param activityReport The object that will hold the new new activity report info
+     *
+     * @table generatedactivityreports
+     *
+     * @return This function returns the reportId for the newly inserted activity report
+     */
+    @Override
+    @Transactional(readOnly = false)
+    public Integer saveActivityReport(generatedActivityReports activityReport) throws Exception {
+
+	Integer reportId = (Integer) sessionFactory.getCurrentSession().save(activityReport);
+	return reportId;
+    }
+    
+    @Override
+    @Transactional(readOnly = false)
+    public void saveActivityReportAgency(generatedActivityReportAgencies activityReportAgency) throws Exception {
+	sessionFactory.getCurrentSession().save(activityReportAgency);
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public List<generatedActivityReports> getSavedActivityReports() throws Exception {
+	Query query = sessionFactory.getCurrentSession().createQuery("from generatedActivityReports order by dateCreated desc");
+
+	return query.list();
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public generatedActivityReports getSavedActivityReportById(Integer activityReportId) throws Exception {
+	Query query = sessionFactory.getCurrentSession().createQuery("from generatedActivityReports where id = :activityReportId");
+	query.setParameter("activityReportId", activityReportId);
+
+	return (generatedActivityReports) query.uniqueResult();
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public List<generatedActivityReportAgencies> getSavedActivityReportAgencies(Integer activityReportId) throws Exception {
+	
+	String sqlStatement = "select a.*, b.orgName, b.helRegistrySchemaName from generatedActivityReportAgencies a inner join "
+	    + "organizations b on b.id = a.orgId where a.reportId = " + activityReportId
+	    + " order by b.orgName asc";
+	
+	Query query = sessionFactory.getCurrentSession().createSQLQuery(sqlStatement)
+	.addScalar("id", StandardBasicTypes.INTEGER)
+	.addScalar("orgId", StandardBasicTypes.INTEGER)
+	.addScalar("reportId", StandardBasicTypes.INTEGER)
+	.addScalar("orgName", StandardBasicTypes.STRING)
+	.addScalar("helRegistrySchemaName", StandardBasicTypes.STRING)	
+	.setResultTransformer(Transformers.aliasToBean(generatedActivityReportAgencies.class));
+
+	return query.list();
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public List<batchUploads> getActivityReportBatches(String agencyIdList,String fromDate, String endDate, Integer registryType) throws Exception {
+	
+	String sql = "";
+	
+	String[] selagencies = agencyIdList.split(",");
+	
+	if(registryType == 1) {
+	    
+	    if(selagencies.length > 0) {
+		String dbschema = "";
+		Integer agencyId;
+		
+		for (int i=0; i < selagencies.length; i++) {
+		    
+		    String[] selagency = selagencies[i].split("\\-");
+		    
+		    if(selagency.length == 2) {
+			dbschema = selagency[1];
+		    }
+		    
+		    agencyId = Integer.parseInt(selagency[0]);
+		    
+		    if(i > 0 && agencyId > 0) {
+			sql += "UNION ALL ";
+		    }
+		    
+		    if(agencyId > 0) {
+			if(dbschema != null) {
+			    if(!"".equals(dbschema)) {
+				sql += "(select iFNULL(b.id,0) as id, b.utBatchName, ifnull(msg.assignedFileName,b.originalFileName) as originalFileName, iFNULL(b.statusId,0) as statusId, b.dateSubmitted, iFNULL(b.totalRecordCount,0) as totalRecordCount, iFNULL(b.errorRecordCount,0) as errorRecordCount, a.orgName,";
+				sql += "0 as fpTotalErrors, '' as acceptedVisits ";
+				sql += "from organizations a left outer join ";
+				sql += "batchuploads b on b.orgId = a.id and b.dateSubmitted between '"+fromDate+" 00:00:00' and '"+endDate+" 23:59:59' ";
+				sql += "left outer join "+dbschema+".registry_submitted_messages msg on msg.utBatchUploadId = b.id ";
+				sql += "where a.id = "+agencyId+" ";
+				sql += "order by a.orgName, b.dateSubmitted asc) ";
+			    }
+			    else {
+				sql += "(select iFNULL(b.id,0) as id, b.utBatchName, b.originalFileName, iFNULL(b.statusId,0) as statusId, b.dateSubmitted, iFNULL(b.totalRecordCount,0) as totalRecordCount, iFNULL(b.errorRecordCount,0) as errorRecordCount, a.orgName,";
+				sql += "0 as fpTotalErrors, '' as acceptedVisits ";
+				sql += "from organizations a left outer join ";
+				sql += "batchuploads b on b.orgId = a.id and b.dateSubmitted between '"+fromDate+" 00:00:00' and '"+endDate+" 23:59:59' ";
+				sql += "where a.id = "+agencyId+" ";
+				sql += "order by a.orgName, b.dateSubmitted asc) ";
+			    }
+			}
+			else {
+			    sql += "(select iFNULL(b.id,0) as id, b.utBatchName, b.originalFileName, iFNULL(b.statusId,0) as statusId, b.dateSubmitted, iFNULL(b.totalRecordCount,0) as totalRecordCount, iFNULL(b.errorRecordCount,0) as errorRecordCount, a.orgName,";
+			    sql += "0 as fpTotalErrors, '' as acceptedVisits ";
+			    sql += "from organizations a left outer join ";
+			    sql += "batchuploads b on b.orgId = a.id and b.dateSubmitted between '"+fromDate+" 00:00:00' and '"+endDate+" 23:59:59' ";
+			    sql += "where a.id = "+agencyId+" ";
+			    sql += "order by a.orgName, b.dateSubmitted asc) ";
+			}
+		    }
+		}
+	    }
+	}
+	else {
+	    if(selagencies.length > 0) {
+		String dbschema = "";
+		Integer agencyId;
+		
+		for (int i=0; i < selagencies.length; i++) {
+		    String[] selagency = selagencies[i].split("\\-");
+		    
+		    if(selagency.length == 2) {
+			dbschema = selagency[1];
+		    }
+		    
+		    agencyId = Integer.parseInt(selagency[0]);
+		    
+		    if(i > 0 && agencyId > 0) {
+			sql += "UNION ALL ";
+		    }
+		    
+		    if(agencyId > 0) {
+			if(dbschema != null) {
+			    if(!"".equals(dbschema)) {
+				sql += "select id,utbatchname,originalFileName,statusId,dateSubmitted,totalRecordCount,errorRecordCount,orgname,IFNULL(totalInError,0) as fpTotalErrors,";
+				sql += "ifnull(group_concat(yearAndMonth,' - ', visits),'N/A') as acceptedVisits from (";
+				sql += "select t1.* , count(yearAndMonth) visits, yearAndMonth from (";
+				sql += "select * from (";
+				sql += "select * from (select t1.*, o.orgname from organizations o right join (select ifnull(b.id,0) as id, utbatchname,";
+				sql += "originalFileName, ifnull(b.statusId, 0) as statusId,";
+				sql += "b.dateSubmitted, orgId,";
+				sql += "ifnull(b.totalRecordCount, 0) totalRecordCount, ifnull(b.errorRecordCount, 0) errorRecordCount from batchuploads b ";
+				sql += "where b.dateSubmitted between '"+fromDate+" 00:00:00' and '"+endDate+" 23:59:59' and orgId = "+agencyId+") t1 ";
+				sql += "on t1.orgId = o.id) t1 left join (select id as programUploadId, helBatchUploadId, totalInError from "+dbschema+".programUploads) pu on ";
+				sql += "pu.helBatchUploadId = t1.id) t1 left join (select engagementId, programUploadId as puId from "+dbschema+".programuploadrecords where statusId = 55 and engagementId is not null) pur ";
+				sql += "on pur.puId = t1.programUploadId) t1 left join ";
+				sql += "(select DATE_FORMAT(visitdate,'%Y-%m') yearAndMonth, engagementId from "+dbschema+".storage_engagements) se ";
+				sql += "on se.engagementId = t1.engagementId group by programUploadId, yearAndMonth) t1 group by programUploadId ";
+			    }
+			    else {
+				sql += "(select iFNULL(b.id,0) as id, b.utBatchName, b.originalFileName, iFNULL(b.statusId,0) as statusId, b.dateSubmitted, iFNULL(b.totalRecordCount,0) as totalRecordCount, iFNULL(b.errorRecordCount,0) as errorRecordCount, a.orgName,";
+				sql += "0 as fpTotalErrors, '' as acceptedVisits ";
+				sql += "from organizations a left outer join ";
+				sql += "batchuploads b on b.orgId = a.id and b.dateSubmitted between '"+fromDate+" 00:00:00' and '"+endDate+" 23:59:59' ";
+				sql += "where a.id = "+agencyId+" ";
+				sql += "order by a.orgName, b.dateSubmitted asc) ";
+			    }
+			}
+			else {
+			    sql = "(select iFNULL(b.id,0) as id, b.utBatchName, b.originalFileName, iFNULL(b.statusId,0) as statusId, b.dateSubmitted, iFNULL(b.totalRecordCount,0) as totalRecordCount, iFNULL(b.errorRecordCount,0) as errorRecordCount, a.orgName,";
+			    sql += "0 as fpTotalErrors, '' as acceptedVisits ";
+			    sql += "from organizations a left outer join ";
+			    sql += "batchuploads b on b.orgId = a.id and b.dateSubmitted between '"+fromDate+" 00:00:00' and '"+endDate+" 23:59:59' ";
+			    sql += "where a.id = "+agencyId+" ";
+			    sql += "order by a.orgName, b.dateSubmitted asc) ";
+			}
+		    }
+		}
+	    }
+	}
+	
+	Query query = sessionFactory.getCurrentSession().createSQLQuery(sql)
+	.addScalar("id", StandardBasicTypes.INTEGER)
+	.addScalar("utBatchName", StandardBasicTypes.STRING)
+	.addScalar("originalFileName", StandardBasicTypes.STRING)
+	.addScalar("statusId", StandardBasicTypes.INTEGER)
+	.addScalar("originalFileName", StandardBasicTypes.STRING)
+	.addScalar("totalRecordCount", StandardBasicTypes.INTEGER)
+	.addScalar("errorRecordCount", StandardBasicTypes.INTEGER)
+	.addScalar("orgName", StandardBasicTypes.STRING)
+	.addScalar("dateSubmitted", StandardBasicTypes.TIMESTAMP)
+	.addScalar("fpTotalErrors", StandardBasicTypes.INTEGER)
+	.addScalar("acceptedVisits", StandardBasicTypes.STRING)
+	.setResultTransformer(Transformers.aliasToBean(batchUploads.class));
+	
+	return query.list();
+    }
+    
+    @Override
+    @Transactional(readOnly = false)
+    public void updateActivityReport(generatedActivityReports activityReport) throws Exception {
+	sessionFactory.getCurrentSession().update(activityReport);
+    }
+    
+    @Override
+    @Transactional(readOnly = false)
+    public void deleteActivityReportAgencies(Integer activityReportId) throws Exception {
+	Query deleteActivityReportAgencies = sessionFactory.getCurrentSession().createQuery("delete from generatedActivityReportAgencies where reportId = :activityReportId");
+	deleteActivityReportAgencies.setParameter("activityReportId", activityReportId);
+
+	deleteActivityReportAgencies.executeUpdate();
+    }
+    
+    @Override
+    @Transactional(readOnly = false)
+    public void deleteActivityReport(Integer activityReportId) throws Exception {
+	Query deleteActivityReport = sessionFactory.getCurrentSession().createQuery("delete from generatedActivityReports where id = :id");
+	deleteActivityReport.setParameter("id", activityReportId);
+
+	deleteActivityReport.executeUpdate();
     }
 }

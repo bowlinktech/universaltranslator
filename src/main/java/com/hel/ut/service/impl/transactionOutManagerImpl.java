@@ -1631,11 +1631,16 @@ public class transactionOutManagerImpl implements transactionOutManager {
 	
 	else {
 	    
+	    transactionInManager.populateDroppedValues(batchDownload.getId(), batchDownload.getConfigId(), true);
+	    
+	    ba = new batchdownloadactivity();
+	    ba.setActivity("Populate outbound dropped values (If any) for batchId:"+batchDownload.getId());
+	    ba.setBatchDownloadId(batchDownload.getId());
+	    transactionOutDAO.submitBatchActivityLog(ba);
+	    
 	    if(totalErrorCount > 0) {
 		populateOutboundAuditReport(batchDownload.getConfigId(),batchDownload.getId(), batchDownload.getBatchUploadId(),batchUploadDetails.getConfigId());
 		
-		transactionInManager.populateDroppedValues(batchDownload.getId(), batchDownload.getConfigId(), true);
-	    
 		ba = new batchdownloadactivity();
 		ba.setActivity("Populate outbound Audit Report for batchId:"+batchDownload.getId());
 		ba.setBatchDownloadId(batchDownload.getId());
@@ -2024,7 +2029,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
 	    }
 
 	    //If the transport method File Drop (13) and associated to a eReferral Registry and Configuration
-	    if(transportDetails.gettransportMethodId() == 13 && transportDetails.getHelRegistryConfigId() > 0 && !"".equals(transportDetails.getHelSchemaName()) && transportDetails.getHelRegistryId() > 0) {
+	    if(transportDetails.gettransportMethodId() == 13 && transportDetails.getHelRegistryConfigId() > 0 && configDetails.getMessageTypeId() == 1 && !"".equals(transportDetails.getHelSchemaName()) && transportDetails.getHelRegistryId() > 0) {
 		inserteReferralMessage = false;
 
 		//Need to get the health-e-link registry details
