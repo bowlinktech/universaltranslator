@@ -9,12 +9,16 @@ require(['./main'], function () {
 
     $("input:text,form").attr("autocomplete", "off");
 
-
-    $('#submitButton').click(function () {
+    $('#retrievePasswordForm').submit(function(event) {
+        $('#passwordFound').hide();
+        $('#passwordNotFound').hide();
+       
         $.ajax({
             url: '/forgotPassword.do',
             type: "Post",
-            data: {'identifier': $('#identifier').val()},
+            data: {
+                'identifier': $('#identifier').val()
+            },
             success: function (data) {
                 if (data > 0) {
                     sendEmail(data);
@@ -24,6 +28,8 @@ require(['./main'], function () {
                 }
             }
         });
+       
+       event.preventDefault(); 
     });
 });
 
