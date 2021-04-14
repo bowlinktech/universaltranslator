@@ -24,17 +24,17 @@
             <strong>Email Sent</strong><br />
             An email has been sent that will contain a link to reset your password.
         </div>
-        <form:form id="passwordForm" method="post" role="form">
+        <form id="retrievePasswordForm">
             <div class="form-container">
                 <div id="brochureTitleDiv" class="form-group ${status.error ? 'has-error' : '' }">
                     <label class="control-label" for="identifier">Email, Username or Full Name</label>
                     <input id="identifier" name="identifier" class="form-control" type="text" maxLength="255" />
                 </div>
                 <div class="form-group">
-                    <input type="button" id="submitButton" class="btn btn-primary" value="Search"/>
+                    <input type="submit" id="submitButton" class="btn btn-primary" value="Search"/>
                 </div>
             </div>
-        </form:form>
+        </form>
     </div>
 </div>
 
