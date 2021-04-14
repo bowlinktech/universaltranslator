@@ -2878,7 +2878,7 @@ public class transactionInDAOImpl implements transactionInDAO {
 	deleteSQL += "delete from uploadbatchrunlogs where batchId = " + batchId + ";";
 	deleteSQL += "delete a.* from batchdownloadauditerrors a inner join batchdownloads b on a.batchDownloadId = b.id where b.batchUploadId = " + batchId + ";";
 	deleteSQL += "delete a.* from batchdownloaddroppedvalues a inner join batchdownloads b on a.batchDownloadId = b.id where b.batchUploadId = " + batchId + ";";
-    deleteSQL += "delete from batchdownloads where batchUploadId = " + batchId + ";";
+	deleteSQL += "delete from batchdownloads where batchUploadId = " + batchId + ";";
 	deleteSQL += "delete from batchretry where batchUploadId = " + batchId + ";";
 	deleteSQL += "delete a.* from batchdlretry a inner join batchdownloads b on a.batchDownloadId = b.id where b.batchUploadId = " + batchId + ";";
 	deleteSQL += "delete a.* from restapimessagesout a inner join batchdownloads b on a.batchDownloadId = b.id where b.batchUploadId = " + batchId + ";";
