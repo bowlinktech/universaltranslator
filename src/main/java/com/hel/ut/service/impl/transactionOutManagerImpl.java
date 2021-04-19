@@ -933,6 +933,11 @@ public class transactionOutManagerImpl implements transactionOutManager {
 			}
 	    }
 	}
+	
+	if(fileInput != null) {
+	    fileInput.close();
+	}
+	
 	strFileLoc = file.getAbsolutePath();
 	return strFileLoc;
     }

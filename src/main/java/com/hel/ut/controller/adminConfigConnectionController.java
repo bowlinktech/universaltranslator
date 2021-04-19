@@ -826,7 +826,8 @@ public class adminConfigConnectionController {
 	
 	out.close();
 	
-	PdfWriter pdfWriter = PdfWriter.getInstance(document, new FileOutputStream(connectionPrintFile));
+	FileOutputStream os = new FileOutputStream(connectionPrintFile);
+	PdfWriter pdfWriter = PdfWriter.getInstance(document, os);
 			  
 	document.open();
 			    
@@ -836,27 +837,28 @@ public class adminConfigConnectionController {
 	//we get image location here 
 	FileInputStream fis = new FileInputStream(connectionDetailFile);
 	worker.parseXHtml(pdfWriter, document, fis);
-;
+
 	fis.close();
 	document.close();
 	pdfWriter.close();
+	os.close();
 	
 	File connectionDetailsFile = new File(connectionDetailFile);
 	connectionDetailsFile.delete();
 
 	return "UT-connection-" + connectionId;
     }
-
     
     @RequestMapping(value = "/printConfig/{file}", method = RequestMethod.GET)
-    public void printConfig(@PathVariable("file") String file,HttpServletResponse response
-    ) throws Exception {
+    public void printConfig(@PathVariable("file") String file,HttpServletResponse response) throws Exception {
 	
 	File connectionPrintFile = new File ("/tmp/" + file + ".pdf");
 	InputStream is = new FileInputStream(connectionPrintFile);
 
 	response.setHeader("Content-Disposition", "attachment; filename=\"" + file + ".pdf\"");
 	FileCopyUtils.copy(is, response.getOutputStream());
+	
+	is.close();
 
 	//Delete the file
 	connectionPrintFile.delete();
