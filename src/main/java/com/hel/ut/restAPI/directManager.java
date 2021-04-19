@@ -418,7 +418,7 @@ public class directManager {
 		    directMessageOut.setResponseMessage(responseMessage);
 		    client.destroy();
 		}
-		
+		fileInput.close();
 	    }
 	    else {
 		batchStatusId = 58;

@@ -1532,7 +1532,7 @@ public class utConfigurationManagerImpl implements utConfigurationManager {
 	
 	reportBody.append("</tbody></table>");
 	reportBody.append("</td>");
-	reportBody.append("<td width='50%'><span style='color:red;'>Rows in red are not in use</span><br />");
+	reportBody.append("<td width='50%' valign='top'><span style='color:red;'>Rows in red are not in use</span><br />");
 	reportBody.append("<table border='1' cellpadding='1' cellspacing='1' width='100%'>");
 	reportBody.append("<thead><tr><th style='width:5%'>No</th><th>Name</th><th style='width:5%'>R/O</th><th>Src Field</th></tr></thead><tbody>");
 	required = "O";

@@ -95,7 +95,18 @@ import com.hel.ut.service.utConfigurationTransportManager;
 import com.itextpdf.text.Document;
 import com.itextpdf.text.PageSize;
 import com.itextpdf.text.pdf.PdfWriter;
-import com.itextpdf.tool.xml.XMLWorkerHelper;
+import com.itextpdf.tool.xml.XMLWorker;
+import com.itextpdf.tool.xml.XMLWorkerFontProvider;
+import com.itextpdf.tool.xml.css.StyleAttrCSSResolver;
+import com.itextpdf.tool.xml.html.CssAppliers;
+import com.itextpdf.tool.xml.html.CssAppliersImpl;
+import com.itextpdf.tool.xml.html.Tags;
+import com.itextpdf.tool.xml.parser.XMLParser;
+import com.itextpdf.tool.xml.pipeline.css.CSSResolver;
+import com.itextpdf.tool.xml.pipeline.css.CssResolverPipeline;
+import com.itextpdf.tool.xml.pipeline.end.PdfWriterPipeline;
+import com.itextpdf.tool.xml.pipeline.html.HtmlPipeline;
+import com.itextpdf.tool.xml.pipeline.html.HtmlPipelineContext;
 import java.io.BufferedWriter;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -113,7 +124,7 @@ import javax.annotation.Resource;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.util.FileCopyUtils;
 
@@ -4151,9 +4162,6 @@ public class adminProcessingActivity {
 	    File file = new File("/tmp/" + fileName + ".xlsx");
 	    file.createNewFile();
 
-	    FileInputStream fileInput = null;
-	    fileInput = new FileInputStream(file);
-
 	    FileWriter fw = null;
 
 	    try {
@@ -4168,7 +4176,7 @@ public class adminProcessingActivity {
 	    String usefield = "Y";
 	    String validationValue = "None";
 
-	    Workbook wb = new XSSFWorkbook();
+	    Workbook wb = new SXSSFWorkbook();
 	    Sheet sheet = wb.createSheet("sheet1");
 
 	    Integer rowNum = 0;
@@ -4713,10 +4721,11 @@ public class adminProcessingActivity {
 	    
 	    try (OutputStream stream = new FileOutputStream(file)) {
 		wb.write(stream);
+		stream.close();
+		wb.close();
 	    }
 	}
 	catch (Exception ex) {
-	    System.out.println(ex.getMessage());
 	    //we notify admin
 	    mailMessage mail = new mailMessage();
 	    mail.settoEmailAddress(myProps.getProperty("admin.email"));
@@ -4743,6 +4752,8 @@ public class adminProcessingActivity {
 
 	response.setHeader("Content-Disposition", "attachment; filename=\"" + file + ".xlsx\"");
 	FileCopyUtils.copy(is, response.getOutputStream());
+	
+	is.close();
 
 	//Delete the file
 	templatePrintFile.delete();
@@ -4762,7 +4773,7 @@ public class adminProcessingActivity {
     @RequestMapping(value = "/createAuditErrorsToPDF.do", method = RequestMethod.GET)
     @ResponseBody
     public String createAuditErrorsToPDF(@RequestParam String batchName, @RequestParam String type) throws Exception {
-
+	
         List<batchErrorSummary> batchErrorSummary = null;
 	List<batchErrorSummary> batchSystemErrors = null;
 	List<batchUploadDroppedValues> inboundDroppedValues = null;
@@ -4905,11 +4916,10 @@ public class adminProcessingActivity {
 
 		     if(errors != null) {
 			 if(!errors.isEmpty()) {
-			     Iterator errorsIt = errors.iterator();
-
-			     while (errorsIt.hasNext()) {
-				Object errorsRow[] = (Object[]) errorsIt.next();
-
+			    
+			    errors.stream().forEach((error) -> {
+				Object errorsRow[] = (Object[]) error;  
+				
 				reportBody.append("<tr><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>")
 				.append(errorsRow[0].toString())
 				.append("</td><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>")
@@ -4958,7 +4968,7 @@ public class adminProcessingActivity {
 				else {
 				   reportBody.append("").append("</td></tr>");
 				}
-			    }
+			    });
 			 }
 		     }
 		 }
@@ -5007,11 +5017,8 @@ public class adminProcessingActivity {
 
 		     if(errors != null) {
 			 if(!errors.isEmpty()) {
-			     Iterator errorsIt = errors.iterator();
-
-			     while (errorsIt.hasNext()) {
-				Object errorsRow[] = (Object[]) errorsIt.next();
-
+			    errors.stream().forEach((error) -> {
+				Object errorsRow[] = (Object[]) error;  
 				reportBody.append("<tr><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>")
 				.append(errorsRow[0].toString())
 				.append("</td><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>")
@@ -5058,7 +5065,7 @@ public class adminProcessingActivity {
 				else {
 				    reportBody.append("").append("</td></tr>");
 				}
-			    }
+			    });
 			 }
 		     }
 		 }
@@ -5075,7 +5082,6 @@ public class adminProcessingActivity {
 		
 		errors = null;
 		Integer errorId = 0;
-
 		for(batchErrorSummary error : batchErrorSummary) {
 		    if(errorId == 0 || errorId != error.getErrorId()) {
 			
@@ -5164,13 +5170,13 @@ public class adminProcessingActivity {
 			case 1:
 
 			    if("inbound".equals(type)) {
-				sql = "select fromOutboundConfig, a.rownumber as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name,'' as errorType, a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
+				sql = "select fromOutboundConfig, a.rownumber as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name,'' as errorType, a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data, a.errorId "
 				    + "from batchuploadauditerrors a left outer  join "
 				    + "configurationmessagespecs b on a.configId = b.configId "
 				    + "where a.batchUploadId = " + batchId + " and a.errorId = " + error.getErrorId() + " order by a.rownumber asc";
 			    }
 			    else {
-				sql = "select 'true' as fromOutboundConfig,a.rownumber as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name,'' as errorType,a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
+				sql = "select 'true' as fromOutboundConfig,a.rownumber as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name,'' as errorType,a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data, a.errorId "
 				    + "from batchdownloadauditerrors a left outer  join "
 				    + "configurationmessagespecs b on a.configId = b.configId "
 				    + "where a.batchDownloadId = " + batchId + " and a.errorId = " + error.getErrorId() + " order by a.rownumber asc";
@@ -5181,14 +5187,14 @@ public class adminProcessingActivity {
 			case 2:
 
 			    if("inbound".equals(type)) {
-				sql = "select fromOutboundConfig, a.rownumber as rownumber, a.fieldNo as fieldNumber, a.fieldName as column_name, a.errorDetails as validation_type, a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
+				sql = "select fromOutboundConfig, a.rownumber as rownumber, a.fieldNo as fieldNumber, a.fieldName as column_name, a.errorDetails as validation_type, a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data, a.errorId "
 				    + "from batchuploadauditerrors a left outer  join "
 				    + "configurationmessagespecs b on a.configId = b.configId "
 				    + "where a.batchUploadId = " + batchId + " and a.errorId = " + error.getErrorId() + " order by a.rownumber asc";
 			    }
 			    else {
 
-				sql = "select 'true' as fromOutboundConfig,a.rownumber as rownumber, a.fieldNo as fieldNumber, a.fieldName as column_name, a.errorDetails as validation_type, a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
+				sql = "select 'true' as fromOutboundConfig,a.rownumber as rownumber, a.fieldNo as fieldNumber, a.fieldName as column_name, a.errorDetails as validation_type, a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data, a.errorId "
 				    + "from batchdownloadauditerrors a left outer  join "
 				    + "configurationmessagespecs b on a.configId = b.configId "
 				    + "where a.batchDownloadId = " + batchId + " and a.errorId = " + error.getErrorId() + " order by a.rownumber asc";
@@ -5200,13 +5206,13 @@ public class adminProcessingActivity {
 
 			    if("inbound".equals(type)) {	
 
-				sql = "select fromOutboundConfig,a.rownumber as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name, a.errorDetails as crosswalk, a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
+				sql = "select fromOutboundConfig,a.rownumber as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name, a.errorDetails as crosswalk, a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data, a.errorId "
 				    + "from batchuploadauditerrors a left outer join "
 				    + "configurationmessagespecs b on a.configId = b.configId "
 				    + "where a.batchUploadId = " + batchId + " and a.errorId = " + error.getErrorId() + " order by a.rownumber asc";
 			    }
 			    else {
-				sql = "select 'true' as fromOutboundConfig,a.rownumber as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name, a.errorDetails as crosswalk, a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
+				sql = "select 'true' as fromOutboundConfig,a.rownumber as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name, a.errorDetails as crosswalk, a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data, a.errorId "
 				    + "from batchdownloadauditerrors a left outer join "
 				    + "configurationmessagespecs b on a.configId = b.configId "
 				    + "where a.batchDownloadId = " + batchId + " and a.errorId = " + error.getErrorId() + " order by a.rownumber asc";
@@ -5217,13 +5223,13 @@ public class adminProcessingActivity {
 			case 4:
 
 			    if("inbound".equals(type)) {
-				sql = "select fromOutboundConfig, a.rownumber as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name,a.errorDetails as macro, a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
+				sql = "select fromOutboundConfig, a.rownumber as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name,a.errorDetails as macro, a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data, a.errorId "
 				    + "from batchuploadauditerrors a left outer  join "
 				    + "configurationmessagespecs b on a.configId = b.configId "
 				    + "where a.batchUploadId = " + batchId + " and a.errorId = " + error.getErrorId() + " order by a.rownumber asc";
 			    }
 			    else {
-				sql = "select 'true' as fromOutboundConfig,a.rownumber as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name,a.errorDetails as macro, a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
+				sql = "select 'true' as fromOutboundConfig,a.rownumber as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name,a.errorDetails as macro, a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data, a.errorId "
 				    + "from batchdownloadauditerrors a left outer  join "
 				    + "configurationmessagespecs b on a.configId = b.configId "
 				    + "where a.batchDownloadId = " + batchId + " and a.errorId = " + error.getErrorId() + " order by a.rownumber asc";
@@ -5234,13 +5240,13 @@ public class adminProcessingActivity {
 			case 5:
 			    
 			    if("inbound".equals(type)) {
-				sql = "select fromOutboundConfig, a.rownumber as rownumber, a.fieldNo as fieldNumber,CASE WHEN a.fieldName IS NULL THEN (select fieldDesc from configurationformfields where configId = a.configId and fieldNo = a.fieldNo) ELSE a.fieldName END as column_name,'' as errorType, a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
+				sql = "select fromOutboundConfig, a.rownumber as rownumber, a.fieldNo as fieldNumber,CASE WHEN a.fieldName IS NULL THEN (select fieldDesc from configurationformfields where configId = a.configId and fieldNo = a.fieldNo) ELSE a.fieldName END as column_name,'' as errorType, a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data, a.errorId "
 				    + "from batchuploadauditerrors a left outer join "
 				    + "configurationmessagespecs b on a.configId = b.configId "
 				    + "where a.batchUploadId = " + batchId + " and a.errorId = " + error.getErrorId() + " order by a.rownumber asc";
 			    }
 			    else {
-				sql = "select 'true' as fromOutboundConfig,a.rownumber as rownumber, a.fieldNo as fieldNumber,CASE WHEN a.fieldName IS NULL THEN (select fieldDesc from configurationformfields where configId = a.configId and fieldNo = a.fieldNo) ELSE a.fieldName END as column_name,'' as errorType, a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
+				sql = "select 'true' as fromOutboundConfig,a.rownumber as rownumber, a.fieldNo as fieldNumber,CASE WHEN a.fieldName IS NULL THEN (select fieldDesc from configurationformfields where configId = a.configId and fieldNo = a.fieldNo) ELSE a.fieldName END as column_name,'' as errorType, a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data, a.errorId "
 				    + "from batchdownloadauditerrors a left outer join "
 				    + "configurationmessagespecs b on a.configId = b.configId "
 				    + "where a.batchDownloadId = " + batchId + " and a.errorId = " + error.getErrorId() + " order by a.rownumber asc";
@@ -5251,13 +5257,13 @@ public class adminProcessingActivity {
 			case 41:
 
 			    if("inbound".equals(type)) {
-				sql = "select fromOutboundConfig, a.rownumber as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name,'' as errorType, a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
+				sql = "select fromOutboundConfig, a.rownumber as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name,'' as errorType, a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data, a.errorId "
 				    + "from batchuploadauditerrors a left outer  join "
 				    + "configurationmessagespecs b on a.configId = b.configId "
 				    + "where a.batchUploadId = " + batchId + " and a.errorId = " + error.getErrorId() + " order by a.rownumber asc";
 			    }
 			    else {
-				sql = "select 'true' as fromOutboundConfig,a.rownumber as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name,'' as errorType,a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
+				sql = "select 'true' as fromOutboundConfig,a.rownumber as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name,'' as errorType,a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data, a.errorId "
 				    + "from batchdownloadauditerrors a left outer  join "
 				    + "configurationmessagespecs b on a.configId = b.configId "
 				    + "where a.batchDownloadId = " + batchId + " and a.errorId = " + error.getErrorId() + " order by a.rownumber asc";
@@ -5268,13 +5274,13 @@ public class adminProcessingActivity {
 			case 46:
 
 			    if("inbound".equals(type)) {
-				sql = "select fromOutboundConfig, a.rownumber as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name,'' as errorType, a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
+				sql = "select fromOutboundConfig, a.rownumber as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name,'' as errorType, a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data, a.errorId "
 				    + "from batchuploadauditerrors a left outer  join "
 				    + "configurationmessagespecs b on a.configId = b.configId "
 				    + "where a.batchUploadId = " + batchId + " and a.errorId = " + error.getErrorId() + " order by a.rownumber asc";
 			    }
 			    else {
-				sql = "select 'true' as fromOutboundConfig,a.rownumber as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name,'' as errorType,a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data "
+				sql = "select 'true' as fromOutboundConfig,a.rownumber as rownumber, a.fieldNo as fieldNumber,a.fieldName as column_name,'' as errorType,a.errorData as field_value,a.reportField1Data,a.reportField2Data,a.reportField3Data,a.reportField4Data, a.errorId "
 				    + "from batchdownloadauditerrors a left outer  join "
 				    + "configurationmessagespecs b on a.configId = b.configId "
 				    + "where a.batchDownloadId = " + batchId + " and a.errorId = " + error.getErrorId() + " order by a.rownumber asc";
@@ -5284,14 +5290,12 @@ public class adminProcessingActivity {
 		    }
 
 		    if(!"".equals(sql)) {
-		       errors = transactionInManager.getErrorDataBySQLStmt(sql);
+			errors = transactionInManager.getErrorDataBySQLStmt(sql);
 
 			if(errors != null) {
 			    if(!errors.isEmpty()) {
-				Iterator errorsIt = errors.iterator();
-				
-				while (errorsIt.hasNext()) {
-				    Object errorsRow[] = (Object[]) errorsIt.next();
+				errors.stream().forEach((summaryError) -> {
+				    Object errorsRow[] = (Object[]) summaryError; 
 				    
 				    reportBody.append("<tr><td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>");
 				    
@@ -5317,7 +5321,7 @@ public class adminProcessingActivity {
 				    .append(errorsRow[3].toString())
 				    .append("</td>");
 				    
-				    if(errorId != 1 && errorId != 5 && errorId != 41 && errorId != 46) {
+				    if(!"1".equals(errorsRow[10].toString()) && !"5".equals(errorsRow[10].toString()) && !"41".equals(errorsRow[10].toString()) && !"46".equals(errorsRow[10].toString())) {
 					reportBody.append("<td style='font-family: Franklin Gothic Medium, Franklin Gothic; font-size: 12px;'>")
 					.append(errorsRow[4].toString().replace("<","&#60;").replace(">","&#62;")).append("</td>");
 				    }
@@ -5328,7 +5332,7 @@ public class adminProcessingActivity {
 				    else {
 					reportBody.append("");
 				    }
-				    if(errorId == 5) {
+				    if("5".equals(errorsRow[10].toString())) {
 					reportBody.append("</td></tr>");
 				    }
 				    else {
@@ -5362,7 +5366,7 @@ public class adminProcessingActivity {
 					    reportBody.append("").append("</td></tr>");
 					}
 				    }
-				}
+				});
 			    }
 			}
 		    }
@@ -5372,25 +5376,35 @@ public class adminProcessingActivity {
 	}
 	
 	out.println(reportBody.toString());
-	
 	out.println("</body></html>");
-	
 	out.close();
 	
-	PdfWriter pdfWriter = PdfWriter.getInstance(document, new FileOutputStream(auditReportPrintFile));
-			  
+	FileOutputStream os = new FileOutputStream(auditReportPrintFile);
+	PdfWriter pdfWriter = PdfWriter.getInstance(document, os);
+	pdfWriter.setFullCompression();
+	pdfWriter.setInitialLeading(12.5f);
+	pdfWriter.setCloseStream(true);
 	document.open();
-			    
-	XMLWorkerHelper worker = XMLWorkerHelper.getInstance();
-
-	//replace with actual code to generate html info
-	//we get image location here 
-	FileInputStream fis = new FileInputStream(auditReportDetailFile);
-	worker.parseXHtml(pdfWriter, document, fis);
-
-	fis.close();
+	
+	//New
+	CSSResolver cssResolver = new StyleAttrCSSResolver();
+	XMLWorkerFontProvider fontProvider = new XMLWorkerFontProvider(XMLWorkerFontProvider.DONTLOOKFORFONTS);
+	CssAppliers cssAppliers = new CssAppliersImpl(fontProvider);
+	HtmlPipelineContext htmlContext = new HtmlPipelineContext(cssAppliers);
+	htmlContext.setTagFactory(Tags.getHtmlTagProcessorFactory());
+	
+	PdfWriterPipeline pdf = new PdfWriterPipeline(document, pdfWriter);
+	HtmlPipeline html = new HtmlPipeline(htmlContext, pdf);
+	CssResolverPipeline css = new CssResolverPipeline(cssResolver, html);
+	
+	XMLWorker worker = new XMLWorker(css, true);
+	XMLParser p = new XMLParser(worker);
+	FileInputStream is = new FileInputStream(auditReportDetailFile);
+	p.parse(is);
 	document.close();
 	pdfWriter.close();
+	is.close();
+	os.close();
 	
 	File auditReportDetailsFile = new File(auditReportDetailFile);
 	auditReportDetailsFile.delete();
@@ -5401,23 +5415,23 @@ public class adminProcessingActivity {
 	else {
 	    return batchName + "-auditErrors";
 	}
-
     }
     
     @RequestMapping(value = "/printAuditErrorsToPDF/{file}", method = RequestMethod.GET)
-    public void printAuditErrorsToPDF(@PathVariable("file") String file,HttpServletResponse response
-    ) throws Exception {
+    public void printAuditErrorsToPDF(@PathVariable("file") String file,HttpServletResponse response) throws Exception {
 	
 	File configPrintFile = new File ("/tmp/" + file + ".pdf");
 	InputStream is = new FileInputStream(configPrintFile);
 
 	response.setHeader("Content-Disposition", "attachment; filename=\"" + file + ".pdf\"");
 	FileCopyUtils.copy(is, response.getOutputStream());
+	
+	is.close();
 
 	//Delete the file
 	configPrintFile.delete();
 
-	 // close stream and return to view
+	// close stream and return to view
 	response.flushBuffer();
     } 
     

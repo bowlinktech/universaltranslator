@@ -31,13 +31,15 @@ public class convertTextToPDF {
         DataInputStream in = null;
         InputStreamReader isr = null;
         BufferedReader br = null;
+	FileOutputStream os = null;
 
         try {
 
             Document pdfDoc = new Document();
             //String output_file =file.getParent()+"\\"+"sample.pdf";  
             String output_file = destDir + fileName;
-            PdfWriter writer = PdfWriter.getInstance(pdfDoc, new FileOutputStream(output_file));
+	    os = new FileOutputStream(output_file);
+            PdfWriter writer = PdfWriter.getInstance(pdfDoc, os);
             pdfDoc.open();
             pdfDoc.setMarginMirroring(true);
             pdfDoc.setMargins(36, 72, 108, 180);
@@ -84,7 +86,9 @@ public class convertTextToPDF {
             if (isr != null) {
                 isr.close();
             }
-
+	    if(os != null) {
+		os.close();
+	    }
         }
 
         return true;
