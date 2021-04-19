@@ -7,6 +7,8 @@
 
 
 require(['./main'], function () {
+    
+    $('[data-toggle="tooltip"]').tooltip();   
 
     $("input:text,form").attr("autocomplete", "off");
     
@@ -45,13 +47,13 @@ require(['./main'], function () {
     
     
     $(document).on('click','.printErrorsToPDF',function() {
-        
+       
         $('body').overlay({
             glyphicon : 'print',
             message : 'Gathering Details...'
         });
         $('.overlay').css('display','block');
-      
+
         var batchName = $(this).attr('rel');
         var type = $(this).attr('rel2');
 

@@ -60,6 +60,9 @@ import org.apache.commons.io.FileUtils;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.streaming.SXSSFSheet;
+import org.apache.poi.xssf.streaming.SXSSFWorkbook;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.util.FileCopyUtils;
@@ -921,9 +924,6 @@ public class adminSysAdminController {
 	    File file = new File("/tmp/" + fileName + ".xlsx");
 	    file.createNewFile();
 
-	    FileInputStream fileInput = null;
-	    fileInput = new FileInputStream(file);
-
 	    FileWriter fw = null;
 
 	    try {
@@ -934,8 +934,8 @@ public class adminSysAdminController {
 
 	    StringBuilder exportRow = new StringBuilder();
 
-	    Workbook wb = new XSSFWorkbook();
-	    Sheet sheet = wb.createSheet("sheet1");
+	    XSSFWorkbook wb = new XSSFWorkbook();
+	    XSSFSheet sheet = wb.createSheet("sheet1");
 
 	    Integer rowNum = 0;
 	    Integer cellNum = 0;
@@ -972,9 +972,19 @@ public class adminSysAdminController {
 			currentRow = sheet.createRow(rowNum);
 			cellNum = 0;
 
-			currentRow.createCell(cellNum).setCellValue(macro.getMacroName().trim());
+			if(macro.getMacroName().trim() == null) {
+			    currentRow.createCell(cellNum).setCellValue("");
+			}
+			else {
+			    currentRow.createCell(cellNum).setCellValue(macro.getMacroName().trim());
+			}
 			cellNum++;
-			currentRow.createCell(cellNum).setCellValue(macro.getFormula().trim());
+			if(macro.getFormula().trim() == null) {
+			    currentRow.createCell(cellNum).setCellValue("");
+			}
+			else {
+			    currentRow.createCell(cellNum).setCellValue(macro.getFormula().trim());
+			}
 			cellNum++;
 			if(macro.getFieldAQuestion() == null) {
 			    currentRow.createCell(cellNum).setCellValue("");
@@ -1056,10 +1066,11 @@ public class adminSysAdminController {
 
 	    try (OutputStream stream = new FileOutputStream(file)) {
 		wb.write(stream);
+		stream.close();
+		wb.close();
 	    }
 	}
 	catch (Exception ex) {
-	    System.out.println(ex.getMessage());
 	    //we notify admin
 	    mailMessage mail = new mailMessage();
 	    mail.settoEmailAddress(myProps.getProperty("admin.email"));
@@ -1087,6 +1098,8 @@ public class adminSysAdminController {
 
 	response.setHeader("Content-Disposition", "attachment; filename=\"" + file + ".xlsx\"");
 	FileCopyUtils.copy(is, response.getOutputStream());
+	
+	is.close();
 
 	//Delete the file
 	templatePrintFile.delete();

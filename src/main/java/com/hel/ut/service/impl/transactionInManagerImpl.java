@@ -4936,9 +4936,6 @@ public class transactionInManagerImpl implements transactionInManager {
 	File file = new File(myProps.getProperty("ut.directory.utRootDir") + "/activityReports/" + activityReport.getFileName().trim());
 	file.createNewFile();
 
-	FileInputStream fileInput = null;
-	fileInput = new FileInputStream(file);
-
 	FileWriter fw = null;
 
 	try {
