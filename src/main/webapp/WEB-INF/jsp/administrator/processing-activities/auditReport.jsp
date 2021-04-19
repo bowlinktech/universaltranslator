@@ -368,7 +368,9 @@
                     <button class="btn btn-success printErrorsToExcel" rel="${batchDetails.utBatchName}" rel2="${batchDownload ? 'outbound' : 'inbound'}" type="button">
                         <i class="fa fa-file-excel"></i> Print Errors to Excel
                     </button>
-                    <button class="btn btn-success printErrorsToPDF" rel="${batchDetails.utBatchName}" rel2="${batchDownload ? 'outbound' : 'inbound'}" type="button">
+                    <button class="btn btn-success printErrorsToPDF" rel="${batchDetails.utBatchName}" rel2="${batchDownload ? 'outbound' : 'inbound'}" type="button"
+                        data-toggle="tooltip" data-placement="left" data-html="true" 
+                        data-original-title="<p style='width:350px;'><p style='text-align:left'>Audit reports with a large number of errors could take several minutes to create.</p><p style='text-align:left'>Printing errors to Excel for audit reports with a large number of errors will be much faster.</p></p>">
                         <i class="fa fa-file-pdf"></i> Print Errors to PDF
                     </button>
                 </div>

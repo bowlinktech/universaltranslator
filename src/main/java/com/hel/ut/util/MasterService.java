@@ -28,6 +28,7 @@ public class MasterService {
 	File propFile = new File(propDir, "HELRegistryManagement.properties");
 	input = new FileInputStream(propFile);
 	configProp.load(input);
+	input.close();
     }
    
     public static DataSource getDefaultDataSource() throws IOException {
