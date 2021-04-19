@@ -226,6 +226,8 @@ public class restfulManager {
 		    apiMessageOut.setResponseMessage(responseMessage);
 		    client.destroy();
 		}
+		
+		fileInput.close();
 
 	    } else {
 		transStatusId = 14;
@@ -870,6 +872,8 @@ public class restfulManager {
 			client.destroy();
 		    }
 		}
+		
+		fileInput.close();
  		
 	    } else {
 		transStatusId = 14;

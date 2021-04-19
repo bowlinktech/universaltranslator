@@ -106,6 +106,7 @@ import org.apache.poi.ss.usermodel.IndexedColors;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFCreationHelper;
 import org.apache.poi.xssf.usermodel.XSSFFont;
@@ -3574,6 +3575,8 @@ public class adminConfigController {
 
 	response.setHeader("Content-Disposition", "attachment; filename=\"" + file + ".csv\"");
 	FileCopyUtils.copy(is, response.getOutputStream());
+	
+	is.close();
 
 	//Delete the file
 	dtFile.delete();
@@ -3773,7 +3776,8 @@ public class adminConfigController {
 	
 	out.close();
 	
-	PdfWriter pdfWriter = PdfWriter.getInstance(document, new FileOutputStream(configPrintFile));
+	FileOutputStream os =  new FileOutputStream(configPrintFile);
+	PdfWriter pdfWriter = PdfWriter.getInstance(document, os);
 			  
 	document.open();
 			    
@@ -3787,6 +3791,7 @@ public class adminConfigController {
 	fis.close();
 	document.close();
 	pdfWriter.close();
+	os.close();
 	
 	File configDetailsFile = new File(configDetailFile);
 	configDetailsFile.delete();
@@ -3804,10 +3809,11 @@ public class adminConfigController {
 
 	response.setHeader("Content-Disposition", "attachment; filename=\"" + file + ".pdf\"");
 	FileCopyUtils.copy(is, response.getOutputStream());
+	
+	is.close();
 
 	//Delete the file
 	configPrintFile.delete();
-
 
 	 // close stream and return to view
 	response.flushBuffer();
@@ -3919,9 +3925,6 @@ public class adminConfigController {
 	    File file = new File("/tmp/" + fileName + ".xlsx");
 	    file.createNewFile();
 
-	    FileInputStream fileInput = null;
-	    fileInput = new FileInputStream(file);
-
 	    FileWriter fw = null;
 
 	    try {
@@ -3942,7 +3945,7 @@ public class adminConfigController {
 	    String usefield = "Y";
 	    String validationValue = "None";
 
-	    Workbook wb = new XSSFWorkbook();
+	    Workbook wb = new SXSSFWorkbook();
 	    Sheet sheet = wb.createSheet("sheet1");
 
 	    Integer rowNum = 0;
@@ -4012,6 +4015,8 @@ public class adminConfigController {
 
 	    try (OutputStream stream = new FileOutputStream(file)) {
 		wb.write(stream);
+		stream.close();
+		wb.close();
 	    }
 	}
 	catch (Exception ex) {
@@ -4042,6 +4047,8 @@ public class adminConfigController {
 
 	response.setHeader("Content-Disposition", "attachment; filename=\"" + file + ".xlsx\"");
 	FileCopyUtils.copy(is, response.getOutputStream());
+	
+	is.close();
 
 	//Delete the file
 	templatePrintFile.delete();
@@ -4074,9 +4081,6 @@ public class adminConfigController {
 	    File file = new File("/tmp/" + fileName + ".xlsx");
 	    file.createNewFile();
 
-	    FileInputStream fileInput = null;
-	    fileInput = new FileInputStream(file);
-
 	    FileWriter fw = null;
 
 	    try {
@@ -4097,7 +4101,7 @@ public class adminConfigController {
 	    String usefield = "Y";
 	    String validationValue = "None";
 
-	    Workbook wb = new XSSFWorkbook();
+	    Workbook wb = new SXSSFWorkbook();
 	    Sheet sheet = wb.createSheet("sheet1");
 
 	    Integer rowNum = 0;
@@ -4199,6 +4203,8 @@ public class adminConfigController {
 
 	    try (OutputStream stream = new FileOutputStream(file)) {
 		wb.write(stream);
+		stream.close();
+		wb.close();
 	    }
 	}
 	catch (Exception ex) {
@@ -4576,6 +4582,8 @@ public class adminConfigController {
 
 	response.setHeader("Content-Disposition", "attachment; filename=\"" + file + ".xlsx\"");
 	FileCopyUtils.copy(is, response.getOutputStream());
+	
+	is.close();
 
 	//Delete the file
 	dtFile.delete();
