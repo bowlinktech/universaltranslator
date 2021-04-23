@@ -12,7 +12,7 @@
     <div class="modal-content">
         <div class="modal-header">
             <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-            <h3 class="panel-title">Generate Crosswalk CSV File</h3>
+            <h3 class="panel-title">Generate Crosswalk XLSX File</h3>
         </div>
         <div class="modal-body">
 	    <div id="successMsg" style="display:none;"><p class="text-success">The Crosswalk Excel file has successfully downloaded (Check your downloads folder)</p></div>
