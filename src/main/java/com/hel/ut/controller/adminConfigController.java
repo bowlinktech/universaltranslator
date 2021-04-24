@@ -3365,7 +3365,7 @@ public class adminConfigController {
 	
 	DateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmssS");
 	Date date = new Date();
-	String fileName = new StringBuilder().append("configId").append("-").append(configId).append("-").append("dt").append("-").append(dateFormat.format(date)).toString();
+	String fileName = new StringBuilder().append("configId").append("-").append(configId).append("-").append(configurationDetails.getconfigName().trim().replaceAll(" ","")).append("-").append("dt").append("-").append(dateFormat.format(date)).toString();
         
 	mav.addObject("fileName", fileName.toLowerCase());
 
@@ -3403,7 +3403,7 @@ public class adminConfigController {
 
 		    sb = new StringBuilder();
 		    sb.append("Config Name").append(",")
-		    .append("Process Order").append(",")
+		    .append("Field #").append(",")
 		    .append("Field Label").append(",")
 		    .append("Macro Id").append(",")
 		    .append("Macro Name").append(",")
@@ -3413,7 +3413,8 @@ public class adminConfigController {
 		    .append("Field A").append(",")
 		    .append("Field B").append(",")
 		    .append("Constant 1").append(",")
-		    .append("Constant 2");
+		    .append("Constant 2").append(",")
+		    .append("Process Order");
 
 		    writer.write(sb.toString());
 		    if(dtDataIt.hasNext()) {
@@ -3426,7 +3427,7 @@ public class adminConfigController {
 			Object dtDatarow[] = (Object[]) dtDataIt.next();
 
 			sb.append(dtDatarow[0]).append(",")
-			.append(dtDatarow[1]).append(",")
+			.append(dtDatarow[12]).append(",")
 			.append(dtDatarow[2]).append(",")
 			.append(dtDatarow[3]).append(",")
 			.append("\"").append(dtDatarow[4]).append("\"").append(",")
@@ -3436,7 +3437,8 @@ public class adminConfigController {
 			.append("\"").append(dtDatarow[8]).append("\"").append(",")
 			.append("\"").append(dtDatarow[9]).append("\"").append(",")
 			.append("\"").append(dtDatarow[10]).append("\"").append(",")
-			.append("\"").append(dtDatarow[11]).append("\"");
+			.append("\"").append(dtDatarow[11]).append("\"").append(",")
+			.append(dtDatarow[1]);
 
 			writer.write(sb.toString());
 			if(dtDataIt.hasNext()) {
