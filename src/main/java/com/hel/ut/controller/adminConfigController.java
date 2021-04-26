@@ -1761,10 +1761,22 @@ public class adminConfigController {
             }
         }
 	
+	if(translations != null) {
+	    switch(categoryId) {
+		case 1:
+		    session.setAttribute("confgirationDataTranslastions", translations);
+		case 2:
+		    session.setAttribute("confgirationDataPreProcessingTranslastions", translations);
+		case 3:
+		    session.setAttribute("confgirationDataPostProcessingTranslastions", translations);
+		default:
+		    session.setAttribute("confgirationDataTranslastions", translations);
+	    }
+	}
+	
         mav.addObject("dataTranslations", translations);
 
         return mav;
-
     }
 
     /**
@@ -1874,21 +1886,7 @@ public class adminConfigController {
             translation.setDefaultValues(defaultValues);
         }
 	
-	if(translations == null) {
-	    translations = new ArrayList<>();
-	    switch(categoryId) {
-		case 1:
-		    session.setAttribute("confgirationDataTranslastions", translations);
-		case 2:
-		    session.setAttribute("confgirationDataPreProcessingTranslastions", translations);
-		case 3:
-		    session.setAttribute("confgirationDataPostProcessingTranslastions", translations);
-		default:
-		    session.setAttribute("confgirationDataTranslastions", translations);
-	    }
-	}
-
-        translations.add(translation);
+	translations.add(translation);
 	
         ModelAndView mav = new ModelAndView();
         mav.setViewName("/administrator/configurations/existingTranslations");
