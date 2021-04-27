@@ -99,6 +99,7 @@ import java.util.TimeZone;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.FillPatternType;
 import org.apache.poi.ss.usermodel.HorizontalAlignment;
@@ -4402,6 +4403,7 @@ public class adminConfigController {
      * 
      * @param configId
      * @param fileName
+     * @param fileType
      * @param session
      * @param response
      * @return
@@ -4409,163 +4411,230 @@ public class adminConfigController {
      */
     @RequestMapping(value = "/crosswalksExcelFileDownload", method = RequestMethod.GET)
     @ResponseBody
-    public String crosswalksExcelFileDownload(
-	@RequestParam(value = "configId", required = true) Integer configId, @RequestParam(value = "fileName", required = true) String fileName, HttpSession session,HttpServletResponse response) throws Exception {
+    public String crosswalksExcelFileDownload(@RequestParam(value = "configId", required = true) Integer configId, 
+	@RequestParam(value = "fileName", required = true) String fileName, 
+	@RequestParam(value = "fileType", required = true) Integer fileType, 
+	HttpSession session,HttpServletResponse response) throws Exception {
 	
 	utConfiguration configurationDetails = utconfigurationmanager.getConfigurationById(configId);
 	
 	if(configurationDetails != null) {
-	   
-	    File dtFile = new File ("/tmp/" + fileName.replaceAll("\\s+","") + ".xlsx");
 	    
-	    try (BufferedWriter writer = new BufferedWriter(new FileWriter(dtFile))) {
-		
-		List crosswalks = utconfigurationmanager.getCrosswalksForDownload(configId);
-		
-		if(!crosswalks.isEmpty()) {
-		    
-		    XSSFWorkbook workbook;
-		    XSSFFont boldFont;
-		    CellStyle boldCenterFont;
-		    CellStyle normalLeftFont;
-		    CellStyle boldLeftFont;
-		    CellStyle normalCenterFont;
-		    CellStyle dateStyle;
-		    XSSFCreationHelper createHelper;
-		    Map <String, CellStyle> cellStyleMap;
-		    XSSFSheet sheet = null;
-		    
-		    workbook = new XSSFWorkbook();
-
-		    boldFont = workbook.createFont();
-		    boldFont.setBold(true);
-		    XSSFFont normalFont = workbook.createFont();
-		    normalFont.setBold(false);
-
-		    boldCenterFont = workbook.createCellStyle();
-		    boldCenterFont.setFont(boldFont);
-		    boldCenterFont.setAlignment(HorizontalAlignment.CENTER);
-		    boldCenterFont.setWrapText(true);
-
-		    normalLeftFont = workbook.createCellStyle();
-		    normalLeftFont.setFont(normalFont);
-		    normalLeftFont.setAlignment(HorizontalAlignment.LEFT);
-		    normalLeftFont.setWrapText(true);
-
-		    boldLeftFont = workbook.createCellStyle();
-		    boldLeftFont.setFont(boldFont);
-		    boldLeftFont.setAlignment(HorizontalAlignment.LEFT);
-		    boldLeftFont.setWrapText(true);
-
-		    normalCenterFont = workbook.createCellStyle();
-		    normalCenterFont.setFont(normalFont);
-		    normalCenterFont.setAlignment(HorizontalAlignment.CENTER);
-		    normalCenterFont.setWrapText(true);
-
-		    dateStyle = workbook.createCellStyle();
-		    createHelper = workbook.getCreationHelper();
-		    dateStyle.setDataFormat(createHelper.createDataFormat().getFormat("mm/dd/yyyy"));
-		    
-		    cellStyleMap = new HashMap<String, CellStyle>();
-		    cellStyleMap.put("boldCenterFont", boldCenterFont);
-		    cellStyleMap.put("normalLeftFont", normalLeftFont);
-		    cellStyleMap.put("boldLeftFont", boldLeftFont);
-		    cellStyleMap.put("normalCenterFont", normalCenterFont);
-		    cellStyleMap.put("dateStyle", dateStyle);
-
-		    CellStyle rowHeaderstyle = workbook.createCellStyle();
-		    rowHeaderstyle.setFont(boldFont);
-		    rowHeaderstyle.setAlignment(HorizontalAlignment.LEFT);
-		    rowHeaderstyle.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex());
-		    rowHeaderstyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
-
-		    Iterator cwDataIt = crosswalks.iterator();
-		    String crosswalkName = "";
-		    String sheetName = "Sheet One";
-		    
-		    XSSFRow row;
-		    XSSFCell cell;
-		    
-		    Integer rowCount = 0;
-		    Integer cellCount = 0;
-		    
-		    while (cwDataIt.hasNext()) {
-			
-			Object cwDatarow[] = (Object[]) cwDataIt.next();
-			
-			if("".equals(crosswalkName.trim()) || !cwDatarow[0].toString().equals(crosswalkName.trim())) {
-			    rowCount = 0;
-			    cellCount = 0;
-			    sheetName = cwDatarow[0].toString();
-			    crosswalkName = cwDatarow[0].toString();
-			    sheet = workbook.createSheet(sheetName);
-			    row = sheet.createRow(rowCount);
-			    cell = row.createCell(cellCount);
-			    cell.setCellValue("Crosswalk Name: " + crosswalkName);
-			    cell.setCellStyle(cellStyleMap.get("boldLeftFont"));
-			    sheet.autoSizeColumn(cellCount);
-			    
-			    rowCount++;
-			    row = sheet.createRow(rowCount);
-			    cell = row.createCell(cellCount);
-			    cell.setCellValue("Crosswalk Id: " + cwDatarow[1].toString());
-			    cell.setCellStyle(cellStyleMap.get("boldLeftFont"));
-			    sheet.autoSizeColumn(cellCount);
-			    
-			    rowCount++;
-			    rowCount++;
-			    row = sheet.createRow(rowCount);
-			    cell = row.createCell(cellCount);
-			    cell.setCellValue("Source Value");
-			    cell.setCellStyle(cellStyleMap.get("boldLeftFont"));
-			    sheet.autoSizeColumn(cellCount);
-			    cellCount++;
-			    cell = row.createCell(cellCount);
-			    cell.setCellValue("Target Value");
-			    cell.setCellStyle(cellStyleMap.get("boldLeftFont"));
-			    sheet.autoSizeColumn(cellCount);
-			    cellCount++;
-			    cell = row.createCell(cellCount);
-			    cell.setCellValue("Desc Value");
-			    cell.setCellStyle(cellStyleMap.get("boldLeftFont"));
-			    sheet.autoSizeColumn(cellCount);
-			}
-			
-			rowCount++;
-			cellCount = 0;
-			row = sheet.createRow(rowCount);
-			cell = row.createCell(cellCount);
-			cell.setCellValue(cwDatarow[2].toString());
-			cell.setCellStyle(cellStyleMap.get("normalLeftFont"));
-			sheet.autoSizeColumn(cellCount);
-			cellCount++;
-			cell = row.createCell(cellCount);
-			cell.setCellValue(cwDatarow[3].toString());
-			cell.setCellStyle(cellStyleMap.get("normalLeftFont"));
-			sheet.autoSizeColumn(cellCount);
-			cellCount++;
-			cell = row.createCell(cellCount);
-			cell.setCellValue(cwDatarow[4].toString());
-			cell.setCellStyle(cellStyleMap.get("normalLeftFont"));
-			sheet.autoSizeColumn(cellCount);
-			
-		    }
-		    
-		    
-		    FileOutputStream fileOut = new FileOutputStream("/tmp/" + fileName + ".xlsx");
-		    workbook.write(fileOut);
-		    fileOut.close();
-		    workbook.close();
-		    
-		    return fileName.replaceAll("\\s+","");
+	    String fileExt = "xlsx";
+	    
+	    if(fileType != null) {
+		if(fileType == 2) {
+		    fileExt = "txt";
 		}
-		else {
+	    }
+	   
+	    File dtFile = new File ("/tmp/" + fileName.replaceAll("\\s+","") + "." + fileExt);
+	    
+	    List crosswalks = utconfigurationmanager.getCrosswalksForDownload(configId);
+	    
+	    if(fileExt.equals("txt")) {
+		try (BufferedWriter writer = new BufferedWriter(new FileWriter(dtFile))) {
+		    if(!crosswalks.isEmpty()) {
+			StringBuilder sb;
+
+			Iterator cwDataIt = crosswalks.iterator();
+
+			String cwName = "";
+
+			while (cwDataIt.hasNext()) {
+			    sb = new StringBuilder();
+
+			    Object cwDatarow[] = (Object[]) cwDataIt.next();
+
+			    if("".equals(cwName) || !cwName.equals(cwDatarow[0].toString())) {
+				
+				if(!"".equals(cwName)) {
+				    writer.write("\r\n");
+				    writer.write("\r\n");
+				}
+				
+				sb.append("Crosswalk Name: ").append(cwDatarow[0].toString());
+				writer.write(sb.toString());
+				writer.write("\r\n");
+				
+				sb = new StringBuilder();
+				sb.append("Crosswalk id: ").append(cwDatarow[1].toString());
+				writer.write(sb.toString());
+				writer.write("\r\n");
+				writer.write("\r\n");
+				
+				sb = new StringBuilder();
+				sb.append("Source Value").append(",").append("Target Value").append(",").append("Desc Value");
+				writer.write(sb.toString());
+				cwName = cwDatarow[0].toString();
+			    }
+			    
+			    sb = new StringBuilder();
+			    sb.append(cwDatarow[2].toString().trim()).append("|")
+			    .append(cwDatarow[3].toString().trim()).append("|")
+			    .append(StringEscapeUtils.unescapeCsv(cwDatarow[4].toString().trim()));
+			    writer.write("\r\n");
+
+			    writer.write(sb.toString());
+			}
+
+			return fileName.replaceAll("\\s+","");
+		    }
+		    else {
+			return "";
+		    }
+		}
+		catch (Exception ex) {
 		    return "";
 		}
 	    }
-	    catch (Exception ex) {
-		System.out.println(ex.getMessage());
-		return "";
+	    else {
+		try (BufferedWriter writer = new BufferedWriter(new FileWriter(dtFile))) {
+		    
+		    if(!crosswalks.isEmpty()) {
+
+			XSSFWorkbook workbook;
+			XSSFFont boldFont;
+			CellStyle boldCenterFont;
+			CellStyle normalLeftFont;
+			CellStyle boldLeftFont;
+			CellStyle normalCenterFont;
+			CellStyle dateStyle;
+			XSSFCreationHelper createHelper;
+			Map <String, CellStyle> cellStyleMap;
+			XSSFSheet sheet = null;
+
+			workbook = new XSSFWorkbook();
+
+			boldFont = workbook.createFont();
+			boldFont.setBold(true);
+			XSSFFont normalFont = workbook.createFont();
+			normalFont.setBold(false);
+
+			boldCenterFont = workbook.createCellStyle();
+			boldCenterFont.setFont(boldFont);
+			boldCenterFont.setAlignment(HorizontalAlignment.CENTER);
+			boldCenterFont.setWrapText(true);
+
+			normalLeftFont = workbook.createCellStyle();
+			normalLeftFont.setFont(normalFont);
+			normalLeftFont.setAlignment(HorizontalAlignment.LEFT);
+			normalLeftFont.setWrapText(true);
+
+			boldLeftFont = workbook.createCellStyle();
+			boldLeftFont.setFont(boldFont);
+			boldLeftFont.setAlignment(HorizontalAlignment.LEFT);
+			boldLeftFont.setWrapText(true);
+
+			normalCenterFont = workbook.createCellStyle();
+			normalCenterFont.setFont(normalFont);
+			normalCenterFont.setAlignment(HorizontalAlignment.CENTER);
+			normalCenterFont.setWrapText(true);
+
+			dateStyle = workbook.createCellStyle();
+			createHelper = workbook.getCreationHelper();
+			dateStyle.setDataFormat(createHelper.createDataFormat().getFormat("mm/dd/yyyy"));
+
+			cellStyleMap = new HashMap<String, CellStyle>();
+			cellStyleMap.put("boldCenterFont", boldCenterFont);
+			cellStyleMap.put("normalLeftFont", normalLeftFont);
+			cellStyleMap.put("boldLeftFont", boldLeftFont);
+			cellStyleMap.put("normalCenterFont", normalCenterFont);
+			cellStyleMap.put("dateStyle", dateStyle);
+
+			CellStyle rowHeaderstyle = workbook.createCellStyle();
+			rowHeaderstyle.setFont(boldFont);
+			rowHeaderstyle.setAlignment(HorizontalAlignment.LEFT);
+			rowHeaderstyle.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex());
+			rowHeaderstyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+
+			Iterator cwDataIt = crosswalks.iterator();
+			String crosswalkName = "";
+			String sheetName = "Sheet One";
+
+			XSSFRow row;
+			XSSFCell cell;
+
+			Integer rowCount = 0;
+			Integer cellCount = 0;
+
+			while (cwDataIt.hasNext()) {
+
+			    Object cwDatarow[] = (Object[]) cwDataIt.next();
+
+			    if("".equals(crosswalkName.trim()) || !cwDatarow[0].toString().equals(crosswalkName.trim())) {
+				rowCount = 0;
+				cellCount = 0;
+				sheetName = cwDatarow[0].toString();
+				crosswalkName = cwDatarow[0].toString();
+				sheet = workbook.createSheet(sheetName);
+				row = sheet.createRow(rowCount);
+				cell = row.createCell(cellCount);
+				cell.setCellValue("Crosswalk Name: " + crosswalkName);
+				cell.setCellStyle(cellStyleMap.get("boldLeftFont"));
+				sheet.autoSizeColumn(cellCount);
+
+				rowCount++;
+				row = sheet.createRow(rowCount);
+				cell = row.createCell(cellCount);
+				cell.setCellValue("Crosswalk Id: " + cwDatarow[1].toString());
+				cell.setCellStyle(cellStyleMap.get("boldLeftFont"));
+				sheet.autoSizeColumn(cellCount);
+
+				rowCount++;
+				rowCount++;
+				row = sheet.createRow(rowCount);
+				cell = row.createCell(cellCount);
+				cell.setCellValue("Source Value");
+				cell.setCellStyle(cellStyleMap.get("boldLeftFont"));
+				sheet.autoSizeColumn(cellCount);
+				cellCount++;
+				cell = row.createCell(cellCount);
+				cell.setCellValue("Target Value");
+				cell.setCellStyle(cellStyleMap.get("boldLeftFont"));
+				sheet.autoSizeColumn(cellCount);
+				cellCount++;
+				cell = row.createCell(cellCount);
+				cell.setCellValue("Desc Value");
+				cell.setCellStyle(cellStyleMap.get("boldLeftFont"));
+				sheet.autoSizeColumn(cellCount);
+			    }
+
+			    rowCount++;
+			    cellCount = 0;
+			    row = sheet.createRow(rowCount);
+			    cell = row.createCell(cellCount);
+			    cell.setCellValue(cwDatarow[2].toString());
+			    cell.setCellStyle(cellStyleMap.get("normalLeftFont"));
+			    sheet.autoSizeColumn(cellCount);
+			    cellCount++;
+			    cell = row.createCell(cellCount);
+			    cell.setCellValue(cwDatarow[3].toString());
+			    cell.setCellStyle(cellStyleMap.get("normalLeftFont"));
+			    sheet.autoSizeColumn(cellCount);
+			    cellCount++;
+			    cell = row.createCell(cellCount);
+			    cell.setCellValue(cwDatarow[4].toString());
+			    cell.setCellStyle(cellStyleMap.get("normalLeftFont"));
+			    sheet.autoSizeColumn(cellCount);
+
+			}
+
+
+			FileOutputStream fileOut = new FileOutputStream("/tmp/" + fileName + ".xlsx");
+			workbook.write(fileOut);
+			fileOut.close();
+			workbook.close();
+
+			return fileName.replaceAll("\\s+","");
+		    }
+		    else {
+			return "";
+		    }
+		}
+		catch (Exception ex) {
+		    return "";
+		}
 	    }
 	}
 	else {
@@ -4577,16 +4646,24 @@ public class adminConfigController {
     public void downloadDTCWExcelFile(@PathVariable("file") String file,HttpServletResponse response
     ) throws Exception {
 	
-	File dtFile = new File ("/tmp/" + file + ".xlsx");
-	InputStream is = new FileInputStream(dtFile);
+	File cwFile = new File ("/tmp/" + file + ".xlsx");
+	
+	String fileExt = ".xlsx";
+	
+	if(!cwFile.exists()) {
+	    fileExt = ".txt";
+	    cwFile = new File ("/tmp/" + file + ".txt");
+	}
+	
+	InputStream is = new FileInputStream(cwFile);
 
-	response.setHeader("Content-Disposition", "attachment; filename=\"" + file + ".xlsx\"");
+	response.setHeader("Content-Disposition", "attachment; filename=\"" + file + fileExt + "\"");
 	FileCopyUtils.copy(is, response.getOutputStream());
 	
 	is.close();
 
 	//Delete the file
-	dtFile.delete();
+	cwFile.delete();
 
 	 // close stream and return to view
 	response.flushBuffer();

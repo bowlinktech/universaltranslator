@@ -119,6 +119,8 @@ require(['./main'], function () {
 
        if(errorFound == 0) {
            
+           var fileType = $("input[name='fileType']:checked").val();
+           
            $('body').overlay({
                 glyphicon : 'floppy-disk',
                 message : 'Generating Excel File!'
@@ -130,14 +132,14 @@ require(['./main'], function () {
                 url: '/administrator/configurations/crosswalksExcelFileDownload',
                 data: {
                     'configId':$(this).attr('rel'),
-                    'fileName': $('#fileName').val()
+                    'fileName': $('#fileName').val(),
+                    'fileType': fileType
                 },
                 type: "GET",
                 dataType : 'text',
                 contentType : 'application/json;charset=UTF-8',
                 success: function(data) {
                     if(data !== '') {
-                        //window.location.href = '/administrator/configurations/downloadDTCWFile/'+ data;
                         window.location.href = '/administrator/configurations/downloadDTCWExcelFile/'+ data;
                         $('#successMsg').show();
                         $('.overlay').css('display','none');
@@ -148,7 +150,6 @@ require(['./main'], function () {
                 }
             });
        }
-
     });
 
     $(document).on('click', '.createDataTranslationDownload', function() {
