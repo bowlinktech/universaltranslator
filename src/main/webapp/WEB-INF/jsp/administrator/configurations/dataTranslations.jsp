@@ -96,26 +96,27 @@
                         </div>
                         <div id="fieldADiv" class="form-group ${status.error ? 'has-error' : '' }">
                             <label class="control-label" for="fieldA">Field A</label>
-                            <input path="fieldA" id="fieldA" class="form-control" type="text" maxLength="45" />
+                            <input path="fieldA" id="fieldA" class="form-control" type="text" maxLength="45" readonly="" />
                             <span id="fieldAMsg" class="control-label"></span>
                         </div>
                         <div id="fieldBDiv" class="form-group ${status.error ? 'has-error' : '' }">
                             <label class="control-label" for="fieldB">Field B</label>
-                            <input path="fieldB" id="fieldB" class="form-control" type="text" maxLength="45" />
+                            <input path="fieldB" id="fieldB" class="form-control" type="text" maxLength="45" readonly="" />
                             <span id="fieldBMsg" class="control-label"></span>
                         </div>
                         <div id="constant1Div" class="form-group ${status.error ? 'has-error' : '' }">
                             <label class="control-label" for="constant1">Constant 1</label>
-                            <input path="constant1" id="constant1" class="form-control" type="text" maxLength="45" />
+                            <input path="constant1" id="constant1" class="form-control" type="text" maxLength="45" readonly="" />
                             <span id="constant1Msg" class="control-label"></span>
                         </div>
                         <div id="constant2Div" class="form-group ${status.error ? 'has-error' : '' }">
                             <label class="control-label" for="constant2">Constant 2</label>
-                            <input path="constant2" id="constant2" class="form-control" type="text" maxLength="45" />
+                            <input path="constant2" id="constant2" class="form-control" type="text" maxLength="45" readonly="" />
                             <span id="constant2Msg" class="control-label"></span>
                         </div>
                         <div class="form-group">
                             <input type="button" id="submitTranslationButton"  class="btn btn-primary" value="Add Translation"/>
+                            <input type="button" id="clearTranslationButton"  class="btn btn-danger" value="Clear Values"/>
                         </div>
                     </div>
                 </div>
