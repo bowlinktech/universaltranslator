@@ -13,7 +13,6 @@ require(['./main'], function () {
            $(this).html("Show More Details");
            $('#macro-'+macroId).hide();
        }
-       
     });
     
     $(document).on('click','.deleteCrosswalk',function() {
@@ -449,6 +448,16 @@ require(['./main'], function () {
         //$('#crosswalkdetailsform').submit();
 
     });
+    
+    $(document).on('click', '#clearTranslationButton', function() {
+        $('#field').val("");
+        $('#crosswalk').val("");
+        $('#macro').val("");
+        $('#fieldA').val("");
+        $('#fieldB').val("");
+        $('#constant1').val("");
+        $('#constant2').val("");
+    });
 
     //This function will handle populating the data translation table
     //The trigger will be when a crosswalk is selected along with a
@@ -498,15 +507,24 @@ require(['./main'], function () {
             $('#macroMsg').html('Either a macro or crosswalk must be selected!');
             errorFound = 1;
         }
-
+        
         if (errorFound == 0) {
             $.ajax({
                 url: "setTranslations",
                 type: "GET",
-                data: {'f': selectedField, 'fText': selectedFieldText, 'cw': selectedCW, 'CWText': selectedCWText, 'macroId': selectedMacro
-                    , 'macroName': selectedMacroText, 'fieldA': $('#fieldA').val(), 'fieldB': $('#fieldB').val(), 'constant1': $('#constant1').val(), 'constant2': $('#constant2').val()
-                    , 'passClear': $('.passclear:checked').val()
-                    , 'categoryId': 1
+                data: {
+                    'f': selectedField, 
+                    'fText': selectedFieldText, 
+                    'cw': selectedCW, 
+                    'CWText': selectedCWText, 
+                    'macroId': selectedMacro, 
+                    'macroName': selectedMacroText, 
+                    'fieldA': $('#fieldA').val(), 
+                    'fieldB': $('#fieldB').val(), 
+                    'constant1': $('#constant1').val(), 
+                    'constant2': $('#constant2').val(),
+                    'passClear': $('.passclear:checked').val(),
+                    'categoryId': 1
                 },
                 success: function (data) {
                     $('#translationMsgDiv').show();
@@ -527,7 +545,6 @@ require(['./main'], function () {
                 }
             });
         }
-
     });
 
     //Function that will handle changing a process order and
@@ -566,7 +583,6 @@ require(['./main'], function () {
                 populateExistingTranslations(1);
             }
         });
-
     });
 });
 
