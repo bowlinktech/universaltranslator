@@ -1003,7 +1003,7 @@ public class adminProcessingActivity {
         boolean canReset = false;
         boolean canEdit = false;
         boolean canSend = false;
-	boolean showButtons = true;
+	boolean showButtons = false;
 	
 	Integer totalErroredRows = 0;
 	
@@ -3528,7 +3528,7 @@ public class adminProcessingActivity {
         boolean canReset = false;
 	boolean canEdit = false;
 	boolean canSend = false;
-        boolean showButtons = true;
+        boolean showButtons = false;
 	
 	searchParameters searchParameters = (searchParameters) session.getAttribute("searchParameters");
 	searchParameters.setsection("outbound");
@@ -3560,6 +3560,7 @@ public class adminProcessingActivity {
             }
 
             List<Integer> resetStatusList = Arrays.asList(28,30,31,41,58); //DNP (21) is not a final status for admin
+	    
 	    if (!resetStatusList.contains(batchDetails.getStatusId()) && configDetails.getMessageTypeId() != 2) {
                 canReset = true;
             }
