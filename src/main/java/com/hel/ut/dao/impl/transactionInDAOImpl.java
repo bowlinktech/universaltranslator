@@ -2707,7 +2707,7 @@ public class transactionInDAOImpl implements transactionInDAO {
     public List<Integer> getTargetConfigsForUploadBatch(Integer batchUploadId, Integer configId) throws Exception {
 	
 	String sql = "select distinct targetconfigId from configurationconnections "
-		+ " where sourceConfigId = :configId order by id asc";
+		+ " where status = true and sourceConfigId = :configId order by id asc";
 	
 	Query query = sessionFactory.getCurrentSession().createSQLQuery(sql)
 	    .setParameter("configId", configId);
