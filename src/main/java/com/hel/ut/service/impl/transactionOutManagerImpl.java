@@ -2381,7 +2381,7 @@ public class transactionOutManagerImpl implements transactionOutManager {
 		//We need to mark the message in the registry as complete and insert the target link.
 		configurationTransport sourceTransportDetails = configurationTransportManager.getTransportDetails(batchUploadDetails.getConfigId());
 
-		if(sourceTransportDetails.getHelSchemaName() != null) {
+		if(sourceTransportDetails.getHelSchemaName() != null && uploadConfigDetails.getMessageTypeId() == 1) {
 		    if(!"".equals(sourceTransportDetails.getHelSchemaName())) {
 			submittedMessage existingRegistrySubmittedMessage = submittedmessagemanager.getSubmittedMessageBySQL(sourceTransportDetails.getHelSchemaName(),batchUploadDetails.getOriginalFileName());
 
