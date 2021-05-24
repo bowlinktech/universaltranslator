@@ -831,6 +831,16 @@ public class adminConfigController {
 	//Get a list of availbale HISPs
 	List<hisps> hisps = hispManager.getAllActiveHisps();
 	mav.addObject("hisps", hisps);
+	
+	//Get latest configuration note
+	List<configurationUpdateLogs> configNotes = utconfigurationmanager.getConfigurationUpdateLogs(configurationDetails.getId());
+	
+	if(!configNotes.isEmpty()) {
+	    mav.addObject("lastConfigUpdate", configNotes.get(0).getDateCreated());
+	}
+	else {
+	    mav.addObject("lastConfigUpdate", configurationDetails.getDateCreated());
+	}
 
         return mav;
     }
@@ -1129,6 +1139,16 @@ public class adminConfigController {
         //Need to get all available fields that can be used for the reportable fields
         List<configurationFormFields> fields = utconfigurationTransportManager.getConfigurationFields(configId, transportDetails.getId());
         mav.addObject("availableFields", fields);
+	
+	//Get latest configuration note
+	List<configurationUpdateLogs> configNotes = utconfigurationmanager.getConfigurationUpdateLogs(configId);
+	
+	if(!configNotes.isEmpty()) {
+	    mav.addObject("lastConfigUpdate", configNotes.get(0).getDateCreated());
+	}
+	else {
+	    mav.addObject("lastConfigUpdate", configurationDetails.getDateCreated());
+	}
 
         return mav;
     }
@@ -1210,7 +1230,10 @@ public class adminConfigController {
     }
 
     /**
-     * The '/mappings' GET request will determine based on the selected transport method what page to display. Either the choose fields page if 'online form' is selected or 'mappings' if a custom file is being uploaded.
+     * The '/mappings' GET request will determine based on the selected transport method what page to display.Either the choose fields page if 'online form' is selected or 'mappings' if a custom file is being uploaded.
+     * @param session
+     * @return 
+     * @throws java.lang.Exception 
      */
     @SuppressWarnings("rawtypes")
     @RequestMapping(value = "/mappings", method = RequestMethod.GET)
@@ -1254,11 +1277,20 @@ public class adminConfigController {
 
         mav.addObject("transportDetails", transportDetails);
 
-        
         mav.addObject("selTransportMethod", transportDetails.gettransportMethodId());
 
         List validationTypes = messagetypemanager.getValidationTypes();
         mav.addObject("validationTypes", validationTypes);
+	
+	//Get latest configuration note
+	List<configurationUpdateLogs> configNotes = utconfigurationmanager.getConfigurationUpdateLogs(configId);
+	
+	if(!configNotes.isEmpty()) {
+	    mav.addObject("lastConfigUpdate", configNotes.get(0).getDateCreated());
+	}
+	else {
+	    mav.addObject("lastConfigUpdate", configurationDetails.getDateCreated());
+	}
 
         return mav;
     }
@@ -1374,14 +1406,13 @@ public class adminConfigController {
         //If the "Save" button was pressed 
         if (action.equals("save")) {
             return 1;
-
-        } else {
+        } 
+	else {
             if (errorHandling == 1) {
                 return 2;
             } else {
                 return 1;
             }
-
         }
     }
 
@@ -1443,7 +1474,7 @@ public class adminConfigController {
         mav.addObject("fields", fields);
 
         //Return a list of available crosswalks
-        List<Crosswalks> crosswalks = messagetypemanager.getCrosswalksForConfig(1, 0, configurationDetails.getorgId(),configurationDetails.getId());
+        List<Crosswalks> crosswalks = messagetypemanager.getCrosswalksForConfig(1, 0, configurationDetails.getorgId(),configurationDetails.getId(), false);
         mav.addObject("crosswalks", crosswalks);
         mav.addObject("orgId", configurationDetails.getorgId());
 
@@ -1460,6 +1491,16 @@ public class adminConfigController {
             }
         }
         mav.addObject("macroLookUpList", macroLookUpList);
+	
+	//Get latest configuration note
+	List<configurationUpdateLogs> configNotes = utconfigurationmanager.getConfigurationUpdateLogs(configId);
+	
+	if(!configNotes.isEmpty()) {
+	    mav.addObject("lastConfigUpdate", configNotes.get(0).getDateCreated());
+	}
+	else {
+	    mav.addObject("lastConfigUpdate", configurationDetails.getDateCreated());
+	}
 
         return mav;
     }
@@ -1533,7 +1574,7 @@ public class adminConfigController {
 	   utConfiguration configurationDetails = utconfigurationmanager.getConfigurationById(configId);
 
 	   //Return a list of available crosswalks
-	   List<Crosswalks> crosswalks = messagetypemanager.getCrosswalksForConfig(1, 0, configurationDetails.getorgId(),configurationDetails.getId()); 
+	   List<Crosswalks> crosswalks = messagetypemanager.getCrosswalksForConfig(1, 0, configurationDetails.getorgId(),configurationDetails.getId(), false); 
 	    
 	   mav.addObject("crosswalks", crosswalks);
 	}
@@ -2039,6 +2080,15 @@ public class adminConfigController {
             scheduleDetails.setconfigId(configId);
         }
         mav.addObject("scheduleDetails", scheduleDetails);
+	
+	//Get latest configuration note
+	List<configurationUpdateLogs> configNotes = utconfigurationmanager.getConfigurationUpdateLogs(configId);
+	if(!configNotes.isEmpty()) {
+	    mav.addObject("lastConfigUpdate", configNotes.get(0).getDateCreated());
+	}
+	else {
+	    mav.addObject("lastConfigUpdate", configurationDetails.getDateCreated());
+	}
 
         return mav;
     }
@@ -3120,6 +3170,7 @@ public class adminConfigController {
      * @param orgId
      * @param maxCrosswalks
      * @param configId
+     * @param inUseOnly
      * @return 
      * @throws java.lang.Exception 
      * @Return list of crosswalks
@@ -3129,7 +3180,8 @@ public class adminConfigController {
     ModelAndView getCrosswalks(@RequestParam(value = "page", required = false) Integer page, 
 	    @RequestParam(value = "orgId", required = false) Integer orgId, 
 	    @RequestParam(value = "maxCrosswalks", required = false) Integer maxCrosswalks,
-	    @RequestParam(value = "configId", required = false) Integer configId) throws Exception {
+	    @RequestParam(value = "configId", required = false) Integer configId,
+	    @RequestParam(value = "inUseOnly", required = false) boolean inUseOnly) throws Exception {
 
         if (page == null) {
             page = 1;
@@ -3142,7 +3194,7 @@ public class adminConfigController {
         if (maxCrosswalks == null) {
             maxCrosswalks = 4;
         }
-
+	
         double maxCrosswalkVal = maxCrosswalks;
 
         ModelAndView mav = new ModelAndView();
@@ -3150,7 +3202,7 @@ public class adminConfigController {
         mav.addObject("orgId", orgId);
 
         //Need to return a list of crosswalks
-        List<Crosswalks> crosswalks = messagetypemanager.getCrosswalksForConfig(page, maxCrosswalks, orgId, configId);
+        List<Crosswalks> crosswalks = messagetypemanager.getCrosswalksForConfig(page, maxCrosswalks, orgId, configId, inUseOnly);
 	if(!crosswalks.isEmpty()) {
 	   for(Crosswalks crosswalk : crosswalks) {
 	       if(crosswalk.getLastUpdated() == null) {
@@ -4276,6 +4328,11 @@ public class adminConfigController {
 	
 	configurationDetails.setOrgName(orgDetails.getOrgName());
 	
+	//Get the transport details by configid and selected transport method
+        configurationTransport transportDetails = utconfigurationTransportManager.getTransportDetails(configId);
+	configurationDetails.settransportMethod(utconfigurationTransportManager.getTransportMethodById(transportDetails.gettransportMethodId()));
+
+	
 	mav.addObject("configurationDetails", configurationDetails);
 	mav.addObject("id", configId);
 	
@@ -4295,6 +4352,15 @@ public class adminConfigController {
 	}
 	
 	mav.addObject("configurationNotes", configurationNotes);
+	
+	//Get latest configuration note
+	List<configurationUpdateLogs> configNotes = utconfigurationmanager.getConfigurationUpdateLogs(configId);
+	if(!configNotes.isEmpty()) {
+	    mav.addObject("lastConfigUpdate", configNotes.get(0).getDateCreated());
+	}
+	else {
+	    mav.addObject("lastConfigUpdate", configurationDetails.getDateCreated());
+	}
 
         return mav;
 

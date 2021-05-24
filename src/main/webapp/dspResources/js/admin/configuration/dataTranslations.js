@@ -199,7 +199,7 @@ require(['./main'], function () {
     });
 
     $("input:text,form").attr("autocomplete", "off");
-    populateCrosswalks(1);
+    populateCrosswalks(1,1);
     populateExistingTranslations(0);
 
     //Fade out the updated/created message after being displayed.
@@ -282,9 +282,27 @@ require(['./main'], function () {
     //This function will get the next/prev page for the crosswalk list
     $(document).on('click', '.nextPage', function () {
         var page = $(this).attr('rel');
-        populateCrosswalks(page);
+        var whichView = $('.showCrosswalks').attr('rel');
+        populateCrosswalks(page,whichView);
     });
-
+    
+    $(document).on('click', '.showCrosswalks', function () {
+      var whichView = $(this).attr('rel');
+        
+      populateCrosswalks(1,whichView);
+      
+      if(whichView == 0) {
+        $(this).attr('rel',1);
+        $(this).html('Show Only In Use Crosswalks');
+        $('#crosswalkTitle').html("Available");
+      }
+      else {
+        $(this).attr('rel',1);
+        $(this).html('Show All Available Crosswalks');
+        $('#crosswalkTitle').html("In Use");
+      }
+    });
+    
     //The function that will be called when the "Save" button
     //is clicked
     $('#saveDetails').click(function () {
@@ -600,10 +618,10 @@ function populateExistingTranslations(reload) {
     });
 }
 
-function populateCrosswalks(page) {
+function populateCrosswalks(page,inuseonly) {
     var orgId = $('#orgId').val();
     var configId = $('#configId').val();
-   
+    
     $.ajax({
         url: 'getCrosswalks.do',
         type: "GET",
@@ -611,7 +629,8 @@ function populateCrosswalks(page) {
             'page': page, 
             'orgId': orgId, 
             'maxCrosswalks': 8, 
-            'configId': configId
+            'configId': configId,
+            'inUseOnly':inuseonly
         },
         success: function (data) {
             
