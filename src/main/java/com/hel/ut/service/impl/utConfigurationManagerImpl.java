@@ -693,7 +693,7 @@ public class utConfigurationManagerImpl implements utConfigurationManager {
     @Override
     public List getCrosswalksForDownload (Integer configId) throws Exception {
 	
-	String sqlStatement = "select name,  crosswalkId, sourcevalue, targetvalue, descValue " 
+	String sqlStatement = "select name, crosswalkId, sourcevalue, targetvalue, descValue " 
 	    + "from crosswalks inner join " 
 	    + "rel_crosswalkdata on rel_crosswalkdata.crosswalkId = crosswalks.id " 
 	    + " where orgId in (select orgId from configurations where id = " + configId + ") " 

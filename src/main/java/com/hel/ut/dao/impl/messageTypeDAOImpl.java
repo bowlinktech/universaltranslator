@@ -392,33 +392,38 @@ public class messageTypeDAOImpl implements messageTypeDAO {
     
     @Override
     @Transactional(readOnly = true)
-    public List<Crosswalks> getCrosswalksForConfig(int page, int maxCrosswalks, int orgId, int configId) {
+    public List<Crosswalks> getCrosswalksForConfig(int page, int maxCrosswalks, int orgId, int configId, boolean inUseOnly) {
 	String sql = "";
 	
 	if(orgId > 0) {
-	    sql = "select a.*, IFNULL((select id from configurationdatatranslations where configId = :configId and crosswalkId = a.id LIMIT 1),0) as dtsId "
-		+ "from crosswalks a "
-		+ "where a.orgId = :orgId or a.orgId = 0 "
-		+ "order by a.name asc";
+	    sql = "select distinct a.*, IFNULL((select id from configurationdatatranslations where configId = :configId and crosswalkId = a.id LIMIT 1),0) as dtsId "
+	    + "from crosswalks a ";
+	    if(inUseOnly) {
+		sql += "inner join configurationdatatranslations b on (b.crosswalkid = a.id or (b.macroId = 129 and b.constant1 = a.id)) and b.configId = :configId ";
+	    }	    
+	    sql += "where a.orgId = :orgId or a.orgId = 0 "
+	    + "order by a.name asc";
 	}
 	else {
-	    sql = "select a.*, IFNULL((select id from configurationdatatranslations where configId = :configId and crosswalkId = a.id LIMIT 1),0) as dtsId "
-		+ "from crosswalks a "
-		+ "where a.orgId = 0 "
-		+ "order by a.name asc";
+	    sql = "select distinct a.*, IFNULL((select id from configurationdatatranslations where configId = :configId and crosswalkId = a.id LIMIT 1),0) as dtsId "
+	    + "from crosswalks a ";
+	    if(inUseOnly) {
+		sql += "inner join configurationdatatranslations b on  (b.crosswalkid = a.id or (b.macroId = 129 and b.constant1 = a.id)) and b.configId = :configId ";
+	    }
+	    sql += "where a.orgId = 0 "
+	    + "order by a.name asc";
 	}
 	
-	Query query = sessionFactory
-	    .getCurrentSession()
-	    .createSQLQuery(sql)
-	    .addScalar("id", StandardBasicTypes.INTEGER)
-	    .addScalar("orgId", StandardBasicTypes.INTEGER)
-	    .addScalar("dtsId", StandardBasicTypes.INTEGER)
-	    .addScalar("name", StandardBasicTypes.STRING)
-	    .addScalar("dateCreated", StandardBasicTypes.TIMESTAMP)
-	    .addScalar("lastUpdated", StandardBasicTypes.TIMESTAMP)	
-	    .setResultTransformer( Transformers.aliasToBean(Crosswalks.class))
-	    .setParameter("orgId", orgId).setParameter("configId", configId);
+	Query query = sessionFactory.getCurrentSession().createSQLQuery(sql)
+	.addScalar("id", StandardBasicTypes.INTEGER)
+	.addScalar("orgId", StandardBasicTypes.INTEGER)
+	.addScalar("dtsId", StandardBasicTypes.INTEGER)
+	.addScalar("name", StandardBasicTypes.STRING)
+	.addScalar("dateCreated", StandardBasicTypes.TIMESTAMP)
+	.addScalar("lastUpdated", StandardBasicTypes.TIMESTAMP)	
+	.setResultTransformer( Transformers.aliasToBean(Crosswalks.class))
+	.setParameter("orgId", orgId)
+	.setParameter("configId", configId);
 	
 	List<Crosswalks> crosswalks = query.list();
 	

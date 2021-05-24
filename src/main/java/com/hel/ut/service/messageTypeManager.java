@@ -50,7 +50,7 @@ public interface messageTypeManager {
     
     String getDelimiterChar(int delimId) throws Exception;
     
-    List<Crosswalks> getCrosswalksForConfig(int page, int maxCrosswalks, int orgId, int configId);
+    List<Crosswalks> getCrosswalksForConfig(int page, int maxCrosswalks, int orgId, int configId, boolean inUseOnly);
     
     void deleteCrosswalk(Integer cwId) throws Exception;
     
