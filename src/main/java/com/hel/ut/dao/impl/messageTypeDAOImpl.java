@@ -399,7 +399,7 @@ public class messageTypeDAOImpl implements messageTypeDAO {
 	    sql = "select distinct a.*, IFNULL((select id from configurationdatatranslations where configId = :configId and crosswalkId = a.id LIMIT 1),0) as dtsId "
 	    + "from crosswalks a ";
 	    if(inUseOnly) {
-		sql += "inner join configurationdatatranslations b on (b.crosswalkid = a.id or (b.macroId = 129 and b.constant1 = a.id)) and b.configId = :configId ";
+		sql += "inner join configurationdatatranslations b on (b.crosswalkid = a.id or (b.macroId in (129,160,177,195,199) and b.constant1 = a.id)) and b.configId = :configId ";
 	    }	    
 	    sql += "where a.orgId = :orgId or a.orgId = 0 "
 	    + "order by a.name asc";
@@ -408,7 +408,7 @@ public class messageTypeDAOImpl implements messageTypeDAO {
 	    sql = "select distinct a.*, IFNULL((select id from configurationdatatranslations where configId = :configId and crosswalkId = a.id LIMIT 1),0) as dtsId "
 	    + "from crosswalks a ";
 	    if(inUseOnly) {
-		sql += "inner join configurationdatatranslations b on  (b.crosswalkid = a.id or (b.macroId = 129 and b.constant1 = a.id)) and b.configId = :configId ";
+		sql += "inner join configurationdatatranslations b on  (b.crosswalkid = a.id or (b.macroId in (129,160,177,195,199) and b.constant1 = a.id)) and b.configId = :configId ";
 	    }
 	    sql += "where a.orgId = 0 "
 	    + "order by a.name asc";

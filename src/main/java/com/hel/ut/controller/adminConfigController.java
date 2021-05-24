@@ -3568,7 +3568,7 @@ public class adminConfigController {
 	    
 	    try (BufferedWriter writer = new BufferedWriter(new FileWriter(dtFile))) {
 		
-		List crosswalks = utconfigurationmanager.getCrosswalksForDownload(configId);
+		List crosswalks = utconfigurationmanager.getCrosswalksForDownload(configId, true);
 		
 		if(!crosswalks.isEmpty()) {
 		    StringBuilder sb;
@@ -4470,6 +4470,7 @@ public class adminConfigController {
      * @param configId
      * @param fileName
      * @param fileType
+     * @param inUseOnly
      * @param session
      * @param response
      * @return
@@ -4480,6 +4481,7 @@ public class adminConfigController {
     public String crosswalksExcelFileDownload(@RequestParam(value = "configId", required = true) Integer configId, 
 	@RequestParam(value = "fileName", required = true) String fileName, 
 	@RequestParam(value = "fileType", required = true) Integer fileType, 
+	@RequestParam(value = "inUseOnly", required = false) boolean inUseOnly, 
 	HttpSession session,HttpServletResponse response) throws Exception {
 	
 	utConfiguration configurationDetails = utconfigurationmanager.getConfigurationById(configId);
@@ -4496,7 +4498,7 @@ public class adminConfigController {
 	   
 	    File dtFile = new File ("/tmp/" + fileName.replaceAll("\\s+","") + "." + fileExt);
 	    
-	    List crosswalks = utconfigurationmanager.getCrosswalksForDownload(configId);
+	    List crosswalks = utconfigurationmanager.getCrosswalksForDownload(configId,inUseOnly);
 	    
 	    if(fileExt.equals("txt")) {
 		try (BufferedWriter writer = new BufferedWriter(new FileWriter(dtFile))) {

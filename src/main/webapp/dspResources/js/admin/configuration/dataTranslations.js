@@ -109,13 +109,22 @@ require(['./main'], function () {
     $(document).on('click', '#generateCWButton', function() {
 
         var errorFound = 0;
+       
+        var whichView = $('.showCrosswalks').attr('rel');
+       
+        if(whichView == 0) {
+            whichView = 1;
+        }
+        else {
+            whichView = 0;
+        }
 
        //Makes sure name is entered and entity is selected
        if($('#fileName').val() === "") {
            $('#cwnameDiv').addClass("has-error");
            errorFound = 1;
        }
-
+       
        if(errorFound == 0) {
            
            var fileType = $("input[name='fileType']:checked").val();
@@ -132,7 +141,8 @@ require(['./main'], function () {
                 data: {
                     'configId':$(this).attr('rel'),
                     'fileName': $('#fileName').val(),
-                    'fileType': fileType
+                    'fileType': fileType,
+                    'inUseOnly':whichView
                 },
                 type: "GET",
                 dataType : 'text',
@@ -283,6 +293,14 @@ require(['./main'], function () {
     $(document).on('click', '.nextPage', function () {
         var page = $(this).attr('rel');
         var whichView = $('.showCrosswalks').attr('rel');
+        
+        if(whichView == 0) {
+            whichView = 1;
+        }
+        else {
+            whichView = 0;
+        }
+        
         populateCrosswalks(page,whichView);
     });
     

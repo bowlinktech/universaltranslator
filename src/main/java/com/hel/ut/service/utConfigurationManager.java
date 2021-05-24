@@ -200,7 +200,7 @@ public interface utConfigurationManager {
     
     List getDataTranslationsForDownload (Integer configId) throws Exception;
   
-    List getCrosswalksForDownload (Integer configId) throws Exception;
+    List getCrosswalksForDownload (Integer configId, boolean inUseOnly) throws Exception;
     
     StringBuffer printDetailsSection(utConfiguration configDetails, Organization orgDetails, String siteTimeZone) throws Exception;
     
