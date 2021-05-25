@@ -832,14 +832,19 @@ public class adminConfigController {
 	List<hisps> hisps = hispManager.getAllActiveHisps();
 	mav.addObject("hisps", hisps);
 	
-	//Get latest configuration note
-	List<configurationUpdateLogs> configNotes = utconfigurationmanager.getConfigurationUpdateLogs(configurationDetails.getId());
+	TimeZone timeZone = TimeZone.getTimeZone(siteTimeZone);
+	DateFormat requiredFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	DateFormat dft = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	requiredFormat.setTimeZone(timeZone);
+	String dateinTZ = "";
 	
+	//Get latest configuration note
+	List<configurationUpdateLogs> configNotes = utconfigurationmanager.getConfigurationUpdateLogs(configId);
 	if(!configNotes.isEmpty()) {
-	    mav.addObject("lastConfigUpdate", configNotes.get(0).getDateCreated());
+	    mav.addObject("lastConfigUpdate", dft.parse(requiredFormat.format(configNotes.get(0).getDateCreated())));
 	}
 	else {
-	    mav.addObject("lastConfigUpdate", configurationDetails.getDateCreated());
+	    mav.addObject("lastConfigUpdate", dft.parse(requiredFormat.format(configurationDetails.getDateCreated())));
 	}
 
         return mav;
@@ -1140,14 +1145,20 @@ public class adminConfigController {
         List<configurationFormFields> fields = utconfigurationTransportManager.getConfigurationFields(configId, transportDetails.getId());
         mav.addObject("availableFields", fields);
 	
+	TimeZone timeZone = TimeZone.getTimeZone(siteTimeZone);
+	DateFormat requiredFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	DateFormat dft = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	requiredFormat.setTimeZone(timeZone);
+	String dateinTZ = "";
+	
+	
 	//Get latest configuration note
 	List<configurationUpdateLogs> configNotes = utconfigurationmanager.getConfigurationUpdateLogs(configId);
-	
 	if(!configNotes.isEmpty()) {
-	    mav.addObject("lastConfigUpdate", configNotes.get(0).getDateCreated());
+	    mav.addObject("lastConfigUpdate", dft.parse(requiredFormat.format(configNotes.get(0).getDateCreated())));
 	}
 	else {
-	    mav.addObject("lastConfigUpdate", configurationDetails.getDateCreated());
+	    mav.addObject("lastConfigUpdate", dft.parse(requiredFormat.format(configurationDetails.getDateCreated())));
 	}
 
         return mav;
@@ -1282,14 +1293,20 @@ public class adminConfigController {
         List validationTypes = messagetypemanager.getValidationTypes();
         mav.addObject("validationTypes", validationTypes);
 	
+	TimeZone timeZone = TimeZone.getTimeZone(siteTimeZone);
+	DateFormat requiredFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	DateFormat dft = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	requiredFormat.setTimeZone(timeZone);
+	String dateinTZ = "";
+	
+	
 	//Get latest configuration note
 	List<configurationUpdateLogs> configNotes = utconfigurationmanager.getConfigurationUpdateLogs(configId);
-	
 	if(!configNotes.isEmpty()) {
-	    mav.addObject("lastConfigUpdate", configNotes.get(0).getDateCreated());
+	    mav.addObject("lastConfigUpdate", dft.parse(requiredFormat.format(configNotes.get(0).getDateCreated())));
 	}
 	else {
-	    mav.addObject("lastConfigUpdate", configurationDetails.getDateCreated());
+	    mav.addObject("lastConfigUpdate", dft.parse(requiredFormat.format(configurationDetails.getDateCreated())));
 	}
 
         return mav;
@@ -1492,14 +1509,20 @@ public class adminConfigController {
         }
         mav.addObject("macroLookUpList", macroLookUpList);
 	
+	TimeZone timeZone = TimeZone.getTimeZone(siteTimeZone);
+	DateFormat requiredFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	DateFormat dft = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	requiredFormat.setTimeZone(timeZone);
+	String dateinTZ = "";
+	
+	
 	//Get latest configuration note
 	List<configurationUpdateLogs> configNotes = utconfigurationmanager.getConfigurationUpdateLogs(configId);
-	
 	if(!configNotes.isEmpty()) {
-	    mav.addObject("lastConfigUpdate", configNotes.get(0).getDateCreated());
+	    mav.addObject("lastConfigUpdate", dft.parse(requiredFormat.format(configNotes.get(0).getDateCreated())));
 	}
 	else {
-	    mav.addObject("lastConfigUpdate", configurationDetails.getDateCreated());
+	    mav.addObject("lastConfigUpdate", dft.parse(requiredFormat.format(configurationDetails.getDateCreated())));
 	}
 
         return mav;
@@ -2081,15 +2104,22 @@ public class adminConfigController {
         }
         mav.addObject("scheduleDetails", scheduleDetails);
 	
+	TimeZone timeZone = TimeZone.getTimeZone(siteTimeZone);
+	DateFormat requiredFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	DateFormat dft = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	requiredFormat.setTimeZone(timeZone);
+	String dateinTZ = "";
+	
+	
 	//Get latest configuration note
 	List<configurationUpdateLogs> configNotes = utconfigurationmanager.getConfigurationUpdateLogs(configId);
 	if(!configNotes.isEmpty()) {
-	    mav.addObject("lastConfigUpdate", configNotes.get(0).getDateCreated());
+	    mav.addObject("lastConfigUpdate", dft.parse(requiredFormat.format(configNotes.get(0).getDateCreated())));
 	}
 	else {
-	    mav.addObject("lastConfigUpdate", configurationDetails.getDateCreated());
+	    mav.addObject("lastConfigUpdate", dft.parse(requiredFormat.format(configurationDetails.getDateCreated())));
 	}
-
+	
         return mav;
     }
 
@@ -4339,12 +4369,13 @@ public class adminConfigController {
 	//Get a list of configuration notes
 	List<configurationUpdateLogs> configurationNotes = utconfigurationmanager.getConfigurationUpdateLogs(configId);
 	
+	TimeZone timeZone = TimeZone.getTimeZone(siteTimeZone);
+	DateFormat requiredFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	DateFormat dft = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	requiredFormat.setTimeZone(timeZone);
+	String dateinTZ = "";
+	
 	if(!configurationNotes.isEmpty()) {
-	    TimeZone timeZone = TimeZone.getTimeZone(siteTimeZone);
-	    DateFormat requiredFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-	    DateFormat dft = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-	    requiredFormat.setTimeZone(timeZone);
-	    String dateinTZ = "";
 	    for(configurationUpdateLogs note : configurationNotes) {
 		dateinTZ = requiredFormat.format(note.getDateCreated());
 		note.setDateCreated(dft.parse(dateinTZ));
@@ -4356,10 +4387,10 @@ public class adminConfigController {
 	//Get latest configuration note
 	List<configurationUpdateLogs> configNotes = utconfigurationmanager.getConfigurationUpdateLogs(configId);
 	if(!configNotes.isEmpty()) {
-	    mav.addObject("lastConfigUpdate", configNotes.get(0).getDateCreated());
+	    mav.addObject("lastConfigUpdate", dft.parse(requiredFormat.format(configNotes.get(0).getDateCreated())));
 	}
 	else {
-	    mav.addObject("lastConfigUpdate", configurationDetails.getDateCreated());
+	    mav.addObject("lastConfigUpdate", dft.parse(requiredFormat.format(configurationDetails.getDateCreated())));
 	}
 
         return mav;

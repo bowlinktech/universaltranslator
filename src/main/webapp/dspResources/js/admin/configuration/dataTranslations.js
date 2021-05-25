@@ -315,7 +315,7 @@ require(['./main'], function () {
         $('#crosswalkTitle').html("Available");
       }
       else {
-        $(this).attr('rel',1);
+        $(this).attr('rel',0);
         $(this).html('Show All Available Crosswalks');
         $('#crosswalkTitle').html("In Use");
       }
