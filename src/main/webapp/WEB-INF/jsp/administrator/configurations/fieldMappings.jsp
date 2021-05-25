@@ -1,6 +1,7 @@
 <%@ taglib prefix="form" uri="http://www.springframework.org/tags/form" %>
 <%@ taglib prefix="spring" uri="http://www.springframework.org/tags" %> 
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
 
 <div class="main clearfix" role="main">
     <div class="row-fluid">
@@ -13,16 +14,17 @@
                 <strong>You must click SAVE above to submit the mapping changes!</strong>
             </div>
             <section class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Configuration Summary</h3>
+                </div>
                 <div class="panel-body">
-                    <dt>
-                    <dt>Configuration Summary:</dt>
-			<dd><strong>Organization:</strong> ${configurationDetails.orgName}</dd>
-			<dd><strong>Configuration Type:</strong> <span id="configType" rel="${configurationDetails.type}"><c:choose><c:when test="${configurationDetails.type == 1}">Source</c:when><c:otherwise>Target</c:otherwise></c:choose></span></dd>
-                    	<dd><strong>Configuration Name:</strong> ${configurationDetails.configName}</dd>
-			<dd><strong>Transport Method:</strong> <c:choose><c:when test="${configurationDetails.transportMethod == 'File Upload'}"><c:choose><c:when test="${configurationDetails.type == 1}">File Upload</c:when><c:otherwise>File Download</c:otherwise></c:choose></c:when><c:otherwise>${configurationDetails.transportMethod}</c:otherwise></c:choose></dd>
-		    </dt>
-		</div>
-	    </section>
+                    <p><strong>Organization:</strong> ${configurationDetails.orgName}</p>
+                    <p><strong>Configuration Name:</strong> ${configurationDetails.configName}</p>
+                    <p><strong>Configuration Type:</strong> <span id="configType" rel="${configurationDetails.type}"><c:choose><c:when test="${configurationDetails.type == 1}">Source</c:when><c:otherwise>Target</c:otherwise></c:choose></span></p>
+                    <p><strong>Transport Method:</strong> <c:choose><c:when test="${configurationDetails.transportMethod == 'File Upload'}"><c:choose><c:when test="${configurationDetails.type == 1}">File Upload</c:when><c:otherwise>File Download</c:otherwise></c:choose></c:when><c:otherwise>${configurationDetails.transportMethod}</c:otherwise></c:choose></p>
+                    <c:if test="${not empty lastConfigUpdate}"><p><strong>Template file last updated on:</strong> <fmt:formatDate value="${lastConfigUpdate}" type="date" pattern="M/dd/yyyy h:mm a" /></p></c:if>
+                </div>
+            </section>            
 	</div>
     </div>
     <div class="row-fluid">
