@@ -691,24 +691,19 @@ public class utConfigurationManagerImpl implements utConfigurationManager {
     }
     
     @Override
-    public List getCrosswalksForDownload (Integer configId) throws Exception {
+    public List getCrosswalksForDownload (Integer configId, boolean inUseOnly) throws Exception {
 	
-	String sqlStatement = "select name,  crosswalkId, sourcevalue, targetvalue, descValue " 
-	    + "from crosswalks inner join " 
-	    + "rel_crosswalkdata on rel_crosswalkdata.crosswalkId = crosswalks.id " 
-	    + " where orgId in (select orgId from configurations where id = " + configId + ") " 
-	    + "order by name,crosswalks.id";
+	String sqlStatement = "select crosswalks.name, rel_crosswalkdata.crosswalkId, rel_crosswalkdata.sourcevalue, rel_crosswalkdata.targetvalue, rel_crosswalkdata.descValue " 
+	+ "from crosswalks inner join ";
 	
-	/*String sqlStatement = "select name,  crosswalkId, sourcevalue, targetvalue, descValue from crosswalks cw join ("
-	    + "select * from rel_crosswalkdata where crosswalkId in ("
-	    + "select distinct crosswalkId from ("
-	    + "select crosswalkId from configurationdatatranslations where configId = " + configId
-	    + " union "
-	    + "select crosswalkId from rel_crosswalkdata where crosswalkId in ("
-	    + "select crosswalkId from configurationdatatranslations where configId = " + configId + " order by processOrder)) cws"
-	    + ")) cwdata on cw.id = cwdata.crosswalkId "
-	    + "order by name, cwdata.id";*/
-	
+	if(inUseOnly) {
+	    sqlStatement += "configurationdatatranslations b on (b.crosswalkid = crosswalks.id or (b.macroId in (129,160,177,195,199) and b.constant1 = crosswalks.id)) and b.configId = "+configId+" inner join ";
+	}
+
+	sqlStatement += "rel_crosswalkdata on rel_crosswalkdata.crosswalkId = crosswalks.id " 
+	+ " where orgId = 0 or orgId in (select orgId from configurations where id = " + configId + ") " 
+	+ "order by name,crosswalks.id";
+	 
 	return utConfigurationDAO.getDTCWForDownload(sqlStatement);
     }
     
