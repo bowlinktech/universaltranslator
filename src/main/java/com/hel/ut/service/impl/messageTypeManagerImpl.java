@@ -319,8 +319,8 @@ public class messageTypeManagerImpl implements messageTypeManager {
     }
     
     @Override
-    public List<Crosswalks> getCrosswalksForConfig(int page, int maxCrosswalks, int orgId, int configId) {
-	return messageTypeDAO.getCrosswalksForConfig(page, maxCrosswalks, orgId, configId);
+    public List<Crosswalks> getCrosswalksForConfig(int page, int maxCrosswalks, int orgId, int configId, boolean inUseOnly) {
+	return messageTypeDAO.getCrosswalksForConfig(page, maxCrosswalks, orgId, configId, inUseOnly);
     }
     
     @Override
