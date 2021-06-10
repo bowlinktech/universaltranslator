@@ -58,6 +58,7 @@ require(['./main'], function () {
 
     $('#transportMethod').change(function () {
         var methodId = $(this).val();
+        var currMethod = $(this).attr('rel');
 
         if(methodId == 13 && messageTypeId == 1 && helRegistryId > 0 && helSchemaName !== "") {
             $('#ergFileDownloadDiv').show();
@@ -73,11 +74,11 @@ require(['./main'], function () {
             $('#fileExt').val('txt');
         }
         else {
-             $('#ergFileDownloadDiv').hide();
+            $('#ergFileDownloadDiv').hide();
             $('#helRegistryConfigDiv').hide();
             $('#helRegistryConfigId').find('option').remove().end().append('<option value="">- Select Registry Configuration -</option>').val('');
         }
-
+        
         showCorrectFieldsByTransportMethod(methodId);
     });
 
@@ -157,13 +158,16 @@ function showCorrectFieldsByTransportMethod(transportMethod) {
     $('#fileDropDetailsDiv').hide();
    
     if(transportMethod == 13) {
-		$('#fileDropDetailsDiv').show();
+        $('#fileDropDetailsDiv').show();
     }
     else if(transportMethod == 9) {
-		$('#restDetailsDiv').show();
+        $('#restDetailsDiv').show();
     }
     else if(transportMethod == 12) {
-		$('#directMessageDetailsDiv').show();
+        $('#directMessageDetailsDiv').show();
+    }
+    else if(transportMethod == 3) {
+        $('#ftpDetailsDiv').show();
     }
 }
 
@@ -174,7 +178,7 @@ function showCorrectFileDetails(fileType,fileTypeChanged) {
     $('#fileDelimiterDiv').hide();
     $('#lineTerminatortDiv').hide();
     $('#encodingDiv').hide();
-	$('#addTargetFileHeaderRowDiv').hide();
+    $('#addTargetFileHeaderRowDiv').hide();
 
     $('#fileDelimiterDiv').show();
     $('#lineTerminatortDiv').show();
@@ -201,7 +205,7 @@ function showCorrectFileDetails(fileType,fileTypeChanged) {
         $('#lineTerminatortDiv').show();
         $('#fileExtDiv').hide();
         $('#encodingDiv').show();
-		$('#addTargetFileHeaderRowDiv').show();
+        $('#addTargetFileHeaderRowDiv').show();
     } 
     else if (fileType == 4) {
         $('#fileExt').val('hr');
@@ -211,7 +215,7 @@ function showCorrectFileDetails(fileType,fileTypeChanged) {
         $('#lineTerminatortDiv').hide();
         $('#fileExtDiv').hide();
         $('#encodingDiv').show();
-		$("#addTargetFileHeaderRow2").prop("checked", true);
+        $("#addTargetFileHeaderRow2").prop("checked", true);
     } 
     else if (fileType == 8) {
         $('#fileExt').val('xls');
@@ -221,7 +225,7 @@ function showCorrectFileDetails(fileType,fileTypeChanged) {
         $('#lineTerminatortDiv').hide();
         $('#fileExtDiv').hide();
         $('#encodingDiv').show();
-		$('#addTargetFileHeaderRowDiv').show();
+        $('#addTargetFileHeaderRowDiv').show();
     } 
     else if (fileType == 9) {
         $('#fileExt').val('xml');
@@ -231,8 +235,8 @@ function showCorrectFileDetails(fileType,fileTypeChanged) {
         $('#lineTerminatortDiv').hide();
         $('#fileExtDiv').hide();
         $('#encodingDiv').show();
-		$('#addTargetFileHeaderRow').val(0);
-		$("#addTargetFileHeaderRow2").prop("checked", true);
+        $('#addTargetFileHeaderRow').val(0);
+        $("#addTargetFileHeaderRow2").prop("checked", true);
     }
     else if (fileType == 11) {
         $('#fileExt').val('xlsx');
@@ -242,7 +246,7 @@ function showCorrectFileDetails(fileType,fileTypeChanged) {
         $('#lineTerminatortDiv').hide();
         $('#fileExtDiv').hide();
         $('#encodingDiv').show();
-		$('#addTargetFileHeaderRowDiv').show();
+        $('#addTargetFileHeaderRowDiv').show();
     }
     else if (fileType == 12) {
         $('#jsonWrapperElementDiv').show();
@@ -250,8 +254,8 @@ function showCorrectFileDetails(fileType,fileTypeChanged) {
         $('#fileDelimiterDiv').hide();
         $('#lineTerminatortDiv').hide();
         $('#encodingDiv').show();
-		$('#addTargetFileHeaderRow').val(0);
-		$("#addTargetFileHeaderRow2").prop("checked", true);
+        $('#addTargetFileHeaderRow').val(0);
+        $("#addTargetFileHeaderRow2").prop("checked", true);
     }
 }
 
@@ -347,14 +351,15 @@ function checkFormFields() {
 	    if ($('#ip1').val() === "") {
 		$('#ip1Div').addClass("has-error");
 		$('#ip1Msg').addClass("has-error");
-		$('#ip1Msg').html('The IP address is a required field.');
+		$('#ip1Msg').html('The host address is a required field.');
 		hasErrors = 1;
-	    } else if (!IPReg.test($('#ip1').val())) {
+	    } 
+            /*else if (!IPReg.test($('#ip1').val())) {
 		$('#ip1Div').addClass("has-error");
 		$('#ip1Msg').addClass("has-error");
 		$('#ip1Msg').html('The IP address entered is invalid.');
 		hasErrors = 1;
-	    }
+	    }*/
 	    if ($('#username1').val() === "") {
 		$('#username1Div').addClass("has-error");
 		$('#username1Msg').addClass("has-error");
@@ -378,7 +383,6 @@ function checkFormFields() {
 		}
 	    }
 
-
 	    if ($('#directory1').val() === "") {
 		$('#directory1Div').addClass("has-error");
 		$('#directory1Msg').addClass("has-error");
@@ -387,60 +391,10 @@ function checkFormFields() {
 	    }
 	}
 
-	//Check FTP push Fields
-	var pushFieldsEntered = 0;
-
-	if ($('#ip2').val() !== "" || $('#username2').val() !== "" || $('#password2').val() !== "" || $('#directory2').val() !== "") {
-	    pushFieldsEntered = 1;
-	}
-
-
-	if (pushFieldsEntered == 1) {
-	    if ($('#ip2').val() === "") {
-		$('#ip2Div').addClass("has-error");
-		$('#ip2Msg').addClass("has-error");
-		$('#ip2Msg').html('The IP address is a required field.');
-		hasErrors = 1;
-	    } else if (!IPReg.test($('#ip2').val())) {
-		$('#ip2Div').addClass("has-error");
-		$('#ip2Msg').addClass("has-error");
-		$('#ip2Msg').html('The IP address entered is invalid.');
-		hasErrors = 1;
-	    }
-	    if ($('#username2').val() === "") {
-		$('#username2Div').addClass("has-error");
-		$('#username2Msg').addClass("has-error");
-		$('#username2Msg').html('The username is a required field.');
-		hasErrors = 1;
-	    }
-	    if ($('#protocol2').val() === "SFTP") {
-		if ($('#password2').val() === "" && $('#file2').val() === "" && $('#certification2').val() === "") {
-		    $('#password2Div').addClass("has-error");
-		    $('#password2Msg').addClass("has-error");
-		    $('#password2Msg').html('The password or certification is a required field.');
-		    hasErrors = 1;
-		}
-	    } else {
-		if ($('#password2').val() === "") {
-		    $('#password2Div').addClass("has-error");
-		    $('#password2Msg').addClass("has-error");
-		    $('#password2Msg').html('The password is a required field.');
-		    hasErrors = 1;
-		}
-	    }
-	    if ($('#directory2').val() === "") {
-		$('#directory2Div').addClass("has-error");
-		$('#directory2Msg').addClass("has-error");
-		$('#directory2Msg').html('The directory is a required field.');
-		hasErrors = 1;
-	    }
-	}
-
-	if (getFieldsEntered == 0 && pushFieldsEntered == 0) {
+	if (getFieldsEntered == 0) {
 	    $('#FTPDanger').show();
 	    hasErrors = 1;
 	}
-
     }
 
 
