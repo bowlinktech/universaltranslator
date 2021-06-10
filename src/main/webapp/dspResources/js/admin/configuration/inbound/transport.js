@@ -95,7 +95,22 @@ require(['./main'], function () {
             $('.ftpDetails').removeClass('collapse');
         }
         else {
-            $('.ftpDetails').addClass('collapse');
+            
+            var transportId = $('#id').val();
+            
+            if(confirm("Are you sure you want to Remove the FTP information for this configuration?")) {
+               
+                $.ajax({
+                    url: 'deleteConfigurationFTPInformation.do',
+                    data: {
+                        'transportId': transportId
+                    },
+                    type: 'POST',
+                    success: function(data) {
+                        $('.ftpDetails').addClass('collapse');
+                    }
+                });
+            }
         }
     });
 
@@ -337,14 +352,15 @@ function checkFormFields() {
 	if ($('#ip1').val() === "") {
 	    $('#ip1Div').addClass("has-error");
 	    $('#ip1Msg').addClass("has-error");
-	    $('#ip1Msg').html('The IP address is a required field.');
+	    $('#ip1Msg').html('The host address is a required field.');
 	    hasErrors = 1;
-	} else if (!IPReg.test($('#ip1').val())) {
+	} 
+        /*else if (!IPReg.test($('#ip1').val())) {
 	    $('#ip1Div').addClass("has-error");
 	    $('#ip1Msg').addClass("has-error");
 	    $('#ip1Msg').html('The IP address entered is invalid.');
 	    hasErrors = 1;
-	}
+	}*/
 	if ($('#username1').val() === "") {
 	    $('#username1Div').addClass("has-error");
 	    $('#username1Msg').addClass("has-error");
