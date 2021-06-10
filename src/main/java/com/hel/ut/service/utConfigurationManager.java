@@ -231,4 +231,6 @@ public interface utConfigurationManager {
     void deletConfigurationNote(Integer noteId) throws Exception;
     
     StringBuffer printConfigurationNotesSection(utConfiguration configDetails, String siteTimeZone) throws Exception;
+    
+    void deleteConfigurationFTPInformation(int transportId) throws Exception;
 }

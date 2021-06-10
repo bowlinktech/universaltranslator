@@ -184,7 +184,7 @@ require(['./main'], function () {
             
             var configId = $(this).attr('rel');
            
-            if(confirm("Are you sure you want to delelete this configuration?")) {
+            if(confirm("Are you sure you want to delete this configuration?")) {
                 
                 $('body').overlay({
                     glyphicon : 'floppy-disk',
