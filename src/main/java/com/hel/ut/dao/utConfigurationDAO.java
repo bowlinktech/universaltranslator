@@ -213,4 +213,6 @@ public interface utConfigurationDAO {
     void updateConfigurationUpdateLog(configurationUpdateLogs updateLog) throws Exception;
     
     void deletConfigurationNote(Integer noteId) throws Exception;
+    
+    void deleteConfigurationFTPInformation(int transportId) throws Exception;
 }

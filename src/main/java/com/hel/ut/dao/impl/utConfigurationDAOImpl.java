@@ -2411,4 +2411,18 @@ public class utConfigurationDAOImpl implements utConfigurationDAO {
 	
         deleteConfigurationNote.executeUpdate();
     }
+    
+    /**
+     * The 'deleteConfigurationFTPInformation' function will remove the authorized receivers for the passed in connectionId.
+     *
+     * @param connectionId The connection Id to remove receivers for
+     */
+    @Override
+    @Transactional(readOnly = false)
+    public void deleteConfigurationFTPInformation(int transportId) {
+        Query query = sessionFactory.getCurrentSession().createSQLQuery("DELETE from rel_transportftpdetails where transportId = :transportId")
+	.setParameter("transportId", transportId);
+
+        query.executeUpdate();
+    }
 }

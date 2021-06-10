@@ -32,7 +32,7 @@
 	    <div class="form-container">
 		<spring:bind path="transportMethodId">
 		    <div id="transportMethodDiv" class="form-group ${status.error ? 'has-error' : '' }">
-			<form:select path="transportMethodId" id="transportMethod" class="form-control"  disabled="${transportDetails.id == 0 ? 'false' : 'true' }">
+			<form:select path="transportMethodId" id="transportMethod" class="form-control" rel="${transportDetails.transportMethodId}">
 			    <option value="">- Select -</option>
 			    <c:forEach items="${transportMethods}" var="transMethod" varStatus="tStatus">
 				<option value="${transportMethods[tStatus.index][0]}" <c:if test="${transportDetails.transportMethodId == transportMethods[tStatus.index][0]}">selected</c:if>>
@@ -212,43 +212,43 @@
 		    <spring:bind path="targetFileName">
 			<div class="targetFileNameDiv form-group ${status.error ? 'has-error' : '' }">
 			    <label class="control-label" for="targetFileName">What should the target file name be? * <span id="useSourceFileName"><input id="useSource" type="checkbox"> Use Source File Name</label></span>
-				    <form:input path="targetFileName" id="targetFileName" class="form-control" type="text" maxLength="255" disabled="${transportDetails.copiedTransportId > 0 ? 'true' : 'false'}" />
-				    <form:errors path="targetFileName" cssClass="control-label" element="label" />
-				    <c:if test="${transportDetails.copiedTransportId > 0}">
-					<form:hidden path="targetFileName" />
-				    </c:if>
-				<span id="targetFileNameMsg" class="control-label"></span>
+                            <form:input path="targetFileName" id="targetFileName" class="form-control" type="text" maxLength="255" disabled="${transportDetails.copiedTransportId > 0 ? 'true' : 'false'}" />
+                            <form:errors path="targetFileName" cssClass="control-label" element="label" />
+                            <c:if test="${transportDetails.copiedTransportId > 0}">
+                                <form:hidden path="targetFileName" />
+                            </c:if>
+                            <span id="targetFileNameMsg" class="control-label"></span>
 			</div>
 		    </spring:bind>
 		    <spring:bind path="appendDateTime">
-				<div class="form-group"  id="appendDateTimeDiv">
-					<label class="control-label" for="appendDateTime">Append Date and Time to file Name? *</label>
-					<div>
-					<label class="radio-inline">
-						<form:radiobutton id="appendDateTime" path="appendDateTime" value="1" disabled="${transportDetails.copiedTransportId > 0 ? 'true' : 'false'}" /> Yes
-					</label>
-					<label class="radio-inline">
-						<form:radiobutton id="appendDateTime" path="appendDateTime" value="0" disabled="${transportDetails.copiedTransportId > 0 ? 'true' : 'false'}" /> No
-					</label>
-					</div>
-					<c:if test="${transportDetails.copiedTransportId > 0}">
-					<form:hidden path="appendDateTime" />
-					</c:if>
-				</div>
+                        <div class="form-group"  id="appendDateTimeDiv">
+                            <label class="control-label" for="appendDateTime">Append Date and Time to file Name? *</label>
+                            <div>
+                            <label class="radio-inline">
+                                    <form:radiobutton id="appendDateTime" path="appendDateTime" value="1" disabled="${transportDetails.copiedTransportId > 0 ? 'true' : 'false'}" /> Yes
+                            </label>
+                            <label class="radio-inline">
+                                    <form:radiobutton id="appendDateTime" path="appendDateTime" value="0" disabled="${transportDetails.copiedTransportId > 0 ? 'true' : 'false'}" /> No
+                            </label>
+                            </div>
+                            <c:if test="${transportDetails.copiedTransportId > 0}">
+                                <form:hidden path="appendDateTime" />
+                            </c:if>
+                        </div>
 		    </spring:bind>
-			<spring:bind path="addTargetFileHeaderRow">
-				<div class="form-group"  id="addTargetFileHeaderRowDiv">
-					<label class="control-label" for="appendDateTime">Add header row to the target file? *<span class="badge badge-help" data-placement="top" title="" data-original-title="Select &quot;Yes&quot; if you would like a header row added to the target file. The header row will include the Field Name for all Used fields from the Field settings page.">?</span></label>
-					<div>
-						<label class="radio-inline">
-							<form:radiobutton id="addTargetFileHeaderRow1" path="addTargetFileHeaderRow" value="1" disabled="${transportDetails.copiedTransportId > 0 ? 'true' : 'false'}" /> Yes
-						</label>
-						<label class="radio-inline">
-							<form:radiobutton id="addTargetFileHeaderRow2" path="addTargetFileHeaderRow" value="0" disabled="${transportDetails.copiedTransportId > 0 ? 'true' : 'false'}" /> No
-						</label>
-					</div>
-				</div>
-			</spring:bind>
+                    <spring:bind path="addTargetFileHeaderRow">
+                        <div class="form-group"  id="addTargetFileHeaderRowDiv">
+                            <label class="control-label" for="appendDateTime">Add header row to the target file? *<span class="badge badge-help" data-placement="top" title="" data-original-title="Select &quot;Yes&quot; if you would like a header row added to the target file. The header row will include the Field Name for all Used fields from the Field settings page.">?</span></label>
+                            <div>
+                                <label class="radio-inline">
+                                    <form:radiobutton id="addTargetFileHeaderRow1" path="addTargetFileHeaderRow" value="1" disabled="${transportDetails.copiedTransportId > 0 ? 'true' : 'false'}" /> Yes
+                                </label>
+                                <label class="radio-inline">
+                                    <form:radiobutton id="addTargetFileHeaderRow2" path="addTargetFileHeaderRow" value="0" disabled="${transportDetails.copiedTransportId > 0 ? 'true' : 'false'}" /> No
+                                </label>
+                            </div>
+                        </div>
+                    </spring:bind>
 		</div>
 	    </div>
 	</div>
@@ -434,63 +434,70 @@
 		</div> 
 		<div class="row">
 		    <c:forEach items="${transportDetails.FTPFields}" var="ftpDetails" varStatus="field">
-			<div class="form-group col-md-6">
-			    <div class="form-group">
-				<label for="status">FTP <c:choose><c:when test="${ftpDetails.method == 1}">Get</c:when><c:otherwise>Push</c:otherwise></c:choose> Details</label>
-				<input name="FTPFields[${field.index}].method" class="form-control" type="hidden" value="${ftpDetails.method}"  />
-				<input name="FTPFields[${field.index}].id" id="id${ftpDetail.method}" class="form-control" type="hidden" value="${ftpDetails.id}"  />
-			    </div>
-			    <div id="protocol${ftpDetails.method}Div" class="form-group">
-				<label class="control-label" for="protocol${ftpDetails.method}">Protocol *</label>
-				<select name="FTPFields[${field.index}].protocol" id="protocol${ftpDetails.method}" rel="${ftpDetails.method}" class="form-control ftpProtocol">
-				    <option value="">- Select -</option>
-				    <option value="FTP" <c:if test="${ftpDetails.protocol == 'FTP'}">selected</c:if>>FTP</option>
-				    <option value="FTPS" <c:if test="${ftpDetails.protocol == 'FTPS'}">selected</c:if>>FTPS</option>
-				    <option value="SFTP" <c:if test="${ftpDetails.protocol == 'SFTP'}">selected</c:if>>SFTP</option>
-				    </select>
-				    <span id="protocol${ftpDetails.method}Msg" class="control-label"></span>
-			    </div>
-			    <div id="ip${ftpDetails.method}Div" class="form-group">
-				<label class="control-label" for="ip${ftpDetails.method}">Host *</label>
-				<input name="FTPFields[${field.index}].ip" id="ip${ftpDetails.method}" class="form-control" type="text" maxLength="45" value="${ftpDetails.ip}"  />
-				<span id="ip${ftpDetails.method}Msg" class="control-label"></span>
-			    </div>
-			    <div id="username${ftpDetails.method}Div" class="form-group">
-				<label class="control-label" for="username${ftpDetails.method}">Username *</label>
-				<input name="FTPFields[${field.index}].username" id="username${ftpDetails.method}" class="form-control" type="text" maxLength="45" value="${ftpDetails.username}"  />
-				<span id="username${ftpDetails.method}Msg" class="control-label"></span>
-			    </div>
-			    <div id="password${ftpDetails.method}Div" class="form-group">
-				<label class="control-label" for="password${ftpDetails.method}">Password *</label>
-				<input name="FTPFields[${field.index}].password" id="password${ftpDetails.method}" class="form-control" type="text" maxLength="45" value="${ftpDetails.password}"  />
-				<span id="password${ftpDetails.method}Msg" class="control-label"></span>
-			    </div>
-			    <div id="directory${ftpDetails.method}Div" class="form-group">
-				<label class="control-label" for="directory${ftpDetails.method}">Directory *</label>
-				<input name="FTPFields[${field.index}].directory" id="directory${ftpDetails.method}" class="form-control" type="text" maxLength="255" value="${ftpDetails.directory}"  />
-				<span id="directory${ftpDetails.method}Msg" class="control-label"></span>
-			    </div>
-			    <div id="port${ftpDetails.method}Div" class="form-group">
-				<label class="control-label" for="port${ftpDetails.method}">Port *</label>
-				<input name="FTPFields[${field.index}].port" id="port${ftpDetails.method}" class="form-control" type="text" maxLength="45" value="${ftpDetails.port}"  />
-				<span id="port${ftpDetails.method}Msg" class="control-label"></span>
-			    </div>
-			    <div class="form-group" <c:if test="${ftpDetails.certification == null || ftpDetails.certification == ''}">style="display:none" </c:if>>
-				    <label class="control-label">Existing Certifciation:</label>
-				    <input type="text" disabled value="${ftpDetails.certification}" class="form-control" />
-				<input type="hidden" id="certification${ftpDetails.method}" name="FTPFields[${field.index}].certification" value="${ftpDetails.certification}" />
-			    </div>
-			    <div id="certificationfileDiv${ftpDetails.method}" class="form-group ${status.error ? 'has-error' : '' }" style="display:none;">
-				<label class="control-label" for="certification"><c:if test="${ftpDetails.certification != null}">New </c:if>Certification File </label>
-				<input type="file" id="file${ftpDetails.method}" name="FTPFields[${field.index}].file" class="form-control"  />
-				<span id="certificationfileMsg" class="control-label"></span>
-			    </div>
-			    <c:if test="${ftpDetails.ip != ''}">
-				<div class="pull-right">
-				    <a href="javascript:void(0);" class="btn btn-primary btn-xs testFTP<c:choose><c:when test="${ftpDetails.method == 1}">Get</c:when><c:otherwise>Push</c:otherwise></c:choose>"  title="Test FTP Connection">Test FTP Connection</a>
+                        <c:if test="${ftpDetails.method == 2}">
+			    <input name="FTPFields[${field.index}].method" class="form-control" type="hidden" value="${ftpDetails.method}"  />
+			    <input name="FTPFields[${field.index}].id" id="id${ftpDetail.method}" class="form-control" type="hidden" value="${ftpDetails.id}"  />
+			    <div class="form-group col-md-6">
+				<div id="protocol${ftpDetails.method}Div" class="form-group">
+				    <label class="control-label" for="protocol${ftpDetails.method}">Protocol *</label>
+				    <select name="FTPFields[${field.index}].protocol" id="protocol${ftpDetails.method}" rel="${ftpDetails.method}" class="form-control ftpProtocol">
+					<option value="">- Select -</option>
+					<option value="FTP" <c:if test="${ftpDetails.protocol == 'FTP'}">selected</c:if>>FTP</option>
+					<%--<option value="FTPS" <c:if test="${ftpDetails.protocol == 'FTPS'}">selected</c:if>>FTPS</option>--%>
+					<option value="SFTP" <c:if test="${ftpDetails.protocol == 'SFTP'}">selected</c:if>>SFTP</option>
+					</select>
+					<span id="protocol${ftpDetails.method}Msg" class="control-label"></span>
 				</div>
-			    </c:if>
-			</div>
+				<div id="ip${ftpDetails.method}Div" class="form-group">
+				    <label class="control-label" for="ip${ftpDetails.method}">Host *</label>
+				    <input name="FTPFields[${field.index}].ip" id="ip${ftpDetails.method}" class="form-control" type="text" maxLength="45" value="${ftpDetails.ip}"  />
+				    <span id="ip${ftpDetails.method}Msg" class="control-label"></span>
+				</div>
+				<div id="username${ftpDetails.method}Div" class="form-group">
+				    <label class="control-label" for="username${ftpDetails.method}">Username *</label>
+				    <input name="FTPFields[${field.index}].username" id="username${ftpDetails.method}" class="form-control" type="text" maxLength="45" value="${ftpDetails.username}"  />
+				    <span id="username${ftpDetails.method}Msg" class="control-label"></span>
+				</div>
+				
+				<%--<div id="logontype${ftpDetails.method}Div" class="form-group">
+				    <label class="control-label" for="logontype${ftpDetails.method}">Logon Type *</label>
+				    <select name="FTPFields[${field.index}].logontype" id="logontype${ftpDetails.method}" rel="${ftpDetails.method}" class="form-control logontype">
+					<option value="">- Select -</option>
+					<option value="keyfile" <c:if test="${ftpDetails.logontype == 'keyfile'}">selected</c:if>>Key file</option>
+					<option value="normal" <c:if test="${ftpDetails.logontype == 'normal'}">selected</c:if>>Normal</option>
+				    </select>
+				    <span id="logontype${ftpDetails.method}Msg" class="control-label"></span>
+				</div>--%>
+				
+				
+				
+				<div id="password${ftpDetails.method}Div" class="form-group">
+				    <label class="control-label" for="password${ftpDetails.method}">Password *</label>
+				    <input name="FTPFields[${field.index}].password" id="password${ftpDetails.method}" class="form-control" type="text" maxLength="45" value="${ftpDetails.password}"  />
+				    <span id="password${ftpDetails.method}Msg" class="control-label"></span>
+				</div>
+				<div id="directory${ftpDetails.method}Div" class="form-group">
+				    <label class="control-label" for="directory${ftpDetails.method}">Remote FTP Directory * <small>(Remote file will be moved to the File Drop location above.)</small></label>
+				    <input name="FTPFields[${field.index}].directory" id="ftpdirectory${ftpDetails.method}" class="form-control" type="text" maxLength="255" value="${ftpDetails.directory}"  />
+				    <span id="directory${ftpDetails.method}Msg" class="control-label"></span>
+				</div>
+				<div id="port${ftpDetails.method}Div" class="form-group">
+				    <label class="control-label" for="port${ftpDetails.method}">Port *</label>
+				    <input name="FTPFields[${field.index}].port" id="port${ftpDetails.method}" class="form-control" type="text" maxLength="45" value="${ftpDetails.port}"  />
+				    <span id="port${ftpDetails.method}Msg" class="control-label"></span>
+				</div>
+				<div class="form-group" <c:if test="${ftpDetails.certification == null || ftpDetails.certification == ''}">style="display:none" </c:if>>
+					<label class="control-label">Existing Certifciation:</label>
+					<input type="text" disabled value="${ftpDetails.certification}" class="form-control" />
+				    <input type="hidden" id="certification${ftpDetails.method}" name="FTPFields[${field.index}].certification" value="${ftpDetails.certification}" />
+				</div>
+				<div id="certificationfileDiv${ftpDetails.method}" class="form-group ${status.error ? 'has-error' : '' }" style="display:none;">
+				    <label class="control-label" for="certification"><c:if test="${ftpDetails.certification != null}">New </c:if>Certification File </label>
+				    <input type="file" id="file${ftpDetails.method}" name="FTPFields[${field.index}].file" class="form-control"  />
+				    <span id="certificationfileMsg" class="control-label"></span>
+				</div>
+			    </div>
+			</c:if>
 		    </c:forEach>
 		</div>
 	    </div>

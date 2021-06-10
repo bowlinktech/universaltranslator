@@ -1842,5 +1842,10 @@ public class utConfigurationManagerImpl implements utConfigurationManager {
 	
 	return reportBody;
     }
+    
+    @Override
+    public void deleteConfigurationFTPInformation(int transportId) throws Exception {
+	utConfigurationDAO.deleteConfigurationFTPInformation(transportId);
+    }
 }
 

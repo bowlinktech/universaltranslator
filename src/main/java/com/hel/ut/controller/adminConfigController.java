@@ -52,11 +52,8 @@ import com.hel.ut.model.mainHL7Segments;
 import com.hel.ut.reference.fileSystem;
 import com.hel.ut.service.sysAdminManager;
 import com.hel.ut.service.userManager;
-
-
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.InitBinder;
-
 import com.hel.ut.model.configurationWebServiceFields;
 import com.hel.ut.model.configurationconnectionfieldmappings;
 import com.hel.ut.model.hisps;
@@ -66,7 +63,6 @@ import com.hel.ut.model.validationType;
 import com.hel.ut.service.emailMessageManager;
 import com.hel.ut.service.hispManager;
 import com.hel.ut.service.transactionInManager;
-
 import java.util.HashMap;
 import java.util.Map;
 import javax.servlet.http.HttpSession;
@@ -177,7 +173,6 @@ public class adminConfigController {
     /**
      * The '/list' GET request will serve up the existing list of configurations in the system
      *
-     * @param page	The page parameter will hold the page to view when pagination is built.
      * @return	The utConfiguration page list
      *
      * @Objects	(1) An object containing all the found configurations
@@ -272,12 +267,12 @@ public class adminConfigController {
 	mav.addObject("targetconfigurations", validTargetConfigurations);
 
         return mav;
-
     }
 
     /**
      * The '/create' GET request will serve up the create new utConfiguration page
      *
+     * @param session
      * @return	The create new utConfiguration form
      *
      * @Objects	(1) An object with a new configuration
@@ -318,7 +313,7 @@ public class adminConfigController {
      * @param result	The validation result
      * @param redirectAttr	The variable that will hold values that can be read after the redirect
      * @param action	The variable that holds which button was pressed
-     *
+     * @param authentication     *
      * @return	Will return the utConfiguration details page on "Save" Will return the utConfiguration create page on error
      * @throws Exception
      */
@@ -370,7 +365,6 @@ public class adminConfigController {
             ModelAndView mav = new ModelAndView(new RedirectView("transport"));
             return mav;
         }
-
     }
 
     /**
@@ -447,7 +441,6 @@ public class adminConfigController {
 		session.setAttribute("configHL7", false);
 		session.setAttribute("configCCD", false);
 	    }
-	    
         }
 	
 	//Get a list of other active sourceconfigurations
@@ -461,7 +454,6 @@ public class adminConfigController {
 	mav.addObject("showAllConfigOptions", session.getAttribute("showAllConfigOptions"));
 
         return mav;
-	
     }
 
     /**
@@ -472,6 +464,7 @@ public class adminConfigController {
      * @param result
      * @param redirectAttr
      * @param action
+     * @param authentication
      * @return	Will return the utConfiguration details page.
      *
      * @Objects	(1) The object containing all the information for the clicked configuration (2) The 'id' of the clicked configuration that will be used in the menu and action bar
@@ -582,7 +575,6 @@ public class adminConfigController {
             ModelAndView mav = new ModelAndView(new RedirectView("transport"));
             return mav;
         }
-
     }
 
     /**
@@ -776,11 +768,9 @@ public class adminConfigController {
 	
 	mav.addObject("transportDetails", transportDetails);
 
-        
         transportDetails.setconfigId(configId);
 	transportDetails.setThreshold(configurationDetails.getThreshold());
         
-	
 	if(transportDetails.getRestAPIType() == 2) {
 	    session.setAttribute("showAllConfigOptions",false);
 	}
@@ -859,6 +849,7 @@ public class adminConfigController {
      * @param redirectAttr
      * @param action
      * @param domain1
+     * @param authentication
      *
      * @return	This function will either return to the transport details screen or redirect to the next step (Field Mappings)
      * @throws java.lang.Exception
@@ -920,23 +911,36 @@ public class adminConfigController {
 	     session.setAttribute("showAllConfigOptions", false);
 	}
 	
-        //Need to set up the FTP information if any has been entered
-        if (!transportDetails.getFTPFields().isEmpty()) {
-	    
-	    fileSystem dir = new fileSystem();
-	    
-	    String directory = myProps.getProperty("ut.directory.utRootDir");
-	    
-            for (configurationFTPFields ftpFields : transportDetails.getFTPFields()) {
-		if(!"".equals(ftpFields.getip())) {
-		    dir.creatFTPDirectory(directory+ftpFields.getdirectory());
-		
-		    ftpFields.settransportId(transportId);
-		    utconfigurationTransportManager.saveTransportFTP(configurationDetails.getorgId(), ftpFields);
+	if(configurationDetails.getType() == 2) {
+	    //Need to set up the FTP information if any has been entered
+	    if(transportDetails.gettransportMethodId() != 3) {
+		utconfigurationmanager.deleteConfigurationFTPInformation(transportId);
+	    }
+	    else {
+		if (transportDetails.gettransportMethodId() == 3 && !transportDetails.getFTPFields().isEmpty()) {
+		    for (configurationFTPFields ftpFields : transportDetails.getFTPFields()) {
+			if(ftpFields.getip() != null) {
+			    if(!"".equals(ftpFields.getip())) {
+				ftpFields.settransportId(transportId);
+				utconfigurationTransportManager.saveTransportFTP(configurationDetails.getorgId(), ftpFields);
+			    }
+			}
+		    }
 		}
-            }
-        }
-	
+	    }
+	}
+	else {
+	    if (!transportDetails.getFTPFields().isEmpty()) {
+		for (configurationFTPFields ftpFields : transportDetails.getFTPFields()) {
+		    if(ftpFields.getip() != null) {
+			if(!"".equals(ftpFields.getip())) {
+			    ftpFields.settransportId(transportId);
+			    utconfigurationTransportManager.saveTransportFTP(configurationDetails.getorgId(), ftpFields);
+			}
+		    }
+		}
+	    }
+	}
 	
         // need to get file drop info if any has been entered 
 	if (!transportDetails.getFileDropFields().isEmpty()) {
@@ -953,7 +957,6 @@ public class adminConfigController {
             }
         }
 	
-	
 	//Direct Message Transport
 	if(transportDetails.getDirectMessageFields() != null) {
 	    if(!transportDetails.getDirectMessageFields().isEmpty()) {
@@ -968,7 +971,6 @@ public class adminConfigController {
 		}
 	    }
 	}
-	
 	
         /**
          * Need to set the associated messages types
@@ -1047,7 +1049,6 @@ public class adminConfigController {
 		}
             }
         }
-
     }
 
     /**
@@ -1078,7 +1079,6 @@ public class adminConfigController {
 	
 	//Get the utConfiguration details for the selected config
         utConfiguration configurationDetails = utconfigurationmanager.getConfigurationById(configId);
-	
 	
         mav.setViewName("/administrator/configurations/messagespecs");
 
@@ -1128,8 +1128,7 @@ public class adminConfigController {
         mav.addObject("CCD", session.getAttribute("configCCD"));
 	mav.addObject("showAllConfigOptions",session.getAttribute("showAllConfigOptions"));
 	
-	
-	 // Get organization directory name
+	// Get organization directory name
         Organization orgDetails = organizationmanager.getOrganizationById(configurationDetails.getorgId());
 	
 	mav.addObject("cleanOrgURL",orgDetails.getCleanURL());
@@ -1150,7 +1149,6 @@ public class adminConfigController {
 	DateFormat dft = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 	requiredFormat.setTimeZone(timeZone);
 	String dateinTZ = "";
-	
 	
 	//Get latest configuration note
 	List<configurationUpdateLogs> configNotes = utconfigurationmanager.getConfigurationUpdateLogs(configId);
@@ -1184,17 +1182,12 @@ public class adminConfigController {
 	    @Valid @ModelAttribute(value = "messageSpecs") configurationMessageSpecs messageSpecs, 
 	    BindingResult result, RedirectAttributes redirectAttr, @RequestParam String action, Authentication authentication) throws Exception {
 
-	
-	/**
-         * Need to pass the selected transport Type
-         */
+	//Need to pass the selected transport Type
         configurationTransport transportDetails = utconfigurationTransportManager.getTransportDetails(messageSpecs.getconfigId());
 	
 	utConfiguration configDetails = utconfigurationmanager.getConfigurationById(messageSpecs.getconfigId());
 
-        /**
-         * Save/Update the configuration message specs
-         */
+        //Save/Update the configuration message specs
 	try {
 	    utconfigurationmanager.updateMessageSpecs(messageSpecs, transportDetails.getId(), transportDetails.getfileType(), messageSpecs.isHasHeader(), messageSpecs.getFileLayout());
 	}
@@ -1207,7 +1200,6 @@ public class adminConfigController {
 	}
 	
         redirectAttr.addFlashAttribute("savedStatus", "updated");
-	
 	
 	if(configDetails.getstepsCompleted() < 3) {
 	    configDetails.setstepsCompleted(3);
@@ -1227,9 +1219,7 @@ public class adminConfigController {
 	updateLog.setUpdateMade("Configuration Message Specs Updated");
 	utconfigurationmanager.saveConfigurationUpdateLog(updateLog);
 
-        /**
-         * If the "Save" button was pressed
-         */
+        //If the "Save" button was pressed
         if (action.equals("save")) {
             ModelAndView mav = new ModelAndView(new RedirectView("messagespecs"));
             return mav;
@@ -1237,7 +1227,6 @@ public class adminConfigController {
 	   ModelAndView mav = new ModelAndView(new RedirectView("mappings"));
 	   return mav;
         }
-
     }
 
     /**
@@ -1281,7 +1270,6 @@ public class adminConfigController {
         configurationDetails.settransportMethod(utconfigurationTransportManager.getTransportMethodById(transportDetails.gettransportMethodId()));
 	mav.addObject("configurationDetails", configurationDetails);
 
-	
         //Get the transport fields
         List<configurationFormFields> fields = utconfigurationTransportManager.getConfigurationFields(configId, transportDetails.getId());
         transportDetails.setFields(fields);
@@ -1298,7 +1286,6 @@ public class adminConfigController {
 	DateFormat dft = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 	requiredFormat.setTimeZone(timeZone);
 	String dateinTZ = "";
-	
 	
 	//Get latest configuration note
 	List<configurationUpdateLogs> configNotes = utconfigurationmanager.getConfigurationUpdateLogs(configId);
@@ -1515,7 +1502,6 @@ public class adminConfigController {
 	requiredFormat.setTimeZone(timeZone);
 	String dateinTZ = "";
 	
-	
 	//Get latest configuration note
 	List<configurationUpdateLogs> configNotes = utconfigurationmanager.getConfigurationUpdateLogs(configId);
 	if(!configNotes.isEmpty()) {
@@ -1532,6 +1518,9 @@ public class adminConfigController {
      * The '/getMacroDetails.do' function will display the modal window for the selected macro form.
      *
      * @param macroId The id of the selected macro
+     * @param session
+     * @return 
+     * @throws java.lang.Exception
      *
      */
     @RequestMapping(value = "/getMacroDetails.do", method = RequestMethod.GET)
@@ -1610,6 +1599,7 @@ public class adminConfigController {
      *
      * @param session
      * @param categoryId
+     * @param authentication
      * @return 
      * @throws java.lang.Exception 
      */
@@ -2110,7 +2100,6 @@ public class adminConfigController {
 	requiredFormat.setTimeZone(timeZone);
 	String dateinTZ = "";
 	
-	
 	//Get latest configuration note
 	List<configurationUpdateLogs> configNotes = utconfigurationmanager.getConfigurationUpdateLogs(configId);
 	if(!configNotes.isEmpty()) {
@@ -2222,7 +2211,6 @@ public class adminConfigController {
             //ModelAndView mav = new ModelAndView(new RedirectView("preprocessing"));
             return mav;
         }
-
     }
 
     /**
@@ -2268,7 +2256,7 @@ public class adminConfigController {
         HL7Details hl7Details = utconfigurationmanager.getHL7Details(configId);
         int HL7Id = 0;
 
-        /* If null then create an empty HL7 Detail object */
+        // If null then create an empty HL7 Detail object
         if (hl7Details == null) {
             /* Get a list of available HL7 Sepcs */
             List<mainHL7Details> HL7Specs = sysAdminManager.getHL7List();
@@ -2300,7 +2288,6 @@ public class adminConfigController {
             hl7Details.setHL7Segments(HL7Segments);
 
             mav.addObject("HL7Details", hl7Details);
-
         }
 
         //Get the transport fields
@@ -2319,6 +2306,7 @@ public class adminConfigController {
      * @param hl7SpecId The id of the selected hl7 standard spec
      *
      * @return This function will return a 1 back to the calling jquery call.
+     * @throws java.lang.Exception
      */
     @RequestMapping(value = "/loadHL7Spec", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
     public @ResponseBody
@@ -2358,11 +2346,8 @@ public class adminConfigController {
 
                 utconfigurationmanager.saveHL7Element(newHL7Element);
             }
-
         }
-
         return 1;
-
     }
 
     /**
@@ -2405,16 +2390,11 @@ public class adminConfigController {
                                     utconfigurationmanager.updateHL7ElementComponent(component);
                                 }
                             }
-
                         }
-
                     }
-
                 }
             }
-        } catch (Exception e) {
-
-        }
+        } catch (Exception e) {}
 	
 	//Log the update
 	utUser userDetails = userManager.getUserByUserName(authentication.getName());
@@ -2427,7 +2407,6 @@ public class adminConfigController {
         redirectAttr.addFlashAttribute("savedStatus", "updated");
         ModelAndView mav = new ModelAndView(new RedirectView("HL7"));
         return mav;
-
     }
 
     /**
@@ -2586,9 +2565,7 @@ public class adminConfigController {
         ModelAndView mav = new ModelAndView(new RedirectView("HL7"));
         return mav;
     }
-
     
-
     /**
      * The '/preprocessing' GET request will display the utConfiguration preprocessing page
      * @param session
@@ -2741,13 +2718,11 @@ public class adminConfigController {
     Integer removeElementComponent(@RequestParam(value = "componentId", required = true) int componentId) {
 
         utconfigurationmanager.removeHL7ElementComponent(componentId);
-
         return 1;
     }
 
     /**
      * The '/removeElement.do' function will remove the selected HL7 element
-     *
      *
      * @param elementId
      * @return 
@@ -2757,7 +2732,6 @@ public class adminConfigController {
     Integer removeElement(@RequestParam(value = "elementId", required = true) int elementId) {
 
         utconfigurationmanager.removeHL7Element(elementId);
-
         return 1;
     }
 
@@ -2773,7 +2747,6 @@ public class adminConfigController {
     Integer removeSegment(@RequestParam(value = "segmentId", required = true) int segmentId) {
 
         utconfigurationmanager.removeHL7Segment(segmentId);
-
         return 1;
     }
 
@@ -2832,7 +2805,6 @@ public class adminConfigController {
 	mav.addObject("showAllConfigOptions",session.getAttribute("showAllConfigOptions"));
 
         return mav;
-
     }
 
     /**
@@ -2920,7 +2892,6 @@ public class adminConfigController {
     /**
      * The '/changeConnectionStatus.do' POST request will update the passed in connection status.
      *
-     *
      * @param transportId
      * @return The method will return a 1 back to the calling ajax function.
      * @throws java.lang.Exception
@@ -2935,12 +2906,10 @@ public class adminConfigController {
         cwsf.setSenderDomainList(utconfigurationTransportManager.getWSSenderList(transportId));
         mav.addObject("cwsf", cwsf);
         return mav;
-
     }
 
     /**
      * The '/saveDomainSenders.do' POST request will update or add new senders.
-     *
      *
      * @param request
      * @param cwsf
@@ -2979,7 +2948,6 @@ public class adminConfigController {
         mav.addObject("success", success);
         mav.addObject("senders", senders);
         return mav;
-
     }
     
     
@@ -3136,12 +3104,10 @@ public class adminConfigController {
 	utconfigurationmanager.saveSchedule(newSchedule);
 
         return id;
-
     }
 
     /**
      * The '/getHELRegistryConfigurations' GET request will return a list of registry configurations 
-     *
      *
      * @return The function will return a list of active registry configurations
      * @throws java.lang.Exception
@@ -3150,10 +3116,8 @@ public class adminConfigController {
     public @ResponseBody List<configuration> getHELRegistryOrganizations() throws Exception {
 	
 	List<configuration> registryConfigurations = registryconfigurationmanager.getAllActiveConfigurations();
-	
 	return registryConfigurations;
     }
-    
     
     /**
      * The '/getSourceConfigurationFields' GET request will return a list of available fields for the 
@@ -3190,7 +3154,6 @@ public class adminConfigController {
 	utconfigurationmanager.updateConfiguration(configDetails);
 	
         return 1;
-
     }
     
     /**
@@ -3252,7 +3215,6 @@ public class adminConfigController {
         mav.addObject("currentPage", page);
 
         return mav;
-
     }
     
     /**
@@ -3291,7 +3253,6 @@ public class adminConfigController {
         return mav;
     }
 
-    
     /**
      * The '/createCrosswalk' function will be used to create a new crosswalk
      *
@@ -3332,7 +3293,6 @@ public class adminConfigController {
 	int lastId = messagetypemanager.uploadNewFileForCrosswalk(crosswalkDetails);
 	
 	return lastId;
-
     }
 
     /**
@@ -3353,7 +3313,6 @@ public class adminConfigController {
         Long nameExists = messagetypemanager.checkCrosswalkName(name, orgId);
 
         return nameExists;
-
     }
 
     
@@ -3419,11 +3378,8 @@ public class adminConfigController {
 	
 	utconfigurationTransportManager.populateFieldsFromHELConfiguration(configurationId, transportDetailsId,transportDetails.getHelRegistryConfigId(),transportDetails.getHelSchemaName(), true);
 	
-	
 	return "1";
-	
     }
-    
     
     /**
      * The 'createDataTranslationDownload' GET request will return modal fro choosing a tier to create the crosswalk form.
@@ -3813,7 +3769,6 @@ public class adminConfigController {
 
         ModelAndView mav = new ModelAndView(new RedirectView("mappings"));
         return mav;
-
     }
     
     /**
@@ -3870,7 +3825,7 @@ public class adminConfigController {
 	//we get image location here 
 	FileInputStream fis = new FileInputStream(configDetailFile);
 	worker.parseXHtml(pdfWriter, document, fis);
-;
+
 	fis.close();
 	document.close();
 	pdfWriter.close();
@@ -3882,10 +3837,8 @@ public class adminConfigController {
 	return configDetails.getconfigName().toLowerCase().replaceAll(" ", "-");
     }
 
-    
     @RequestMapping(value = "/printConfig/{file}", method = RequestMethod.GET)
-    public void printConfig(@PathVariable("file") String file,HttpServletResponse response
-    ) throws Exception {
+    public void printConfig(@PathVariable("file") String file,HttpServletResponse response) throws Exception {
 	
 	File configPrintFile = new File ("/tmp/" + file + ".pdf");
 	InputStream is = new FileInputStream(configPrintFile);
@@ -4394,7 +4347,6 @@ public class adminConfigController {
 	}
 
         return mav;
-
     }
     
     /**
@@ -4474,7 +4426,6 @@ public class adminConfigController {
 	redirectAttr.addFlashAttribute("savedStatus", "created");
 	ModelAndView mav = new ModelAndView(new RedirectView("notes"));
 	return mav;
-
     }
     
     /**
@@ -4493,7 +4444,6 @@ public class adminConfigController {
 	redirectAttr.addFlashAttribute("savedStatus", "updated");
 	ModelAndView mav = new ModelAndView(new RedirectView("notes"));
 	return mav;
-
     }
     
     /**
@@ -4719,7 +4669,6 @@ public class adminConfigController {
 
 			}
 
-
 			FileOutputStream fileOut = new FileOutputStream("/tmp/" + fileName + ".xlsx");
 			workbook.write(fileOut);
 			fileOut.close();
@@ -4742,8 +4691,7 @@ public class adminConfigController {
     } 
     
     @RequestMapping(value = "/downloadDTCWExcelFile/{file}", method = RequestMethod.GET)
-    public void downloadDTCWExcelFile(@PathVariable("file") String file,HttpServletResponse response
-    ) throws Exception {
+    public void downloadDTCWExcelFile(@PathVariable("file") String file,HttpServletResponse response) throws Exception {
 	
 	File cwFile = new File ("/tmp/" + file + ".xlsx");
 	
@@ -4767,4 +4715,18 @@ public class adminConfigController {
 	 // close stream and return to view
 	response.flushBuffer();
     } 
+    
+    /**
+     * The 'deleteConfigurationFTPInformation.do' method will remove the FTP information for the passed in configuration.
+     * @param transportId
+     * @return 
+     * @throws java.lang.Exception
+     */
+    @RequestMapping(value = "/deleteConfigurationFTPInformation.do", method = RequestMethod.POST)
+    public @ResponseBody
+    Integer deleteConfigurationFTPInformation(@RequestParam int transportId) throws Exception {
+
+        utconfigurationmanager.deleteConfigurationFTPInformation(transportId);
+        return 1;
+    }
 }
