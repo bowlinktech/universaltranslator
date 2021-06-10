@@ -452,11 +452,6 @@
 				    <input type="file" id="file${ftpDetails.method}" name="FTPFields[${field.index}].file" class="form-control"  />
 				    <span id="certificationfileMsg" class="control-label"></span>
 				</div>
-				<c:if test="${ftpDetails.ip != ''}">
-				    <div class="pull-right">
-					<a href="javascript:void(0);" class="btn btn-primary btn-xs testFTP<c:choose><c:when test="${ftpDetails.method == 1}">Get</c:when><c:otherwise>Push</c:otherwise></c:choose>"  title="Test FTP Connection">Test FTP Connection</a>
-				    </div>
-				</c:if>
 			    </div>
 			</c:if>
 		    </c:forEach>

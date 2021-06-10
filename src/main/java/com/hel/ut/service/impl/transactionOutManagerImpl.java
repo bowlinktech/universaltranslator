@@ -16,6 +16,12 @@ import com.hel.ut.restAPI.directManager;
 import com.hel.ut.restAPI.restfulManager;
 import com.hel.ut.service.*;
 import com.hel.ut.webServices.WSManager;
+import com.jcraft.jsch.Channel;
+import com.jcraft.jsch.ChannelSftp;
+import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.JSchException;
+import com.jcraft.jsch.Session;
+import com.jcraft.jsch.SftpException;
 import com.registryKit.registry.helRegistry;
 import com.registryKit.registry.helRegistryManager;
 import com.registryKit.registry.submittedMessages.submittedMessage;
@@ -23,7 +29,6 @@ import com.registryKit.registry.submittedMessages.submittedMessageManager;
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.net.ftp.FTPClient;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -56,6 +61,8 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.commons.net.ftp.FTPClient;
+import org.apache.commons.net.ftp.FTPReply;
 
 /**
  *
@@ -2246,53 +2253,231 @@ public class transactionOutManagerImpl implements transactionOutManager {
 		
 		configurationFTPFields FTPPushDetails = configurationTransportManager.getTransportFTPDetailsPush(transportDetails.getId());
 		
-		FTPClient client = new FTPClient();
-		FileInputStream fis = null;
+		if("SFTP".equals(FTPPushDetails.getprotocol().trim())) {
 		
-		try {
-		    client.connect(FTPPushDetails.getip());
-		    client.login(FTPPushDetails.getusername(), FTPPushDetails.getpassword());
-		    client.setDefaultPort(FTPPushDetails.getport());
-		    client.changeWorkingDirectory(FTPPushDetails.getdirectory());
-		    
-		    String filename = batchDownload.getOutputFileName();
-		    
-		    fis = new FileInputStream(archiveFile);
-		    
-		    client.storeFile(filename, fis);
-		    client.logout();
-		    
-		    ba = new batchdownloadactivity();
-		    ba.setActivity("Successfully FTPd the target file: " +archiveFile.getAbsolutePath()+ " to the following directory: "+FTPPushDetails.getdirectory() + " for IP: " + FTPPushDetails.getip() + " Port:" + FTPPushDetails.getport());
-		    ba.setBatchDownloadId(batchDownload.getId());
-		    transactionOutDAO.submitBatchActivityLog(ba);
-		    
-		}
-		catch (IOException e) {
-		    updateTargetBatchStatus(batchDownload.getId(), 58, "endDateTime");
-		    
-		    ba = new batchdownloadactivity();
-		    ba.setActivity("Failed to FTP the target file: " +archiveFile.getAbsolutePath()+ " to the following directory: "+FTPPushDetails.getdirectory() + " for IP: " + FTPPushDetails.getip() + " Port:" + FTPPushDetails.getport());
-		    ba.setBatchDownloadId(batchDownload.getId());
-		    transactionOutDAO.submitBatchActivityLog(ba);
-		    
-		    ba = new batchdownloadactivity();
-		    ba.setActivity("FTP Error: " + e.getMessage());
-		    ba.setBatchDownloadId(batchDownload.getId());
-		    transactionOutDAO.submitBatchActivityLog(ba);
-		}
-		finally {
+		    JSch jSch = new JSch();
+
+		    Session session = null;
+		    Channel channel = null;
+		    ChannelSftp channelSftp = null;
+
 		    try {
-			if (fis != null) {
-			    fis.close();
+			//If using Key File do this below
+			/*
+			    String privateKey = "LOCATION OF KEY FILE";
+			    jSch.addIdentity(privateKey, "Private Key for Key file");
+			*/
+
+			session = jSch.getSession(FTPPushDetails.getusername(),FTPPushDetails.getip(),FTPPushDetails.getport());
+
+			// Set password here if not using key file
+			session.setPassword(FTPPushDetails.getpassword());
+
+			java.util.Properties config = new java.util.Properties();
+			config.put("StrictHostKeyChecking", "no");
+			session.setConfig(config);
+
+			session.connect();
+
+			channel = session.openChannel("sftp");
+			channelSftp.cd(FTPPushDetails.getdirectory());
+
+			String filename = batchDownload.getOutputFileName();
+
+			FileInputStream fis = new FileInputStream(archiveFile);
+
+			try {
+			    channelSftp.put(fis, batchDownload.getOutputFileName());
+
+			    ba = new batchdownloadactivity();
+			    ba.setActivity("Successfully FTPd the target file: " +batchDownload.getOutputFileName()+ " to the following directory: "+FTPPushDetails.getdirectory() + " for IP: " + FTPPushDetails.getip() + " Port:" + FTPPushDetails.getport());
+			    ba.setBatchDownloadId(batchDownload.getId());
+			    transactionOutDAO.submitBatchActivityLog(ba);
 			}
-			client.disconnect();
-		    } catch (IOException e) {
+			catch (SftpException e) {
+			    updateTargetBatchStatus(batchDownload.getId(), 58, "endDateTime");
+
+			    StringWriter errors = new StringWriter();
+			    e.printStackTrace(new PrintWriter(errors));
+
+			    ba = new batchdownloadactivity();
+			    ba.setActivity("Failed to FTP the target file: " +batchDownload.getOutputFileName()+ " to the following directory: "+FTPPushDetails.getdirectory() + " for IP: " + FTPPushDetails.getip() + " Port:" + FTPPushDetails.getport());
+			    ba.setBatchDownloadId(batchDownload.getId());
+			    transactionOutDAO.submitBatchActivityLog(ba);
+
+			    ba = new batchdownloadactivity();
+			    ba.setActivity("FTP Error: " + errors.toString());
+			    ba.setBatchDownloadId(batchDownload.getId());
+			    transactionOutDAO.submitBatchActivityLog(ba);
+
+			    String emailBody = "IP: " + FTPPushDetails.getip() + "<br/> Port:" + FTPPushDetails.getport() + "<br />Folder: " + FTPPushDetails.getdirectory() + "<br />Config Id:" + configDetails.getId() + "<br /><br />Error:<br />"+errors.toString();
+			    mailMessage mail = new mailMessage();
+			    mail.setfromEmailAddress("support@health-e-link.net");
+			    mail.setmessageBody(emailBody);
+			    mail.setmessageSubject("Error Remote FTP PUSH file " + myProps.getProperty("server.identity"));
+			    mail.settoEmailAddress(myProps.getProperty("admin.email"));
+			    emailMessageManager.sendEmail(mail);
+
+			    e.printStackTrace();
+		       }
+		    }
+		    catch (JSchException e) {
+
 			updateTargetBatchStatus(batchDownload.getId(), 58, "endDateTime");
+
+			StringWriter errors = new StringWriter();
+			e.printStackTrace(new PrintWriter(errors));
+
+			ba = new batchdownloadactivity();
+			ba.setActivity("Failed to FTP the target file: " +batchDownload.getOutputFileName()+ " to the following directory: "+FTPPushDetails.getdirectory() + " for IP: " + FTPPushDetails.getip() + " Port:" + FTPPushDetails.getport());
+			ba.setBatchDownloadId(batchDownload.getId());
+			transactionOutDAO.submitBatchActivityLog(ba);
+
+			ba = new batchdownloadactivity();
+			ba.setActivity("FTP Error: " + errors.toString());
+			ba.setBatchDownloadId(batchDownload.getId());
+			transactionOutDAO.submitBatchActivityLog(ba);
+
+			String emailBody = "IP: " + FTPPushDetails.getip() + "<br/> Port:" + FTPPushDetails.getport() + "<br />Folder: " + FTPPushDetails.getdirectory() + "<br />Config Id:" + configDetails.getId() + "<br /><br />Error:<br />"+errors.toString();
+			mailMessage mail = new mailMessage();
+			mail.setfromEmailAddress("support@health-e-link.net");
+			mail.setmessageBody(emailBody);
+			mail.setmessageSubject("Error Remote FTP PUSH file " + myProps.getProperty("server.identity"));
+			mail.settoEmailAddress(myProps.getProperty("admin.email"));
+			emailMessageManager.sendEmail(mail);
+
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		    }
+		    catch (IOException e) {
+
+			updateTargetBatchStatus(batchDownload.getId(), 58, "endDateTime");
+
+			StringWriter errors = new StringWriter();
+			e.printStackTrace(new PrintWriter(errors));
+
+			ba = new batchdownloadactivity();
+			ba.setActivity("Failed to FTP the target file: " +batchDownload.getOutputFileName()+ " to the following directory: "+FTPPushDetails.getdirectory() + " for IP: " + FTPPushDetails.getip() + " Port:" + FTPPushDetails.getport());
+			ba.setBatchDownloadId(batchDownload.getId());
+			transactionOutDAO.submitBatchActivityLog(ba);
+
+			ba = new batchdownloadactivity();
+			ba.setActivity("FTP Error: " + errors.toString());
+			ba.setBatchDownloadId(batchDownload.getId());
+			transactionOutDAO.submitBatchActivityLog(ba);
+
+			String emailBody = "IP: " + FTPPushDetails.getip() + "<br/> Port:" + FTPPushDetails.getport() + "<br />Folder: " + FTPPushDetails.getdirectory() + "<br />Config Id:" + configDetails.getId() + "<br /><br />Error:<br />"+errors.toString();
+			mailMessage mail = new mailMessage();
+			mail.setfromEmailAddress("support@health-e-link.net");
+			mail.setmessageBody(emailBody);
+			mail.setmessageSubject("Error Remote FTP PUSH file " + myProps.getProperty("server.identity"));
+			mail.settoEmailAddress(myProps.getProperty("admin.email"));
+			emailMessageManager.sendEmail(mail);
+
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		    }
+		    finally{
+			if(channelSftp!=null){
+			    channelSftp.disconnect();
+			    channelSftp.exit();
+			}
+			if(channel!=null) channel.disconnect();
+			if(session!=null) session.disconnect();
+		    }
 		}
-		
+		else {
+		    
+		    System.out.println("RUN Target FTP");
+		    
+		    FileInputStream fis = null;
+		    FTPClient ftpClient = new FTPClient();
+		    
+		    try {
+			ftpClient.connect(FTPPushDetails.getip(),FTPPushDetails.getport());
+
+			int replyCode = ftpClient.getReplyCode();
+
+			if (!FTPReply.isPositiveCompletion(replyCode)) {
+			    try {
+				String emailBody = "IP: " + FTPPushDetails.getip() + "<br/> Port:" + FTPPushDetails.getport() + "<br />Folder: " + FTPPushDetails.getdirectory() + "<br />Config Id:" + configDetails.getId() + "<br /><br />Error: FTP Connection Failed<br />";
+				mailMessage mail = new mailMessage();
+				mail.setfromEmailAddress("support@health-e-link.net");
+				mail.setmessageBody(emailBody);
+				mail.setmessageSubject("FTP Connection Failed " + " " + myProps.getProperty("server.identity"));
+				mail.settoEmailAddress(myProps.getProperty("admin.email"));
+				emailMessageManager.sendEmail(mail);
+			    } catch (Exception ex) {
+				ex.printStackTrace();
+				throw new Exception(ex);
+			    }
+			}
+			else {
+			    boolean success = ftpClient.login(FTPPushDetails.getusername().trim(), FTPPushDetails.getpassword().trim());
+
+			    if (!success) {
+				ftpClient.disconnect();
+				try {
+				    String emailBody = "IP: " + FTPPushDetails.getip() + "<br/> Port:" + FTPPushDetails.getport() + "<br />Folder: " + FTPPushDetails.getdirectory() + "<br />Config Id:" + configDetails.getId() + "<br /><br />Error: FTP Credentials Failed<br />";
+				    mailMessage mail = new mailMessage();
+				    mail.setfromEmailAddress("support@health-e-link.net");
+				    mail.setmessageBody(emailBody);
+				    mail.setmessageSubject("FTP Credentials Failed " + " " + myProps.getProperty("server.identity"));
+				    mail.settoEmailAddress(myProps.getProperty("admin.email"));
+				    emailMessageManager.sendEmail(mail);
+				} catch (Exception ex) {
+				    ex.printStackTrace();
+				    throw new Exception(ex);
+				}
+			    }
+			    else {
+				ftpClient.changeWorkingDirectory(FTPPushDetails.getdirectory());
+
+				String filename = batchDownload.getOutputFileName();
+
+				fis = new FileInputStream(archiveFile);
+
+				ftpClient.storeFile(filename, fis);
+				ftpClient.logout();
+				ftpClient.disconnect();
+
+				ba = new batchdownloadactivity();
+				ba.setActivity("Successfully FTPd the target file: " +archiveFile.getAbsolutePath()+ " to the following directory: "+FTPPushDetails.getdirectory() + " for IP: " + FTPPushDetails.getip() + " Port:" + FTPPushDetails.getport());
+				ba.setBatchDownloadId(batchDownload.getId());
+				transactionOutDAO.submitBatchActivityLog(ba);
+			    }
+
+			}
+		    }
+		    catch (IOException e) {
+			updateTargetBatchStatus(batchDownload.getId(), 58, "endDateTime");
+
+			ba = new batchdownloadactivity();
+			ba.setActivity("Failed to FTP the target file: " +archiveFile.getAbsolutePath()+ " to the following directory: "+FTPPushDetails.getdirectory() + " for IP: " + FTPPushDetails.getip() + " Port:" + FTPPushDetails.getport());
+			ba.setBatchDownloadId(batchDownload.getId());
+			transactionOutDAO.submitBatchActivityLog(ba);
+
+			ba = new batchdownloadactivity();
+			ba.setActivity("FTP Error: " + e.getMessage());
+			ba.setBatchDownloadId(batchDownload.getId());
+			transactionOutDAO.submitBatchActivityLog(ba);
+		    }
+		    finally {
+			try {
+			    if (fis != null) {
+				fis.close();
+			    }
+			    
+			    if(ftpClient.isConnected()) {
+				ftpClient.logout();
+				ftpClient.disconnect();
+			    }
+			} catch (IOException e) {
+			    updateTargetBatchStatus(batchDownload.getId(), 58, "endDateTime");
+			    e.printStackTrace();
+			}
+		    }
+		}
 	    } 
 	    // REST API 
 	    else if (transportDetails.gettransportMethodId() == 9) {
