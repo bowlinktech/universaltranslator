@@ -3344,7 +3344,7 @@ public class transactionInManagerImpl implements transactionInManager {
 	    if (updatedBatchDetails.getErrorRecordCount() > 0) {
 		sendRejectNotification(updatedBatchDetails);
 	    }
-
+	    
 	    if (updatedBatchDetails.getStatusId() == 24) {
 
 		//If no errors found then create the batch download entries
@@ -3359,11 +3359,17 @@ public class transactionInManagerImpl implements transactionInManager {
 			totalErrorRows = transactionInDAO.getTotalErroredRows(batchUploadId);
 		    }
 		    catch (Exception ex) {}
-
+		    
 		    //if errors are found and the configuration is not set to "Reject entire file on a single transaction error" then create the batch download entry.
 		    if(totalErrorRows > 0 && handlingDetails.get(0).geterrorHandling() == 3) {
 			batchStatusId = 7;
 			updateBatchStatus(batchUploadId, batchStatusId, "endDateTime");
+			
+			if(handlingDetails.get(0).getErrorEmailAddresses() != null) {
+			    if(!"".equals(handlingDetails.get(0).getErrorEmailAddresses().trim())) {
+				sendRejectEntireFileNotification(updatedBatchDetails,handlingDetails.get(0));
+			    }
+			}
 
 			//log batch activity
 			ba = new batchuploadactivity();
@@ -5313,5 +5319,54 @@ public class transactionInManagerImpl implements transactionInManager {
     public void deleteActivityReport(Integer activityReportId) throws Exception {
 	transactionInDAO.deleteActivityReportAgencies(activityReportId);
 	transactionInDAO.deleteActivityReport(activityReportId);
+    }
+    
+    /**
+     * The 'sendRejectEntireFileNotification' method will send out emails to all configured address for a fully rejected file.
+     * @param batch
+     * @param transportDetails
+     * @throws Exception 
+     */
+    public void sendRejectEntireFileNotification(batchUploads batch, configurationTransport transportDetails) throws Exception {
+	
+	mailMessage mail = new mailMessage();
+	mail.setfromEmailAddress("support@health-e-link.net");
+
+	List<String> ccAddresses = new ArrayList<String>();
+	ccAddresses.add(myProps.getProperty("admin.email"));
+	
+	String[] emails = transportDetails.getErrorEmailAddresses().trim().split(",");
+	List<String> emailAddressList = Arrays.asList(emails);
+	
+	if(!emailAddressList.isEmpty()) {
+	    for(String emailAddr : emailAddressList) {
+		ccAddresses.add(emailAddr.trim());
+	    }
+	}
+	
+	utConfiguration configDetails = configurationManager.getConfigurationById(batch.getConfigId());
+	
+	Organization orgDetails = organizationmanager.getOrganizationById(batch.getOrgId());
+	
+	//build message
+	String message = "Uploaded File (Batch Id:" + batch.getUtBatchName() + ") has been rejected due to one or more transaction errors.";
+	message = message + "<br/><br/>Environment: " + myProps.getProperty("server.identity");
+	message = message + "<br/><br/>Batch Id: " + batch.getUtBatchName();
+	message = message + "<br/>Total Transactions: " + batch.getTotalRecordCount();
+	message = message + "<br/>Total Errors: " + batch.getErrorRecordCount();
+	message += "<br /><br />Sending Organization: " + orgDetails.getOrgName();
+	message += "<br />Configuration Name: " + configDetails.getconfigName().trim();
+
+	mail.setmessageBody(message);
+	mail.setmessageSubject("Uploaded File has been rejected due to one or more transaction errors");
+	mail.settoEmailAddress(myProps.getProperty("reject.email"));
+
+	if (ccAddresses.size() > 0) {
+	    String[] ccEmailAddresses = new String[ccAddresses.size()];
+	    ccEmailAddresses = ccAddresses.toArray(ccEmailAddresses);
+	    mail.setccEmailAddress(ccEmailAddresses);
+	}
+
+	emailManager.sendEmail(mail);
     }
 }
