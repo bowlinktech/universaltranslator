@@ -123,7 +123,17 @@ require(['./main'], function () {
             $('.dmConfigKeywordDiv').hide();
         }
     });
-
+    
+    $(document).on('change','#errorHandling',function() {
+        if($(this).val() == 3) {
+            $('#errorEmailAddressesDiv').show();
+        }
+        else {
+            $('#errorEmailAddresses').val("");
+            $('#errorEmailAddressesDiv').hide();
+        }
+    });
+    
     //This function will save the messgae type field mappings
     $('#saveDetails').click(function () {
         $('#action').val('save');

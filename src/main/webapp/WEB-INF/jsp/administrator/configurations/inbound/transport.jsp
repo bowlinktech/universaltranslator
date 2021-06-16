@@ -485,7 +485,15 @@
 			</c:if>      
 		    </div>
 		</spring:bind>
-		 <spring:bind path="threshold">
+                <spring:bind path="errorEmailAddresses">
+		    <div id="errorEmailAddressesDiv" class="form-group" style="${transportDetails.errorHandling != 3 ? 'display:none' : 'display:block'}">
+			<label class="control-label" for="errorEmailAddresses">Enter email address(es) to receive rejection email</label>
+                        <p>Separate multiple emails with a comma.</p>
+			<form:input path="errorEmailAddresses" id="errorEmailAddresses" class="form-control" type="text" maxLength="750" />
+			<span id="errorEmailAddressesMsg" class="control-label"></span>
+		    </div>
+		</spring:bind>
+		<spring:bind path="threshold">
 		    <div id="thresholdDiv" class="form-group">
 			<label class="control-label" for="errorHandling">Error Threshold *</label>
                         <p>What % of errors should I accept before flagging the batch with an alert</p>
