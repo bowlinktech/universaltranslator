@@ -21,7 +21,7 @@
     <form:hidden path="mergeBatches" />
     <form:hidden path="restAPIType" value = "0" />
     <form:hidden path="maxFileSize" />
-
+    <form:hidden path="errorEmailAddresses" value="" />
     <section class="panel panel-default">
 	<div class="panel-heading">
 	    <h3 class="panel-title">

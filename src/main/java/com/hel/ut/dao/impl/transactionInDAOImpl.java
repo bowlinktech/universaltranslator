@@ -1132,7 +1132,7 @@ public class transactionInDAOImpl implements transactionInDAO {
     public List<configurationTransport> getHandlingDetailsByBatch(int batchId) throws Exception {
 	
 	try {
-	    String sql = ("select distinct clearRecords, autoRelease, errorHandling "
+	    String sql = ("select distinct clearRecords, autoRelease, errorHandling, errorEmailAddresses "
 		    + " from configurationtransportdetails where configId in "
 		    + "(select distinct configId from batchUploads where id = "+batchId+");");
 	    
