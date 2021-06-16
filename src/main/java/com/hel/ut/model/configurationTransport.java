@@ -158,6 +158,9 @@ public class configurationTransport {
     @Column(name = "addTargetFileHeaderRow", nullable = false)
     private boolean addTargetFileHeaderRow = false;
     
+    @Column(name = "errorEmailAddresses", nullable = true)
+    private String errorEmailAddresses = "";
+    
     public int getId() {
         return id;
     }
@@ -549,5 +552,13 @@ public class configurationTransport {
 
     public void setAddTargetFileHeaderRow(boolean addTargetFileHeaderRow) {
         this.addTargetFileHeaderRow = addTargetFileHeaderRow;
+    }
+
+    public String getErrorEmailAddresses() {
+	return errorEmailAddresses;
+    }
+
+    public void setErrorEmailAddresses(String errorEmailAddresses) {
+	this.errorEmailAddresses = errorEmailAddresses;
     }
 }
