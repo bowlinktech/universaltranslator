@@ -1,5 +1,6 @@
 package com.hel.ut.dao;
 
+import com.hel.ut.model.CrosswalkData;
 import java.util.List;
 
 import com.hel.ut.model.Crosswalks;
@@ -62,4 +63,6 @@ public interface messageTypeDAO {
     List getConfigCrosswalksWithData(Integer orgId, Integer configId);
     
     String getDelimiterById(int id);
+    
+    void saveCrosswalkData(CrosswalkData cwData);
 }

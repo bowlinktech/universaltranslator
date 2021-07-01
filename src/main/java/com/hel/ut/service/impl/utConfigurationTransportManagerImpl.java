@@ -71,7 +71,7 @@ public class utConfigurationTransportManagerImpl implements utConfigurationTrans
 
         MultipartFile CCDTemplatefile = transportDetails.getCcdTemplatefile();
         //If a file is uploaded
-        if (CCDTemplatefile != null && !CCDTemplatefile.isEmpty()) {
+        if (configurationDetails != null && CCDTemplatefile != null && !CCDTemplatefile.isEmpty()) {
 
             String CCDTemplatefileName = CCDTemplatefile.getOriginalFilename();
 

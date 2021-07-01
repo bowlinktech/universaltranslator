@@ -30,6 +30,9 @@ public class utConfiguration {
     @Transient
     private Date dateUpdated = null;
     
+    @Transient
+    private boolean allowExport = false;
+    
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "ID", nullable = false)
@@ -221,5 +224,12 @@ public class utConfiguration {
 	this.dateUpdated = dateUpdated;
     }
 
-    
+    public boolean isAllowExport() {
+	return allowExport;
+    }
+
+    public void setAllowExport(boolean allowExport) {
+	this.allowExport = allowExport;
+    }
+
 }

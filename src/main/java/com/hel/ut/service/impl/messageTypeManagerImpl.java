@@ -14,6 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.hel.ut.dao.messageTypeDAO;
 import com.hel.ut.dao.organizationDAO;
+import com.hel.ut.model.CrosswalkData;
 import com.hel.ut.service.messageTypeManager;
 import com.hel.ut.model.Crosswalks;
 import com.hel.ut.model.Organization;
@@ -296,13 +297,13 @@ public class messageTypeManagerImpl implements messageTypeManager {
 	    directory = myProps.getProperty("ut.directory.utRootDir") + cleanURL + "/crosswalks/";
         }
 	
-	messageTypeDAO.executeSQLStatement("delete from rel_crosswalkData where crosswalkId = "+id);
+	executeSQLStatement("delete from rel_crosswalkData where crosswalkId = "+id);
 	
 	String sql = ("LOAD DATA LOCAL INFILE '" + directory + fileName + "' INTO TABLE rel_crosswalkData fields terminated by '" + delim + "' "
 		+ " optionally ENCLOSED BY '\"' ESCAPED BY '\\b' LINES TERMINATED BY '\\n' "
 		+ "(sourceValue,targetValue,descValue)  set crosswalkId = " + id + ";");
 
-	messageTypeDAO.executeSQLStatement(sql);
+	executeSQLStatement(sql);
 
     }
 
@@ -345,8 +346,8 @@ public class messageTypeManagerImpl implements messageTypeManager {
         try {
             if (newFile.exists()) {
 		newFile.delete();
-		messageTypeDAO.executeSQLStatement("delete from rel_crosswalkData where crosswalkId = "+cwId);
-		messageTypeDAO.executeSQLStatement("delete from crosswalks where Id = "+cwId);
+		executeSQLStatement("delete from rel_crosswalkData where crosswalkId = "+cwId);
+		executeSQLStatement("delete from crosswalks where Id = "+cwId);
             }
 
         } catch (Exception e) {
@@ -358,5 +359,15 @@ public class messageTypeManagerImpl implements messageTypeManager {
     @Override
     public List getConfigCrosswalksWithData(Integer orgId, Integer configId) {
 	return getConfigCrosswalksWithData(orgId,configId);
+    }
+    
+    @Override
+    public void saveCrosswalkData(CrosswalkData cwData) {
+	messageTypeDAO.saveCrosswalkData(cwData);
+    }
+    
+    @Override
+    public void executeSQLStatement(String sqlStatement) {
+        messageTypeDAO.executeSQLStatement(sqlStatement);
     }
 }

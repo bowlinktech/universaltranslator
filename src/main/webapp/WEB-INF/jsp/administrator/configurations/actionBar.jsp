@@ -54,7 +54,8 @@
         <ul class="nav navbar-nav navbar-right navbar-actions">
             <c:choose>
                 <c:when test="${param['page'] == 'listConfigs'}">
-                    <li><a href="create" title="Create New Configuration" role="button"><span class="glyphicon icon-stacked glyphicon glyphicon-plus"></span>Create New</a></li>
+                    <li role="menuitem" class="importConfigBtn"><a href="#configFileUploadModal" data-toggle="modal" class="importConfig" title="Import Configuration" role="button"><span class="glyphicon icon-stacked glyphicon glyphicon-import"></span>Import Configuration</a></li>
+                    <li role="menuitem"><a href="create" title="Create New Configuration" role="button"><span class="glyphicon icon-stacked glyphicon glyphicon-plus"></span>Create New</a></li>
                 </c:when>
                 <c:when test="${param['page'] == 'connections'}">
                     <li><a href="/administrator/configurations/connections/details" data-toggle="modal" role="button" title="Create Configuration Connection"><span class="glyphicon icon-stacked glyphicon glyphicon-plus"></span>Create New</a></li>
