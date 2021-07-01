@@ -18,10 +18,12 @@ import com.hel.ut.model.configurationDataTranslations;
 import com.hel.ut.model.configurationExcelDetails;
 import com.hel.ut.model.configurationMessageSpecs;
 import com.hel.ut.model.configurationSchedules;
+import com.hel.ut.model.configurationTransport;
 import com.hel.ut.model.configurationUpdateLogs;
 import com.hel.ut.model.watchlist;
 import com.hel.ut.model.watchlistEntry;
 import java.util.Date;
+import javax.servlet.http.HttpSession;
 
 public interface utConfigurationManager {
 
@@ -233,4 +235,18 @@ public interface utConfigurationManager {
     StringBuffer printConfigurationNotesSection(utConfiguration configDetails, String siteTimeZone) throws Exception;
     
     void deleteConfigurationFTPInformation(int transportId) throws Exception;
+    
+    StringBuffer exportConfigOrgSection(Organization orgDetails) throws Exception;
+    
+    StringBuffer exportConfigDetailsSection(utConfiguration configDetails) throws Exception;
+    
+    StringBuffer exportConfigTransportSection(HttpSession session,configurationTransport transportDetails) throws Exception;
+    
+    StringBuffer exportConfigMessageSpecSection(HttpSession session,Integer configId) throws Exception;
+    
+    StringBuffer exportConfigFieldsSection(Integer configId, Integer transportDetailsId) throws Exception;
+    
+    StringBuffer exportConfigSchedulingSection(Integer configId) throws Exception;
+    
+    StringBuffer exportOrgCrosswalks(Integer orgId) throws Exception;
 }
