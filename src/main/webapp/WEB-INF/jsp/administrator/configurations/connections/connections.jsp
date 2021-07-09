@@ -5,7 +5,10 @@
 
 <div class="main clearfix full-width" role="main">
     <div class="col-md-12">
-        
+        <div class="alert alert-danger" id="exportErrorMsg" style="display:none;">
+            <strong>Export Error!</strong> 
+            An error occurred while trying to export the connection.
+        </div>
         <c:if test="${not empty param['msg']}" >
             <div class="alert alert-success">
                 <strong>Success!</strong> 
@@ -80,6 +83,15 @@
 								Edit Connection
 							    </a>
 							</li>
+                                                        <c:if test="${connection.allowExport}">
+                                                            <li class="divider"></li>
+                                                            <li>
+                                                                <a href="javascript:void(0);" class="exportConnection" rel="${connection.id}" title="Export this Connection">
+                                                                    <span class="glyphicon glyphicon-export"></span>
+                                                                    Export Connection
+                                                                </a>
+                                                             </li> 
+                                                        </c:if>
 							<li class="divider"></li>
 							<li>
 							    <a href="javascript:void(0);" class="deleteConnection" rel="${connection.id}" title="Delete this connection">
@@ -104,3 +116,4 @@
         </section>
     </div>
 </div>
+<div class="modal fade" id="connectionFileUploadModal" role="dialog" tabindex="-1" aria-labeledby="Connection File Upload" aria-hidden="true" aria-describedby="Connection File Upload"></div>

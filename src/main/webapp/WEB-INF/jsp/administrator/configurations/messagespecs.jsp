@@ -74,11 +74,18 @@
                                                     <a href="#!" class="btn btn-primary btn-action createNewTemplate" rel="${configurationDetails.id}" data-toggle="tooltip" data-original-title="Download Latest Template">Download Current Configuration Template</a>
                                                 </div>
                                             </div>
-					 </div>
+					</div>
                                         <div class="form-group">
                                             <p>
                                                 <br /><br />
-                                                <span style="margin-top:10px;"><strong>Last Uploaded Template File: ${lastUploadedDate}</strong></span>
+                                                <c:choose>
+                                                    <c:when test="${not empty lastUploadedDate}">
+                                                        <span style="margin-top:10px;"><strong>Last Uploaded Template File: ${lastUploadedDate}</strong></span>
+                                                    </c:when>
+                                                    <c:otherwise>
+                                                         <span style="margin-top:10px;"><strong>Last Uploaded Template File: The template file was not found.</strong></span>
+                                                    </c:otherwise>
+                                                </c:choose>
                                                 <hr>
                                             </p>
                                         </div>
