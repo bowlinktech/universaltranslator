@@ -249,4 +249,11 @@ public interface utConfigurationManager {
     StringBuffer exportConfigSchedulingSection(Integer configId) throws Exception;
     
     StringBuffer exportOrgCrosswalks(Integer orgId) throws Exception;
+    
+    StringBuffer exportConnectionSrcDetails(utConfiguration configDetails,Organization orgDetails) throws Exception;
+    
+    StringBuffer exportConnectionTgtDetails(utConfiguration configDetails,Organization orgDetails) throws Exception;
+    
+    StringBuffer exportConnectionFields(Integer connectionId) throws Exception;
+    
 }

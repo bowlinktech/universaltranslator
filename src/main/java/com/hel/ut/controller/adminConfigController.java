@@ -106,6 +106,7 @@ import java.util.logging.Logger;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.FillPatternType;
@@ -188,6 +189,7 @@ public class adminConfigController {
     /**
      * The '/list' GET request will serve up the existing list of configurations in the system
      *
+     * @param authentication
      * @return	The utConfiguration page list
      *
      * @Objects	(1) An object containing all the found configurations
@@ -195,10 +197,12 @@ public class adminConfigController {
      * @throws Exception
      */
     @RequestMapping(value = "/list", method = RequestMethod.GET)
-    public ModelAndView listConfigurations() throws Exception {
+    public ModelAndView listConfigurations(Authentication authentication) throws Exception {
 
         ModelAndView mav = new ModelAndView();
         mav.setViewName("/administrator/configurations/list");
+	
+	utUser userDetails = userManager.getUserByUserName(authentication.getName());
 	
 	//Get all source configurations
         List<utConfiguration> sourceconfigurations = utconfigurationmanager.getAllSourceConfigurations();
@@ -250,7 +254,7 @@ public class adminConfigController {
 	    
 	    configurationSchedules scheduleDetails = utconfigurationmanager.getScheduleDetails(config.getId());
 	    
-	    if(scheduleDetails != null && !config.isDeleted() && config.getStatus()) {
+	    if(scheduleDetails != null && !config.isDeleted() && config.getStatus() && ("admin".equalsIgnoreCase(userDetails.getFirstName()) || "grace".equalsIgnoreCase(userDetails.getFirstName()) || "chad".equalsIgnoreCase(userDetails.getFirstName()))) {
 		config.setAllowExport(true);
 	    }
 	    
@@ -292,6 +296,10 @@ public class adminConfigController {
 	    }
         }
 	mav.addObject("targetconfigurations", validTargetConfigurations);
+	
+	if("admin".equalsIgnoreCase(userDetails.getFirstName()) || "grace".equalsIgnoreCase(userDetails.getFirstName()) || "chad".equalsIgnoreCase(userDetails.getFirstName())){
+	    mav.addObject("allowConfigImport", true);
+	}
 
         return mav;
     }
@@ -1107,6 +1115,9 @@ public class adminConfigController {
 	//Get the utConfiguration details for the selected config
         utConfiguration configurationDetails = utconfigurationmanager.getConfigurationById(configId);
 	
+	// Get organization directory name
+        Organization orgDetails = organizationmanager.getOrganizationById(configurationDetails.getorgId());
+	
         mav.setViewName("/administrator/configurations/messagespecs");
 
         configurationMessageSpecs messageSpecs = utconfigurationmanager.getMessageSpecs(configId);
@@ -1116,27 +1127,43 @@ public class adminConfigController {
             messageSpecs.setconfigId(configId);
         }
 	else {
+	    DateFormat finalDateFormat = new SimpleDateFormat("MM/dd/yyyy hh:mm a");
 	    
 	    if(messageSpecs.gettemplateFile() == null) {
-		DateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy hh:mm a");
-		mav.addObject("lastUploadedDate", dateFormat.format(configurationDetails.getDateCreated()).toString());
+		mav.addObject("lastUploadedDate", finalDateFormat.format(configurationDetails.getDateCreated()));
 	    }
 	    else {
-		if(messageSpecs.gettemplateFile().contains("-")) {
-		    DateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmm");
-		    DateFormat cleandateFormat = new SimpleDateFormat("MM/dd/yyyy hh:mm a");
-		    String dateUploaded = messageSpecs.gettemplateFile().split("-")[0];
-		    try {
-			mav.addObject("lastUploadedDate", cleandateFormat.format(dateFormat.parse(dateUploaded)).toString());
+		
+		//Check if file exists
+		File templateFile = new File( myProps.getProperty("ut.directory.utRootDir") + orgDetails.getCleanURL() + "/templates/"+messageSpecs.gettemplateFile());
+		
+		if(templateFile.exists()) {
+		    if(messageSpecs.gettemplateFile().contains("-")) {
+			DateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmm");
+			try {
+			    String dateUploaded = messageSpecs.gettemplateFile().split("-")[0];
+			    mav.addObject("lastUploadedDate", finalDateFormat.format(dateFormat.parse(dateUploaded)));
+			}
+			catch (Exception ex) {
+			    try {
+				mav.addObject("lastUploadedDate", finalDateFormat.format(new Date(templateFile.lastModified())));
+			    }
+			    catch (Exception ex2) {
+				mav.addObject("lastUploadedDate", finalDateFormat.format(configurationDetails.getDateCreated()));
+			    }
+			}
 		    }
-		    catch (Exception ex) {
-			dateFormat = new SimpleDateFormat("MM/dd/yyyy hh:mm a");
-			mav.addObject("lastUploadedDate", dateFormat.format(configurationDetails.getDateCreated()).toString());
+		    else {
+			try {
+			    mav.addObject("lastUploadedDate", finalDateFormat.format(new Date(templateFile.lastModified())));
+			}
+			catch (Exception ex) {
+			    mav.addObject("lastUploadedDate", finalDateFormat.format(configurationDetails.getDateCreated()));
+			}
 		    }
 		}
 		else {
-		    DateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy hh:mm a");
-		    mav.addObject("lastUploadedDate", dateFormat.format(configurationDetails.getDateCreated()).toString());
+		    mav.addObject("lastUploadedDate", finalDateFormat.format(configurationDetails.getDateCreated()));
 		}
 	    }
 	}
@@ -1154,9 +1181,6 @@ public class adminConfigController {
         mav.addObject("HL7", session.getAttribute("configHL7"));
         mav.addObject("CCD", session.getAttribute("configCCD"));
 	mav.addObject("showAllConfigOptions",session.getAttribute("showAllConfigOptions"));
-	
-	// Get organization directory name
-        Organization orgDetails = organizationmanager.getOrganizationById(configurationDetails.getorgId());
 	
 	mav.addObject("cleanOrgURL",orgDetails.getCleanURL());
 	
@@ -4958,36 +4982,98 @@ public class adminConfigController {
 		}
 		else if(strArrayValues[0].equals("configDetails")) {
 		    configName = strArrayValues[6];
-		    configId = processImportConfigDetails(strArrayValues,orgId);
+		    try {
+			configId = processImportConfigDetails(strArrayValues,orgId);
+		    }
+		    catch (Exception ex) {
+			processImportConfigError("Adding Config Details",configId,0,orgId,configName,ex);
+			configImportSuccessful = false;
+			break;
+		    }
 		    
 		    if(configId == 0) {
-			configImportSuccessful = false;
 			break;
 		    }
 		}
 		else if(strArrayValues[0].equals("transportDetails")) {
-		    configTransportId = processImportConfigTransportDetails(strArrayValues,configId);
+		    try {
+			configTransportId = processImportConfigTransportDetails(strArrayValues,configId);
+		    }
+		    catch (Exception ex) {
+			processImportConfigError("Adding Transport Details",configId,0,orgId,configName,ex);
+			configImportSuccessful = false;
+			break;
+		    }
 		}
 		else if(strArrayValues[0].equals("fileDropDetails") && strArrayValues.length > 1) {
-		    processImportConfigFileDropDetails(strArrayValues,configTransportId);
+		    try {
+			processImportConfigFileDropDetails(strArrayValues,configTransportId);
+		    }
+		    catch (Exception ex) {
+			processImportConfigError("Adding File Drop Details",configId,configTransportId,orgId,configName,ex);
+			configImportSuccessful = false;
+			break;
+		    }
 		}
 		else if(strArrayValues[0].equals("ftpDropDetails") && strArrayValues.length > 1) {
-		    processImportConfigFTPDetails(strArrayValues,configTransportId);
+		    try {
+			processImportConfigFTPDetails(strArrayValues,configTransportId);
+		    }
+		    catch (Exception ex) {
+			processImportConfigError("Adding FTP Details",configId,configTransportId,orgId,configName,ex);
+			configImportSuccessful = false;
+			break;
+		    }
 		}
 		else if(strArrayValues[0].equals("messageSpecDetails")) {
-		    processImportConfigMessageSpecs(strArrayValues,configId);
+		    try {
+			processImportConfigMessageSpecs(strArrayValues,configId);
+		    }
+		    catch (Exception ex) {
+			processImportConfigError("Adding Messpace Specs",configId,configTransportId,orgId,configName,ex);
+			configImportSuccessful = false;
+			break;
+		    }
 		}
 		else if(strArrayValues[0].equals("fields")) {
-		    fieldId = processImportConfigFields(strArrayValues,configId,configTransportId);
+		    try {
+			fieldId = processImportConfigFields(strArrayValues,configId,configTransportId);
+		    }
+		    catch (Exception ex) {
+			processImportConfigError("Adding Fields",configId,configTransportId,orgId,configName,ex);
+			configImportSuccessful = false;
+			break;
+		    }
 		}
 		else if(strArrayValues[0].equals("fieldDTS")) {
-		    processImportConfigFieldDTS(strArrayValues,configId,fieldId);
+		    try {
+			processImportConfigFieldDTS(strArrayValues,configId,fieldId);
+		    }
+		    catch (Exception ex) {
+			processImportConfigError("Adding Data Translations",configId,configTransportId,orgId,configName,ex);
+			configImportSuccessful = false;
+			break;
+		    }
 		}
 		else if(strArrayValues[0].equals("scheduleDetails")) {
-		    processImportConfigSchedule(strArrayValues,configId);
+		    try {
+			processImportConfigSchedule(strArrayValues,configId);
+		    }
+		    catch (Exception ex) {
+			processImportConfigError("Adding Schedule",configId,configTransportId,orgId,configName,ex);
+			configImportSuccessful = false;
+			break;
+		    }
 		}
 		else if(strArrayValues[0].equals("crosswalks")) {
-		    cwIds = processImportConfigCrosswalks(strArrayValues,configId, orgId, cwIds);
+		    try {
+			cwIds = processImportConfigCrosswalks(strArrayValues,configId, orgId, cwIds);
+		    }
+		    catch (Exception ex) {
+			processImportConfigError("Adding Croswalks",configId,configTransportId,orgId,configName,ex);
+			configImportSuccessful = false;
+			break;
+		    }
 		}
 	    }
 	    reader.close();
@@ -4997,7 +5083,7 @@ public class adminConfigController {
 	    
 	    Organization orgDetails = organizationmanager.getOrganizationById(orgId);
 	    
-	    if(!configImportSuccessful) {
+	    if(configId == 0) {
 		
 		emailSubject = "Configuration Import was Not Successful";
 		
@@ -5005,15 +5091,19 @@ public class adminConfigController {
 		emailBody.append("<br /><br />");
 		emailBody.append("Organization Name: ").append(orgDetails.getOrgName());
 		emailBody.append("<br />Configuration Name: ").append(configName);
+		emailBody.append("<br/><br />Reason<br />The configuration was already found on the system.");
 		
-		if(configId == 0) {
-		    emailBody.append("<br/><br />Reason<br />The configuration was already found on the system.");
-		}
+		mailMessage mail = new mailMessage();
+		mail.settoEmailAddress(myProps.getProperty("admin.email"));
+		mail.setfromEmailAddress("support@health-e-link.net");
+		mail.setmessageSubject(emailSubject);
+		mail.setmessageBody(emailBody.toString());
+		emailMessageManager.sendEmail(mail);
 	    }
-	    else {
+	    else if(configImportSuccessful) {
 		emailBody.append("The following configuration import has been completed and is now available.");
 		emailBody.append("<br /><br />");
-		emailBody.append("Organixzation Name: ").append(orgDetails.getOrgName());
+		emailBody.append("Organization Name: ").append(orgDetails.getOrgName());
 		emailBody.append("<br />Configuration Name: ").append(configName);
 		emailBody.append("<br />Configuration Id: ").append(configId);
 		
@@ -5022,14 +5112,13 @@ public class adminConfigController {
 		configDetails.setStatus(true);
 		
 		utconfigurationmanager.updateConfiguration(configDetails);
+		mailMessage mail = new mailMessage();
+		mail.settoEmailAddress(myProps.getProperty("admin.email"));
+		mail.setfromEmailAddress("support@health-e-link.net");
+		mail.setmessageSubject(emailSubject);
+		mail.setmessageBody(emailBody.toString());
+		emailMessageManager.sendEmail(mail);
 	    }
-	    
-	    mailMessage mail = new mailMessage();
-	    mail.settoEmailAddress(myProps.getProperty("admin.email"));
-	    mail.setfromEmailAddress("support@health-e-link.net");
-	    mail.setmessageSubject(emailSubject);
-	    mail.setmessageBody(emailBody.toString());
-	    emailMessageManager.sendEmail(mail);
 	    
 	} catch (FileNotFoundException e) {
 	    Logger.getLogger(transactionInManagerImpl.class.getName()).log(Level.SEVERE, null, e);
@@ -5056,30 +5145,66 @@ public class adminConfigController {
 	if(orgs.isEmpty()) {
 	    Organization newOrg = new Organization();
 	    newOrg.setOrgName(orgName);
-	    newOrg.setAddress(strArrayValues[2]);
-	    newOrg.setAddress2(strArrayValues[3]);
-	    newOrg.setCity(strArrayValues[4]);
-	    newOrg.setState(strArrayValues[5]);
-	    newOrg.setPostalCode(strArrayValues[6]);
-	    newOrg.setPhone(strArrayValues[7]);
-	    newOrg.setFax(strArrayValues[8]);
+	    if(!"null".equals(strArrayValues[2])) {
+		newOrg.setAddress(strArrayValues[2]);
+	    }
+	    if(!"null".equals(strArrayValues[3])) {
+		newOrg.setAddress2(strArrayValues[3]);
+	    }
+	    if(!"null".equals(strArrayValues[4])) {
+		newOrg.setCity(strArrayValues[4]);
+	    }
+	    if(!"null".equals(strArrayValues[5])) {
+		newOrg.setState(strArrayValues[5]);
+	    }
+	    if(!"null".equals(strArrayValues[6])) {
+		newOrg.setPostalCode(strArrayValues[6]);
+	    }
+	    if(!"null".equals(strArrayValues[7])) {
+		newOrg.setPhone(strArrayValues[7]);
+	    }
+	    if(!"null".equals(strArrayValues[8])) {
+		newOrg.setFax(strArrayValues[8]);
+	    }
 	    newOrg.setStatus(true);
 	    newOrg.setCleanURL(orgCleanURL);
-	    newOrg.setparsingTemplate(strArrayValues[11]);
-	    newOrg.setOrgDesc(strArrayValues[12]);
+	    if(!"null".equals(strArrayValues[11]) && !"''".equals(strArrayValues[11])) {
+		newOrg.setparsingTemplate(strArrayValues[11]);
+	    }
+	    if(!"null".equals(strArrayValues[12])) {
+		newOrg.setOrgDesc(strArrayValues[12]);
+	    }
 	    newOrg.setOrgType(Integer.parseInt(strArrayValues[13]));
-	    newOrg.setTown(strArrayValues[14]);
-	    newOrg.setCounty(strArrayValues[15]);
-	    newOrg.setInfoURL(strArrayValues[16]);
-	    newOrg.setCountry(strArrayValues[17]);
+	    if(!"null".equals(strArrayValues[14])) {
+		newOrg.setTown(strArrayValues[14]);
+	    }
+	    if(!"null".equals(strArrayValues[15])) {
+		newOrg.setCounty(strArrayValues[15]);
+	    }
+	    if(!"null".equals(strArrayValues[16])) {
+		newOrg.setInfoURL(strArrayValues[16]);
+	    }
+	    if(!"null".equals(strArrayValues[17])) {
+		newOrg.setCountry(strArrayValues[17]);
+	    }
 	    newOrg.setHelRegistryId(Integer.parseInt(strArrayValues[18]));
 	    newOrg.setHelRegistryOrgId(Integer.parseInt(strArrayValues[19]));
-	    newOrg.setHelRegistrySchemaName(strArrayValues[20]);
-	    newOrg.setPrimaryContactEmail(strArrayValues[21]);
+	    if(!"null".equals(strArrayValues[20])) {
+		newOrg.setHelRegistrySchemaName(strArrayValues[20]);
+	    }
+	    if(!"null".equals(strArrayValues[21])) {
+		newOrg.setPrimaryContactEmail(strArrayValues[21]);
+	    }
 	    newOrg.setParentOrgId(Integer.parseInt(strArrayValues[22]));
-	    newOrg.setPrimaryContactName(strArrayValues[23]);
-	    newOrg.setPrimaryTechContactEmail(strArrayValues[24]);
-	    newOrg.setPrimaryTechContactName(strArrayValues[25]);
+	    if(!"null".equals(strArrayValues[23])) {
+		newOrg.setPrimaryContactName(strArrayValues[23]);
+	    }
+	    if(!"null".equals(strArrayValues[24])) {
+		newOrg.setPrimaryTechContactEmail(strArrayValues[24]);
+	    }
+	    if(!"null".equals(strArrayValues[25])) {
+		newOrg.setPrimaryTechContactName(strArrayValues[25]);
+	    }
 	    
 	    orgId = organizationmanager.createOrganization(newOrg);
 	}
@@ -5089,6 +5214,14 @@ public class adminConfigController {
 		    orgId = org.getId();
 		    break;
 		}
+	    }
+	    
+	    //Need to make sure the correct folders are found
+	    File OrganizationDir = new File(myProps.getProperty("ut.directory.utRootDir") + orgCleanURL);
+	    
+	    if(!OrganizationDir.exists()) {
+		fileSystem dir = new fileSystem();
+		dir.creatOrgDirectories(myProps.getProperty("ut.directory.utRootDir") + orgCleanURL);
 	    }
 	}
 	
@@ -5117,7 +5250,7 @@ public class adminConfigController {
 	    newConfig.setStatus(false);
 	    newConfig.setType(Integer.parseInt(strArrayValues[3]));
 	    newConfig.setMessageTypeId(Integer.parseInt(strArrayValues[4]));
-	    newConfig.setstepsCompleted(Integer.parseInt(strArrayValues[5]));
+	    newConfig.setstepsCompleted(6);
 	    newConfig.setconfigName(strArrayValues[6]);
 	    newConfig.setThreshold(Integer.parseInt(strArrayValues[7]));
 	    newConfig.setConfigurationType(Integer.parseInt(strArrayValues[8]));
@@ -5146,7 +5279,9 @@ public class adminConfigController {
 	newConfigTransport.setfileType(Integer.parseInt(strArrayValues[3]));
 	newConfigTransport.setfileDelimiter(Integer.parseInt(strArrayValues[4]));
 	newConfigTransport.setstatus(true);
-	newConfigTransport.settargetFileName(strArrayValues[6]);
+	if(!"null".equals(strArrayValues[6])) {
+	    newConfigTransport.settargetFileName(strArrayValues[6]);
+	}
 	if(strArrayValues[7].equals("true")) {
 	    newConfigTransport.setappendDateTime(true);
 	}
@@ -5167,8 +5302,12 @@ public class adminConfigController {
 	newConfigTransport.setcopiedTransportId(Integer.parseInt(strArrayValues[14]));
 	newConfigTransport.setfileExt(strArrayValues[15]);
 	newConfigTransport.setEncodingId(Integer.parseInt(strArrayValues[16]));
-	newConfigTransport.setCcdSampleTemplate(strArrayValues[17]);
-	newConfigTransport.setHL7PDFSampleTemplate(strArrayValues[18]);
+	if(!"null".equals(strArrayValues[17])) {
+	    newConfigTransport.setCcdSampleTemplate(strArrayValues[17]);
+	}
+	if(!"null".equals(strArrayValues[18])) {
+	    newConfigTransport.setHL7PDFSampleTemplate(strArrayValues[18]);
+	}
 	newConfigTransport.setMassTranslation(true);
 	if(strArrayValues[20].equals("true")) {
 	    newConfigTransport.setZipped(true);
@@ -5190,7 +5329,9 @@ public class adminConfigController {
 	newConfigTransport.setRestAPIFunctionId(Integer.parseInt(strArrayValues[27]));
 	newConfigTransport.setJsonWrapperElement(strArrayValues[28]);
 	newConfigTransport.setLineTerminator(strArrayValues[29]);
-	newConfigTransport.setHelRegistryConfigId(Integer.parseInt(strArrayValues[30]));
+	if(!"null".equals(strArrayValues[30])) {
+	    newConfigTransport.setHelRegistryConfigId(Integer.parseInt(strArrayValues[30]));
+	}
 	newConfigTransport.setHelSchemaName(strArrayValues[31]);
 	newConfigTransport.setHelRegistryId(Integer.parseInt(strArrayValues[32]));
 	newConfigTransport.setDmConfigKeyword(strArrayValues[33]);
@@ -5212,7 +5353,9 @@ public class adminConfigController {
 	else {
 	    newConfigTransport.setAddTargetFileHeaderRow(false);
 	}
-	newConfigTransport.setErrorEmailAddresses(strArrayValues[37]);
+	if(!"null".equals(strArrayValues[37])) {
+	    newConfigTransport.setErrorEmailAddresses(strArrayValues[37]);
+	}
 	
 	try {
 	    configTransportId = utconfigurationTransportManager.updateTransportDetails(null,newConfigTransport);
@@ -5296,9 +5439,13 @@ public class adminConfigController {
 	
 	configurationMessageSpecs messageSpecs = new configurationMessageSpecs();
 	messageSpecs.setconfigId(configId);
-	messageSpecs.settemplateFile(strArrayValues[2]);
+	if(!"null".equals(strArrayValues[2])) {
+	    messageSpecs.settemplateFile(strArrayValues[2]);
+	}
 	messageSpecs.setmessageTypeCol(Integer.parseInt(strArrayValues[3]));
-	messageSpecs.setmessageTypeVal(strArrayValues[4]);
+	if(!"null".equals(strArrayValues[4])) {
+	    messageSpecs.setmessageTypeVal(strArrayValues[4]);
+	}
 	messageSpecs.settargetOrgCol(Integer.parseInt(strArrayValues[5]));
 	if(strArrayValues[6].equals("true")) {
 	    messageSpecs.setcontainsHeaderRow(true);
@@ -5313,8 +5460,12 @@ public class adminConfigController {
 	messageSpecs.setSourceSubOrgCol(Integer.parseInt(strArrayValues[11]));
 	messageSpecs.setExcelstartrow(Integer.parseInt(strArrayValues[12]));
 	messageSpecs.setExcelskiprows(Integer.parseInt(strArrayValues[13]));
-	messageSpecs.setParsingTemplate(strArrayValues[14]);
-	messageSpecs.setFileNameConfigHeader(strArrayValues[15]);
+	if(!"null".equals(strArrayValues[14])) {
+	    messageSpecs.setParsingTemplate(strArrayValues[14]);
+	}
+	if(!"null".equals(strArrayValues[15])) {
+	    messageSpecs.setFileNameConfigHeader(strArrayValues[15]);
+	}
 	messageSpecs.setTotalHeaderRows(Integer.parseInt(strArrayValues[16]));
 	
 	try {
@@ -5358,22 +5509,20 @@ public class adminConfigController {
 	if(strArrayValues[9] == null) {
 	   field.setAssociatedFieldNo(0); 
 	}
-	else if ("null".equals(strArrayValues[9])) {
-	   field.setAssociatedFieldNo(0); 
+	else if (!"null".equals(strArrayValues[9])) {
+	  field.setAssociatedFieldNo(Integer.parseInt(strArrayValues[9])); 
 	}
-	else {
-	   field.setAssociatedFieldNo(Integer.parseInt(strArrayValues[9])); 
+	if (!"null".equals(strArrayValues[10])) {
+	    field.setDefaultValue(strArrayValues[10]);
 	}
-	
-	field.setDefaultValue(strArrayValues[10]);
-	field.setDefaultValue(strArrayValues[11]);
+	if (!"null".equals(strArrayValues[11])) {
+	    field.setSampleData(strArrayValues[11]);
+	}
 	
 	try {
 	    fieldId = utconfigurationTransportManager.saveConfigurationFormFields(field);
 	}
-	catch (Exception ex) {
-	    
-	}
+	catch (Exception ex) {}
 	
 	return fieldId;
     }
@@ -5400,10 +5549,12 @@ public class adminConfigController {
 	dts.setConstant2(strArrayValues[9]);
 	dts.setProcessOrder(Integer.parseInt(strArrayValues[10]));
 	dts.setCategoryId(Integer.parseInt(strArrayValues[11]));
-	dts.setDefaultValue(strArrayValues[12]);
+	
+	if(!"null".equals(strArrayValues[12])) {
+	    dts.setDefaultValue(strArrayValues[12]);
+	}
 	
 	utconfigurationmanager.saveDataTranslations(dts);
-	
     }
     
     
@@ -5435,6 +5586,7 @@ public class adminConfigController {
      * @param configId 
      * @param orgId 
      * @param cwIds 
+     * @return  
      * 
      */
     public String processImportConfigCrosswalks(String[] strArrayValues, Integer configId, Integer orgId, String cwIds) {
@@ -5457,6 +5609,8 @@ public class adminConfigController {
 		cwData.setTargetValue(strArrayValues[6]);
 		cwData.setDescValue(strArrayValues[7]);
 		messagetypemanager.saveCrosswalkData(cwData);
+		
+		returnCWids = strArrayValues[1] + "-" + newCWId;
 	    }
 	    else {
 		addNewCW = true;
@@ -5483,7 +5637,9 @@ public class adminConfigController {
 	    try {
 		cwId = messagetypemanager.createCrosswalk(cw);
 	    }
-	    catch (Exception ex) {}
+	    catch (Exception cwEx) {
+		cwEx.printStackTrace();
+	    }
 	    
 	    returnCWids = strArrayValues[1] + "-" + cwId;
 	    
@@ -5496,7 +5652,7 @@ public class adminConfigController {
 	    
 	    if(cwId > 0) {
 		//Update all DTS that has the old crosswalk id with the new one
-		String sqlUpdate = "update configurationdatatranslations set crosswalkdId = " + cwId + " where cwId = " + Integer.parseInt(strArrayValues[1]) + " and configId = " + configId;
+		String sqlUpdate = "update configurationdatatranslations set crosswalkId = " + cwId + " where crosswalkId = " + Integer.parseInt(strArrayValues[1]) + " and configId = " + configId;
 		messagetypemanager.executeSQLStatement(sqlUpdate);
 
 		sqlUpdate = "update configurationdatatranslations set constant1 = " + cwId + " where constant1 = " + Integer.parseInt(strArrayValues[1]) + " and macroId = 129 and configId = " + configId;
@@ -5517,5 +5673,63 @@ public class adminConfigController {
 	}
 	
 	return returnCWids;
+    }
+    
+    /**
+     * 
+     * @param importSection
+     * @param configId
+     * @param configTransportId
+     * @param orgId
+     * @param configName
+     * @param ex 
+     */
+    public void processImportConfigError(String importSection, Integer configId, Integer configTransportId, Integer orgId, String configName, Exception ex) throws Exception {
+	
+	//back out the configuration import details
+	String backOutConfigSQL = "";
+	
+	if(configTransportId > 0) {
+	    backOutConfigSQL += "delete from rel_transportfiledropdetails where transportId = " + configTransportId + ";";
+	    backOutConfigSQL += "delete from rel_transportftpdetails where transportId = " + configTransportId + ";";
+	}
+	
+	if(orgId > 0 && configId > 0) {
+	    backOutConfigSQL += "delete from rel_crosswalkdata where crosswalkId in (select id from crosswalks "
+		+ "where orgId = " + orgId + " and id in (select crosswalkId from configurationdatatranslations where configId = "+configId+"));";
+	    backOutConfigSQL += "delete from crosswalks where orgId = " + orgId + " and id in (select crosswalkId from configurationdatatranslations where configId = "+configId+");";
+	}
+	
+	if(configId > 0) {
+	    backOutConfigSQL += "delete from configurationdatatranslations where configId = " + configId + ";";
+	    backOutConfigSQL += "delete from configurationformfields where configId = " + configId + ";";
+	    backOutConfigSQL += "delete from configurationmessagespecs where configId = " + configId + ";";
+	    backOutConfigSQL += "delete from configurationschedule where configId = " + configId + ";";
+	    backOutConfigSQL += "delete from configurationtransportdetails where configId = " + configId + ";";
+	    backOutConfigSQL += "delete from configurations where id = " + configId + ";";
+	}
+	
+	if(!"".equals(backOutConfigSQL)) {
+	    messagetypemanager.executeSQLStatement(backOutConfigSQL);
+	}
+	
+	String emailSubject = "Configuration Import has been Backed out due to an error.";
+	StringBuilder emailBody = new StringBuilder();
+
+	Organization orgDetails = organizationmanager.getOrganizationById(orgId);
+
+	emailBody.append("The following configuration import has failed.");
+	emailBody.append("<br /><br />");
+	emailBody.append("Organization Name: ").append(orgDetails.getOrgName());
+	emailBody.append("<br />Configuration Name: ").append(configName);
+	emailBody.append("<br />Import Section: ").append(importSection);
+	emailBody.append("<br/><br />Reason for failure:<br />").append(ExceptionUtils.getStackTrace(ex));
+
+	mailMessage mail = new mailMessage();
+	mail.settoEmailAddress(myProps.getProperty("admin.email"));
+	mail.setfromEmailAddress("support@health-e-link.net");
+	mail.setmessageSubject(emailSubject);
+	mail.setmessageBody(emailBody.toString());
+	emailMessageManager.sendEmail(mail);
     }
 }

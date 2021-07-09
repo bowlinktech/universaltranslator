@@ -2177,5 +2177,69 @@ public class utConfigurationManagerImpl implements utConfigurationManager {
 	 
 	return utConfigurationDAO.getDTCWForDownload(sqlStatement);
     }
+    
+    @Override 
+    public StringBuffer  exportConnectionSrcDetails(utConfiguration configDetails,Organization orgDetails) throws Exception {
+	
+	StringBuffer sb = new StringBuffer();
+	sb.append("[srcconfig|");
+	sb.append(configDetails.getconfigName().trim()).append("|");
+	sb.append(orgDetails.getCleanURL().trim());
+	sb.append("]");
+	
+	return sb;
+    }
+    
+    @Override 
+    public StringBuffer  exportConnectionTgtDetails(utConfiguration configDetails,Organization orgDetails) throws Exception {
+	
+	StringBuffer sb = new StringBuffer();
+	sb.append("[tgtconfig|");
+	sb.append(configDetails.getconfigName().trim()).append("|");
+	sb.append(orgDetails.getCleanURL().trim());
+	sb.append("]");
+	
+	return sb;
+    }
+    
+    @Override 
+    public StringBuffer exportConnectionFields(Integer connectionId) throws Exception {
+	
+	List<configurationconnectionfieldmappings> connectionFields = configurationTransportDAO.getConnectionFieldMappingsByConnectionId(connectionId);
+	
+	StringBuffer sb = new StringBuffer();
+		
+	if(!connectionFields.isEmpty()) {
+	    
+	    Iterator<configurationconnectionfieldmappings> fieldsIt = connectionFields.iterator();
+	    
+	    while (fieldsIt.hasNext()) {
+		configurationconnectionfieldmappings field = fieldsIt.next();
+		
+		sb.append("[fieldmapping|");
+		sb.append(0).append("|");
+		sb.append(0).append("|");
+		sb.append(0).append("|");
+		sb.append(0).append("|");
+		sb.append(field.getFieldNo()).append("|");
+		sb.append(field.getFieldDesc()).append("|");
+		sb.append(field.isUseField()).append("|");
+		sb.append(field.getAssociatedFieldNo()).append("|");
+		sb.append(field.getPopulateErrorFieldNo()).append("|");
+		sb.append(field.getDefaultValue());
+		sb.append("]");
+		
+		if(fieldsIt.hasNext()) {
+		    sb.append(System.getProperty("line.separator"));
+		}
+	    }
+	}
+	else {
+	   sb.append(System.getProperty("line.separator"));
+	   sb.append("[fieldmapping]");  
+	}
+	
+	return sb;
+    }
 }
 
