@@ -38,6 +38,9 @@ public class configurationConnection {
 
     @Transient
     private Integer targetOrgCol = 0, sourceSubOrgCol = 0, transportMethodId = 0;
+    
+    @Transient
+    private boolean allowExport = false;
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -176,5 +179,12 @@ public class configurationConnection {
     public void setTransportMethodId(Integer transportMethodId) {
 	this.transportMethodId = transportMethodId;
     }
-    
+
+    public boolean isAllowExport() {
+	return allowExport;
+    }
+
+    public void setAllowExport(boolean allowExport) {
+	this.allowExport = allowExport;
+    }
 }

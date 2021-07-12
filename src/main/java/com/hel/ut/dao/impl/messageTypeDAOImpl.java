@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import com.hel.ut.dao.messageTypeDAO;
+import com.hel.ut.model.CrosswalkData;
 import com.hel.ut.model.Crosswalks;
 import com.hel.ut.model.validationType;
 import org.hibernate.criterion.Disjunction;
@@ -473,5 +474,11 @@ public class messageTypeDAOImpl implements messageTypeDAO {
         String delimChar = (String) query.uniqueResult();
 
         return delimChar;
+    }
+    
+    @Override
+    @Transactional(readOnly = false)
+    public void saveCrosswalkData(CrosswalkData cwData) {
+	 sessionFactory.getCurrentSession().save(cwData);
     }
 }

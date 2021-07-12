@@ -19,6 +19,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
+import javax.servlet.http.HttpSession;
 
 import static org.apache.commons.lang.StringEscapeUtils.escapeHtml;
 
@@ -1846,6 +1847,399 @@ public class utConfigurationManagerImpl implements utConfigurationManager {
     @Override
     public void deleteConfigurationFTPInformation(int transportId) throws Exception {
 	utConfigurationDAO.deleteConfigurationFTPInformation(transportId);
+    }
+    
+    @Override 
+    public StringBuffer exportConfigOrgSection(Organization orgDetails) throws Exception {
+	
+	StringBuffer sb = new StringBuffer();
+	sb.append("[orgDetails|");
+	sb.append(orgDetails.getOrgName()).append("|");
+	sb.append(orgDetails.getAddress()).append("|");
+	sb.append(orgDetails.getAddress2()).append("|");
+	sb.append(orgDetails.getCity()).append("|");
+	sb.append(orgDetails.getState()).append("|");
+	sb.append(orgDetails.getPostalCode()).append("|");
+	sb.append(orgDetails.getPhone()).append("|");
+	sb.append(orgDetails.getFax()).append("|");
+	sb.append(orgDetails.getStatus()).append("|");
+	sb.append(orgDetails.getCleanURL()).append("|");
+	sb.append("''|");
+	sb.append(orgDetails.getOrgDesc()).append("|");
+	sb.append(orgDetails.getOrgType()).append("|");
+	sb.append(orgDetails.getTown()).append("|");
+	sb.append(orgDetails.getCounty()).append("|");
+	sb.append(orgDetails.getInfoURL()).append("|");
+	sb.append(orgDetails.getCountry()).append("|");
+	sb.append(orgDetails.getHelRegistryId()).append("|");
+	sb.append(orgDetails.getHelRegistryOrgId()).append("|");
+	sb.append(orgDetails.getHelRegistrySchemaName()).append("|");
+	sb.append(orgDetails.getPrimaryContactEmail()).append("|");
+	sb.append("0|");
+	sb.append(orgDetails.getPrimaryContactName()).append("|");
+	sb.append(orgDetails.getPrimaryTechContactEmail()).append("|");
+	sb.append(orgDetails.getPrimaryTechContactName());
+	sb.append("]");
+	
+	return sb;
+    }
+    
+    @Override 
+    public StringBuffer exportConfigDetailsSection(utConfiguration configDetails) throws Exception {
+	
+	StringBuffer sb = new StringBuffer();
+	sb.append("[configDetails|");
+	sb.append("0|");
+	sb.append(configDetails.getStatus()).append("|");
+	sb.append(configDetails.getType()).append("|");
+	sb.append(configDetails.getMessageTypeId()).append("|");
+	sb.append(configDetails.getstepsCompleted()).append("|");
+	sb.append(configDetails.getconfigName()).append("|");
+	sb.append(configDetails.getThreshold()).append("|");
+	sb.append(configDetails.getConfigurationType()).append("|");
+	sb.append("0");
+	sb.append("]");
+	
+	return sb;
+    }
+    
+    @Override 
+    public StringBuffer exportConfigTransportSection(HttpSession session,configurationTransport transportDetails) throws Exception {
+	
+	StringBuffer sb = new StringBuffer();
+	sb.append("[transportDetails|");
+	sb.append("0|");
+	sb.append(transportDetails.gettransportMethodId()).append("|");
+	sb.append(transportDetails.getfileType()).append("|");
+	sb.append(transportDetails.getfileDelimiter()).append("|");
+	sb.append(transportDetails.getstatus()).append("|");
+	sb.append(transportDetails.gettargetFileName()).append("|");
+	sb.append(transportDetails.getappendDateTime()).append("|");
+	sb.append(transportDetails.getmaxFileSize()).append("|");
+	sb.append(transportDetails.getclearRecords()).append("|");
+	sb.append(transportDetails.getfileLocation()).append("|");
+	sb.append(transportDetails.getautoRelease()).append("|");
+	sb.append(transportDetails.geterrorHandling()).append("|");
+	sb.append(transportDetails.getmergeBatches()).append("|");
+	sb.append(transportDetails.getcopiedTransportId()).append("|");
+	sb.append(transportDetails.getfileExt()).append("|");
+	sb.append(transportDetails.getEncodingId()).append("|");
+	sb.append(transportDetails.getCcdSampleTemplate()).append("|");
+	sb.append(transportDetails.getHL7PDFSampleTemplate()).append("|");
+	sb.append(transportDetails.isMassTranslation()).append("|");
+	sb.append(transportDetails.isZipped()).append("|");
+	sb.append(transportDetails.getZipType()).append("|");
+	sb.append(transportDetails.getRestAPIURL()).append("|");
+	sb.append(transportDetails.getRestAPIUsername()).append("|");
+	sb.append(transportDetails.getRestAPIPassword()).append("|");
+	sb.append(transportDetails.getRestAPIType()).append("|");
+	sb.append(transportDetails.isWaitForResponse()).append("|");
+	sb.append(transportDetails.getRestAPIFunctionId()).append("|");
+	sb.append(transportDetails.getJsonWrapperElement()).append("|");
+	sb.append(transportDetails.getLineTerminator()).append("|");
+	sb.append(transportDetails.getHelRegistryConfigId()).append("|");
+	sb.append(transportDetails.getHelSchemaName()).append("|");
+	sb.append(transportDetails.getHelRegistryId()).append("|");
+	sb.append(transportDetails.getDmConfigKeyword()).append("|");
+	sb.append(transportDetails.isErgFileDownload()).append("|");
+	sb.append(transportDetails.isPopulateInboundAuditReport()).append("|");
+	sb.append(transportDetails.isAddTargetFileHeaderRow()).append("|");
+	sb.append(transportDetails.getErrorEmailAddresses());
+	sb.append("]");
+	
+	StringBuffer emailBodySB = (StringBuffer) session.getAttribute("emailBody");
+	
+	if(transportDetails.getCcdSampleTemplate() != null) {
+	    if(!transportDetails.getCcdSampleTemplate().isEmpty()) {
+		emailBodySB.append("<br />The following CCD Template File needs to be UPLOADED to the configuration<br />").append("File Name: ").append(transportDetails.getCcdSampleTemplate().trim());
+	    }
+	}
+	
+	if(transportDetails.getHL7PDFSampleTemplate() != null) {
+	    if(!transportDetails.getHL7PDFSampleTemplate().isEmpty()) {
+		emailBodySB.append("<br />The following HL7 PDF Template File needs to be UPLOADED to the configuration<br />").append("File Name: ").append(transportDetails.getHL7PDFSampleTemplate().trim());
+	    }
+	}
+	
+	//See if there is any file drop details
+	List<configurationFileDropFields> fileDropSettings = configurationTransportDAO.getTransFileDropDetails(transportDetails.getId());
+	
+	if(!fileDropSettings.isEmpty()) {
+	    for(configurationFileDropFields fileDropDetails : fileDropSettings) {
+		sb.append(System.getProperty("line.separator"));
+		sb.append("[fileDropDetails|");
+		sb.append("0|");
+		sb.append(fileDropDetails.getDirectory()).append("|");
+		sb.append(fileDropDetails.getMethod());
+		sb.append("]");
+	    }
+	}
+	else {
+	   sb.append(System.getProperty("line.separator"));
+	   sb.append("[fileDropDetails]"); 
+	}
+	
+	//See if there is any FTP file drop details
+	List<configurationFTPFields> ftpSettings = configurationTransportDAO.getTransportFTPDetails(transportDetails.getId());
+	
+	if(!ftpSettings.isEmpty()) {
+	    for(configurationFTPFields ftpDetails : ftpSettings) {
+		sb.append(System.getProperty("line.separator"));
+		sb.append("[ftpDropDetails|");
+		sb.append("0|");
+		sb.append(ftpDetails.getip()).append("|");
+		sb.append(ftpDetails.getdirectory()).append("|");
+		sb.append(ftpDetails.getusername()).append("|");
+		sb.append(ftpDetails.getpassword()).append("|");
+		sb.append(ftpDetails.getmethod()).append("|");
+		sb.append(ftpDetails.getport()).append("|");
+		sb.append(ftpDetails.getprotocol()).append("|");
+		sb.append(ftpDetails.getcertification());
+		sb.append("]");
+		
+		if(ftpDetails.getcertification() != null) {
+		    if(!ftpDetails.getcertification().isEmpty()) {
+			emailBodySB.append("<br />The following FTP Certificate File needs to be MOVED to the organizations certificate folder<br />").append("File Name: ").append(ftpDetails.getcertification().trim());
+		    }
+		}
+	    }
+	}
+	else {
+	   sb.append(System.getProperty("line.separator"));
+	   sb.append("[ftpDropDetails]");  
+	}
+	
+	session.setAttribute("emailBody", emailBodySB);
+	
+	return sb;
+    }
+    
+    @Override 
+    public StringBuffer exportConfigMessageSpecSection(HttpSession session,Integer configId) throws Exception {
+	
+	//Get configuration message specs
+	configurationMessageSpecs messageSpecDetails = utConfigurationDAO.getMessageSpecs(configId);
+	
+	StringBuffer sb = new StringBuffer();
+	sb.append("[messageSpecDetails|");
+	sb.append("0|");
+	sb.append(messageSpecDetails.gettemplateFile()).append("|");
+	sb.append(messageSpecDetails.getmessageTypeCol()).append("|");
+	sb.append(messageSpecDetails.getmessageTypeVal()).append("|");
+	sb.append(messageSpecDetails.gettargetOrgCol()).append("|");
+	sb.append(messageSpecDetails.getcontainsHeaderRow()).append("|");
+	sb.append(messageSpecDetails.getrptField1()).append("|");
+	sb.append(messageSpecDetails.getrptField2()).append("|");
+	sb.append(messageSpecDetails.getrptField3()).append("|");
+	sb.append(messageSpecDetails.getrptField4()).append("|");
+	sb.append(messageSpecDetails.getSourceSubOrgCol()).append("|");
+	sb.append(messageSpecDetails.getExcelstartrow()).append("|");
+	sb.append(messageSpecDetails.getExcelskiprows()).append("|");
+	sb.append(messageSpecDetails.getParsingTemplate()).append("|");
+	sb.append(messageSpecDetails.getFileNameConfigHeader()).append("|");
+	sb.append(messageSpecDetails.getTotalHeaderRows());
+	sb.append("]");
+	
+	StringBuffer emailBodySB = (StringBuffer) session.getAttribute("emailBody");
+	
+	if(messageSpecDetails.gettemplateFile() != null) {
+	    if(!messageSpecDetails.gettemplateFile().isEmpty()) {
+		emailBodySB.append("<br />The following template File needs to be MOVED to the organization templates folder <br />").append("File Name: ").append(messageSpecDetails.gettemplateFile().trim());
+	    }
+	}
+
+	if(messageSpecDetails.getParsingTemplate() != null) {
+	    if(!messageSpecDetails.getParsingTemplate().isEmpty()) {
+		emailBodySB.append("<br />The following parsing File needs to be UPLOADED to the configuration <br />").append("File Name: ").append(messageSpecDetails.getParsingTemplate().trim());
+	    }
+	}
+	
+	session.setAttribute("emailBody", emailBodySB);
+	
+	return sb;
+    }
+    
+    @Override 
+    public StringBuffer exportConfigFieldsSection(Integer configId, Integer transportDetailsId) throws Exception {
+	
+	//Get configuration fields
+	List<configurationFormFields> fields = configurationTransportDAO.getConfigurationFields(configId,transportDetailsId);
+	Iterator<configurationFormFields> fieldsIt = fields.iterator();
+	
+	List<configurationDataTranslations> dataTranslations = utConfigurationDAO.getDataTranslations(configId);
+	
+	StringBuffer sb = new StringBuffer();
+	
+	while (fieldsIt.hasNext()) {
+	    configurationFormFields field = fieldsIt.next();
+	    sb.append("[fields|");
+	    sb.append("0|0|0|");
+	    sb.append(field.getFieldNo()).append("|");
+	    sb.append(field.getFieldDesc()).append("|");
+	    sb.append(field.getValidationType()).append("|");
+	    sb.append(field.getRequired()).append("|");
+	    sb.append(field.getUseField()).append("|");
+	    sb.append(field.getAssociatedFieldNo()).append("|");
+	    sb.append(field.getDefaultValue()).append("|");
+	    sb.append(field.getSampleData());
+	    sb.append("]");
+	    
+	    for(configurationDataTranslations dTs : dataTranslations) {
+		if(dTs.getFieldId() == field.getId()) {
+		    sb.append(System.getProperty("line.separator"));
+		    sb.append("[fieldDTS|");
+		    sb.append("0|0|");
+		    sb.append(dTs.getCrosswalkId()).append("|");
+		    sb.append(dTs.getMacroId()).append("|");
+		    sb.append(dTs.getPassClear()).append("|");
+		    sb.append(dTs.getFieldA()).append("|");
+		    sb.append(dTs.getFieldB()).append("|");
+		    sb.append(dTs.getConstant1()).append("|");
+		    sb.append(dTs.getConstant2()).append("|");
+		    sb.append(dTs.getProcessOrder()).append("|");
+		    sb.append(dTs.getCategoryId()).append("|");
+		    sb.append(dTs.getDefaultValue());
+		    sb.append("]");
+		}
+	    }
+	    
+	    if(fieldsIt.hasNext()) {
+		sb.append(System.getProperty("line.separator"));
+	    }
+	}
+	
+	return sb;
+    }
+    
+    @Override 
+    public StringBuffer exportConfigSchedulingSection(Integer configId) throws Exception {
+	
+	//Get configuration schedule
+	configurationSchedules scheduleDetails = utConfigurationDAO.getScheduleDetails(configId);
+	
+	StringBuffer sb = new StringBuffer();
+	sb.append("[scheduleDetails|");
+	sb.append("0|");
+	sb.append(scheduleDetails.gettype()).append("|");
+	sb.append(scheduleDetails.getprocessingType()).append("|");
+	sb.append(scheduleDetails.getnewfileCheck()).append("|");
+	sb.append(scheduleDetails.getprocessingDay()).append("|");
+	sb.append(scheduleDetails.getprocessingTime());
+	sb.append("]");
+	
+	return sb;
+    }
+    
+    @Override 
+    public StringBuffer exportOrgCrosswalks(Integer orgId) throws Exception {
+	
+	List crosswalks = getCrosswalksForExport(orgId);
+	
+	StringBuffer sb = new StringBuffer();
+		
+	if(!crosswalks.isEmpty()) {
+
+	    Iterator cwDataIt = crosswalks.iterator();
+	    
+	    while (cwDataIt.hasNext()) {
+		
+		Object cwDatarow[] = (Object[]) cwDataIt.next();
+		
+		sb.append("[crosswalks|");
+		sb.append(cwDatarow[0]).append("|");
+		sb.append(cwDatarow[1]).append("|");
+		sb.append(cwDatarow[2]).append("|");
+		sb.append(cwDatarow[3]).append("|");
+		sb.append(cwDatarow[4]).append("|");
+		sb.append(cwDatarow[5]).append("|");
+		sb.append(cwDatarow[6].toString().trim());
+		sb.append("]");
+		
+		if(cwDataIt.hasNext()) {
+		    sb.append(System.getProperty("line.separator"));
+		}
+	    }
+	}
+	else {
+	   sb.append(System.getProperty("line.separator"));
+	   sb.append("[crosswalks]");  
+	}
+	
+	return sb;
+    }
+    
+    public List getCrosswalksForExport(Integer orgId) throws Exception {
+	
+	String sqlStatement = "select a.id, a.name, a.fileDelimiter, a.fileName, b.sourceValue, b.targetValue, b.descValue " 
+	+ "from crosswalks a inner join rel_crosswalkdata b on b.crosswalkId = a.id "
+	+ "where a.orgId = " + orgId + " "
+	+ "order by a.id";
+	 
+	return utConfigurationDAO.getDTCWForDownload(sqlStatement);
+    }
+    
+    @Override 
+    public StringBuffer  exportConnectionSrcDetails(utConfiguration configDetails,Organization orgDetails) throws Exception {
+	
+	StringBuffer sb = new StringBuffer();
+	sb.append("[srcconfig|");
+	sb.append(configDetails.getconfigName().trim()).append("|");
+	sb.append(orgDetails.getCleanURL().trim());
+	sb.append("]");
+	
+	return sb;
+    }
+    
+    @Override 
+    public StringBuffer  exportConnectionTgtDetails(utConfiguration configDetails,Organization orgDetails) throws Exception {
+	
+	StringBuffer sb = new StringBuffer();
+	sb.append("[tgtconfig|");
+	sb.append(configDetails.getconfigName().trim()).append("|");
+	sb.append(orgDetails.getCleanURL().trim());
+	sb.append("]");
+	
+	return sb;
+    }
+    
+    @Override 
+    public StringBuffer exportConnectionFields(Integer connectionId) throws Exception {
+	
+	List<configurationconnectionfieldmappings> connectionFields = configurationTransportDAO.getConnectionFieldMappingsByConnectionId(connectionId);
+	
+	StringBuffer sb = new StringBuffer();
+		
+	if(!connectionFields.isEmpty()) {
+	    
+	    Iterator<configurationconnectionfieldmappings> fieldsIt = connectionFields.iterator();
+	    
+	    while (fieldsIt.hasNext()) {
+		configurationconnectionfieldmappings field = fieldsIt.next();
+		
+		sb.append("[fieldmapping|");
+		sb.append(0).append("|");
+		sb.append(0).append("|");
+		sb.append(0).append("|");
+		sb.append(0).append("|");
+		sb.append(field.getFieldNo()).append("|");
+		sb.append(field.getFieldDesc()).append("|");
+		sb.append(field.isUseField()).append("|");
+		sb.append(field.getAssociatedFieldNo()).append("|");
+		sb.append(field.getPopulateErrorFieldNo()).append("|");
+		sb.append(field.getDefaultValue());
+		sb.append("]");
+		
+		if(fieldsIt.hasNext()) {
+		    sb.append(System.getProperty("line.separator"));
+		}
+	    }
+	}
+	else {
+	   sb.append(System.getProperty("line.separator"));
+	   sb.append("[fieldmapping]");  
+	}
+	
+	return sb;
     }
 }
 
