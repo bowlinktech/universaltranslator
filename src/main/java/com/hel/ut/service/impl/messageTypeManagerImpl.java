@@ -376,4 +376,9 @@ public class messageTypeManagerImpl implements messageTypeManager {
     public void executeSQLStatement(String sqlStatement) {
         messageTypeDAO.executeSQLStatement(sqlStatement);
     }
+    
+    @Override
+    public Crosswalks getCrosswalkByNameAndOrg(String cwName, Integer orgId) {
+	return messageTypeDAO.getCrosswalkByNameAndOrg(cwName,orgId);
+    }
 }

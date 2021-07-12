@@ -49,7 +49,9 @@ public class utConfigurationManagerImpl implements utConfigurationManager {
 
     @Override
     public Integer createConfiguration(utConfiguration configuration) {
-	configuration.setstepsCompleted(1);
+	if(configuration.getstepsCompleted() < 6) {
+	    configuration.setstepsCompleted(1);
+	}
 	return utConfigurationDAO.createConfiguration(configuration);
     }
 
@@ -2152,7 +2154,8 @@ public class utConfigurationManagerImpl implements utConfigurationManager {
 		sb.append(cwDatarow[3]).append("|");
 		sb.append(cwDatarow[4]).append("|");
 		sb.append(cwDatarow[5]).append("|");
-		sb.append(cwDatarow[6].toString().trim());
+		sb.append(cwDatarow[6]).append("|");
+		sb.append(cwDatarow[7].toString().trim());
 		sb.append("]");
 		
 		if(cwDataIt.hasNext()) {
@@ -2170,9 +2173,9 @@ public class utConfigurationManagerImpl implements utConfigurationManager {
     
     public List getCrosswalksForExport(Integer orgId) throws Exception {
 	
-	String sqlStatement = "select a.id, a.name, a.fileDelimiter, a.fileName, b.sourceValue, b.targetValue, b.descValue " 
+	String sqlStatement = "select a.id, a.name, a.fileDelimiter, a.fileName, a.orgId, b.sourceValue, b.targetValue, b.descValue " 
 	+ "from crosswalks a inner join rel_crosswalkdata b on b.crosswalkId = a.id "
-	+ "where a.orgId = " + orgId + " "
+	+ "where a.orgId = 0 or a.orgId = " + orgId + " "
 	+ "order by a.id";
 	 
 	return utConfigurationDAO.getDTCWForDownload(sqlStatement);
