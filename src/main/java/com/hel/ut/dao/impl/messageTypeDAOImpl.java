@@ -15,6 +15,7 @@ import com.hel.ut.model.CrosswalkData;
 import com.hel.ut.model.Crosswalks;
 import com.hel.ut.model.validationType;
 import org.hibernate.criterion.Disjunction;
+import org.hibernate.criterion.MatchMode;
 import org.hibernate.transform.Transformers;
 import org.hibernate.type.StandardBasicTypes;
 
@@ -487,15 +488,23 @@ public class messageTypeDAOImpl implements messageTypeDAO {
      *
      * @param cwName
      * @param orgId
+     * @param fileName
      *
      * @Return This function will return a string (crosswalk name).
      */
     @Override
     @Transactional(readOnly = true)
-    public Crosswalks getCrosswalkByNameAndOrg(String cwName, Integer orgId) {
+    public Crosswalks getCrosswalkByNameAndOrg(String cwName, Integer orgId, String fileName) {
         Criteria criteria = sessionFactory.getCurrentSession().createCriteria(Crosswalks.class);
-        criteria.add(Restrictions.eq("name", cwName));
-	criteria.add(Restrictions.eq("orgId", orgId));
+        criteria.add(Restrictions.eq("orgId", orgId));
+	
+	if(orgId == 0) {
+	    criteria.add(Restrictions.eq("name", cwName));
+	}
+	else {
+	    criteria.add(Restrictions.like("name", "%"+cwName));
+	    criteria.add(Restrictions.eq("fileName", fileName));
+	}
 
         Crosswalks cwDetails = (Crosswalks) criteria.uniqueResult();
 

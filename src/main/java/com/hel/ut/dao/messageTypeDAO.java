@@ -66,5 +66,5 @@ public interface messageTypeDAO {
     
     void saveCrosswalkData(CrosswalkData cwData);
     
-    Crosswalks getCrosswalkByNameAndOrg(String cwName, Integer orgId);
+    Crosswalks getCrosswalkByNameAndOrg(String cwName, Integer orgId, String fileName);
 }

@@ -61,5 +61,5 @@ public interface messageTypeManager {
     
     void executeSQLStatement(String sqlStatement);
     
-    Crosswalks getCrosswalkByNameAndOrg(String cwName, Integer orgId);
+    Crosswalks getCrosswalkByNameAndOrg(String cwName, Integer orgId, String fileName);
 }
