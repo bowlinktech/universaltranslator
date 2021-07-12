@@ -5097,14 +5097,13 @@ public class adminConfigController {
 	    }
 	    reader.close();
 	    
-	    String emailSubject = "Configuration Import has been Completed";
 	    StringBuilder emailBody = new StringBuilder();
 	    
 	    Organization orgDetails = organizationmanager.getOrganizationById(orgId);
 	    
 	    if(configId == 0) {
 		
-		emailSubject = "Configuration Import was Not Successful";
+		String emailSubject = "The Configuration Import was Not Successful";
 		
 		emailBody.append("The following configuration import has failed.");
 		emailBody.append("<br /><br />");
@@ -5128,6 +5127,8 @@ public class adminConfigController {
 		if(configDetails.getType() == 2) {
 		    configType = "Target";
 		}
+		
+		String emailSubject = "The " + configType + " Configuration Import has been Completed";
 		
 		emailBody.append("The following ").append(configType.toLowerCase()).append(" configuration import has been completed and is now available.");
 		emailBody.append("<br /><br />");
@@ -5633,9 +5634,9 @@ public class adminConfigController {
 	    if(oldCWId.equals(strArrayValues[1])) {
 		CrosswalkData cwData = new CrosswalkData();
 		cwData.setCrosswalkId(newCWId);
-		cwData.setSourceValue(strArrayValues[5]);
-		cwData.setTargetValue(strArrayValues[6]);
-		cwData.setDescValue(strArrayValues[7]);
+		cwData.setSourceValue(strArrayValues[6]);
+		cwData.setTargetValue(strArrayValues[7]);
+		cwData.setDescValue(strArrayValues[8]);
 		messagetypemanager.saveCrosswalkData(cwData);
 		
 		returnCWids = strArrayValues[1] + "-" + newCWId;
@@ -5648,39 +5649,42 @@ public class adminConfigController {
 	if(addNewCW) {
 	    Crosswalks cw = new Crosswalks();
 	    
-	    String cwName = strArrayValues[2];
+	    String cwName = strArrayValues[2].trim();
 	    Integer cwId = 0;
 	    boolean newCW = false;
-		    
-	    if(cwName.contains("_")) {
-		String[] cwNameArray = cwName.split("\\_");
-		cw.setName(configId+"_"+cwNameArray[1]);
-	    }
-	    else {
-		cw.setName(configId+"_"+cwName);
-	    }
+	    
 	    cw.setFileDelimiter(Integer.parseInt(strArrayValues[3]));
 	    cw.setfileName(strArrayValues[4]);
 	    
 	    if(Integer.parseInt(strArrayValues[5]) > 0) {
+		if(cwName.contains("_")) {
+		    String[] cwNameArray = cwName.split("\\_");
+		    cw.setName(configId+"_"+cwNameArray[1]);
+		    cwName = cwNameArray[1];
+		}
+		else {
+		    cw.setName(configId+"_"+cwName);
+		}
 		cw.setOrgId(orgId);
 	    }
 	    else {
-		cw.setOrgId(0);
-		
-		//Need to check if the generic CW already exists
-		Crosswalks cwDetails = messagetypemanager.getCrosswalkByNameAndOrg(cwName,orgId);
-		
-		if(cwDetails != null) {
-		    if(cwDetails.getId() > 0) {
-			cwId = cwDetails.getId();
-		    }
-		}
+		orgId = 0;
+		cw.setOrgId(orgId);
+		cw.setName(cwName);
 	    }
 	    
+	    //Need to check if the generic CW already exists
+	    Crosswalks cwDetails = messagetypemanager.getCrosswalkByNameAndOrg(cwName,orgId,strArrayValues[4].trim());
+
+	    if(cwDetails != null) {
+		if(cwDetails.getId() > 0) {
+		    cwId = cwDetails.getId();
+		}
+	    }
+	
 	    if(cwId == 0) {
 		newCW = true;
-		 try {
+		try {
 		    cwId = messagetypemanager.createCrosswalk(cw);
 		    returnCWids = strArrayValues[1] + "-" + cwId;
 		}
@@ -5692,9 +5696,9 @@ public class adminConfigController {
 	    if(newCW) {
 		CrosswalkData cwData = new CrosswalkData();
 		cwData.setCrosswalkId(cwId);
-		cwData.setSourceValue(strArrayValues[5]);
-		cwData.setTargetValue(strArrayValues[6]);
-		cwData.setDescValue(strArrayValues[7]);
+		cwData.setSourceValue(strArrayValues[6]);
+		cwData.setTargetValue(strArrayValues[7]);
+		cwData.setDescValue(strArrayValues[8]);
 		messagetypemanager.saveCrosswalkData(cwData);
 	    }
 	    
