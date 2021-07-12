@@ -60,4 +60,6 @@ public interface messageTypeManager {
     void saveCrosswalkData(CrosswalkData cwData);
     
     void executeSQLStatement(String sqlStatement);
+    
+    Crosswalks getCrosswalkByNameAndOrg(String cwName, Integer orgId);
 }

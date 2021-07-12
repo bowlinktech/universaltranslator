@@ -4798,7 +4798,13 @@ public class adminConfigController {
 	//Get transport details
 	configurationTransport transportDetails = utconfigurationTransportManager.getTransportDetails(configId);
 	
-	String configDetailFile = "/tmp/configExport-" + configDetails.getconfigName().toLowerCase().replaceAll(" ", "-") + ".txt";
+	String configType = "srcConfigExport";
+	
+	if(configDetails.getType() == 2) {
+	    configType = "tgtConfigExport";
+	}
+	
+	String configDetailFile = "/tmp/"+configType+"-"+configDetails.getconfigName().toLowerCase().replaceAll(" ", "-") + ".txt";
 	
 	File detailsFile = new File(configDetailFile);
 	detailsFile.delete();
@@ -4807,7 +4813,15 @@ public class adminConfigController {
 	
 	//Create a session to hold the email message body.
 	StringBuffer emailBodySB = new StringBuffer();
-	emailBodySB.append("The configuration has been successfully exported.<br /><br />").append("Configuration Name: ").append(configDetails.getconfigName().trim());
+	emailBodySB.append("The configuration has been successfully exported.<br /><br />");
+	emailBodySB.append("Configuration Name: ").append(configDetails.getconfigName().trim());
+	emailBodySB.append("<br />Configuration Type: ");
+	if(configDetails.getType() == 1) {
+	    emailBodySB.append("Source Configuration");
+	}
+	else {
+	    emailBodySB.append("Target Configuration");
+	}
 	emailBodySB.append("<br /><br />Please complete the following:<br />");
 	
 	if(configDetails.getType() == 1) {
@@ -5101,17 +5115,26 @@ public class adminConfigController {
 		emailMessageManager.sendEmail(mail);
 	    }
 	    else if(configImportSuccessful) {
-		emailBody.append("The following configuration import has been completed and is now available.");
+		
+		utConfiguration configDetails = utconfigurationmanager.getConfigurationById(configId);
+		
+		String configType = "Source";
+		
+		if(configDetails.getType() == 2) {
+		    configType = "Target";
+		}
+		
+		emailBody.append("The following ").append(configType.toLowerCase()).append(" configuration import has been completed and is now available.");
 		emailBody.append("<br /><br />");
 		emailBody.append("Organization Name: ").append(orgDetails.getOrgName());
+		emailBody.append("<br />Configuration Type: ").append(configType).append(" Configuration");
 		emailBody.append("<br />Configuration Name: ").append(configName);
 		emailBody.append("<br />Configuration Id: ").append(configId);
 		
 		//Turn the configuration on
-		utConfiguration configDetails = utconfigurationmanager.getConfigurationById(configId);
 		configDetails.setStatus(true);
-		
 		utconfigurationmanager.updateConfiguration(configDetails);
+		
 		mailMessage mail = new mailMessage();
 		mail.settoEmailAddress(myProps.getProperty("admin.email"));
 		mail.setfromEmailAddress("support@health-e-link.net");
@@ -5622,6 +5645,7 @@ public class adminConfigController {
 	    
 	    String cwName = strArrayValues[2];
 	    Integer cwId = 0;
+	    boolean newCW = false;
 		    
 	    if(cwName.contains("_")) {
 		String[] cwNameArray = cwName.split("\\_");
@@ -5632,23 +5656,42 @@ public class adminConfigController {
 	    }
 	    cw.setFileDelimiter(Integer.parseInt(strArrayValues[3]));
 	    cw.setfileName(strArrayValues[4]);
-	    cw.setOrgId(orgId);
 	    
-	    try {
-		cwId = messagetypemanager.createCrosswalk(cw);
+	    if(Integer.parseInt(strArrayValues[5]) > 0) {
+		cw.setOrgId(orgId);
 	    }
-	    catch (Exception cwEx) {
-		cwEx.printStackTrace();
+	    else {
+		cw.setOrgId(0);
+		
+		//Need to check if the generic CW already exists
+		Crosswalks cwDetails = messagetypemanager.getCrosswalkByNameAndOrg(cwName,orgId);
+		
+		if(cwDetails != null) {
+		    if(cwDetails.getId() > 0) {
+			cwId = cwDetails.getId();
+		    }
+		}
 	    }
 	    
-	    returnCWids = strArrayValues[1] + "-" + cwId;
+	    if(cwId == 0) {
+		newCW = true;
+		 try {
+		    cwId = messagetypemanager.createCrosswalk(cw);
+		    returnCWids = strArrayValues[1] + "-" + cwId;
+		}
+		catch (Exception cwEx) {
+		    cwEx.printStackTrace();
+		}
+	    }
 	    
-	    CrosswalkData cwData = new CrosswalkData();
-	    cwData.setCrosswalkId(cwId);
-	    cwData.setSourceValue(strArrayValues[5]);
-	    cwData.setTargetValue(strArrayValues[6]);
-	    cwData.setDescValue(strArrayValues[7]);
-	    messagetypemanager.saveCrosswalkData(cwData);
+	    if(newCW) {
+		CrosswalkData cwData = new CrosswalkData();
+		cwData.setCrosswalkId(cwId);
+		cwData.setSourceValue(strArrayValues[5]);
+		cwData.setTargetValue(strArrayValues[6]);
+		cwData.setDescValue(strArrayValues[7]);
+		messagetypemanager.saveCrosswalkData(cwData);
+	    }
 	    
 	    if(cwId > 0) {
 		//Update all DTS that has the old crosswalk id with the new one
