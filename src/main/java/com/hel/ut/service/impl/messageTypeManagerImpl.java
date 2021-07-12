@@ -378,7 +378,7 @@ public class messageTypeManagerImpl implements messageTypeManager {
     }
     
     @Override
-    public Crosswalks getCrosswalkByNameAndOrg(String cwName, Integer orgId) {
-	return messageTypeDAO.getCrosswalkByNameAndOrg(cwName,orgId);
+    public Crosswalks getCrosswalkByNameAndOrg(String cwName, Integer orgId, String fileName) {
+	return messageTypeDAO.getCrosswalkByNameAndOrg(cwName,orgId,fileName);
     }
 }
