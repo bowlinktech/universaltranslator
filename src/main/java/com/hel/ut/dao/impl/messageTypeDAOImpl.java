@@ -481,4 +481,24 @@ public class messageTypeDAOImpl implements messageTypeDAO {
     public void saveCrosswalkData(CrosswalkData cwData) {
 	 sessionFactory.getCurrentSession().save(cwData);
     }
+    
+    /**
+     * The 'getCrosswalkByNameAndOrg(String cwName, Integer orgId) {' function will check the system to see if the generic crosswalk already exists
+     *
+     * @param cwName
+     * @param orgId
+     *
+     * @Return This function will return a string (crosswalk name).
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public Crosswalks getCrosswalkByNameAndOrg(String cwName, Integer orgId) {
+        Criteria criteria = sessionFactory.getCurrentSession().createCriteria(Crosswalks.class);
+        criteria.add(Restrictions.eq("name", cwName));
+	criteria.add(Restrictions.eq("orgId", orgId));
+
+        Crosswalks cwDetails = (Crosswalks) criteria.uniqueResult();
+
+        return cwDetails;
+    }
 }

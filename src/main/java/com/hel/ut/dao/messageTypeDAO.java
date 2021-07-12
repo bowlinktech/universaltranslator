@@ -65,4 +65,6 @@ public interface messageTypeDAO {
     String getDelimiterById(int id);
     
     void saveCrosswalkData(CrosswalkData cwData);
+    
+    Crosswalks getCrosswalkByNameAndOrg(String cwName, Integer orgId);
 }

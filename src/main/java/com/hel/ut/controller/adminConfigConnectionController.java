@@ -1186,9 +1186,9 @@ public class adminConfigConnectionController {
 		emailBody.append("<br /><br />");
 		emailBody.append("Source Organization Name: ").append(srcOrgDetails.getOrgName());
 		emailBody.append("<br />Source Configuration Name: ").append(srcConfigName);
-		emailBody.append("<br />Target Organization Name: ").append(tgtOrgDetails.getOrgName());
+		emailBody.append("<br /><br />Target Organization Name: ").append(tgtOrgDetails.getOrgName());
 		emailBody.append("<br />Target Configuration Name: ").append(tgtConfigName);
-		emailBody.append("<br />Connection Id: ").append(connectionId);
+		emailBody.append("<br /><br />Connection Id: ").append(connectionId);
 		
 		//Turn the configuration on
 		configurationConnection connectionDetails = utconfigurationmanager.getConnection(connectionId);
