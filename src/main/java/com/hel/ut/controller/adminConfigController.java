@@ -4813,7 +4813,12 @@ public class adminConfigController {
 	
 	//Create a session to hold the email message body.
 	StringBuffer emailBodySB = new StringBuffer();
-	emailBodySB.append("The configuration has been successfully exported.<br /><br />");
+	if(configDetails.getType() == 1) {
+	    emailBodySB.append("The source configuration has been successfully exported.<br /><br />");
+	}
+	else {
+	    emailBodySB.append("The target configuration has been successfully exported.<br /><br />");
+	}
 	emailBodySB.append("Configuration Name: ").append(configDetails.getconfigName().trim());
 	emailBodySB.append("<br />Configuration Type: ");
 	if(configDetails.getType() == 1) {
@@ -4865,7 +4870,7 @@ public class adminConfigController {
 	    session.removeAttribute("emailBody");
 	}
 	
-	return "configExport-"+configDetails.getconfigName().toLowerCase().replaceAll(" ", "-");
+	return configType+"-"+configDetails.getconfigName().toLowerCase().replaceAll(" ", "-");
     }
 
     @RequestMapping(value = "/printConfigExport/{file}", method = RequestMethod.GET)
