@@ -24,6 +24,11 @@
                     <c:if test="${not empty lastConfigUpdate}"><p><strong>Template file last updated on:</strong> <fmt:formatDate value="${lastConfigUpdate}" type="date" pattern="M/dd/yyyy h:mm a" /></p></c:if>
                 </div>
             </section>
+            <c:if test="${not empty error}" >
+                <div class="alert alert-danger" role="alert">
+                    The selected file was not found.
+                </div>
+            </c:if>
         </div>
     </div>                       
     <div class="row-fluid">                    
