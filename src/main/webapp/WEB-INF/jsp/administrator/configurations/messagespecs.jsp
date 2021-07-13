@@ -74,11 +74,18 @@
                                                     <a href="#!" class="btn btn-primary btn-action createNewTemplate" rel="${configurationDetails.id}" data-toggle="tooltip" data-original-title="Download Latest Template">Download Current Configuration Template</a>
                                                 </div>
                                             </div>
-					 </div>
+					</div>
                                         <div class="form-group">
                                             <p>
                                                 <br /><br />
-                                                <span style="margin-top:10px;"><strong>Last Uploaded Template File: ${lastUploadedDate}</strong></span>
+                                                <c:choose>
+                                                    <c:when test="${not empty lastUploadedDate}">
+                                                        <span style="margin-top:10px;"><strong>Last Uploaded Template File: ${lastUploadedDate}</strong></span>
+                                                    </c:when>
+                                                    <c:otherwise>
+                                                         <span style="margin-top:10px;"><strong>Last Uploaded Template File: The template file was not found.</strong></span>
+                                                    </c:otherwise>
+                                                </c:choose>
                                                 <hr>
                                             </p>
                                         </div>
@@ -177,8 +184,9 @@
                                                 <%-- Only CCD (XML), HL7 and JSON file types need parsing scripts --%>
                                                 <c:when test="${fileType == 4 || fileType == 9 || fileType == 12}">
                                                    <c:if test="${not empty messageSpecs.parsingTemplate}">
+                                                       <c:set var="hrefLink" value="/FileDownload/downloadFile.do?fromPage=messagespec&filename=${messageSpecs.parsingTemplate}&foldername=${cleanOrgURL}/templates/"/>
                                                        <div class="form-group">
-                                                           <label class="control-label" for="parsingTemplate">Current Parsing Script</label>
+                                                           <label class="control-label" for="parsingTemplate">Current Parsing Script (<a href="${hrefLink}" title="Download Parsing Script">Download Parsing Script</a>)</label>
                                                            <input type="text" disabled id="parsingTemplate" class="form-control" value="${messageSpecs.parsingTemplate}" />
                                                            <form:hidden id="parsingTemplate" path="parsingTemplate" />
                                                        </div>

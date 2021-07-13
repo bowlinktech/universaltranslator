@@ -1,6 +1,32 @@
 
 
 require(['./main'], function () {
+    
+    $(document).on('click', '.exportConnection', function() {
+            
+        var connectionId = $(this).attr('rel');
+
+        if(confirm("Are you sure you want to export this connection? The source and target configuration must first be exported and imported into the new system before you can import the connection.")) {
+
+            $.ajax({
+                url: '/administrator/configurations/connections/createConnectionExportFile.do',
+                data: {
+                    'connectionId': connectionId
+                },
+                type: "GET",
+                dataType : 'text',
+                contentType : 'application/json;charset=UTF-8',
+                success: function(data) {
+                    if(data !== '') {
+                        window.location.href = '/administrator/configurations/connections/printConnectionExport/'+ data;
+                    }
+                    else {
+                        $('#exportErrorMsg').show();
+                    }
+                }
+            });
+        }
+    });
         
     $(document).on('click','.printConfig',function() {
        /* $('body').overlay({

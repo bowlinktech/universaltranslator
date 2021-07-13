@@ -29,6 +29,8 @@ import com.hel.ut.service.organizationManager;
 import com.hel.ut.service.messageTypeManager;
 import com.hel.ut.model.configurationTransport;
 import com.hel.ut.model.configurationconnectionfieldmappings;
+import com.hel.ut.model.mailMessage;
+import com.hel.ut.service.emailMessageManager;
 import com.hel.ut.service.sysAdminManager;
 import com.hel.ut.service.userManager;
 
@@ -37,6 +39,7 @@ import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.InitBinder;
 
 import com.hel.ut.service.hispManager;
+import com.hel.ut.service.impl.transactionInManagerImpl;
 
 import javax.servlet.http.HttpSession;
 import com.hel.ut.service.utConfigurationManager;
@@ -46,18 +49,33 @@ import com.itextpdf.text.PageSize;
 import com.itextpdf.text.pdf.PdfWriter;
 import com.itextpdf.tool.xml.XMLWorkerHelper;
 import com.registryKit.registry.configurations.configurationManager;
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.LineNumberReader;
+import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
+import org.apache.commons.lang.exception.ExceptionUtils;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import org.springframework.security.core.Authentication;
 import org.springframework.util.FileCopyUtils;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.multipart.MultipartFile;
 
 @Controller
 @RequestMapping("/administrator/configurations/connections")
@@ -88,6 +106,12 @@ public class adminConfigConnectionController {
     @Autowired
     private hispManager hispManager;
     
+    @Autowired
+    private emailMessageManager emailMessageManager;
+    
+    @Autowired
+    ThreadPoolTaskExecutor executor;
+    
     @Resource(name = "myProps")
     private Properties myProps;
     
@@ -103,9 +127,10 @@ public class adminConfigConnectionController {
 
 
     /**
-     * The '' function will handle displaying the utConfiguration connections screen. The function will pass the existing connection objects for the selected utConfiguration.
+     * The '' function will handle displaying the utConfiguration connections screen.The function will pass the existing connection objects for the selected utConfiguration.
      *
      * @param session
+     * @param authentication
      * @return 
      * @throws java.lang.Exception 
      * @Return the connection view and the following objects.
@@ -115,28 +140,28 @@ public class adminConfigConnectionController {
      * connections - list of currently associated organizations
      */
     @RequestMapping(value = "", method = RequestMethod.GET)
-    public ModelAndView getConnections(HttpSession session) throws Exception {
+    public ModelAndView getConnections(HttpSession session,Authentication authentication) throws Exception {
+	
+	utUser userDetails = userManager.getUserByUserName(authentication.getName());
 	
 	Integer configId = 0;
 	
 	ModelAndView mav = new ModelAndView();
-	
         mav.setViewName("/administrator/configurations/connections");
-	
         mav.addObject("id", configId);
         mav.addObject("mappings", session.getAttribute("configmappings"));
         mav.addObject("HL7", session.getAttribute("configHL7"));
         mav.addObject("CCD", session.getAttribute("configCCD"));
 	mav.addObject("showAllConfigOptions",session.getAttribute("showAllConfigOptions"));
 
-        /* get a list of all connections in the sysetm */
+        // get a list of all connections in the sysetm
         List<configurationConnection> connections = utconfigurationmanager.getAllConnections();
 
         Long totalConnections = (long) 0;
 	
 	List<configurationConnection> currentConnections = new ArrayList<>();
 
-        /* Loop over the connections to get the utConfiguration details */
+        // Loop over the connections to get the utConfiguration details
         if (connections != null) {
 	    
             for (configurationConnection connection : connections) {
@@ -174,17 +199,22 @@ public class adminConfigConnectionController {
 
 		    connection.settgtConfigDetails(tgtconfigDetails);
 		    
+		    if(connection.getStatus() && ("admin".equalsIgnoreCase(userDetails.getFirstName()) || "grace".equalsIgnoreCase(userDetails.getFirstName()) || "chad".equalsIgnoreCase(userDetails.getFirstName()))) {
+			connection.setAllowExport(true);
+			mav.addObject("allowConnectionImport", true);
+		    }
+		    
 		    currentConnections.add(connection);
 		}
             }
 
-            /* Return the total list of connections */
+            // Return the total list of connections
             totalConnections = (long) currentConnections.size();
         }
 
         mav.addObject("connections", currentConnections);
 
-        /* Set the variable to hold the number of completed steps for this utConfiguration */
+        // Set the variable to hold the number of completed steps for this utConfiguration
         mav.addObject("stepsCompleted", session.getAttribute("configStepsCompleted"));
 
         return mav;
@@ -194,12 +224,16 @@ public class adminConfigConnectionController {
      * The '/details' function will handle displaying the create utConfiguration connection screen.
      *
      * @param id
+     * @param authentication
      * @return This function will display the new connection overlay
+     * @throws java.lang.Exception
      */
     @RequestMapping(value = "/details", method = RequestMethod.GET)
-    public ModelAndView connectionDetails(@RequestParam(value = "i", required = false) Integer id) throws Exception {
+    public ModelAndView connectionDetails(@RequestParam(value = "i", required = false) Integer id,Authentication authentication) throws Exception {
 	
-        ModelAndView mav = new ModelAndView();
+        utUser userDetails = userManager.getUserByUserName(authentication.getName());
+	
+	ModelAndView mav = new ModelAndView();
         mav.setViewName("/administrator/configurations/connections/details");
 	
 	Integer connectionId = 0;
@@ -218,6 +252,10 @@ public class adminConfigConnectionController {
 	    targetOrgId = targetConfigDetails.getorgId();
 	    targetConfigId = connectionDetails.gettargetConfigId();
 	    connectionId = connectionDetails.getId();
+	    
+	    if(connectionDetails.getStatus() && ("admin".equalsIgnoreCase(userDetails.getFirstName()) || "grace".equalsIgnoreCase(userDetails.getFirstName()) || "chad".equalsIgnoreCase(userDetails.getFirstName()))) {
+		mav.addObject("allowExport", true);
+	    }
 	}
 	
 	mav.addObject("connectionId", connectionId);
@@ -312,7 +350,7 @@ public class adminConfigConnectionController {
 	}
 	
 	mav.addObject("targetOrganizations", validTargetOrganizations);
-
+	
         return mav;
     }
 
@@ -866,4 +904,447 @@ public class adminConfigConnectionController {
 	 // close stream and return to view
 	response.flushBuffer();
     } 
+    
+    /**
+     * The 'createConnectionExportFile.do' method will create the export file for the selected ut connection.
+     * @param session
+     * @param connectionId
+     * @return 
+     * @throws java.lang.Exception
+     */
+    @RequestMapping(value = "/createConnectionExportFile.do", method = RequestMethod.GET)
+    @ResponseBody
+    public String createConnectionExportFile(HttpSession session, @RequestParam Integer connectionId) throws Exception {
+	
+	configurationConnection connectionDetails = utconfigurationmanager.getConnection(connectionId);
+
+        utConfiguration srcconfigDetails = utconfigurationmanager.getConfigurationById(connectionDetails.getsourceConfigId());
+	Organization srcorgDetails = organizationmanager.getOrganizationById(srcconfigDetails.getorgId());
+	
+        utConfiguration tgtconfigDetails = utconfigurationmanager.getConfigurationById(connectionDetails.gettargetConfigId());
+	Organization tgtorgDetails = organizationmanager.getOrganizationById(tgtconfigDetails.getorgId());
+
+	String connectionDetailFile = "/tmp/connectionExport-" + connectionDetails.getId() + ".txt";
+	
+	File detailsFile = new File(connectionDetailFile);
+	detailsFile.delete();
+	
+	StringBuffer reportBody = new StringBuffer();
+	
+	//Create a session to hold the email message body.
+	StringBuffer emailBodySB = new StringBuffer();
+	emailBodySB.append("The connection has been successfully exported.<br /><br />");
+	emailBodySB.append("Connection Id: ").append(connectionDetails.getId());
+	emailBodySB.append("<br />Source Configuration Name: ").append(srcconfigDetails.getconfigName().trim());
+	emailBodySB.append("<br />Target Configuration Name: ").append(tgtconfigDetails.getconfigName().trim());
+	session.setAttribute("emailBody", emailBodySB);
+	
+	PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(connectionDetailFile, true)));
+	
+	reportBody.append(utconfigurationmanager.exportConnectionSrcDetails(srcconfigDetails,srcorgDetails));
+	reportBody.append(System.getProperty("line.separator"));
+	reportBody.append(utconfigurationmanager.exportConnectionTgtDetails(tgtconfigDetails,tgtorgDetails));
+	reportBody.append(System.getProperty("line.separator"));
+	reportBody.append(utconfigurationmanager.exportConnectionFields(connectionId));
+	
+	out.println(reportBody.toString());
+	
+	out.close();
+	
+	//Check to see if an email needs to be sent
+	emailBodySB = (StringBuffer) session.getAttribute("emailBody");
+	
+	if(!"".equals(emailBodySB.toString())) {
+	    mailMessage mail = new mailMessage();
+	    mail.settoEmailAddress(myProps.getProperty("admin.email"));
+	    mail.setfromEmailAddress("support@health-e-link.net");
+	    mail.setmessageSubject("UT Connection Import Script has been Created");
+	    mail.setmessageBody(emailBodySB.toString());
+	    emailMessageManager.sendEmail(mail);
+	    
+	    //Delete email body
+	    session.removeAttribute("emailBody");
+	}
+	
+	return "connectionExport-"+connectionDetails.getId();
+    }
+
+    @RequestMapping(value = "/printConnectionExport/{file}", method = RequestMethod.GET)
+    public void printConnectionExport(@PathVariable("file") String file,HttpServletResponse response) throws Exception {
+	
+	File connectionExportFile = new File ("/tmp/" + file + ".txt");
+	InputStream is = new FileInputStream(connectionExportFile);
+
+	response.setHeader("Content-Disposition", "attachment; filename=\"" + file + ".txt\"");
+	FileCopyUtils.copy(is, response.getOutputStream());
+	
+	is.close();
+
+	//Delete the file
+	connectionExportFile.delete();
+
+	 // close stream and return to view
+	response.flushBuffer();
+    } 
+    
+    /**
+     * The 'connectionImportUpload' GET request will return modal for uploading a connection import script.
+     *
+     * @param session
+     * @return
+     * @throws Exception
+     */
+    @RequestMapping(value = "/connectionImportUpload", method = RequestMethod.GET)
+    @ResponseBody
+    public ModelAndView connectionImportUpload(HttpSession session) throws Exception {
+	
+        ModelAndView mav = new ModelAndView();
+        mav.setViewName("/administrator/configurations/connections/connectionImportFile");
+	mav.addObject("expectedExt", "txt");
+        return mav;
+    }
+    
+    /**
+     * The '/submitConnectionImportFile' function will be used to upload a new connection import script.
+     *
+     * @param importConnectionFile
+     * @param session
+     * @return 
+     * @throws java.lang.Exception 
+     */
+    @RequestMapping(value = "/submitConnectionImportFile", method = RequestMethod.POST)
+    public @ResponseBody 
+    int submitConnectionImportFile(@RequestParam(value = "importConnectionFile", required = true)  MultipartFile importConnectionFile, HttpSession session) throws Exception {
+
+	Integer returnVal = 1;
+	
+	String fileName = importConnectionFile.getOriginalFilename();
+	
+	try {
+	    
+	    Path filepath = Paths.get("/tmp/", importConnectionFile.getOriginalFilename());
+
+	    try (OutputStream os = Files.newOutputStream(filepath)) {
+		os.write(importConnectionFile.getBytes());
+	    }
+	   
+	    BufferedReader br = null;
+	    String strLine = "";
+	    try {
+	    
+		LineNumberReader reader = new LineNumberReader(new InputStreamReader(new FileInputStream("/tmp/"+fileName), "UTF-8"));
+		while (((strLine = reader.readLine()) != null) && reader.getLineNumber() <= 1){
+		    if(!strLine.contains("[srcconfig")) {
+			returnVal = 2;
+		    }
+		}
+	        reader.close();
+	    } catch (FileNotFoundException e) {
+		returnVal = 0;
+	    } catch (IOException e) {
+		 returnVal = 0;
+	    }
+	    
+	} catch (IOException e) {
+	    returnVal = 0;
+	}
+	
+	if(returnVal == 1) {
+	    executor.execute(new Runnable() {
+		@Override
+		public void run() {
+		    try {
+			loadConnectionImportFile(fileName,session);
+		    } catch (Exception ex) {
+			Logger.getLogger(adminConfigConnectionController.class.getName()).log(Level.SEVERE, null, ex);
+		    }
+		}
+	    });
+	}
+	
+	return returnVal;
+    }
+    
+    /**
+     * 
+     * @param fileName
+     * @param session
+     * @throws Exception 
+     */
+    public void loadConnectionImportFile(String fileName, HttpSession session) throws Exception {
+	
+	BufferedReader br = null;
+	String strLine = "";
+	 
+	try {
+	    
+	    LineNumberReader reader = new LineNumberReader(new InputStreamReader(new FileInputStream("/tmp/"+fileName), "UTF-8"));
+	    String[] strArrayValues;
+	    Integer srcConfigId = 0;
+	    String srcConfigName = "";
+	    String srcOrgName = "";
+	    Integer tgtConfigId = 0;
+	    String tgtConfigName = "";
+	    String tgtOrgName = "";
+	    Integer connectionId = 0;
+	    boolean connectionImportSuccessful = true;
+	    
+	    while (((strLine = reader.readLine()) != null)){
+		strLine = strLine.replace("[", "").replace("]", "");
+		strArrayValues = strLine.split("\\|", -1);
+		
+		if(strArrayValues[0].equals("srcconfig")) {
+		    try {
+			srcConfigName = strArrayValues[1];
+			srcOrgName = strArrayValues[2];
+			srcConfigId = findConnectionConfigDetails(srcConfigName,srcOrgName,1);
+		    }
+		    catch (Exception ex) {
+			connectionImportSuccessful = false;
+			break;
+		    }
+		    
+		    if(srcConfigId == 0) {
+			break;
+		    }
+		}
+		else if(strArrayValues[0].equals("tgtconfig")) {
+		    try {
+			tgtConfigName = strArrayValues[1];
+			tgtOrgName = strArrayValues[2];
+			tgtConfigId = findConnectionConfigDetails(tgtConfigName,tgtOrgName,2);
+		    }
+		    catch (Exception ex) {
+			connectionImportSuccessful = false;
+			break;
+		    }
+		    
+		    if(tgtConfigId == 0) {
+			break;
+		    }
+		}
+		else if(strArrayValues[0].equals("fieldmapping")) {
+		    
+		    if(connectionId == 0 && srcConfigId > 0 && tgtConfigId > 0) {
+			connectionId = processImportConnection(srcConfigId,tgtConfigId);
+		    }
+		    
+		    try {
+			processImportConnectionField(strArrayValues,connectionId,srcConfigId,tgtConfigId);
+		    }
+		    catch (Exception ex) {
+			processImportConnectionError("Adding Fields",connectionId,srcOrgName,tgtOrgName,srcConfigName,tgtConfigName,ex);
+			connectionImportSuccessful = false;
+			break;
+		    }
+		}
+	    }
+	    reader.close();
+	    
+	    String emailSubject = "Configuration Import has been Completed";
+	    StringBuilder emailBody = new StringBuilder();
+	    
+	    Organization srcOrgDetails = organizationmanager.getOrganizationByName(srcOrgName).get(0);
+	    Organization tgtOrgDetails = organizationmanager.getOrganizationByName(tgtOrgName).get(0);
+	    
+	    if(srcConfigId == 0) {
+		
+		emailSubject = "Connection Import was Not Successful";
+		
+		emailBody.append("The following connection import has failed.");
+		emailBody.append("<br /><br />");
+		emailBody.append("Organization Name: ").append(srcOrgDetails.getOrgName());
+		emailBody.append("<br />Configuration Name: ").append(srcConfigName);
+		emailBody.append("<br/><br />Reason<br />The source configuration was not found on the system.");
+		
+		mailMessage mail = new mailMessage();
+		mail.settoEmailAddress(myProps.getProperty("admin.email"));
+		mail.setfromEmailAddress("support@health-e-link.net");
+		mail.setmessageSubject(emailSubject);
+		mail.setmessageBody(emailBody.toString());
+		emailMessageManager.sendEmail(mail);
+	    }
+	    else if(tgtConfigId == 0) {
+		
+		emailSubject = "Connection Import was Not Successful";
+		
+		emailBody.append("The following connection import has failed.");
+		emailBody.append("<br /><br />");
+		emailBody.append("Organization Name: ").append(tgtOrgDetails.getOrgName());
+		emailBody.append("<br />Configuration Name: ").append(tgtConfigName);
+		emailBody.append("<br/><br />Reason<br />The target configuration was not found on the system.");
+		
+		mailMessage mail = new mailMessage();
+		mail.settoEmailAddress(myProps.getProperty("admin.email"));
+		mail.setfromEmailAddress("support@health-e-link.net");
+		mail.setmessageSubject(emailSubject);
+		mail.setmessageBody(emailBody.toString());
+		emailMessageManager.sendEmail(mail);
+	    }
+	    else if(connectionImportSuccessful) {
+		emailBody.append("The following connection import has been completed and is now available.");
+		emailBody.append("<br /><br />");
+		emailBody.append("Source Organization Name: ").append(srcOrgDetails.getOrgName());
+		emailBody.append("<br />Source Configuration Name: ").append(srcConfigName);
+		emailBody.append("<br /><br />Target Organization Name: ").append(tgtOrgDetails.getOrgName());
+		emailBody.append("<br />Target Configuration Name: ").append(tgtConfigName);
+		emailBody.append("<br /><br />Connection Id: ").append(connectionId);
+		
+		//Turn the configuration on
+		configurationConnection connectionDetails = utconfigurationmanager.getConnection(connectionId);
+		connectionDetails.setStatus(true);
+		utconfigurationmanager.updateConnection(connectionDetails);
+		
+		mailMessage mail = new mailMessage();
+		mail.settoEmailAddress(myProps.getProperty("admin.email"));
+		mail.setfromEmailAddress("support@health-e-link.net");
+		mail.setmessageSubject(emailSubject);
+		mail.setmessageBody(emailBody.toString());
+		emailMessageManager.sendEmail(mail);
+	    }
+	    
+	} catch (FileNotFoundException e) {
+	    Logger.getLogger(transactionInManagerImpl.class.getName()).log(Level.SEVERE, null, e);
+	} catch (IOException e) {
+	     Logger.getLogger(transactionInManagerImpl.class.getName()).log(Level.SEVERE, null, e);
+	}
+    }
+    
+    /**
+     * The 'findConnectionConfigDetails' method will search the system to make sure the configuration details passed in exist and active.
+     * 
+     * @param configName 
+     * @param orgCleanURL
+     * @param type
+     * 
+     * @return The method will return the source configuration id
+     */
+    public Integer findConnectionConfigDetails(String configName, String orgCleanURL, Integer type) {
+	
+	Integer configId = 0;
+	
+	List<Organization> orgs = organizationmanager.getOrganizationByName(orgCleanURL);
+	
+	if(!orgs.isEmpty()) {
+	    Integer orgId = orgs.get(0).getId();
+	    
+	    List<utConfiguration> orgConfigs = utconfigurationmanager.getConfigurationsByOrgId(orgId,"");
+	    
+	    if(!orgConfigs.isEmpty()) {
+		for(utConfiguration config : orgConfigs) {
+		    if(config.getconfigName().trim().equals(configName) && !config.isDeleted() && config.getStatus() && config.getType() == type) {
+			configId = config.getId();
+			break;
+		    }
+		}
+	    }
+	}
+	
+	return configId;
+    }
+    
+    /**
+     * The 'processImportConnectionField' method will process the connection field mappings from the connection import script.
+     * 
+     * @param strArrayValues 
+     * @param connectionId
+     * @param srcConfigId 
+     * @param tgtConfigId 
+     * 
+     */
+    public void processImportConnectionField(String[] strArrayValues, Integer connectionId, Integer srcConfigId, Integer tgtConfigId) {
+	
+	configurationconnectionfieldmappings fieldMapping = new configurationconnectionfieldmappings();
+	fieldMapping.setConnectionId(connectionId);
+	fieldMapping.setSourceConfigId(srcConfigId);
+	fieldMapping.setTargetConfigId(tgtConfigId);
+	fieldMapping.setFieldNo(Integer.parseInt(strArrayValues[5]));
+	fieldMapping.setFieldDesc(strArrayValues[6]);
+	if(strArrayValues[7].equals("true")) {
+	    fieldMapping.setUseField(true);
+	}
+	else {
+	    fieldMapping.setUseField(false);
+	}
+	fieldMapping.setAssociatedFieldNo(Integer.parseInt(strArrayValues[8]));
+	
+	if (!"null".equals(strArrayValues[9])) {
+	    fieldMapping.setPopulateErrorFieldNo(Integer.parseInt(strArrayValues[9]));
+	}
+	if (!"null".equals(strArrayValues[10])) {
+	    fieldMapping.setDefaultValue(strArrayValues[10]);
+	}
+	
+	try {
+	    utconfigurationTransportManager.saveConnectionFieldMapping(fieldMapping);
+	}
+	catch (Exception ex) {}
+    }
+   
+    /**
+     * The 'processImportConnection' method will add the new connection to the system.
+     * 
+     * @param srcConfigId
+     * @param tgtConfigId
+     * 
+     * @return The method will return the new connection id
+     */
+    public Integer processImportConnection(Integer srcConfigId, Integer tgtConfigId) {
+	
+	Integer connectionId = 0;
+	
+	configurationConnection newConnection = new configurationConnection();
+	newConnection.setsourceConfigId(srcConfigId);
+	newConnection.settargetConfigId(tgtConfigId);
+	newConnection.setStatus(false);
+	
+	connectionId = utconfigurationmanager.saveConnection(newConnection);
+	
+	return connectionId;
+    }
+    
+    
+    /**
+     * 
+     * @param importSection
+     * @param connectionId
+     * @param srcOrgName
+     * @param tgtOrgName
+     * @param srcConfigName
+     * @param tgtConfigName
+     * @param ex 
+     */
+    public void processImportConnectionError(String importSection, Integer connectionId, String srcOrgName, String tgtOrgName, String srcConfigName, String tgtConfigName, Exception ex) throws Exception {
+	
+	Organization srcOrgDetails = organizationmanager.getOrganizationByName(srcOrgName).get(0);
+	Organization tgtOrgDetails = organizationmanager.getOrganizationByName(tgtOrgName).get(0);
+
+	//back out the configuration import details
+	String backOutConnectionSQL = "";
+	
+	backOutConnectionSQL += "delete from configurationconnectionfieldmappings where connectionId = " + connectionId + ";";
+	backOutConnectionSQL += "delete from configurationconnections where id = " + connectionId + ";";
+	
+	if(!"".equals(backOutConnectionSQL)) {
+	    messagetypemanager.executeSQLStatement(backOutConnectionSQL);
+	}
+	
+	String emailSubject = "Connection Import has been Backed out due to an error.";
+	StringBuilder emailBody = new StringBuilder();
+
+	emailBody.append("The following connection import has failed.");
+	emailBody.append("<br /><br />");
+	emailBody.append("Source Organization Name: ").append(srcOrgDetails.getOrgName());
+	emailBody.append("<br />Source Configuration Name: ").append(srcConfigName);
+	emailBody.append("<br />Target Organization Name: ").append(tgtOrgDetails.getOrgName());
+	emailBody.append("<br />Target Configuration Name: ").append(tgtConfigName);
+	emailBody.append("<br/><br />Reason for failure:<br />").append(ExceptionUtils.getStackTrace(ex));
+
+	mailMessage mail = new mailMessage();
+	mail.settoEmailAddress(myProps.getProperty("admin.email"));
+	mail.setfromEmailAddress("support@health-e-link.net");
+	mail.setmessageSubject(emailSubject);
+	mail.setmessageBody(emailBody.toString());
+	emailMessageManager.sendEmail(mail);
+    }
 }
