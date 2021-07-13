@@ -184,8 +184,9 @@
                                                 <%-- Only CCD (XML), HL7 and JSON file types need parsing scripts --%>
                                                 <c:when test="${fileType == 4 || fileType == 9 || fileType == 12}">
                                                    <c:if test="${not empty messageSpecs.parsingTemplate}">
+                                                       <c:set var="hrefLink" value="/FileDownload/downloadFile.do?fromPage=messagespec&filename=${messageSpecs.parsingTemplate}&foldername=${cleanOrgURL}/templates/"/>
                                                        <div class="form-group">
-                                                           <label class="control-label" for="parsingTemplate">Current Parsing Script</label>
+                                                           <label class="control-label" for="parsingTemplate">Current Parsing Script (<a href="${hrefLink}" title="Download Parsing Script">Download Parsing Script</a>)</label>
                                                            <input type="text" disabled id="parsingTemplate" class="form-control" value="${messageSpecs.parsingTemplate}" />
                                                            <form:hidden id="parsingTemplate" path="parsingTemplate" />
                                                        </div>

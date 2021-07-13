@@ -819,6 +819,7 @@ public class adminConfigController {
         mav.addObject("HL7", session.getAttribute("configHL7"));
         mav.addObject("CCD", session.getAttribute("configCCD"));
 	mav.addObject("showAllConfigOptions", session.getAttribute("showAllConfigOptions"));
+	mav.addObject("cleanOrgURL",orgDetails.getCleanURL());
 	
         configurationDetails.settransportMethod(utconfigurationTransportManager.getTransportMethodById(transportDetails.gettransportMethodId()));
 
@@ -1089,6 +1090,7 @@ public class adminConfigController {
     /**
      * The '/messagespecs' GET request will display the utConfiguration message specs form.
      *
+     * @param session
      * @return	Will return the utConfiguration message spec details form
      *
      * @Objects	transportDetails will hold a empty object or an object containing the existing transport details for the selected configuration
@@ -4965,7 +4967,6 @@ public class adminConfigController {
 		}
 	    });
 	}
-	
 	return returnVal;
     }
     
@@ -5345,10 +5346,22 @@ public class adminConfigController {
 	    newConfigTransport.setZipped(false);
 	}
 	newConfigTransport.setZipType(Integer.parseInt(strArrayValues[21]));
-	newConfigTransport.setRestAPIURL(strArrayValues[22]);
-	newConfigTransport.setRestAPIUsername(strArrayValues[23]);
-	newConfigTransport.setRestAPIPassword(strArrayValues[24]);
-	newConfigTransport.setRestAPIType(Integer.parseInt(strArrayValues[25]));
+	
+	if(!"null".equals(strArrayValues[22])) {
+	    newConfigTransport.setRestAPIURL(strArrayValues[22]);
+	}
+	if(!"null".equals(strArrayValues[23])) {
+	    newConfigTransport.setRestAPIUsername(strArrayValues[23]);
+	}
+	if(!"null".equals(strArrayValues[24])) {
+	    newConfigTransport.setRestAPIPassword(strArrayValues[24]);
+	}
+	if("null".equals(strArrayValues[22]) || "".equals(strArrayValues[22])) {
+	    newConfigTransport.setRestAPIType(0);
+	}
+	else {
+	    newConfigTransport.setRestAPIType(Integer.parseInt(strArrayValues[25]));
+	}
 	if(strArrayValues[26].equals("true")) {
 	    newConfigTransport.setWaitForResponse(true);
 	}
@@ -5389,9 +5402,7 @@ public class adminConfigController {
 	try {
 	    configTransportId = utconfigurationTransportManager.updateTransportDetails(null,newConfigTransport);
 	}
-	catch (Exception ex) {
-	    
-	}
+	catch (Exception ex) {}
 	
 	//Make sure file location folder exists if not create it
 	if(!"".equals(strArrayValues[10].toString())) {
