@@ -262,8 +262,9 @@
 	    <div class="form-container">
 		<c:if test="${id > 0}">
 		    <c:if test="${not empty transportDetails.HL7PDFSampleTemplate}">
+                        <c:set var="hrefLink" value="/FileDownload/downloadFile.do?fromPage=transport&filename=${transportDetails.HL7PDFSampleTemplate}&foldername=${cleanOrgURL}/templates/"/>
 			<div class="form-group">
-			    <label class="control-label" for="HL7PDFSampleTemplate">Current HL7 PDF Template File</label>
+			    <label class="control-label" for="HL7PDFSampleTemplate">Current HL7 PDF Template File (<a href="${hrefLink}" title="Download HL7 PDF Template File">Download HL7 PDF Template File</a>)</label>
 			    <input type="text" disabled id="HL7PDFSampleTemplate" class="form-control" value="${transportDetails.HL7PDFSampleTemplate}" />
 			    <form:hidden id="HL7PDFSampleTemplate" path="HL7PDFSampleTemplate" />
 			</div>
@@ -289,8 +290,9 @@
 	    <div class="form-container">
 		<c:if test="${id > 0}">
 		    <c:if test="${not empty transportDetails.ccdSampleTemplate}">
+                        <c:set var="hrefLink" value="/FileDownload/downloadFile.do?fromPage=transport&filename=${transportDetails.ccdSampleTemplate}&foldername=${cleanOrgURL}/templates/"/>
 			<div class="form-group">
-			    <label class="control-label" for="ccdSampleTemplate">Current Output Template File</label>
+			    <label class="control-label" for="ccdSampleTemplate">Current Output Template File (<a href="${hrefLink}" title="Download Output Template">Download Output Template</a>)</label>
 			    <input type="text" disabled id="ccdSampleTemplate" class="form-control" value="${transportDetails.ccdSampleTemplate}" />
 			    <form:hidden id="ccdSampleTemplate" path="ccdSampleTemplate" />
 			</div>

@@ -4,6 +4,10 @@
 
 <div class="main clearfix full-width" role="main">
     <div class="col-md-12">
+        <div class="alert alert-danger" id="exportErrorMsg" style="display:none;">
+            <strong>Export Error!</strong> 
+            An error occurred while trying to export the configuration.
+        </div>
 	 <c:choose>
 	    <c:when test="${not empty savedStatus}" >
 		<div class="alert alert-success">
@@ -109,17 +113,25 @@
                                                                     <li class="divider"></li>
 							     </c:if>
                                                              <li>
+								 <a href="javascript:void(0);" class="editConfig" rel="${config.id}" title="Edit this configuration">
+								     <span class="glyphicon glyphicon-edit"></span>
+								     Edit
+								 </a>
+							     </li>       
+                                                             <li>
                                                                 <a href="javascript:void(0);" class="printConfig" rel="${config.id}" title="Print this Configuration">
                                                                     <span class="glyphicon glyphicon-print"></span>
                                                                     Print
                                                                 </a>
                                                              </li>
-							     <li>
-								 <a href="javascript:void(0);" class="editConfig" rel="${config.id}" title="Edit this configuration">
-								     <span class="glyphicon glyphicon-edit"></span>
-								     Edit
-								 </a>
-							     </li>
+                                                             <c:if test="${config.allowExport}">
+                                                                <li>
+                                                                    <a href="javascript:void(0);" class="exportConfig" rel="${config.id}" title="Export this Configuration">
+                                                                        <span class="glyphicon glyphicon-export"></span>
+                                                                        Export
+                                                                    </a>
+                                                                 </li> 
+                                                             </c:if>
 							     <li>
 								 <a href="javascript:void(0);" class="deleteConfig" rel="${config.id}" title="Delete this configuration">
 								     <span class="glyphicon glyphicon-remove-circle"></span>
@@ -216,6 +228,14 @@
 								    Edit
 								</a>
 							    </li>
+                                                            <c:if test="${config.allowExport}">
+                                                                <li>
+                                                                    <a href="javascript:void(0);" class="exportConfig" rel="${config.id}" title="Export this Configuration">
+                                                                        <span class="glyphicon glyphicon-export"></span>
+                                                                        Export
+                                                                    </a>
+                                                                 </li> 
+                                                             </c:if>
 							    <li>
 								<a href="javascript:void(0);" class="deleteConfig" rel="${config.id}" title="Delete this configuration">
 								    <span class="glyphicon glyphicon-remove-circle"></span>

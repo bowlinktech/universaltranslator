@@ -73,7 +73,6 @@ public class utConfigurationTransportDAOImpl implements utConfigurationTransport
      * The 'updateTransportDetails' function will update the configuration transport details
      *
      * @param	transportDetails	The details of the transport form
-     * @param	clearFields	This will hold a variable that will determine if we clear out existing configuration details.
      *
      * @return	this function does not return anything
      */
@@ -105,6 +104,8 @@ public class utConfigurationTransportDAOImpl implements utConfigurationTransport
     /**
      * The 'getTransportMethodsByType' function will return a list of available transport methods
      *
+     * @param configurationDetails
+     * @return 
      */
     @Override
     @Transactional(readOnly = true)
@@ -139,7 +140,6 @@ public class utConfigurationTransportDAOImpl implements utConfigurationTransport
      * @param	configId	The id of the selected configuration
      * @param messageTypeId	The id of the selected message type to copy the form fields
      *
-     * @return	This function does not return anything
      */
     @Transactional(readOnly = false)
     public void copyMessageTypeFields(int transportId, int configId, int messageTypeId) {
@@ -197,7 +197,7 @@ public class utConfigurationTransportDAOImpl implements utConfigurationTransport
      * The 'getConfigurationFields' function will return a list of saved form fields for the selected configuration.
      *
      * @param	configId	Will hold the id of the configuration we want to return fields for
-     * @param transporetDetailId The id of the selected transport method
+     * @param transportDetailId The id of the selected transport method
      *
      * @return	This function will return a list of configuration form fields
      */
@@ -1452,6 +1452,24 @@ public class utConfigurationTransportDAOImpl implements utConfigurationTransport
 	Query query = sessionFactory.getCurrentSession().createSQLQuery(sql).setResultTransformer(Transformers.aliasToBean(configurationconnectionfieldmappings.class));
            
         return query.list();
+    }
+    
+    /**
+     * The 'getConnectionFieldMappingsByConnectionId' function will return a list of connection field mappings based on the passed in connectionId
+     *
+     * @param	connectionId	Will hold the id of the configuration we want to return fields for
+     * @return 
+     *
+     */
+    @SuppressWarnings("unchecked")
+    @Override
+    @Transactional(readOnly = true)
+    public List<configurationconnectionfieldmappings> getConnectionFieldMappingsByConnectionId(Integer connectionId) {
+        Criteria criteria = sessionFactory.getCurrentSession().createCriteria(configurationconnectionfieldmappings.class)
+	.add(Restrictions.eq("connectionId", connectionId));
+	    criteria.addOrder(Order.asc("fieldNo"));
+
+        return criteria.list();
     }
 }
 

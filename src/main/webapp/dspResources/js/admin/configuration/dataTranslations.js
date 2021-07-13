@@ -661,10 +661,9 @@ function populateCrosswalks(page,inuseonly) {
                 aaSorting: [[3,'desc']],
                  "columns": [
                     { "width": "10%" },
-                    { "width": "20%" },
+                    { "width": "30%" },
                     { "width": "20%", "type": "date" },
                     { "width": "20%", "type": "date" },
-                    { "width": "10%" },
                     { "width": "10%" }
                  ],
                 sPaginationType: "bootstrap", 
