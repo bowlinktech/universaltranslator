@@ -1,6 +1,7 @@
 package com.hel.ut.controller;
 
 
+import com.hel.ut.model.CrosswalkData;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 
@@ -62,6 +63,7 @@ import com.hel.ut.model.organizationDirectDetails;
 import com.hel.ut.model.validationType;
 import com.hel.ut.service.emailMessageManager;
 import com.hel.ut.service.hispManager;
+import com.hel.ut.service.impl.transactionInManagerImpl;
 import com.hel.ut.service.transactionInManager;
 import java.util.HashMap;
 import java.util.Map;
@@ -76,15 +78,22 @@ import com.registryKit.registry.configurations.configuration;
 import com.registryKit.registry.configurations.configurationManager;
 import com.registryKit.registry.helRegistry;
 import com.registryKit.registry.helRegistryManager;
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.LineNumberReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Base64;
@@ -92,9 +101,12 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Properties;
 import java.util.TimeZone;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.FillPatternType;
@@ -111,6 +123,7 @@ import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.security.core.Authentication;
 import org.springframework.util.FileCopyUtils;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -160,6 +173,9 @@ public class adminConfigController {
     @Resource(name = "myProps")
     private Properties myProps;
     
+    @Autowired
+    ThreadPoolTaskExecutor executor;
+    
     @InitBinder
     public void initBinder(WebDataBinder binder) {
         binder.setAutoGrowCollectionLimit(1024);
@@ -173,6 +189,7 @@ public class adminConfigController {
     /**
      * The '/list' GET request will serve up the existing list of configurations in the system
      *
+     * @param authentication
      * @return	The utConfiguration page list
      *
      * @Objects	(1) An object containing all the found configurations
@@ -180,10 +197,12 @@ public class adminConfigController {
      * @throws Exception
      */
     @RequestMapping(value = "/list", method = RequestMethod.GET)
-    public ModelAndView listConfigurations() throws Exception {
+    public ModelAndView listConfigurations(Authentication authentication) throws Exception {
 
         ModelAndView mav = new ModelAndView();
         mav.setViewName("/administrator/configurations/list");
+	
+	utUser userDetails = userManager.getUserByUserName(authentication.getName());
 	
 	//Get all source configurations
         List<utConfiguration> sourceconfigurations = utconfigurationmanager.getAllSourceConfigurations();
@@ -233,6 +252,12 @@ public class adminConfigController {
 		}
             }
 	    
+	    configurationSchedules scheduleDetails = utconfigurationmanager.getScheduleDetails(config.getId());
+	    
+	    if(scheduleDetails != null && !config.isDeleted() && config.getStatus() && ("admin".equalsIgnoreCase(userDetails.getFirstName()) || "grace".equalsIgnoreCase(userDetails.getFirstName()) || "chad".equalsIgnoreCase(userDetails.getFirstName()))) {
+		config.setAllowExport(true);
+	    }
+	    
 	    if(!"bowlinktest".equals(org.getCleanURL().trim().toLowerCase())) {
 		validSourceConfigurations.add(config);
 	    }
@@ -260,11 +285,21 @@ public class adminConfigController {
                 config.settransportMethod(utconfigurationTransportManager.getTransportMethodById(transportDetails.gettransportMethodId()));
             }
 	    
+	    configurationSchedules scheduleDetails = utconfigurationmanager.getScheduleDetails(config.getId());
+	    
+	    if(scheduleDetails != null && !config.isDeleted() && config.getStatus()) {
+		config.setAllowExport(true);
+	    }
+	    
 	    if(!"bowlinktest".equals(org.getCleanURL().trim().toLowerCase())) {
 		validTargetConfigurations.add(config);
 	    }
         }
 	mav.addObject("targetconfigurations", validTargetConfigurations);
+	
+	if("admin".equalsIgnoreCase(userDetails.getFirstName()) || "grace".equalsIgnoreCase(userDetails.getFirstName()) || "chad".equalsIgnoreCase(userDetails.getFirstName())){
+	    mav.addObject("allowConfigImport", true);
+	}
 
         return mav;
     }
@@ -1080,6 +1115,9 @@ public class adminConfigController {
 	//Get the utConfiguration details for the selected config
         utConfiguration configurationDetails = utconfigurationmanager.getConfigurationById(configId);
 	
+	// Get organization directory name
+        Organization orgDetails = organizationmanager.getOrganizationById(configurationDetails.getorgId());
+	
         mav.setViewName("/administrator/configurations/messagespecs");
 
         configurationMessageSpecs messageSpecs = utconfigurationmanager.getMessageSpecs(configId);
@@ -1089,27 +1127,43 @@ public class adminConfigController {
             messageSpecs.setconfigId(configId);
         }
 	else {
+	    DateFormat finalDateFormat = new SimpleDateFormat("MM/dd/yyyy hh:mm a");
 	    
 	    if(messageSpecs.gettemplateFile() == null) {
-		DateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy hh:mm a");
-		mav.addObject("lastUploadedDate", dateFormat.format(configurationDetails.getDateCreated()).toString());
+		mav.addObject("lastUploadedDate", finalDateFormat.format(configurationDetails.getDateCreated()));
 	    }
 	    else {
-		if(messageSpecs.gettemplateFile().contains("-")) {
-		    DateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmm");
-		    DateFormat cleandateFormat = new SimpleDateFormat("MM/dd/yyyy hh:mm a");
-		    String dateUploaded = messageSpecs.gettemplateFile().split("-")[0];
-		    try {
-			mav.addObject("lastUploadedDate", cleandateFormat.format(dateFormat.parse(dateUploaded)).toString());
+		
+		//Check if file exists
+		File templateFile = new File( myProps.getProperty("ut.directory.utRootDir") + orgDetails.getCleanURL() + "/templates/"+messageSpecs.gettemplateFile());
+		
+		if(templateFile.exists()) {
+		    if(messageSpecs.gettemplateFile().contains("-")) {
+			DateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmm");
+			try {
+			    String dateUploaded = messageSpecs.gettemplateFile().split("-")[0];
+			    mav.addObject("lastUploadedDate", finalDateFormat.format(dateFormat.parse(dateUploaded)));
+			}
+			catch (Exception ex) {
+			    try {
+				mav.addObject("lastUploadedDate", finalDateFormat.format(new Date(templateFile.lastModified())));
+			    }
+			    catch (Exception ex2) {
+				mav.addObject("lastUploadedDate", finalDateFormat.format(configurationDetails.getDateCreated()));
+			    }
+			}
 		    }
-		    catch (Exception ex) {
-			dateFormat = new SimpleDateFormat("MM/dd/yyyy hh:mm a");
-			mav.addObject("lastUploadedDate", dateFormat.format(configurationDetails.getDateCreated()).toString());
+		    else {
+			try {
+			    mav.addObject("lastUploadedDate", finalDateFormat.format(new Date(templateFile.lastModified())));
+			}
+			catch (Exception ex) {
+			    mav.addObject("lastUploadedDate", finalDateFormat.format(configurationDetails.getDateCreated()));
+			}
 		    }
 		}
 		else {
-		    DateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy hh:mm a");
-		    mav.addObject("lastUploadedDate", dateFormat.format(configurationDetails.getDateCreated()).toString());
+		    mav.addObject("lastUploadedDate", finalDateFormat.format(configurationDetails.getDateCreated()));
 		}
 	    }
 	}
@@ -1127,9 +1181,6 @@ public class adminConfigController {
         mav.addObject("HL7", session.getAttribute("configHL7"));
         mav.addObject("CCD", session.getAttribute("configCCD"));
 	mav.addObject("showAllConfigOptions",session.getAttribute("showAllConfigOptions"));
-	
-	// Get organization directory name
-        Organization orgDetails = organizationmanager.getOrganizationById(configurationDetails.getorgId());
 	
 	mav.addObject("cleanOrgURL",orgDetails.getCleanURL());
 	
@@ -4728,5 +4779,1009 @@ public class adminConfigController {
 
         utconfigurationmanager.deleteConfigurationFTPInformation(transportId);
         return 1;
+    }
+    
+    /**
+     * The 'createConfigExportFile.do' method will create the export file for the selected utConfiguration.
+     * @param session
+     * @param configId
+     * @return 
+     * @throws java.lang.Exception
+     */
+    @RequestMapping(value = "/createConfigExportFile.do", method = RequestMethod.GET)
+    @ResponseBody
+    public String createConfigExportFile(HttpSession session, @RequestParam int configId) throws Exception {
+
+        utConfiguration configDetails = utconfigurationmanager.getConfigurationById(configId);
+	Organization orgDetails = organizationmanager.getOrganizationById(configDetails.getorgId());
+	
+	//Get transport details
+	configurationTransport transportDetails = utconfigurationTransportManager.getTransportDetails(configId);
+	
+	String configType = "srcConfigExport";
+	
+	if(configDetails.getType() == 2) {
+	    configType = "tgtConfigExport";
+	}
+	
+	String configDetailFile = "/tmp/"+configType+"-"+configDetails.getconfigName().toLowerCase().replaceAll(" ", "-") + ".txt";
+	
+	File detailsFile = new File(configDetailFile);
+	detailsFile.delete();
+	
+	StringBuffer reportBody = new StringBuffer();
+	
+	//Create a session to hold the email message body.
+	StringBuffer emailBodySB = new StringBuffer();
+	if(configDetails.getType() == 1) {
+	    emailBodySB.append("The source configuration has been successfully exported.<br /><br />");
+	}
+	else {
+	    emailBodySB.append("The target configuration has been successfully exported.<br /><br />");
+	}
+	emailBodySB.append("Configuration Name: ").append(configDetails.getconfigName().trim());
+	emailBodySB.append("<br />Configuration Type: ");
+	if(configDetails.getType() == 1) {
+	    emailBodySB.append("Source Configuration");
+	}
+	else {
+	    emailBodySB.append("Target Configuration");
+	}
+	emailBodySB.append("<br /><br />Please complete the following:<br />");
+	
+	if(configDetails.getType() == 1) {
+	    emailBodySB.append("<br />Export the associated target configuration (if not already on the system)<br />");
+	}
+	
+	session.setAttribute("emailBody", emailBodySB);
+	
+	PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(configDetailFile, true)));
+	
+	reportBody.append(utconfigurationmanager.exportConfigOrgSection(orgDetails));
+	reportBody.append(System.getProperty("line.separator"));
+	reportBody.append(utconfigurationmanager.exportConfigDetailsSection(configDetails));
+	reportBody.append(System.getProperty("line.separator"));
+	reportBody.append(utconfigurationmanager.exportConfigTransportSection(session,transportDetails));
+	reportBody.append(System.getProperty("line.separator"));
+	reportBody.append(utconfigurationmanager.exportConfigMessageSpecSection(session,configDetails.getId()));
+	reportBody.append(System.getProperty("line.separator"));
+	reportBody.append(utconfigurationmanager.exportConfigFieldsSection(configDetails.getId(),transportDetails.getId()));
+	reportBody.append(System.getProperty("line.separator"));
+	reportBody.append(utconfigurationmanager.exportConfigSchedulingSection(configDetails.getId()));
+	reportBody.append(System.getProperty("line.separator"));
+	reportBody.append(utconfigurationmanager.exportOrgCrosswalks(orgDetails.getId()));
+	
+	out.println(reportBody.toString());
+	
+	out.close();
+	
+	//Check to see if an email needs to be sent
+	emailBodySB = (StringBuffer) session.getAttribute("emailBody");
+	
+	if(!"".equals(emailBodySB.toString())) {
+	    mailMessage mail = new mailMessage();
+	    mail.settoEmailAddress(myProps.getProperty("admin.email"));
+	    mail.setfromEmailAddress("support@health-e-link.net");
+	    mail.setmessageSubject("UT Configuration Import Script has been Created");
+	    mail.setmessageBody(emailBodySB.toString());
+	    emailMessageManager.sendEmail(mail);
+	    
+	    //Delete email body
+	    session.removeAttribute("emailBody");
+	}
+	
+	return configType+"-"+configDetails.getconfigName().toLowerCase().replaceAll(" ", "-");
+    }
+
+    @RequestMapping(value = "/printConfigExport/{file}", method = RequestMethod.GET)
+    public void printConfigExport(@PathVariable("file") String file,HttpServletResponse response) throws Exception {
+	
+	File configExportFile = new File ("/tmp/" + file + ".txt");
+	InputStream is = new FileInputStream(configExportFile);
+
+	response.setHeader("Content-Disposition", "attachment; filename=\"" + file + ".txt\"");
+	FileCopyUtils.copy(is, response.getOutputStream());
+	
+	is.close();
+
+	//Delete the file
+	configExportFile.delete();
+
+	 // close stream and return to view
+	response.flushBuffer();
+    } 
+    
+    /**
+     * The 'configImportUpload' GET request will return modal for uploading a configuration import script.
+     *
+     * @param session
+     * @return
+     * @throws Exception
+     */
+    @RequestMapping(value = "/configImportUpload", method = RequestMethod.GET)
+    @ResponseBody
+    public ModelAndView configImportUpload(HttpSession session) throws Exception {
+	
+        ModelAndView mav = new ModelAndView();
+        mav.setViewName("/administrator/configurations/configImportFile");
+	mav.addObject("expectedExt", "txt");
+        return mav;
+    }
+    
+    /**
+     * The '/submitConfigurationImportFile' function will be used to upload a new configuration import script.
+     *
+     * @param importConfigFile
+     * @param session
+     * @return 
+     * @throws java.lang.Exception 
+     */
+    @RequestMapping(value = "/submitConfigurationImportFile", method = RequestMethod.POST)
+    public @ResponseBody 
+    int submitConfigurationImportFile(@RequestParam(value = "importConfigFile", required = true)  MultipartFile importConfigFile, HttpSession session) throws Exception {
+
+	Integer returnVal = 1;
+	
+	String fileName = importConfigFile.getOriginalFilename();
+	
+	try {
+	    
+	    Path filepath = Paths.get("/tmp/", importConfigFile.getOriginalFilename());
+
+	    try (OutputStream os = Files.newOutputStream(filepath)) {
+		os.write(importConfigFile.getBytes());
+	    }
+	   
+	    BufferedReader br = null;
+	    String strLine = "";
+	    try {
+	    
+		LineNumberReader reader = new LineNumberReader(new InputStreamReader(new FileInputStream("/tmp/"+fileName), "UTF-8"));
+		while (((strLine = reader.readLine()) != null) && reader.getLineNumber() <= 1){
+		    if(!strLine.contains("[orgDetails")) {
+			returnVal = 2;
+		    }
+		}
+	        reader.close();
+	    } catch (FileNotFoundException e) {
+		returnVal = 0;
+	    } catch (IOException e) {
+		 returnVal = 0;
+	    }
+	    
+	} catch (IOException e) {
+	    returnVal = 0;
+	}
+	
+	if(returnVal == 1) {
+	    executor.execute(new Runnable() {
+		@Override
+		public void run() {
+		    try {
+			loadConfigurationImportFile(fileName,session);
+		    } catch (Exception ex) {
+			Logger.getLogger(transactionInManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
+		    }
+		}
+	    });
+	}
+	
+	return returnVal;
+    }
+    
+    /**
+     * 
+     * @param fileName
+     * @param session
+     * @throws Exception 
+     */
+    public void loadConfigurationImportFile(String fileName, HttpSession session) throws Exception {
+	
+	BufferedReader br = null;
+	String strLine = "";
+	 
+	try {
+	    
+	    LineNumberReader reader = new LineNumberReader(new InputStreamReader(new FileInputStream("/tmp/"+fileName), "UTF-8"));
+	    String[] strArrayValues;
+	    Integer orgId = 0;
+	    Integer configId = 0;
+	    Integer configTransportId = 0;
+	    String configName = "";
+	    Integer fieldId = 0;
+	    String cwIds = "";
+	    boolean configImportSuccessful = true;
+	    
+	    while (((strLine = reader.readLine()) != null)){
+		strLine = strLine.replace("[", "").replace("]", "");
+		strArrayValues = strLine.split("\\|", -1);
+		
+		if(strArrayValues[0].equals("orgDetails")) {
+		    orgId = processImportOrgDetails(strArrayValues);
+		}
+		else if(strArrayValues[0].equals("configDetails")) {
+		    configName = strArrayValues[6];
+		    try {
+			configId = processImportConfigDetails(strArrayValues,orgId);
+		    }
+		    catch (Exception ex) {
+			processImportConfigError("Adding Config Details",configId,0,orgId,configName,ex);
+			configImportSuccessful = false;
+			break;
+		    }
+		    
+		    if(configId == 0) {
+			break;
+		    }
+		}
+		else if(strArrayValues[0].equals("transportDetails")) {
+		    try {
+			configTransportId = processImportConfigTransportDetails(strArrayValues,configId);
+		    }
+		    catch (Exception ex) {
+			processImportConfigError("Adding Transport Details",configId,0,orgId,configName,ex);
+			configImportSuccessful = false;
+			break;
+		    }
+		}
+		else if(strArrayValues[0].equals("fileDropDetails") && strArrayValues.length > 1) {
+		    try {
+			processImportConfigFileDropDetails(strArrayValues,configTransportId);
+		    }
+		    catch (Exception ex) {
+			processImportConfigError("Adding File Drop Details",configId,configTransportId,orgId,configName,ex);
+			configImportSuccessful = false;
+			break;
+		    }
+		}
+		else if(strArrayValues[0].equals("ftpDropDetails") && strArrayValues.length > 1) {
+		    try {
+			processImportConfigFTPDetails(strArrayValues,configTransportId);
+		    }
+		    catch (Exception ex) {
+			processImportConfigError("Adding FTP Details",configId,configTransportId,orgId,configName,ex);
+			configImportSuccessful = false;
+			break;
+		    }
+		}
+		else if(strArrayValues[0].equals("messageSpecDetails")) {
+		    try {
+			processImportConfigMessageSpecs(strArrayValues,configId);
+		    }
+		    catch (Exception ex) {
+			processImportConfigError("Adding Messpace Specs",configId,configTransportId,orgId,configName,ex);
+			configImportSuccessful = false;
+			break;
+		    }
+		}
+		else if(strArrayValues[0].equals("fields")) {
+		    try {
+			fieldId = processImportConfigFields(strArrayValues,configId,configTransportId);
+		    }
+		    catch (Exception ex) {
+			processImportConfigError("Adding Fields",configId,configTransportId,orgId,configName,ex);
+			configImportSuccessful = false;
+			break;
+		    }
+		}
+		else if(strArrayValues[0].equals("fieldDTS")) {
+		    try {
+			processImportConfigFieldDTS(strArrayValues,configId,fieldId);
+		    }
+		    catch (Exception ex) {
+			processImportConfigError("Adding Data Translations",configId,configTransportId,orgId,configName,ex);
+			configImportSuccessful = false;
+			break;
+		    }
+		}
+		else if(strArrayValues[0].equals("scheduleDetails")) {
+		    try {
+			processImportConfigSchedule(strArrayValues,configId);
+		    }
+		    catch (Exception ex) {
+			processImportConfigError("Adding Schedule",configId,configTransportId,orgId,configName,ex);
+			configImportSuccessful = false;
+			break;
+		    }
+		}
+		else if(strArrayValues[0].equals("crosswalks")) {
+		    try {
+			cwIds = processImportConfigCrosswalks(strArrayValues,configId, orgId, cwIds);
+		    }
+		    catch (Exception ex) {
+			processImportConfigError("Adding Croswalks",configId,configTransportId,orgId,configName,ex);
+			configImportSuccessful = false;
+			break;
+		    }
+		}
+	    }
+	    reader.close();
+	    
+	    StringBuilder emailBody = new StringBuilder();
+	    
+	    Organization orgDetails = organizationmanager.getOrganizationById(orgId);
+	    
+	    if(configId == 0) {
+		
+		String emailSubject = "The Configuration Import was Not Successful";
+		
+		emailBody.append("The following configuration import has failed.");
+		emailBody.append("<br /><br />");
+		emailBody.append("Organization Name: ").append(orgDetails.getOrgName());
+		emailBody.append("<br />Configuration Name: ").append(configName);
+		emailBody.append("<br/><br />Reason<br />The configuration was already found on the system.");
+		
+		mailMessage mail = new mailMessage();
+		mail.settoEmailAddress(myProps.getProperty("admin.email"));
+		mail.setfromEmailAddress("support@health-e-link.net");
+		mail.setmessageSubject(emailSubject);
+		mail.setmessageBody(emailBody.toString());
+		emailMessageManager.sendEmail(mail);
+	    }
+	    else if(configImportSuccessful) {
+		
+		utConfiguration configDetails = utconfigurationmanager.getConfigurationById(configId);
+		
+		String configType = "Source";
+		
+		if(configDetails.getType() == 2) {
+		    configType = "Target";
+		}
+		
+		String emailSubject = "The " + configType + " Configuration Import has been Completed";
+		
+		emailBody.append("The following ").append(configType.toLowerCase()).append(" configuration import has been completed and is now available.");
+		emailBody.append("<br /><br />");
+		emailBody.append("Organization Name: ").append(orgDetails.getOrgName());
+		emailBody.append("<br />Configuration Type: ").append(configType).append(" Configuration");
+		emailBody.append("<br />Configuration Name: ").append(configName);
+		emailBody.append("<br />Configuration Id: ").append(configId);
+		
+		//Turn the configuration on
+		configDetails.setStatus(true);
+		utconfigurationmanager.updateConfiguration(configDetails);
+		
+		mailMessage mail = new mailMessage();
+		mail.settoEmailAddress(myProps.getProperty("admin.email"));
+		mail.setfromEmailAddress("support@health-e-link.net");
+		mail.setmessageSubject(emailSubject);
+		mail.setmessageBody(emailBody.toString());
+		emailMessageManager.sendEmail(mail);
+	    }
+	    
+	} catch (FileNotFoundException e) {
+	    Logger.getLogger(transactionInManagerImpl.class.getName()).log(Level.SEVERE, null, e);
+	} catch (IOException e) {
+	     Logger.getLogger(transactionInManagerImpl.class.getName()).log(Level.SEVERE, null, e);
+	}
+    }
+    
+    /**
+     * The 'processImportOrgDetails' method will process the organization information from the configuration import script.
+     * @param strArrayValues 
+     * 
+     * @return The method will return the new organization id
+     */
+    public Integer processImportOrgDetails(String[] strArrayValues) {
+	
+	Integer orgId = 0;
+	
+	String orgName = strArrayValues[1];
+	String orgCleanURL = strArrayValues[10];
+	
+	List<Organization> orgs = organizationmanager.getOrganizationByName(orgCleanURL);
+	
+	if(orgs.isEmpty()) {
+	    Organization newOrg = new Organization();
+	    newOrg.setOrgName(orgName);
+	    if(!"null".equals(strArrayValues[2])) {
+		newOrg.setAddress(strArrayValues[2]);
+	    }
+	    if(!"null".equals(strArrayValues[3])) {
+		newOrg.setAddress2(strArrayValues[3]);
+	    }
+	    if(!"null".equals(strArrayValues[4])) {
+		newOrg.setCity(strArrayValues[4]);
+	    }
+	    if(!"null".equals(strArrayValues[5])) {
+		newOrg.setState(strArrayValues[5]);
+	    }
+	    if(!"null".equals(strArrayValues[6])) {
+		newOrg.setPostalCode(strArrayValues[6]);
+	    }
+	    if(!"null".equals(strArrayValues[7])) {
+		newOrg.setPhone(strArrayValues[7]);
+	    }
+	    if(!"null".equals(strArrayValues[8])) {
+		newOrg.setFax(strArrayValues[8]);
+	    }
+	    newOrg.setStatus(true);
+	    newOrg.setCleanURL(orgCleanURL);
+	    if(!"null".equals(strArrayValues[11]) && !"''".equals(strArrayValues[11])) {
+		newOrg.setparsingTemplate(strArrayValues[11]);
+	    }
+	    if(!"null".equals(strArrayValues[12])) {
+		newOrg.setOrgDesc(strArrayValues[12]);
+	    }
+	    newOrg.setOrgType(Integer.parseInt(strArrayValues[13]));
+	    if(!"null".equals(strArrayValues[14])) {
+		newOrg.setTown(strArrayValues[14]);
+	    }
+	    if(!"null".equals(strArrayValues[15])) {
+		newOrg.setCounty(strArrayValues[15]);
+	    }
+	    if(!"null".equals(strArrayValues[16])) {
+		newOrg.setInfoURL(strArrayValues[16]);
+	    }
+	    if(!"null".equals(strArrayValues[17])) {
+		newOrg.setCountry(strArrayValues[17]);
+	    }
+	    newOrg.setHelRegistryId(Integer.parseInt(strArrayValues[18]));
+	    newOrg.setHelRegistryOrgId(Integer.parseInt(strArrayValues[19]));
+	    if(!"null".equals(strArrayValues[20])) {
+		newOrg.setHelRegistrySchemaName(strArrayValues[20]);
+	    }
+	    if(!"null".equals(strArrayValues[21])) {
+		newOrg.setPrimaryContactEmail(strArrayValues[21]);
+	    }
+	    newOrg.setParentOrgId(Integer.parseInt(strArrayValues[22]));
+	    if(!"null".equals(strArrayValues[23])) {
+		newOrg.setPrimaryContactName(strArrayValues[23]);
+	    }
+	    if(!"null".equals(strArrayValues[24])) {
+		newOrg.setPrimaryTechContactEmail(strArrayValues[24]);
+	    }
+	    if(!"null".equals(strArrayValues[25])) {
+		newOrg.setPrimaryTechContactName(strArrayValues[25]);
+	    }
+	    
+	    orgId = organizationmanager.createOrganization(newOrg);
+	}
+	else {
+	    for(Organization org : orgs) {
+		if(org.getOrgName().toLowerCase().trim().equals(orgName.toLowerCase())) {
+		    orgId = org.getId();
+		    break;
+		}
+	    }
+	    
+	    //Need to make sure the correct folders are found
+	    File OrganizationDir = new File(myProps.getProperty("ut.directory.utRootDir") + orgCleanURL);
+	    
+	    if(!OrganizationDir.exists()) {
+		fileSystem dir = new fileSystem();
+		dir.creatOrgDirectories(myProps.getProperty("ut.directory.utRootDir") + orgCleanURL);
+	    }
+	}
+	
+	return orgId;
+    }
+    
+    /**
+     * The 'processImportConfigDetails' method will process the configuration information from the configuration import script.
+     * 
+     * @param strArrayValues 
+     * @param orgId 
+     * 
+     * @return The method will return the new configuration id
+     */
+    public Integer processImportConfigDetails(String[] strArrayValues, Integer orgId) {
+	
+	Integer configId = 0;
+	
+	String configName = strArrayValues[6];
+	
+	utConfiguration configDetails = utconfigurationmanager.getConfigurationByName(configName, orgId);
+	
+	if(configDetails == null) {
+	    utConfiguration newConfig = new utConfiguration();
+	    newConfig.setorgId(orgId);
+	    newConfig.setStatus(false);
+	    newConfig.setType(Integer.parseInt(strArrayValues[3]));
+	    newConfig.setMessageTypeId(Integer.parseInt(strArrayValues[4]));
+	    newConfig.setstepsCompleted(6);
+	    newConfig.setconfigName(strArrayValues[6]);
+	    newConfig.setThreshold(Integer.parseInt(strArrayValues[7]));
+	    newConfig.setConfigurationType(Integer.parseInt(strArrayValues[8]));
+	    newConfig.setDeleted(false);
+	    
+	    configId = utconfigurationmanager.createConfiguration(newConfig);
+	}
+	
+	return configId;
+    }
+    
+    /**
+     * The 'processImportConfigTransportDetails' method will process the configuration transport details from the configuration import script.
+     * @param strArrayValues 
+     * @param configId 
+     * 
+     * @return The method will return the new transportId
+     */
+    public Integer processImportConfigTransportDetails(String[] strArrayValues, Integer configId) {
+	
+	Integer configTransportId = 0; 
+	
+	configurationTransport newConfigTransport = new configurationTransport();
+	newConfigTransport.setconfigId(configId);
+	newConfigTransport.settransportMethodId(Integer.parseInt(strArrayValues[2]));
+	newConfigTransport.setfileType(Integer.parseInt(strArrayValues[3]));
+	newConfigTransport.setfileDelimiter(Integer.parseInt(strArrayValues[4]));
+	newConfigTransport.setstatus(true);
+	if(!"null".equals(strArrayValues[6])) {
+	    newConfigTransport.settargetFileName(strArrayValues[6]);
+	}
+	if(strArrayValues[7].equals("true")) {
+	    newConfigTransport.setappendDateTime(true);
+	}
+	else {
+	    newConfigTransport.setappendDateTime(false);
+	}
+	newConfigTransport.setmaxFileSize(Integer.parseInt(strArrayValues[8]));
+	if(strArrayValues[9].equals("true")) {
+	    newConfigTransport.setclearRecords(true);
+	}
+	else {
+	    newConfigTransport.setclearRecords(false);
+	}
+	newConfigTransport.setfileLocation(strArrayValues[10]);
+	newConfigTransport.setautoRelease(true);
+	newConfigTransport.seterrorHandling(Integer.parseInt(strArrayValues[12]));
+	newConfigTransport.setmergeBatches(true);
+	newConfigTransport.setcopiedTransportId(Integer.parseInt(strArrayValues[14]));
+	newConfigTransport.setfileExt(strArrayValues[15]);
+	newConfigTransport.setEncodingId(Integer.parseInt(strArrayValues[16]));
+	if(!"null".equals(strArrayValues[17])) {
+	    newConfigTransport.setCcdSampleTemplate(strArrayValues[17]);
+	}
+	if(!"null".equals(strArrayValues[18])) {
+	    newConfigTransport.setHL7PDFSampleTemplate(strArrayValues[18]);
+	}
+	newConfigTransport.setMassTranslation(true);
+	if(strArrayValues[20].equals("true")) {
+	    newConfigTransport.setZipped(true);
+	}
+	else {
+	    newConfigTransport.setZipped(false);
+	}
+	newConfigTransport.setZipType(Integer.parseInt(strArrayValues[21]));
+	newConfigTransport.setRestAPIURL(strArrayValues[22]);
+	newConfigTransport.setRestAPIUsername(strArrayValues[23]);
+	newConfigTransport.setRestAPIPassword(strArrayValues[24]);
+	newConfigTransport.setRestAPIType(Integer.parseInt(strArrayValues[25]));
+	if(strArrayValues[26].equals("true")) {
+	    newConfigTransport.setWaitForResponse(true);
+	}
+	else {
+	    newConfigTransport.setWaitForResponse(false);
+	}
+	newConfigTransport.setRestAPIFunctionId(Integer.parseInt(strArrayValues[27]));
+	newConfigTransport.setJsonWrapperElement(strArrayValues[28]);
+	newConfigTransport.setLineTerminator(strArrayValues[29]);
+	if(!"null".equals(strArrayValues[30])) {
+	    newConfigTransport.setHelRegistryConfigId(Integer.parseInt(strArrayValues[30]));
+	}
+	newConfigTransport.setHelSchemaName(strArrayValues[31]);
+	newConfigTransport.setHelRegistryId(Integer.parseInt(strArrayValues[32]));
+	newConfigTransport.setDmConfigKeyword(strArrayValues[33]);
+	if(strArrayValues[34].equals("true")) {
+	    newConfigTransport.setErgFileDownload(true);
+	}
+	else {
+	    newConfigTransport.setErgFileDownload(false);
+	}
+	if(strArrayValues[35].equals("true")) {
+	    newConfigTransport.setPopulateInboundAuditReport(true);
+	}
+	else {
+	    newConfigTransport.setPopulateInboundAuditReport(false);
+	}
+	if(strArrayValues[36].equals("true")) {
+	    newConfigTransport.setAddTargetFileHeaderRow(true);
+	}
+	else {
+	    newConfigTransport.setAddTargetFileHeaderRow(false);
+	}
+	if(!"null".equals(strArrayValues[37])) {
+	    newConfigTransport.setErrorEmailAddresses(strArrayValues[37]);
+	}
+	
+	try {
+	    configTransportId = utconfigurationTransportManager.updateTransportDetails(null,newConfigTransport);
+	}
+	catch (Exception ex) {
+	    
+	}
+	
+	//Make sure file location folder exists if not create it
+	if(!"".equals(strArrayValues[10].toString())) {
+	    File fileLocationDir = new File(myProps.getProperty("ut.directory.utRootDir") + strArrayValues[10]);
+	    
+	    if(!fileLocationDir.exists()) {
+		fileLocationDir.mkdirs();
+	    }
+	}
+	
+	return configTransportId;
+    }
+    
+    /**
+     * The 'processImportConfigFileDropDetails' method will process the configuration file Drop details from the configuration import script.
+     * 
+     * @param strArrayValues 
+     * @param transportId 
+     */
+    public void processImportConfigFileDropDetails(String[] strArrayValues, Integer transportId) {
+	
+	configurationFileDropFields newFileDrop = new configurationFileDropFields();
+	newFileDrop.setTransportId(transportId);
+	newFileDrop.setDirectory(strArrayValues[2]);
+	newFileDrop.setMethod(Integer.parseInt(strArrayValues[3]));
+	
+	try {
+	    utconfigurationTransportManager.saveTransportFileDrop(newFileDrop);
+
+	    //Makes sure directory exists
+	    if(!"/".equals(strArrayValues[2])) {
+		File fileDropLocationDir = new File(myProps.getProperty("ut.directory.utRootDir") + strArrayValues[2]);
+
+		if(!fileDropLocationDir.exists()) {
+		    fileDropLocationDir.mkdirs();
+		}
+	    }
+	}
+	catch (Exception ex) {}
+    }
+    
+    /**
+     * The 'processImportConfigFTPDetails' method will process the configuration FTP details from the configuration import script.
+     * 
+     * @param strArrayValues 
+     * @param transportId 
+     */
+    public void processImportConfigFTPDetails(String[] strArrayValues, Integer transportId) {
+	
+	configurationFTPFields newFTP = new configurationFTPFields();
+	newFTP.settransportId(transportId);
+	newFTP.setip(strArrayValues[2]);
+	newFTP.setdirectory(strArrayValues[3]);
+	newFTP.setusername(strArrayValues[4]);
+	newFTP.setpassword(strArrayValues[5]);
+	newFTP.setmethod(Integer.parseInt(strArrayValues[6]));
+	newFTP.setport(Integer.parseInt(strArrayValues[7]));
+	newFTP.setprotocol(strArrayValues[8]);
+	newFTP.setcertification(strArrayValues[9]);
+	
+	try {
+	    utconfigurationTransportManager.saveTransportFTP(0,newFTP);
+	}
+	catch (Exception ex) {}
+    }
+    
+    /**
+     * The 'processImportConfigMessageSpecs' method will process the configuration message specs from the configuration import script.
+     * 
+     * @param strArrayValues 
+     * @param configId 
+     */
+    public void processImportConfigMessageSpecs(String[] strArrayValues, Integer configId) {
+	
+	configurationMessageSpecs messageSpecs = new configurationMessageSpecs();
+	messageSpecs.setconfigId(configId);
+	if(!"null".equals(strArrayValues[2])) {
+	    messageSpecs.settemplateFile(strArrayValues[2]);
+	}
+	messageSpecs.setmessageTypeCol(Integer.parseInt(strArrayValues[3]));
+	if(!"null".equals(strArrayValues[4])) {
+	    messageSpecs.setmessageTypeVal(strArrayValues[4]);
+	}
+	messageSpecs.settargetOrgCol(Integer.parseInt(strArrayValues[5]));
+	if(strArrayValues[6].equals("true")) {
+	    messageSpecs.setcontainsHeaderRow(true);
+	}
+	else {
+	    messageSpecs.setcontainsHeaderRow(false);
+	}
+	messageSpecs.setrptField1(Integer.parseInt(strArrayValues[7]));
+	messageSpecs.setrptField2(Integer.parseInt(strArrayValues[8]));
+	messageSpecs.setrptField3(Integer.parseInt(strArrayValues[9]));
+	messageSpecs.setrptField4(Integer.parseInt(strArrayValues[10]));
+	messageSpecs.setSourceSubOrgCol(Integer.parseInt(strArrayValues[11]));
+	messageSpecs.setExcelstartrow(Integer.parseInt(strArrayValues[12]));
+	messageSpecs.setExcelskiprows(Integer.parseInt(strArrayValues[13]));
+	if(!"null".equals(strArrayValues[14])) {
+	    messageSpecs.setParsingTemplate(strArrayValues[14]);
+	}
+	if(!"null".equals(strArrayValues[15])) {
+	    messageSpecs.setFileNameConfigHeader(strArrayValues[15]);
+	}
+	messageSpecs.setTotalHeaderRows(Integer.parseInt(strArrayValues[16]));
+	
+	try {
+	    utconfigurationmanager.updateMessageSpecs(messageSpecs);
+	}
+	catch (Exception ex) {}
+    }
+    
+    /**
+     * The 'processImportConfigFields' method will process the configuration fields from the configuration import script.
+     * 
+     * @param strArrayValues 
+     * @param configId 
+     * @param transportId 
+     * 
+     * @return  The method will return the new fieldId
+     */
+    public Integer processImportConfigFields(String[] strArrayValues, Integer configId, Integer transportId) {
+	
+	Integer fieldId = 0;
+	
+	configurationFormFields field = new configurationFormFields();
+	field.setAssociatedFieldId(Integer.parseInt(strArrayValues[1]));
+	field.setconfigId(configId);
+	field.settransportDetailId(transportId);
+	field.setFieldNo(Integer.parseInt(strArrayValues[4]));
+	field.setFieldDesc(strArrayValues[5]);
+	field.setValidationType(Integer.parseInt(strArrayValues[6]));
+	if(strArrayValues[7].equals("true")) {
+	    field.setRequired(true);
+	}
+	else {
+	    field.setRequired(false);
+	}
+	if(strArrayValues[8].equals("true")) {
+	    field.setUseField(true);
+	}
+	else {
+	    field.setUseField(false);
+	}
+	if(strArrayValues[9] == null) {
+	   field.setAssociatedFieldNo(0); 
+	}
+	else if (!"null".equals(strArrayValues[9])) {
+	  field.setAssociatedFieldNo(Integer.parseInt(strArrayValues[9])); 
+	}
+	if (!"null".equals(strArrayValues[10])) {
+	    field.setDefaultValue(strArrayValues[10]);
+	}
+	if (!"null".equals(strArrayValues[11])) {
+	    field.setSampleData(strArrayValues[11]);
+	}
+	
+	try {
+	    fieldId = utconfigurationTransportManager.saveConfigurationFormFields(field);
+	}
+	catch (Exception ex) {}
+	
+	return fieldId;
+    }
+    
+    /**
+     * The 'processImportConfigFieldDTS' method will process the configuration field data translation from the configuration import script.
+     * 
+     * @param strArrayValues 
+     * @param configId 
+     * @param fieldId 
+     * 
+     */
+    public void processImportConfigFieldDTS(String[] strArrayValues, Integer configId, Integer fieldId) {
+	
+	configurationDataTranslations dts = new configurationDataTranslations();
+	dts.setconfigId(configId);
+	dts.setFieldId(fieldId);
+	dts.setCrosswalkId(Integer.parseInt(strArrayValues[3]));
+	dts.setMacroId(Integer.parseInt(strArrayValues[4]));
+	dts.setPassClear(Integer.parseInt(strArrayValues[5]));
+	dts.setFieldA(strArrayValues[6]);
+	dts.setFieldB(strArrayValues[7]);
+	dts.setConstant1(strArrayValues[8]);
+	dts.setConstant2(strArrayValues[9]);
+	dts.setProcessOrder(Integer.parseInt(strArrayValues[10]));
+	dts.setCategoryId(Integer.parseInt(strArrayValues[11]));
+	
+	if(!"null".equals(strArrayValues[12])) {
+	    dts.setDefaultValue(strArrayValues[12]);
+	}
+	
+	utconfigurationmanager.saveDataTranslations(dts);
+    }
+    
+    
+    /**
+     * The 'processImportConfigSchedule' method will process the configuration schedule from the configuration import script.
+     * 
+     * @param strArrayValues 
+     * @param configId 
+     * 
+     */
+    public void processImportConfigSchedule(String[] strArrayValues, Integer configId) {
+	
+	configurationSchedules configSchedule = new configurationSchedules();
+	configSchedule.setconfigId(configId);
+	configSchedule.settype(Integer.parseInt(strArrayValues[2]));
+	configSchedule.setprocessingType(Integer.parseInt(strArrayValues[3]));
+	configSchedule.setnewfileCheck(Integer.parseInt(strArrayValues[4]));
+	configSchedule.setprocessingDay(Integer.parseInt(strArrayValues[5]));
+	configSchedule.setprocessingTime(Integer.parseInt(strArrayValues[6]));
+	
+	utconfigurationmanager.saveSchedule(configSchedule);
+	
+    }
+    
+     /**
+     * The 'processImportConfigCrosswalks' method will process the configuration crosswalks from the configuration import script.
+     * 
+     * @param strArrayValues 
+     * @param configId 
+     * @param orgId 
+     * @param cwIds 
+     * @return  
+     * 
+     */
+    public String processImportConfigCrosswalks(String[] strArrayValues, Integer configId, Integer orgId, String cwIds) {
+	
+	String returnCWids = "";
+	boolean addNewCW = false;
+	
+	if("".equals(cwIds)) {
+	    addNewCW = true;
+	}
+	else {
+	    
+	    String oldCWId = cwIds.split("\\-")[0];
+	    Integer newCWId = Integer.parseInt(cwIds.split("\\-")[1]);
+	    
+	    if(oldCWId.equals(strArrayValues[1])) {
+		CrosswalkData cwData = new CrosswalkData();
+		cwData.setCrosswalkId(newCWId);
+		cwData.setSourceValue(strArrayValues[6]);
+		cwData.setTargetValue(strArrayValues[7]);
+		cwData.setDescValue(strArrayValues[8]);
+		messagetypemanager.saveCrosswalkData(cwData);
+		
+		returnCWids = strArrayValues[1] + "-" + newCWId;
+	    }
+	    else {
+		addNewCW = true;
+	    }
+	}
+	
+	if(addNewCW) {
+	    Crosswalks cw = new Crosswalks();
+	    
+	    String cwName = strArrayValues[2].trim();
+	    Integer cwId = 0;
+	    boolean newCW = false;
+	    
+	    cw.setFileDelimiter(Integer.parseInt(strArrayValues[3]));
+	    cw.setfileName(strArrayValues[4]);
+	    
+	    if(Integer.parseInt(strArrayValues[5]) > 0) {
+		if(cwName.contains("_")) {
+		    String[] cwNameArray = cwName.split("\\_");
+		    cw.setName(configId+"_"+cwNameArray[1]);
+		    cwName = cwNameArray[1];
+		}
+		else {
+		    cw.setName(configId+"_"+cwName);
+		}
+		cw.setOrgId(orgId);
+	    }
+	    else {
+		orgId = 0;
+		cw.setOrgId(orgId);
+		cw.setName(cwName);
+	    }
+	    
+	    //Need to check if the generic CW already exists
+	    Crosswalks cwDetails = messagetypemanager.getCrosswalkByNameAndOrg(cwName,orgId,strArrayValues[4].trim());
+
+	    if(cwDetails != null) {
+		if(cwDetails.getId() > 0) {
+		    cwId = cwDetails.getId();
+		}
+	    }
+	
+	    if(cwId == 0) {
+		newCW = true;
+		try {
+		    cwId = messagetypemanager.createCrosswalk(cw);
+		    returnCWids = strArrayValues[1] + "-" + cwId;
+		}
+		catch (Exception cwEx) {
+		    cwEx.printStackTrace();
+		}
+	    }
+	    
+	    if(newCW) {
+		CrosswalkData cwData = new CrosswalkData();
+		cwData.setCrosswalkId(cwId);
+		cwData.setSourceValue(strArrayValues[6]);
+		cwData.setTargetValue(strArrayValues[7]);
+		cwData.setDescValue(strArrayValues[8]);
+		messagetypemanager.saveCrosswalkData(cwData);
+	    }
+	    
+	    if(cwId > 0) {
+		//Update all DTS that has the old crosswalk id with the new one
+		String sqlUpdate = "update configurationdatatranslations set crosswalkId = " + cwId + " where crosswalkId = " + Integer.parseInt(strArrayValues[1]) + " and configId = " + configId;
+		messagetypemanager.executeSQLStatement(sqlUpdate);
+
+		sqlUpdate = "update configurationdatatranslations set constant1 = " + cwId + " where constant1 = " + Integer.parseInt(strArrayValues[1]) + " and macroId = 129 and configId = " + configId;
+		messagetypemanager.executeSQLStatement(sqlUpdate);
+
+		sqlUpdate = "update configurationdatatranslations set constant1 = " + cwId + " where constant1 = " + Integer.parseInt(strArrayValues[1]) + " and macroId = 160 and configId = " + configId;
+		messagetypemanager.executeSQLStatement(sqlUpdate);
+
+		sqlUpdate = "update configurationdatatranslations set constant1 = " + cwId + " where constant1 = " + Integer.parseInt(strArrayValues[1]) + " and macroId = 177 and configId = " + configId;
+		messagetypemanager.executeSQLStatement(sqlUpdate);
+
+		sqlUpdate = "update configurationdatatranslations set constant1 = " + cwId + " where constant1 = " + Integer.parseInt(strArrayValues[1]) + " and macroId = 195 and configId = " + configId;
+		messagetypemanager.executeSQLStatement(sqlUpdate);
+
+		sqlUpdate = "update configurationdatatranslations set constant2 = " + cwId + " where constant2 = " + Integer.parseInt(strArrayValues[1]) + " and macroId = 199 and configId = " + configId;
+		messagetypemanager.executeSQLStatement(sqlUpdate);
+	    }
+	}
+	
+	return returnCWids;
+    }
+    
+    /**
+     * 
+     * @param importSection
+     * @param configId
+     * @param configTransportId
+     * @param orgId
+     * @param configName
+     * @param ex 
+     */
+    public void processImportConfigError(String importSection, Integer configId, Integer configTransportId, Integer orgId, String configName, Exception ex) throws Exception {
+	
+	//back out the configuration import details
+	String backOutConfigSQL = "";
+	
+	if(configTransportId > 0) {
+	    backOutConfigSQL += "delete from rel_transportfiledropdetails where transportId = " + configTransportId + ";";
+	    backOutConfigSQL += "delete from rel_transportftpdetails where transportId = " + configTransportId + ";";
+	}
+	
+	if(orgId > 0 && configId > 0) {
+	    backOutConfigSQL += "delete from rel_crosswalkdata where crosswalkId in (select id from crosswalks "
+		+ "where orgId = " + orgId + " and id in (select crosswalkId from configurationdatatranslations where configId = "+configId+"));";
+	    backOutConfigSQL += "delete from crosswalks where orgId = " + orgId + " and id in (select crosswalkId from configurationdatatranslations where configId = "+configId+");";
+	}
+	
+	if(configId > 0) {
+	    backOutConfigSQL += "delete from configurationdatatranslations where configId = " + configId + ";";
+	    backOutConfigSQL += "delete from configurationformfields where configId = " + configId + ";";
+	    backOutConfigSQL += "delete from configurationmessagespecs where configId = " + configId + ";";
+	    backOutConfigSQL += "delete from configurationschedule where configId = " + configId + ";";
+	    backOutConfigSQL += "delete from configurationtransportdetails where configId = " + configId + ";";
+	    backOutConfigSQL += "delete from configurations where id = " + configId + ";";
+	}
+	
+	if(!"".equals(backOutConfigSQL)) {
+	    messagetypemanager.executeSQLStatement(backOutConfigSQL);
+	}
+	
+	String emailSubject = "Configuration Import has been Backed out due to an error.";
+	StringBuilder emailBody = new StringBuilder();
+
+	Organization orgDetails = organizationmanager.getOrganizationById(orgId);
+
+	emailBody.append("The following configuration import has failed.");
+	emailBody.append("<br /><br />");
+	emailBody.append("Organization Name: ").append(orgDetails.getOrgName());
+	emailBody.append("<br />Configuration Name: ").append(configName);
+	emailBody.append("<br />Import Section: ").append(importSection);
+	emailBody.append("<br/><br />Reason for failure:<br />").append(ExceptionUtils.getStackTrace(ex));
+
+	mailMessage mail = new mailMessage();
+	mail.settoEmailAddress(myProps.getProperty("admin.email"));
+	mail.setfromEmailAddress("support@health-e-link.net");
+	mail.setmessageSubject(emailSubject);
+	mail.setmessageBody(emailBody.toString());
+	emailMessageManager.sendEmail(mail);
     }
 }

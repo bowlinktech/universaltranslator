@@ -157,4 +157,6 @@ public interface utConfigurationTransportDAO {
     configurationFormFields getConfigurationFieldById(int fieldId) throws Exception;
     
     List<configurationconnectionfieldmappings> getTargetConfigurationFieldsToCopy(Integer targetConfigId) throws Exception;
+    
+    List<configurationconnectionfieldmappings> getConnectionFieldMappingsByConnectionId(Integer connectionId) throws Exception;
 }

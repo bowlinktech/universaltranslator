@@ -1,5 +1,6 @@
 package com.hel.ut.service;
 
+import com.hel.ut.model.CrosswalkData;
 import java.util.List;
 
 import com.hel.ut.model.Crosswalks;
@@ -55,4 +56,10 @@ public interface messageTypeManager {
     void deleteCrosswalk(Integer cwId) throws Exception;
     
     List getConfigCrosswalksWithData(Integer orgId, Integer configId);
+    
+    void saveCrosswalkData(CrosswalkData cwData);
+    
+    void executeSQLStatement(String sqlStatement);
+    
+    Crosswalks getCrosswalkByNameAndOrg(String cwName, Integer orgId, String fileName);
 }
