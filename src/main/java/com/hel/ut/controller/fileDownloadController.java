@@ -82,7 +82,7 @@ public class fileDownloadController {
 	//Check to see if foldername is Base64 encoded
 	if("config".equals(fromPage) && Base64.isBase64(foldername)) {
 	    byte[] decodedBytes = Base64.decodeBase64(foldername);
-	    foldername = new String(decodedBytes);;
+	    foldername = new String(decodedBytes);
 	}
 	
 	try {
@@ -272,6 +272,9 @@ public class fileDownloadController {
 			}
 			else if("messagespec".equals(fromPage)) {
 			   mav = new ModelAndView(new RedirectView("/administrator/configurations/messagespecs")); 
+			}
+			else if("transport".equals(fromPage)) {
+			   mav = new ModelAndView(new RedirectView("/administrator/configurations/transport")); 
 			}
 			else if("crosswalks".equals(fromPage)) {
 			   mav = new ModelAndView(new RedirectView("/administrator/sysadmin/crosswalks")); 
