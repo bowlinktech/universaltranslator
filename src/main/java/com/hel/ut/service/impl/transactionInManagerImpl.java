@@ -5340,7 +5340,9 @@ public class transactionInManagerImpl implements transactionInManager {
 	
 	if(!emailAddressList.isEmpty()) {
 	    for(String emailAddr : emailAddressList) {
-		ccAddresses.add(emailAddr.trim());
+		if(!"".equals(emailAddr.trim())) {
+		    ccAddresses.add(emailAddr.trim());
+		}
 	    }
 	}
 	

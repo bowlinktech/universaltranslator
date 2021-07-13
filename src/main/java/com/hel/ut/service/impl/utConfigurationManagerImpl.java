@@ -2044,12 +2044,6 @@ public class utConfigurationManagerImpl implements utConfigurationManager {
 	
 	StringBuffer emailBodySB = (StringBuffer) session.getAttribute("emailBody");
 	
-	if(messageSpecDetails.gettemplateFile() != null) {
-	    if(!messageSpecDetails.gettemplateFile().isEmpty()) {
-		emailBodySB.append("<br />The following template File needs to be MOVED to the organization templates folder <br />").append("File Name: ").append(messageSpecDetails.gettemplateFile().trim());
-	    }
-	}
-
 	if(messageSpecDetails.getParsingTemplate() != null) {
 	    if(!messageSpecDetails.getParsingTemplate().isEmpty()) {
 		emailBodySB.append("<br />The following parsing File needs to be UPLOADED to the configuration <br />").append("File Name: ").append(messageSpecDetails.getParsingTemplate().trim());
